@@ -1,0 +1,10 @@
+{
+    "companies": [],
+    "adminUsers": [
+      {
+        "email": "admin@mstrategy.com",
+        "password": "admin123",
+        "role": "admin"
+      }
+    ]
+  }

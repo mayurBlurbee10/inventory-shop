@@ -1,0 +1,94 @@
+[
+  {
+    "id": "1730254940540",
+    "email": "alan@aal.com",
+    "name": "Attorney at Law",
+    "password": "000",
+    "boxUserId": "37586217373",
+    "folderId": "291486474106",
+    "createdAt": "2024-10-30T02:22:20.540Z",
+    "role": "user"
+  },
+  {
+    "id": "1730255273137",
+    "email": "john@SJAttorney.com",
+    "name": "San Jose Attorney",
+    "password": "000",
+    "boxUserId": "37585882888",
+    "folderId": "291486944863",
+    "createdAt": "2024-10-30T02:27:53.137Z",
+    "role": "user"
+  },
+  {
+    "id": "1730255273138",
+    "email": "davis@asocila.com",
+    "name": "ASocila",
+    "password": "test123",
+    "boxUserId": "37456239766",
+    "folderId": "290641338009",
+    "createdAt": "2024-10-30T02:30:00.000Z",
+    "role": "admin"
+  },
+  {
+    "id": "1730747340382",
+    "email": "thomas@ethree.com",
+    "name": "Ethree",
+    "password": "test123",
+    "boxUserId": "37712135200",
+    "folderId": "292296008821",
+    "createdAt": "2024-11-04T19:09:00.382Z",
+    "role": "admin"
+  },
+  {
+    "id": "1731995472684",
+    "email": "d.royal@gmail.com",
+    "name": "David Royal",
+    "password": "000",
+    "boxUserId": "38047467731",
+    "folderId": "294516469839",
+    "createdAt": "2024-11-19T05:51:12.684Z"
+  },
+  {
+    "id": "1732082408122",
+    "email": "wally@gmail.com",
+    "name": "Greg Wally",
+    "password": "000",
+    "boxUserId": "38072299180",
+    "folderId": "294689581684",
+    "createdAt": "2024-11-20T06:00:08.122Z"
+  },
+  {
+    "id": "1732082274287",
+    "email": "dainik.blurbee@gmail.com",
+    "name": "Dainik",
+    "password": "000",
+    "boxUserId": "38072701537",
+    "folderId": "294688391795",
+    "createdAt": "2024-11-20T05:57:54.287Z",
+    "role": "user"
+  },
+  {
+    "id": "1733835078761",
+    "email": "dainiktest3@yopmail.com",
+    "name": "dainikTest3",
+    "title": "",
+    "companyName": "",
+    "role": "user",
+    "password": "000",
+    "boxUserId": "38557869305",
+    "folderId": "297725118276",
+    "createdAt": "2024-12-10T12:51:18.761Z"
+  },
+  {
+    "id": "1733835081309",
+    "email": "dainiktest4@yopmail.com",
+    "name": "dainikTest4",
+    "title": "employee",
+    "companyName": "Blurbee",
+    "role": "user",
+    "password": "000",
+    "boxUserId": "38558907855",
+    "folderId": "297722161835",
+    "createdAt": "2024-12-10T12:51:21.309Z"
+  }
+]
