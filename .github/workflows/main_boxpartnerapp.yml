@@ -52,6 +52,15 @@ jobs:
         push: true
         tags: universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_f337580b331c4ad485d1195662e19231 }}/sha256:${{ github.sha }}
         file: ./Dockerfile
+        build-args: |
+          BOX_CLIENT_ID=${{ secrets.BOX_CLIENT_ID }}
+          BOX_CLIENT_SECRET=${{ secrets.BOX_CLIENT_SECRET }}
+          BOX_ENTERPRISE_ID=${{ secrets.BOX_ENTERPRISE_ID }}
+          BOX_PRIVATE_KEY=${{ secrets.BOX_PRIVATE_KEY }}
+          BOX_PRIVATE_KEY_PASSWORD=${{ secrets.BOX_PRIVATE_KEY_PASSWORD }}
+          BOX_PUBLIC_KEY_ID=${{ secrets.BOX_PUBLIC_KEY_ID }}
+          BOX_DEVELOPER_TOKEN=${{ secrets.BOX_DEVELOPER_TOKEN }}
+          BOX_PASSPHRASE=${{ secrets.BOX_PASSPHRASE }}
 
   deploy:
     runs-on: ubuntu-latest
