@@ -121,7 +121,7 @@ export default function LoginPage() {
           <div className="w-full max-w-md bg-secondary rounded-lg shadow-lg p-8">
             <div className="text-center mb-8">
               <img src="/logo2.png" alt="Wealthportal" className="h-12 w-auto mx-auto" />
-              <p className="text-text/60 mt-2">Log in here to access your account</p>
+              <p className="text-text/60 mt-2">Log in here</p>
             </div>
 
             <form onSubmit={handleLogin}>
