@@ -1,6 +1,16 @@
 # Use the official Node.js image as the base image
 FROM node:18-alpine
 
+# Set environment variables for Box SDK (for example purposes)
+ENV BOX_CLIENT_ID=${BOX_CLIENT_ID}
+ENV BOX_CLIENT_SECRET=${BOX_CLIENT_SECRET}
+ENV BOX_ENTERPRISE_ID=${BOX_ENTERPRISE_ID}
+ENV BOX_PRIVATE_KEY=${BOX_PRIVATE_KEY}
+ENV BOX_PRIVATE_KEY_PASSWORD=${BOX_PRIVATE_KEY_PASSWORD}
+ENV BOX_PUBLIC_KEY_ID=${BOX_PUBLIC_KEY_ID}
+ENV BOX_DEVELOPER_TOKEN=${BOX_DEVELOPER_TOKEN}
+ENV BOX_PASSPHRASE=${BOX_PASSPHRASE}
+
 # Set the working directory in the container
 WORKDIR /app
 RUN apk add --no-cache openssl
