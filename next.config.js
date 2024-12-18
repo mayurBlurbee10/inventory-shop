@@ -9,7 +9,6 @@ const nextConfig = {
   },
   // Add these configurations
   reactStrictMode: true,
-  swcMinify: true,
   poweredByHeader: false,
   compiler: {
     // Remove console.logs in production
