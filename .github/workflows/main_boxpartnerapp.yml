@@ -35,13 +35,6 @@ jobs:
         username: ${{ secrets.AzureAppService_ContainerUsername_f337580b331c4ad485d1195662e19231 }}
         password: ${{ secrets.AzureAppService_ContainerPassword_24f8d30e42c44892a7e231e272cf5577 }}
 
-    - name: Build and push container image to registry
-      uses: docker/build-push-action@v3
-      with:
-        push: true
-        tags: universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_f337580b331c4ad485d1195662e19231 }}/sha256:${{ github.sha }}
-        file: ./Dockerfile
-
     - name: Install dependencies
       run: |
         if [ -f yarn.lock ]; then
@@ -52,6 +45,13 @@ jobs:
           echo "No lockfile found. Please check your dependencies.";
           exit 1;
         fi
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_f337580b331c4ad485d1195662e19231 }}/sha256:${{ github.sha }}
+        file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
