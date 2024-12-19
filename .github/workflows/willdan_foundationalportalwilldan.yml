@@ -12,6 +12,15 @@ on:
 jobs:
   build:
     runs-on: 'ubuntu-latest'
+    env:
+      BOX_CLIENT_ID: ${{ secrets.BOX_CLIENT_ID }}
+      BOX_CLIENT_SECRET: ${{ secrets.BOX_CLIENT_SECRET }}
+      BOX_ENTERPRISE_ID: ${{ secrets.BOX_ENTERPRISE_ID }}
+      BOX_PRIVATE_KEY: ${{ secrets.BOX_PRIVATE_KEY }}
+      BOX_PRIVATE_KEY_PASSWORD: ${{ secrets.BOX_PRIVATE_KEY_PASSWORD }}
+      BOX_PUBLIC_KEY_ID: ${{ secrets.BOX_PUBLIC_KEY_ID }}
+      BOX_DEVELOPER_TOKEN: ${{ secrets.BOX_DEVELOPER_TOKEN }}
+      BOX_PASSPHRASE: ${{ secrets.BOX_PASSPHRASE }}
 
     steps:
     - uses: actions/checkout@v2
@@ -26,12 +35,32 @@ jobs:
         username: ${{ secrets.AzureAppService_ContainerUsername_53fb0989ef9e4724be13ebdedfb4e0c2 }}
         password: ${{ secrets.AzureAppService_ContainerPassword_e94549df7b584f02b0827081f66e2f64 }}
 
+    - name: Install dependencies
+      run: |
+        if [ -f yarn.lock ]; then
+          yarn install;
+        elif [ -f package-lock.json ]; then
+          npm install --legacy-peer-deps;
+        else
+          echo "No lockfile found. Please check your dependencies.";
+          exit 1;
+        fi
+
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
         tags: universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_53fb0989ef9e4724be13ebdedfb4e0c2 }}/sha256:${{ github.sha }}
         file: ./Dockerfile
+        build-args: |
+          BOX_CLIENT_ID=${{ secrets.BOX_CLIENT_ID }}
+          BOX_CLIENT_SECRET=${{ secrets.BOX_CLIENT_SECRET }}
+          BOX_ENTERPRISE_ID=${{ secrets.BOX_ENTERPRISE_ID }}
+          BOX_PRIVATE_KEY=${{ secrets.BOX_PRIVATE_KEY }}
+          BOX_PRIVATE_KEY_PASSWORD=${{ secrets.BOX_PRIVATE_KEY_PASSWORD }}
+          BOX_PUBLIC_KEY_ID=${{ secrets.BOX_PUBLIC_KEY_ID }}
+          BOX_DEVELOPER_TOKEN=${{ secrets.BOX_DEVELOPER_TOKEN }}
+          BOX_PASSPHRASE=${{ secrets.BOX_PASSPHRASE }}
 
   deploy:
     runs-on: ubuntu-latest
