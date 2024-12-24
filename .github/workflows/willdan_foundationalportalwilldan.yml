@@ -21,6 +21,10 @@ jobs:
       BOX_PUBLIC_KEY_ID: ${{ secrets.BOX_PUBLIC_KEY_ID }}
       BOX_DEVELOPER_TOKEN: ${{ secrets.BOX_DEVELOPER_TOKEN }}
       BOX_PASSPHRASE: ${{ secrets.BOX_PASSPHRASE }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_SERVER: ${{ secrets.DB_SERVER }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
 
     steps:
     - uses: actions/checkout@v2
@@ -61,6 +65,10 @@ jobs:
           BOX_PUBLIC_KEY_ID=${{ secrets.BOX_PUBLIC_KEY_ID }}
           BOX_DEVELOPER_TOKEN=${{ secrets.BOX_DEVELOPER_TOKEN }}
           BOX_PASSPHRASE=${{ secrets.BOX_PASSPHRASE }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_SERVER=${{ secrets.DB_SERVER }}
+          DB_DATABASE=${{ secrets.DB_DATABASE }}
 
   deploy:
     runs-on: ubuntu-latest
