@@ -101,17 +101,19 @@ async function fetchNestedItems(folderId) {
 async function fetchCollaborators(itemId) {
   try {
     const collaborations = await client.folders.getCollaborations(itemId);
-    return collaborations.entries.map((collaboration) => ({
+    return collaborations.entries.map((collaboration) => {
+      console.log('collaboration:', collaboration);
+      return({
       id: collaboration.id,
       role: collaboration.role,
       user: collaboration.accessible_by,
-    }));
+    })});
   } catch (error) {
     console.error(`Error fetching collaborators for item ${itemId}:`, error.message);
     return [];
   }
 }
-  
+
 export async function DELETE(req) {
   try{
     await logApiCall(req, ()=>{});

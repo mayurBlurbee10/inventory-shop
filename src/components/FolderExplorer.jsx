@@ -357,7 +357,7 @@ function FolderExplorer({
   const handleFolderClick = (folder) => {
     setSelectedItem(folder);
     setPath((prev) => [...prev, folder]);
-    console.log("selectedItem : ", selectedItem);
+    setDeleteDropdown(null);
   };
 
   const handleDelete = (id) => {
@@ -412,8 +412,8 @@ function FolderExplorer({
     } catch (error) {
       console.error('Download error:', error);
     }
-  }
-  
+  };
+
   const handleDeleteFile = async (fileId) => {
     // setCurrentFilesList((prev) => prev.filter((item) => item.id !== fileId));
     setIsLoading(true);
@@ -483,21 +483,20 @@ function FolderExplorer({
                 }
               >
                 <div className="flex items-center justify-start gap-3">
-                  
-                  {file.type === "folder" ? (<Folder className="h-5 w-5 text-[#3c4043]"/>) : (<File className="h-5 w-5 text-[#3c4043]" />)}
+                {file.type === "folder" ? (<Folder className="h-5 w-5 text-[#3c4043]"/>) : (<File className="h-5 w-5 text-[#3c4043]" />)}
                   <span className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
                     {file?.name}
                   </span>
                 </div>
               </td>
 
-              <td className="py-3">
+              {/* <td className="py-3">
                 <div className="flex items-center justify-start gap-2">
                   <span className="text-gray-600 text-sm">You opened</span>
                   <span className="rounded-full bg-gray-600 h-1 w-1 block"></span>
                   <span className="text-gray-600 text-sm">9:30 AM</span>
                 </div>
-              </td>
+              </td> */}
 
               <td className="py-3">
                 <div className="flex items-center">
@@ -517,7 +516,7 @@ function FolderExplorer({
                 <div className="flex items-center gap-3">
                   <UsersRound className="h-5 w-5 text-gray-600" />
                   <span className="text-gray-600 text-sm truncate max-w-40 w-full">
-                    My folder
+                    My Folders
                   </span>
                 </div>
               </td>

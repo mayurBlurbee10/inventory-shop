@@ -234,8 +234,17 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               onChange={(e) => handleFormChange('title', e.target.value)}
             />
           </div>
-
           <div>
+            <label className="block text-sm font-medium text-gray-700">Company Name</label>
+            <input
+              type="text"
+              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              value={formData.companyName}
+              onChange={(e) => handleFormChange('companyName', e.target.value)}
+            />
+          </div>
+
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700">Company Name</label>
             <div className="relative">
               <button
@@ -284,7 +293,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               )}
             </div>
 
-          </div>
+          </div> */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Role</label>
             <select

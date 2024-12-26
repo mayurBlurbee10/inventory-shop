@@ -100,7 +100,7 @@ const Header = ({
 
           {/* DROPDOWN SECTION DONE*/}
           {accountDropdown && (
-            <div className="absolute top-16 overflow-hidden left-[-62%] rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+            <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
               <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
                 <CircleUserRound className="h-5 w-5" /> Account Info
               </button>
@@ -183,6 +183,7 @@ const Sidepanel = ({
   setSidepanelDropdown,
   setIsNewFolderModalOpen,
   setShowUploadArea,
+  router,
 }) => (
   <div className="max-w-[260px] w-full">
     <div className="p-4">
@@ -228,15 +229,15 @@ const Sidepanel = ({
           </div>
         )}
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800">
+        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800" onClick={() => router.push("/home")}>
           <House className="h-5 w-5" /> Home
         </button>
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1">
+        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1" onClick={() => router.push("/sharewithme")}>
           <UsersRound className="h-5 w-5" /> Shared with me
         </button>
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1">
+        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1" onClick={() => router.push("/settings")}>
           <Settings className="h-5 w-5" /> Settings
         </button>
       </div>
@@ -335,11 +336,9 @@ export default function HomePage() {
       );
       if (!response.ok) throw new Error("Failed to fetch files");
       const data = await response.json();
-      setFilesList(data.items);
-      setCurrentFilesList(
-        path.length === 0 ? data.item : path[path.length - 1].children
-      );
-      console.log(data.items);
+      const newFilesList = data?.items || [];
+      setFilesList(newFilesList);
+      setCurrentFilesList(newFilesList)
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
@@ -372,15 +371,20 @@ export default function HomePage() {
     return "";
   };
 
-  const Breadcrumbs = ({ path }) => {
+  const Breadcrumbs = () => {
     const handleBreadcrumbClick = (index) => {
       setPath((prev) => prev.slice(0, index + 1));
+    };
+
+    const handleNavigate = () => {
+      setSelectedItem(null);
+      setPath([]);
     };
 
     return (
       <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
         <button
-          onClick={() => setPath([])}
+          onClick={handleNavigate}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
         >
           Home
@@ -498,6 +502,7 @@ export default function HomePage() {
             setIsNewFolderModalOpen={setIsNewFolderModalOpen}
             showUploadArea={showUploadArea}
             setShowUploadArea={setShowUploadArea}
+            router={router}
           />
           {/* <div className="flex space-x-8">
             <div className="flex-[7]">
@@ -555,7 +560,12 @@ export default function HomePage() {
             </div>
           </div> */}
 
-          <div className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4">
+          <div className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
+            onClick={() => {
+              setSidepanelDropdown(false);
+              setAccountDropdown(false);
+            }}
+          >
             <div className="mb-4">
               <h3 className="text-2xl text-[#3c4043] font-medium text-center mb-5">
                 Welcome, {user.name}
@@ -587,19 +597,6 @@ export default function HomePage() {
                 onChange={handleFileSelect}
                 multiple
               />
-
-              {/* <div>
-                <div className="max-w-xl w-full mx-auto block relative">
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="relative py-3 pl-14 pr-4 w-full rounded-full text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]"
-                  />
-                  <div className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 left-2 h-9 w-9 rounded-full hover:bg-gray-200">
-                    <Search className="h-5 w-5 text-[#3c4043]" />
-                  </div>
-                </div>
-              </div> */}
               {/* Search BoX */}
               <div>
                 <div className="max-w-xl w-full mx-auto block relative">
@@ -617,10 +614,7 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <Breadcrumbs
-                path={path}
-                setCurrentFilesList={setCurrentFilesList}
-              />
+              <Breadcrumbs />
             </div>
             {/* TABLE START */}
             <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
@@ -631,9 +625,9 @@ export default function HomePage() {
                       <th className="text-start text-[#3c4043] py-2 text-sm">
                         Name
                       </th>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
+                      {/* <th className="text-start text-[#3c4043] py-2 text-sm">
                         Reason suggested
-                      </th>
+                      </th> */}
                       <th className="text-start text-[#3c4043] py-2 text-sm">
                         Owner
                       </th>
@@ -643,6 +637,7 @@ export default function HomePage() {
                     </tr>
                   </thead>
                   <tbody>
+                    <>
                     <FolderExplorer
                       fileList={filesList}
                       deleteDropdown={deleteDropdown}
@@ -654,7 +649,9 @@ export default function HomePage() {
                       setSelectedItem={setSelectedItem}
                       selectedItem={selectedItem}
                       handleShareLink={handleShareLink}
+                      onFileChanges={refreshFiles}
                     />
+                    </>
                   </tbody>
                 </table>
               </div>
