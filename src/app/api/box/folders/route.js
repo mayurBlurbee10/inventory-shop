@@ -72,16 +72,23 @@ export async function GET(req) {
 async function fetchNestedItems(folderId) {
   const result = [];
   try {
-    const folderItems = await client.folders.getItems(folderId, { limit: 100 });
+    const folderItems = await client.folders.getItems(folderId, { 
+      fields: "id,name,type,shared_link,created_at,modified_at,collaborators",
+      limit: 100 
+    });
 
     for (const item of folderItems.entries) {
+      let collaborators = []
+      if(item.type == "folder"){
+        collaborators = await fetchCollaborators(item.id);
+      }
       if (item.type === 'folder') {
         // Recursively fetch items inside subfolder
         const nestedItems = await fetchNestedItems(item.id);
-        result.push({ ...item, children: nestedItems });
+        result.push({ ...item, collaborators, children: nestedItems });
       } else {
         // File, directly push to the result
-        result.push(item);
+        result.push({ ...item, collaborators });
       }
     }
   } catch (error) {
@@ -89,4 +96,18 @@ async function fetchNestedItems(folderId) {
   }
 
   return result;
+}
+
+async function fetchCollaborators(itemId) {
+  try {
+    const collaborations = await client.folders.getCollaborations(itemId);
+    return collaborations.entries.map((collaboration) => ({
+      id: collaboration.id,
+      role: collaboration.role,
+      user: collaboration.accessible_by,
+    }));
+  } catch (error) {
+    console.error(`Error fetching collaborators for item ${itemId}:`, error.message);
+    return [];
+  }
 }

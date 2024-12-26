@@ -414,6 +414,22 @@ export default function HomePage() {
     );
   };
 
+  const handleShareLink = (itemId, newSharedLink) => {
+    const updateSharedLink = (items) =>
+      items.map((item) => {
+        if (item.id === itemId) {
+          return { ...item, shared_link: newSharedLink };
+        }
+        if (item.children) {
+          return { ...item, children: updateSharedLink(item.children) };
+        }
+        return item;
+      });
+
+    const updatedData = updateSharedLink(currentFilesList);
+    setCurrentFilesList(updatedData);
+  };
+
   useEffect(() => {
     const userData = getUserData();
     if (!userData) {
@@ -637,6 +653,7 @@ export default function HomePage() {
                       setCurrentFilesList={setCurrentFilesList}
                       setSelectedItem={setSelectedItem}
                       selectedItem={selectedItem}
+                      handleShareLink={handleShareLink}
                     />
                   </tbody>
                 </table>

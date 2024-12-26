@@ -147,7 +147,8 @@ export async function POST(request) {
       boxFiles: boxData?.files || [],
       boxUserInfo: boxData?.user || null,
       boxFolderInfo: boxData?.folder || null,
-      boxError: boxData?.error
+      boxError: boxData?.error,
+      collaborationIds: user.collaborationIds
     };
 
     // Create response with cookie
