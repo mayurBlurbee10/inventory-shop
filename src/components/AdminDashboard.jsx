@@ -10,7 +10,7 @@ import { fetchWrapper } from '@/app/lib/fetchWrapper';
 const SidePanel = () => (
   <div className="w-80 bg-[#0161D5] p-6 flex flex-col h-screen fixed left-0">
     <div className="mb-8">
-      <Image src="/level1.png" alt="Client Logo" width={150} height={100} className="w-auto" />
+    <Image src="/logo_admin.png" alt="Client Logo" width={150} height={100} className="w-auto mx-auto" />
     </div>
 
     <nav className="space-y-4 flex-1">

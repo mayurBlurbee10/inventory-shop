@@ -111,3 +111,29 @@ async function fetchCollaborators(itemId) {
     return [];
   }
 }
+  
+export async function DELETE(req) {
+  try{
+    await logApiCall(req, ()=>{});
+    const { searchParams } = new URL(req.url);
+    const folderId = searchParams.get('folderId');
+
+    if (!folderId) {
+      return Response.json({ error: 'No folderId provided' }, { status: 400 });
+    }
+
+    await client.folders.delete(folderId);
+
+    return Response.json({
+      message: 'File deleted successfully',
+      folderId: folderId,
+    });
+
+  }catch (error) { 
+    console.error('Error deleting folder:', error);
+    return NextResponse.json(
+      { error: error.message },
+      { status: error.response?.statusCode || 500 }
+    );
+  }
+}

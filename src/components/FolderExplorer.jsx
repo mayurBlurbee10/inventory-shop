@@ -7,6 +7,7 @@ import {
   Eye,
   File,
   FileIcon,
+  Folder,
   Send,
   Share2,
   Trash2,
@@ -332,19 +333,21 @@ function FolderExplorer({
   setCurrentFilesList,
   setSelectedItem,
   selectedItem,
-  handleShareLink
+  handleShareLink,
+  onFileChanges,
 }) {
   const [previewFileId, setPreviewFileId] = useState("");
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [usersList, setUsersList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setCurrentFilesList(
       path.length === 0 ? fileList : path[path.length - 1].children
     );
-    // setSelectedItem(path === 0 && null);
+    // setSelectedItem(path.length === 0 && null);
   }, [path]);
 
   useEffect(() => {
@@ -354,8 +357,8 @@ function FolderExplorer({
   const handleFolderClick = (folder) => {
     setSelectedItem(folder);
     setPath((prev) => [...prev, folder]);
+    console.log("selectedItem : ", selectedItem);
   };
-
 
   const handleDelete = (id) => {
     setDeleteDropdown((prev) => (prev === id ? null : id));
@@ -409,6 +412,58 @@ function FolderExplorer({
     } catch (error) {
       console.error('Download error:', error);
     }
+  }
+  
+  const handleDeleteFile = async (fileId) => {
+    // setCurrentFilesList((prev) => prev.filter((item) => item.id !== fileId));
+    setIsLoading(true);
+    try {
+      const response = await fetchWrapper(
+        `/api/box/files?fileId=${fileId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        "delete-file"
+      );
+
+      if (!response.ok) throw new Error("Failed to delete file");
+      setIsLoading(false);
+      console.log(response.json());
+      onFileChanges(selectedItem.id);
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteFolder = async (folderId) => {
+    // setCurrentFilesList((prev) => prev.filter((item) => item.id !== folderId));
+    setIsLoading(true);
+    try {
+      const response = await fetchWrapper(
+        `/api/box/folders?folderId=${folderId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        "delete-folder"
+      );
+
+      if (!response.ok) throw new Error("Failed to delete folder");
+      setIsLoading(false);
+      console.log(response.json());
+      onFileChanges(folderId);
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -428,7 +483,8 @@ function FolderExplorer({
                 }
               >
                 <div className="flex items-center justify-start gap-3">
-                  <File className="h-5 w-5 text-[#3c4043]" />
+                  
+                  {file.type === "folder" ? (<Folder className="h-5 w-5 text-[#3c4043]"/>) : (<File className="h-5 w-5 text-[#3c4043]" />)}
                   <span className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
                     {file?.name}
                   </span>
@@ -520,7 +576,16 @@ function FolderExplorer({
                     {/* DELETE DROPDOWN DONE*/}
                     {deleteDropdown === file?.id && (
                       <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-10 overflow-hidden">
-                        <button className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600">
+                        <button
+                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                          onClick={() => {
+                            if (file.type === "folder") {
+                              handleDeleteFolder(file?.id);
+                            } else {
+                              handleDeleteFile(file?.id);
+                            }
+                          }}
+                        >
                           <Trash2 className="h-4 w-4 text-gray-600" /> Delete
                         </button>
                       </div>
