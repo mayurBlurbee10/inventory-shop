@@ -19,6 +19,7 @@ import {
   Trash2,
   ChevronRight,
   Upload,
+  FileIcon,
 } from "lucide-react";
 import FileExplorer from "@/components/FileExplorer";
 import ActionButtons from "@/components/ActionButtons";
@@ -59,6 +60,12 @@ const processBoxFiles = (files) => {
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+const EmptyState = () => (
+  <div className="flex flex-col w-full items-center justify-center py-12 text-gray-500">
+    <FileIcon size={48} className="mb-4 opacity-50" />
+    <p>No files or folders found</p>
   </div>
 );
 
@@ -376,18 +383,13 @@ export default function HomePage() {
       setPath((prev) => prev.slice(0, index + 1));
     };
 
-    const handleNavigate = () => {
-      setSelectedItem(null);
-      setPath([]);
-    };
-
     return (
       <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
         <button
-          onClick={handleNavigate}
+          onClick={() => setPath([])}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
         >
-          Home
+          My Files
         </button>
         {path &&
           path.length > 0 &&
@@ -478,6 +480,12 @@ export default function HomePage() {
 
     return () => clearTimeout(timer); // Cleanup on query or component unmount
   }, [searchQuery, selectedItem]);
+  
+  useEffect(() => {
+    if (path.length === 0) {
+      setSelectedItem(null);
+    }
+  }, [path]);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -620,39 +628,47 @@ export default function HomePage() {
             <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
               <div className="bg-white pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                  <thead>
-                    <tr>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Name
-                      </th>
-                      {/* <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Reason suggested
-                      </th> */}
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Owner
-                      </th>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Location
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                  {currentFilesList && currentFilesList?.length === 0 ? (
+                    <div className="px-3">
+                      <EmptyState />
+                    </div>
+                  ) : (
                     <>
-                    <FolderExplorer
-                      fileList={filesList}
-                      deleteDropdown={deleteDropdown}
-                      setDeleteDropdown={setDeleteDropdown}
-                      setPath={setPath}
-                      path={path}
-                      currentFilesList={currentFilesList}
-                      setCurrentFilesList={setCurrentFilesList}
-                      setSelectedItem={setSelectedItem}
-                      selectedItem={selectedItem}
-                      handleShareLink={handleShareLink}
-                      onFileChanges={refreshFiles}
-                    />
+                      <thead>
+                        <tr>
+                          <th className="text-start text-[#3C4043] py-2 text-sm">
+                            Name
+                          </th>
+                          {/* <th className="text-start text-[#3C4043] py-2 text-sm">
+                            Reason suggested
+                          </th> */}
+                          <th className="text-start text-[#3C4043] py-2 text-sm">
+                            Owner
+                          </th>
+                          <th className="text-start text-[#3C4043] py-2 text-sm">
+                            Location
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <>
+                        <FolderExplorer
+                          fileList={filesList}
+                          deleteDropdown={deleteDropdown}
+                          setDeleteDropdown={setDeleteDropdown}
+                          setPath={setPath}
+                          path={path}
+                          currentFilesList={currentFilesList}
+                          setCurrentFilesList={setCurrentFilesList}
+                          setSelectedItem={setSelectedItem}
+                          selectedItem={selectedItem}
+                          handleShareLink={handleShareLink}
+                          onFileChanges={refreshFiles}
+                        />
+                        </>
+                      </tbody>
                     </>
-                  </tbody>
+                  )}
                 </table>
               </div>
             </div>
