@@ -7,7 +7,7 @@ const sdk = new BoxSDK({
   clientSecret: process.env.BOX_CLIENT_SECRET,
   appAuth: {
     keyID: process.env.BOX_PUBLIC_KEY_ID,
-    privateKey: process.env.BOX_PRIVATE_KEY,
+    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
     passphrase: process.env.BOX_PASSPHRASE,
     enterpriseID: process.env.BOX_ENTERPRISE_ID,
   },
@@ -82,6 +82,7 @@ async function fetchCollaborators(itemId) {
   try {
     const collaborations = await client.folders.getCollaborations(itemId);
     return collaborations.entries.map((collaboration) => {
+      console.log('collaboration:', collaboration);
       return({
       id: collaboration.id,
       role: collaboration.role,

@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
   "tim.veneer@wildan.com": { email: "tim.veneer@wildan.com", role: "admin", name: "Tim Veneer" },
-  "thomas@perlint.com": { email: "thomas@perlint.com", role: "admin", name: "Thomas" },
-  "admin@demo.com": { email: "admin@demo.com", role: "admin", name: "Demo" }
+  "thomas@perlint.com": { email: "thomas@perlint.com", role: "admin", name: "Thomas" }
 };
 
 export default function AdminLoginPage() {

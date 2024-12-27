@@ -65,7 +65,7 @@
     "boxUserId": "38072701537",
     "folderId": "294688391795",
     "createdAt": "2024-11-20T05:57:54.287Z",
-    "role": "admin"
+    "role": "user"
   },
   {
     "id": "1733835078761",
@@ -77,8 +77,7 @@
     "password": "000",
     "boxUserId": "38557869305",
     "folderId": "297725118276",
-    "createdAt": "2024-12-10T12:51:18.761Z",
-    "collaborationIds": []
+    "createdAt": "2024-12-10T12:51:18.761Z"
   },
   {
     "id": "1733835081309",
@@ -90,16 +89,6 @@
     "password": "000",
     "boxUserId": "38558907855",
     "folderId": "297722161835",
-    "createdAt": "2024-12-10T12:51:21.309Z",
-    "collaborationIds": [
-      {
-        "folderId": "295070830971",
-        "role": "viewer"
-      },
-      {
-        "folderId": "300301635684",
-        "role": "viewer"
-      }
-    ]
+    "createdAt": "2024-12-10T12:51:21.309Z"
   }
 ]

@@ -18,19 +18,14 @@ import { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from 'react-select';
-import { useParams } from "next/navigation";
-import { usePathname } from "next/navigation";
 
 const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
-  const params = useParams();
   const [userID, setUserID] = useState('');
   const [copied, setCopied] = useState(false);
   const [userList, setUserList] = useState([]);
   const [sharedLink, setSharedLink] = useState(
     item?.shared_link
-      ? params.portalid
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-      :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
       : null
   );
   const [collabLoading, setCollabLoading] = useState(false);
@@ -39,9 +34,7 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
   useEffect(() => {
     setSharedLink(
       item?.shared_link
-      ? params.portalid
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-      :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
       : null
     );
     setCollaborator(item?.collaborators ? item.collaborators : []);
@@ -94,10 +87,7 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
         const newSharedLink =
           sharedLink !== null
             ? null
-            : params.portalid
-            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-            :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
-            // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+            : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
         setSharedLink(newSharedLink);
         if (onShareLinkToggle) {
           onShareLinkToggle(item.id, newSharedLink);
@@ -346,7 +336,6 @@ function FolderExplorer({
   handleShareLink,
   onFileChanges,
 }) {
-  const pathName = usePathname();
   const [previewFileId, setPreviewFileId] = useState("");
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
@@ -416,7 +405,7 @@ function FolderExplorer({
 
   const fetchUser = async () => {
     try {
-      const response = await fetchWrapper(`/api/box/users`, {}, 'fetchUserList');
+      const response = await fetchWrapper(`api/box/users`, {}, 'fetchUserList');
       if (!response.ok) throw new Error('Download failed');
       const data = await response.json();
       setUsersList(data);
@@ -527,10 +516,7 @@ function FolderExplorer({
                 <div className="flex items-center gap-3">
                   <UsersRound className="h-5 w-5 text-gray-600" />
                   <span className="text-gray-600 text-sm truncate max-w-40 w-full">
-                  {pathName.startsWith("/home")
-                      ? "My Folders"
-                      : "Shared wih me"}
-
+                    My Folders
                   </span>
                 </div>
               </td>
@@ -551,19 +537,17 @@ function FolderExplorer({
                         <Eye className="h-4 w-4 text-gray-600" />
                       </button>
                     )}
-                    {pathName.includes("/home") && (
-                      <button
-                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleShare(file);
-                          setDeleteDropdown(null);
-                        }}
-                        title="Share"
-                      >
-                        <Share2 className="h-4 w-4 text-gray-600" />
-                      </button>
-                    )}
+                    <button
+                      className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleShare(file);
+                        setDeleteDropdown(null);
+                      }}
+                      title="Share"
+                    >
+                      <Share2 className="h-4 w-4 text-gray-600" />
+                    </button>
                     {file.type === "file" && (
                       <button
                         className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
@@ -611,13 +595,13 @@ function FolderExplorer({
             </tr>
           );
         })}
-      {/* {currentFilesList && currentFilesList?.length === 0 && (
+      {currentFilesList && currentFilesList?.length === 0 && (
         <tr className="px-3">
           <td className="col-span-4">
             <EmptyState />
           </td>
         </tr>
-      )} */}
+      )}
       <PreviewModal
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}
