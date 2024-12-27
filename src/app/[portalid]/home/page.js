@@ -405,7 +405,7 @@ export default function HomePage() {
 
   const handleLogout = () => {
     clearUserData();
-    router.push("/login");
+    router.push("login");
   };
 
   const getFolderPath = (data, folderId, currentPath = "") => {
