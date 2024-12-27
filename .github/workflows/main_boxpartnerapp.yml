@@ -49,6 +49,9 @@ jobs:
           echo "No lockfile found. Please check your dependencies.";
           exit 1;
         fi
+
+    - name: Use secret API key
+      run: echo ${{ secrets.BOX_CLIENT_ID }}
     
     - name: Set Environment Variables
       run: |
