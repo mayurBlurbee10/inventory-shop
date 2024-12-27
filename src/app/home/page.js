@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Settings,
@@ -62,6 +62,7 @@ const LoadingSpinner = () => (
     <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
+
 const EmptyState = () => (
   <div className="flex flex-col w-full items-center justify-center py-12 text-gray-500">
     <FileIcon size={48} className="mb-4 opacity-50" />
@@ -116,7 +117,7 @@ const Header = ({
                 className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
               >
                 <Settings className="h-5 w-5" />
-                Settings
+                Setting
               </button>
               <button
                 onClick={handleLogout}
@@ -236,15 +237,24 @@ const Sidepanel = ({
           </div>
         )}
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800" onClick={() => router.push("/home")}>
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
+          onClick={() => router.push("/home")}
+        >
           <House className="h-5 w-5" /> Home
         </button>
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1" onClick={() => router.push("/sharewithme")}>
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+          onClick={() => router.push("/sharewithme")}
+        >
           <UsersRound className="h-5 w-5" /> Shared with me
         </button>
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1" onClick={() => router.push("/settings")}>
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+          onClick={() => router.push("/settings")}
+        >
           <Settings className="h-5 w-5" /> Settings
         </button>
       </div>
@@ -328,7 +338,6 @@ export default function HomePage() {
       }
     }
   };
-
   const refreshFiles = async () => {
     try {
       setIsLoading(true);
@@ -344,14 +353,51 @@ export default function HomePage() {
       if (!response.ok) throw new Error("Failed to fetch files");
       const data = await response.json();
       const newFilesList = data?.items || [];
+
       setFilesList(newFilesList);
-      setCurrentFilesList(newFilesList)
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
       setIsLoading(false);
     }
   };
+  console.log(path);
+
+  const updatePath = (prevPath, filesList) => {
+    let updatedPath = [...prevPath]; 
+    let currentFolder = updatedPath[updatedPath.length - 1];
+
+    // Update the path incrementally
+    for (let level = 0; level < updatedPath.length; level++) {
+      const folderAtLevel = updatedPath[level];
+      // Find the folder in the filesList
+      const updatedFolder = filesList.find(
+        (item) => item.id === folderAtLevel.id
+      );
+      if (updatedFolder) {
+        updatedPath[level] = updatedFolder;
+      }
+    }
+
+    return updatedPath;
+  };
+
+  console.log(path);
+
+  useEffect(() => {
+    if (filesList.length > 0) {
+      setPath((prevPath) => updatePath(prevPath, filesList));
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+    }
+  }, [filesList]);
+
+  useEffect(() => {
+    setCurrentFilesList(
+      path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+    );
+  }, [path]);
 
   const handleLogout = () => {
     clearUserData();
@@ -480,12 +526,6 @@ export default function HomePage() {
 
     return () => clearTimeout(timer); // Cleanup on query or component unmount
   }, [searchQuery, selectedItem]);
-  
-  useEffect(() => {
-    if (path.length === 0) {
-      setSelectedItem(null);
-    }
-  }, [path]);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -568,7 +608,8 @@ export default function HomePage() {
             </div>
           </div> */}
 
-          <div className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
+          <div
+            className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
             onClick={() => {
               setSidepanelDropdown(false);
               setAccountDropdown(false);
@@ -629,42 +670,39 @@ export default function HomePage() {
               <div className="bg-white pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
                   {currentFilesList && currentFilesList?.length === 0 ? (
-                    <div className="px-3">
-                      <EmptyState />
-                    </div>
+                    <EmptyState />
                   ) : (
                     <>
                       <thead>
                         <tr>
-                          <th className="text-start text-[#3C4043] py-2 text-sm">
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
                             Name
                           </th>
-                          {/* <th className="text-start text-[#3C4043] py-2 text-sm">
+                          {/* <th className="text-start text-[#3c4043] py-2 text-sm">
                             Reason suggested
                           </th> */}
-                          <th className="text-start text-[#3C4043] py-2 text-sm">
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
                             Owner
                           </th>
-                          <th className="text-start text-[#3C4043] py-2 text-sm">
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
                             Location
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         <>
-                        <FolderExplorer
-                          fileList={filesList}
-                          deleteDropdown={deleteDropdown}
-                          setDeleteDropdown={setDeleteDropdown}
-                          setPath={setPath}
-                          path={path}
-                          currentFilesList={currentFilesList}
-                          setCurrentFilesList={setCurrentFilesList}
-                          setSelectedItem={setSelectedItem}
-                          selectedItem={selectedItem}
-                          handleShareLink={handleShareLink}
-                          onFileChanges={refreshFiles}
-                        />
+                          <FolderExplorer
+                            fileList={filesList}
+                            deleteDropdown={deleteDropdown}
+                            setDeleteDropdown={setDeleteDropdown}
+                            setPath={setPath}
+                            path={path}
+                            currentFilesList={currentFilesList}
+                            setCurrentFilesList={setCurrentFilesList}
+                            setSelectedItem={setSelectedItem}
+                            selectedItem={selectedItem}
+                            onFileChanges={refreshFiles}
+                          />
                         </>
                       </tbody>
                     </>

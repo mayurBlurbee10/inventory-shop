@@ -19,6 +19,7 @@ import {
   Trash2,
   ChevronRight,
   Upload,
+  FileIcon,
 } from "lucide-react";
 import ActionButtons from "@/components/ActionButtons";
 import UploadArea from "@/components/UploadArea";
@@ -63,6 +64,8 @@ const LoadingSpinner = () => (
   </div>
 );
 
+
+
 const Header = ({
   user,
   userIsAdmin,
@@ -71,7 +74,7 @@ const Header = ({
   accountDropdown,
   setAccountDropdown,
   config,
-  handelSettings
+  handelSettings,
 }) => (
   <header className=" border-gray-100 py-2">
     <div className="px-8 flex items-center justify-between">
@@ -188,7 +191,7 @@ const Sidepanel = ({
   setIsNewFolderModalOpen,
   setShowUploadArea,
   router,
-  handelSettings
+  handelSettings,
 }) => (
   <div className="max-w-[260px] w-full">
     <div className="p-4">
@@ -234,15 +237,24 @@ const Sidepanel = ({
           </div>
         )}
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800" onClick={() => router.push("/home")}>
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
+          onClick={() => router.push("/home")}
+        >
           <House className="h-5 w-5" /> Home
         </button>
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1" onClick={() => router.push("sharewithme")}>
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+          onClick={() => router.push("sharewithme")}
+        >
           <UsersRound className="h-5 w-5" /> Shared with me
         </button>
 
-        <button className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1" onClick={handelSettings}>
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+          onClick={handelSettings}
+        >
           <Settings className="h-5 w-5" /> Settings
         </button>
       </div>
@@ -279,6 +291,14 @@ export default function HomePage() {
       handleFileSelect(event);
     }
   };
+
+  const EmptyState = () => (
+    <div className="flex flex-col w-full items-center justify-center py-12 text-gray-500">
+      <FileIcon size={48} className="mb-4 opacity-50" />
+      <p>No files or folders found</p>
+    </div>
+  );
+
   const handleFileSelect = async (event) => {
     const files = event.target.files;
     if (files.length > 0) {
@@ -346,13 +366,42 @@ export default function HomePage() {
       const data = await response.json();
       const newFilesList = data?.items || [];
       setFilesList(newFilesList);
-      setCurrentFilesList(newFilesList)
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const updatePath = (prevPath, filesList) => {
+    let updatedPath = [...prevPath]; 
+    let currentFolder = updatedPath[updatedPath.length - 1];
+
+    // Update the path incrementally
+    for (let level = 0; level < updatedPath.length; level++) {
+      const folderAtLevel = updatedPath[level];
+      // Find the folder in the filesList
+      const updatedFolder = filesList.find(
+        (item) => item.id === folderAtLevel.id
+      );
+      if (updatedFolder) {
+        updatedPath[level] = updatedFolder;
+      }
+    }
+
+    return updatedPath;
+  };
+
+  console.log(path);
+
+  useEffect(() => {
+    if (filesList.length > 0) {
+      setPath((prevPath) => updatePath(prevPath, filesList));
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+    }
+  }, [filesList]);
 
   const handleLogout = () => {
     clearUserData();
@@ -384,15 +433,10 @@ export default function HomePage() {
       setPath((prev) => prev.slice(0, index + 1));
     };
 
-    const handleNavigate = () => {
-      setSelectedItem(null);
-      setPath([]);
-    };
-
     return (
       <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
         <button
-          onClick={handleNavigate}
+          onClick={() => setPath([])}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
         >
           My Files
@@ -444,12 +488,16 @@ export default function HomePage() {
 
   const fetchConfig = async () => {
     try {
-      const response = await fetchWrapper(`/api/portal?portalid=${params.portalid}`, {}, 'portal-login');
+      const response = await fetchWrapper(
+        `/api/portal?portalid=${params.portalid}`,
+        {},
+        "portal-login"
+      );
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        throw new Error("Failed to fetch users");
       }
       const data = await response.json();
-      setConfig(data.data)
+      setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     } finally {
@@ -518,7 +566,7 @@ export default function HomePage() {
           setAccountDropdown={setAccountDropdown}
           handleLogout={handleLogout}
           config={config}
-          handelSettings = {() => setIsSettingsOpen(true)}
+          handelSettings={() => setIsSettingsOpen(true)}
         />
 
         <div className="flex flex-row">
@@ -529,10 +577,11 @@ export default function HomePage() {
             showUploadArea={showUploadArea}
             setShowUploadArea={setShowUploadArea}
             router={router}
-            handelSettings = {() => setIsSettingsOpen(true)}
+            handelSettings={() => setIsSettingsOpen(true)}
           />
 
-          <div className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
+          <div
+            className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
             onClick={() => {
               setSidepanelDropdown(false);
               setAccountDropdown(false);
@@ -592,39 +641,44 @@ export default function HomePage() {
             <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
               <div className="bg-white pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                  <thead>
-                    <tr>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Name
-                      </th>
-                      {/* <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Reason suggested
-                      </th> */}
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Owner
-                      </th>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Location
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                {currentFilesList && currentFilesList?.length === 0 ? (
+                    <EmptyState />
+                  ) : (
                     <>
-                    <FolderExplorer
-                      fileList={filesList}
-                      deleteDropdown={deleteDropdown}
-                      setDeleteDropdown={setDeleteDropdown}
-                      setPath={setPath}
-                      path={path}
-                      currentFilesList={currentFilesList}
-                      setCurrentFilesList={setCurrentFilesList}
-                      setSelectedItem={setSelectedItem}
-                      selectedItem={selectedItem}
-                      handleShareLink={handleShareLink}
-                      onFileChanges={refreshFiles}
-                    />
+                      <thead>
+                        <tr>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Name
+                          </th>
+                          {/* <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Reason suggested
+                          </th> */}
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Owner
+                          </th>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Location
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <>
+                          <FolderExplorer
+                            fileList={filesList}
+                            deleteDropdown={deleteDropdown}
+                            setDeleteDropdown={setDeleteDropdown}
+                            setPath={setPath}
+                            path={path}
+                            currentFilesList={currentFilesList}
+                            setCurrentFilesList={setCurrentFilesList}
+                            setSelectedItem={setSelectedItem}
+                            selectedItem={selectedItem}
+                            onFileChanges={refreshFiles}
+                          />
+                        </>
+                      </tbody>
                     </>
-                  </tbody>
+                  )}
                 </table>
               </div>
             </div>
@@ -639,8 +693,8 @@ export default function HomePage() {
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       />
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
+      <SettingsModal
+        isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
     </div>

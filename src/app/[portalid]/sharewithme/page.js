@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
 // import { fetchWrapper } from "../lib/fetchWrapper";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, FileIcon, Search } from "lucide-react";
 import ActionButtons from "@/components/ActionButtons";
 import UploadArea from "@/components/UploadArea";
 import FolderExplorer from "@/components/FolderExplorer";
@@ -18,6 +18,13 @@ const LoadingSpinner = () => (
     <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
+
+const EmptyState = () => (
+  <div className="flex flex-col w-full items-center justify-center py-12 text-gray-500">
+    <FileIcon size={48} className="mb-4 opacity-50" />
+    <p>No files or folders found</p>
+  </div>
+)
 
 function SharewithMe() {
   const router = useRouter();
@@ -146,6 +153,36 @@ function SharewithMe() {
     }
   };
 
+  const updatePath = (prevPath, filesList) => {
+      let updatedPath = [...prevPath]; 
+      let currentFolder = updatedPath[updatedPath.length - 1];
+  
+      // Update the path incrementally
+      for (let level = 0; level < updatedPath.length; level++) {
+        const folderAtLevel = updatedPath[level];
+        // Find the folder in the filesList
+        const updatedFolder = filesList.find(
+          (item) => item.id === folderAtLevel.id
+        );
+        if (updatedFolder) {
+          updatedPath[level] = updatedFolder;
+        }
+      }
+  
+      return updatedPath;
+    };
+  
+    console.log(path);
+  
+    useEffect(() => {
+      if (filesList.length > 0) {
+        setPath((prevPath) => updatePath(prevPath, filesList));
+        setCurrentFilesList(
+          path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+        );
+      }
+    }, [filesList]);
+
   const handleLogout = () => {
     clearUserData();
     router.push("/login");
@@ -176,17 +213,12 @@ function SharewithMe() {
       setPath((prev) => prev.slice(0, index + 1));
     };
 
-    const handleNavigate = () => {
-      setSelectedItem(null);
-      setPath([]);
-    };
-
     console.log(path, "home");
 
     return (
       <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
         <button
-          onClick={handleNavigate}
+          onClick={()=>setPath([])}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
         >
           Shared Files
@@ -409,38 +441,44 @@ function SharewithMe() {
             <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
               <div className="bg-white pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                  <thead>
-                    <tr>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Name
-                      </th>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Reason suggested
-                      </th>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Owner
-                      </th>
-                      <th className="text-start text-[#3c4043] py-2 text-sm">
-                        Location
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                {currentFilesList && currentFilesList?.length === 0 ? (
+                    <EmptyState />
+                  ) : (
                     <>
-                    <FolderExplorer
-                      fileList={filesList}
-                      deleteDropdown={deleteDropdown}
-                      setDeleteDropdown={setDeleteDropdown}
-                      setPath={setPath}
-                      path={path}
-                      currentFilesList={currentFilesList}
-                      setCurrentFilesList={setCurrentFilesList}
-                      setSelectedItem={setSelectedItem}
-                      selectedItem={selectedItem}
-                      onFileChanges={refreshFiles}
-                    />
+                      <thead>
+                        <tr>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Name
+                          </th>
+                          {/* <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Reason suggested
+                          </th> */}
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Owner
+                          </th>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Location
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <>
+                          <FolderExplorer
+                            fileList={filesList}
+                            deleteDropdown={deleteDropdown}
+                            setDeleteDropdown={setDeleteDropdown}
+                            setPath={setPath}
+                            path={path}
+                            currentFilesList={currentFilesList}
+                            setCurrentFilesList={setCurrentFilesList}
+                            setSelectedItem={setSelectedItem}
+                            selectedItem={selectedItem}
+                            onFileChanges={refreshFiles}
+                          />
+                        </>
+                      </tbody>
                     </>
-                  </tbody>
+                  )}
                 </table>
               </div>
             </div>
