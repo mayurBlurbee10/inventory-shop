@@ -449,7 +449,6 @@ export default function HomePage() {
         throw new Error('Failed to fetch users');
       }
       const data = await response.json();
-      console.log('data: ', data)
       setConfig(data.data)
     } catch (error) {
       console.log("error: ", error);

@@ -27,7 +27,6 @@ export default function SubsidiariesLoginPage() {
           throw new Error('Failed to fetch users');
         }
         const data = await response.json();
-        console.log('data: ', data)
         setConfig(data.data)
       } catch (error) {
         console.log("error: ", error);
@@ -56,10 +55,7 @@ export default function SubsidiariesLoginPage() {
         "default-login"
       );
 
-      console.log("Response status:", response.status);
-
       const data = await response.json();
-      console.log("Login response data:", data);
 
       if (!response.ok) {
         throw new Error(data.error || "Login failed");
@@ -67,7 +63,6 @@ export default function SubsidiariesLoginPage() {
 
       // Store user data using auth utility
       const userData = data.user;
-      console.log("Storing user data:", userData);
       setUserData(userData);
       localStorage.setItem('portal', params);
 
