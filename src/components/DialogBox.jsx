@@ -25,7 +25,7 @@ const DialogBox = ({title, message, fileLocation, isModalOpen, setIsModalOpen}) 
             </button>
           </div>
           <div className="text-center py-4">
-            <div className="text-lg text-gray-600 mb-4">
+            <div className="text-lg text-green-600 mb-4">
               {message}
             </div>
            { fileLocation && <div className="text-gray-600 mb-4" dangerouslySetInnerHTML={{__html:fileLocation}}></div>}
