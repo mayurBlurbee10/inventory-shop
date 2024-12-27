@@ -39,8 +39,8 @@ WORKDIR /app
 # Copy the rest of your application files into the container
 COPY . .
 
-# Ensure the public/uploads folder is copied correctly
-COPY ./public/uploads /app/public/uploads
+# # Ensure the public/uploads folder is copied correctly
+# COPY ./public/uploads /app/public/uploads
 
 # Build the Next.js application
 RUN \
