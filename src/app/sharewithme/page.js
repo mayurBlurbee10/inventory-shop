@@ -196,7 +196,7 @@ function SharewithMe() {
           onClick={handleNavigate}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
         >
-          Home
+          Shared Files
         </button>
         {path &&
           path.length > 0 &&

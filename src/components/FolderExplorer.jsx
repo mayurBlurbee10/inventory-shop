@@ -18,14 +18,18 @@ import { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from 'react-select';
+import { useParams } from "next/navigation";
 
 const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
+  const params = useParams();
   const [userID, setUserID] = useState('');
   const [copied, setCopied] = useState(false);
   const [userList, setUserList] = useState([]);
   const [sharedLink, setSharedLink] = useState(
     item?.shared_link
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+      ? params.portalid
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+      :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
       : null
   );
   const [collabLoading, setCollabLoading] = useState(false);
@@ -34,7 +38,9 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
   useEffect(() => {
     setSharedLink(
       item?.shared_link
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+      ? params.portalid
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+      :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
       : null
     );
     setCollaborator(item?.collaborators ? item.collaborators : []);
@@ -87,7 +93,10 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
         const newSharedLink =
           sharedLink !== null
             ? null
-            : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+            : params.portalid
+            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+            :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+            // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
         setSharedLink(newSharedLink);
         if (onShareLinkToggle) {
           onShareLinkToggle(item.id, newSharedLink);
