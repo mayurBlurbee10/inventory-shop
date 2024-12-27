@@ -183,17 +183,10 @@ function SharewithMe() {
       setPath((prev) => prev.slice(0, index + 1));
     };
 
-    const handleNavigate = () => {
-      setSelectedItem(null);
-      setPath([]);
-    };
-
-    console.log(path, "home");
-
     return (
       <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
         <button
-          onClick={handleNavigate}
+          onClick={() => setPath([])}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
         >
           Shared Files
@@ -272,6 +265,12 @@ function SharewithMe() {
 
     return () => clearTimeout(timer); // Cleanup on query or component unmount
   }, [searchQuery, selectedItem, filesList]);
+  
+  useEffect(() => {
+    if (path.length === 0) {
+      setSelectedItem(null);
+    }
+  }, [path]);
 
   console.log("filelist", filesList)
   if (isLoading) return <LoadingSpinner />;
