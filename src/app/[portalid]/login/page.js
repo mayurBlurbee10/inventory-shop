@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
-import Footer from "@/components/Footer";
+import PortalFooter from "@/components/PortalFooter";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 const NavBarItem = ({ title }) => (
@@ -72,7 +72,7 @@ export default function SubsidiariesLoginPage() {
       localStorage.setItem('portal', params);
 
       console.log("Redirecting to home");
-      router.push("/home");
+      router.push(`home`);
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message);
@@ -82,13 +82,12 @@ export default function SubsidiariesLoginPage() {
   };
 
   return (
-    <div style={{ backgroundColor: config?.secondaryColor }}
-     className="min-h-screen flex flex-col items-start xl:items-center justify-center px-4 md:px-9 pt-7 pb-9 relative">
-      <div className="mx-auto max-w-[1600px] bg-white relative z-10">
+    <div className="min-h-screen flex flex-col items-start xl:items-center justify-center relative">
+      <div className="bg-white relative z-10">
         <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center h-full">
           <div className="h-12 md:h-16 lg:h-20">
-            <img src={config?.logo} alt="Wealthportal" className="h-full w-full hidden md:block" />
-            <img src="/logo2.png" alt="Wealthportal" className="h-full w-full block md:hidden" />
+            <img src={config?.logo} alt="Premierportal" className="h-full w-full hidden md:block" />
+            <img src={config?.logo} alt="Premierportal" className="h-full w-full block md:hidden" />
           </div>
           <div className="hidden md:flex space-x-4">
             {/* <NavBarItem title="Individual" />
@@ -127,19 +126,13 @@ export default function SubsidiariesLoginPage() {
                 Welcome {config ? config.legalName : ''}
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
-                E3’s greatest strengths lie in its team of consultants—the
-                analysts, engineers, policy experts, economists, scientists, and
-                others who have a deep understanding of contemporary analytical
-                techniques, electricity industry economics, energy markets, and
-                regulatory institutions. E3 partners are fully engaged and have
-                a hand in every project, so clients benefit from their expertise
-                in every engagement.
+                As premier customer, we have created a customer portal solution for you. Please log into access your work orders, project files, invoices and other supporting documentation. You can also use the portal to request new quotes for services and more.
               </p>
 
               {/* Feature Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-6 mt-10">
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
-                  <svg
+                  {/* <svg
                     className="w-8 h-8 text-text"
                     fill="none"
                     stroke="currentColor"
@@ -151,29 +144,16 @@ export default function SubsidiariesLoginPage() {
                       strokeWidth={2}
                       d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"
                     />
-                  </svg>
-                  <h3 className="text-lg font-bold mt-4 text-text">
-                    Enterprise Data Center
+                  </svg> */}
+                  <h3 className="text-lg font-bold text-text">
+                    Digitization Services
                   </h3>
                   <p className="text-text/60 mt-2">
-                    Your data warehouse for portfolio analytics and risk
-                    management.
-                    Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.
-                    management.
-                    management.
-                    management.
-                    management.
+                    Commercial, archival scanning, digitization and micrographic services for those needing to digitally preserve important documents, newspapers, maps, books, microfilm, slides and more. Learn More
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
-                  <svg
+                  {/* <svg
                     className="w-8 h-8 text-text"
                     fill="none"
                     stroke="currentColor"
@@ -185,55 +165,16 @@ export default function SubsidiariesLoginPage() {
                       strokeWidth={2}
                       d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
                     />
-                  </svg>
-                  <h3 className="text-lg font-bold mt-4 text-text">
-                    Experience Enhancement
+                  </svg> */}
+                  <h3 className="text-lg font-bold text-text">
+                    Software Solutions
                   </h3>
                   <p className="text-text/60 mt-2">
-                  Your data warehouse for portfolio analytics and risk
-                    management.
-                    Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.
-                    management.
-                    management.
-                    management.
-                    management.Your data warehouse for portfolio analytics and risk
-                    management.
-                    Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.
-                    management.
-                    management.
-                    management.
-                    management.Your data warehouse for portfolio analytics and risk
-                    management.
-                    Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.
-                    management.
-                    management.
-                    management.
-                    management.
+                    At Crowley, software systems are considered a critical component for maximum image quality, production efficiency, and content management. Learn More
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
-                  <svg
+                  {/* <svg
                     className="w-8 h-8 text-text"
                     fill="none"
                     stroke="currentColor"
@@ -245,25 +186,12 @@ export default function SubsidiariesLoginPage() {
                       strokeWidth={2}
                       d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"
                     />
-                  </svg>
-                  <h3 className="text-lg font-bold mt-4 text-text">
-                    Enterprise Execution
+                  </svg> */}
+                  <h3 className="text-lg font-bold text-text">
+                    Support Services
                   </h3>
                   <p className="text-text/60 mt-2">
-                  Your data warehouse for portfolio analytics and risk
-                    management.
-                    Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.  Your data warehouse for portfolio analytics and risk
-                    management.
-                    management.
-                    management.
-                    management.
-                    management.
+                    From beginning to end, your digitization projects are covered with the full breadth of Crowley support services. Learn More
                   </p>
                 </div>
               </div>
@@ -308,8 +236,9 @@ export default function SubsidiariesLoginPage() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-[#005071] text-secondary py-3 rounded hover:bg-[#1A4C8A]/80 transition-colors"
+                    className="w-full text-secondary py-3 rounded hover:bg-[#1A4C8A]/80 transition-colors"
                     disabled={isLoading}
+                    style={{ backgroundColor: config?.secondaryColor }}
                   >
                     {isLoading ? (
                       <div className="w-6 h-6 border-2 border-secondary border-t-transparent rounded-full animate-spin mx-auto" />
@@ -334,7 +263,7 @@ export default function SubsidiariesLoginPage() {
             </div>
           </div>
         </div>
-        <Footer />
+        <PortalFooter config={config}/>
       </div>
       <div className="absolute bottom-1 xl:bottom-5 left-3 2xl:left-10 max-w-20 xl:max-w-36 w-full opacity-20 z-0">
         <img src="/logo_new.png" alt="Wealthportal" className="h-full w-full" />

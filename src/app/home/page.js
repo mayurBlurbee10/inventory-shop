@@ -109,7 +109,7 @@ const Header = ({
                 className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
               >
                 <Settings className="h-5 w-5" />
-                Setting
+                Settings
               </button>
               <button
                 onClick={handleLogout}
