@@ -25,25 +25,23 @@ export async function POST(request) {
     let items = [];
     for await (const element of collaborated) {
       const folder = await fetchNestedItems(element.folderId);
-      const folderName = await client.folders.get(element.folderId)
+      const folderName = await client.folders.get(element.folderId);
 
-      const folderEntry = {
+      items.push({
         ...folderName,
         children: folder,
         currentUserRole: element.role,
-      };
-  
-      items.push(folderEntry);
-      // items.push(folder);
+      });
     }
-    return Response.json({
+
+    return NextResponse.json({
       message: "Folder items fetched successfully",
       items,
     });
   } catch (error) {
-    console.error("Error fetch collaborated folder:", error);
+    console.error("Error fetching collaborated folder:", error);
     return NextResponse.json(
-      { error: "Failed to fetch collaborated folder", details: error.message },
+      { error: { message: "Failed to fetch collaborated folder", details: error.message } },
       { status: 500 }
     );
   }
@@ -52,43 +50,38 @@ export async function POST(request) {
 async function fetchNestedItems(folderId) {
   const result = [];
   try {
-    const folderItems = await client.folders.getItems(folderId, { 
+    const folderItems = await client.folders.getItems(folderId, {
       fields: "id,name,type,shared_link,created_at,modified_at,collaborators",
-      limit: 100 
+      limit: 100,
     });
 
     for (const item of folderItems.entries) {
-      let collaborators = []
-      if(item.type == "folder"){
+      let collaborators = [];
+      if (item.type === "folder") {
         collaborators = await fetchCollaborators(item.id);
-      }
-      if (item.type === 'folder') {
-        // Recursively fetch items inside subfolder
         const nestedItems = await fetchNestedItems(item.id);
         result.push({ ...item, collaborators, children: nestedItems });
       } else {
-        // File, directly push to the result
         result.push({ ...item, collaborators });
       }
     }
-    return result
   } catch (error) {
     console.error(`Error fetching items for folder ${folderId}:`, error.message);
   }
 
   return result;
 }
+
 async function fetchCollaborators(itemId) {
   try {
     const collaborations = await client.folders.getCollaborations(itemId);
-    return collaborations.entries.map((collaboration) => {
-      return({
+    return collaborations.entries.map((collaboration) => ({
       id: collaboration.id,
       role: collaboration.role,
       user: collaboration.accessible_by,
-    })});
+    }));
   } catch (error) {
-    console.error(`Error fetching collaborators for item ${itemId}:`, error.message);
+    console.error(`Error fetching collaborators for folder ${itemId}:`, error.message);
     return [];
   }
 }
