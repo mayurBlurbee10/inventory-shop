@@ -82,7 +82,6 @@ async function fetchCollaborators(itemId) {
   try {
     const collaborations = await client.folders.getCollaborations(itemId);
     return collaborations.entries.map((collaboration) => {
-      console.log('collaboration:', collaboration);
       return({
       id: collaboration.id,
       role: collaboration.role,

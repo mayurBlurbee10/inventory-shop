@@ -111,10 +111,8 @@ function SharewithMe() {
         );
         if (!response.ok) throw new Error("Failed to get collaborated folder");
         const data = await response.json();
-        console.log("SHARE WITH ME", data?.items);
         setFilesList(data?.items);
         setCurrentFilesList(data?.items);
-        console.log("shared files and folder: ", data);
       }
     } catch (error) {
       console.error("Error get collaborated folder:", error);
@@ -122,14 +120,10 @@ function SharewithMe() {
   };
 
   const refreshFiles = async (folderId) => {
-    console.log("folderid ", folderId);
     try {
       setIsLoading(true);
-      console.log("User Api calling")
       const userData = getUserData();
-      console.log(userData)
       if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
-        console.log("Inside ")
         const requestOptions = {
           method: "POST",
           body: JSON.stringify({ collaborated: userData.collaborationIds }),
@@ -141,11 +135,9 @@ function SharewithMe() {
         );
         if (!response.ok) throw new Error("Failed to get collaborated folder");
         const data = await response.json();
-        console.log("SHARE WITH ME", data?.items);
         const newFilesList = data?.items;
         setFilesList(newFilesList);
         setCurrentFilesList(newFilesList);
-        console.log("shared files and folder: ", data?.items[0]);
       }
     } catch (error) {
       console.error("Error get collaborated folder:", error);

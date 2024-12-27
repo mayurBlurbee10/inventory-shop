@@ -416,7 +416,7 @@ function FolderExplorer({
 
   const fetchUser = async () => {
     try {
-      const response = await fetchWrapper(`api/box/users`, {}, 'fetchUserList');
+      const response = await fetchWrapper(`/api/box/users`, {}, 'fetchUserList');
       if (!response.ok) throw new Error('Download failed');
       const data = await response.json();
       setUsersList(data);
@@ -551,7 +551,7 @@ function FolderExplorer({
                         <Eye className="h-4 w-4 text-gray-600" />
                       </button>
                     )}
-                    {pathName.startsWith("/home") && (
+                    {pathName.includes("/home") && (
                       <button
                         className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
                         onClick={(e) => {

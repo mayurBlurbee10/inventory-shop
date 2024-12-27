@@ -13,11 +13,12 @@ export default function SharedFilePage() {
   const params = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [itemUrl, setItemUrl] = useState("");
+  const [config, setConfig] = useState(null);
+  const [fileName, setFileName] = useState("");
 
   useEffect(() => {
-    console.log("params: ", params);
-    console.log("useEffect: ");
     getSharedFile(params.fileid);
+    fetchConfig();
   }, []);
 
   const getSharedFile = async (fileId) => {
@@ -31,14 +32,38 @@ export default function SharedFilePage() {
         requestOptions,
         "fetchSharedFile"
       );
-      console.log("response: ", response);
       if (!response.ok) throw new Error("Failed to fetch shared files");
+
+      const headers = response.headers;
+      const contentDisposition = headers.get("Content-Disposition");
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+?)"/);
+        if (match && match[1]) {
+          const filename = match[1];
+          setFileName(filename)
+        }
+      }
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      console.log("url: ", url);
       setItemUrl(url);
     } catch (error) {
       console.error("Error get shared files:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchConfig = async () => {
+    try {
+      const response = await fetchWrapper(`/api/portal?portalid=${params.portalid}`, {}, 'portal-login');
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      const data = await response.json();
+      setConfig(data.data)
+    } catch (error) {
+      console.log("error: ", error);
     } finally {
       setIsLoading(false);
     }
@@ -49,11 +74,13 @@ export default function SharedFilePage() {
   return (
     <div className="bg-white">
       <div className="p-3 border-1 border-b flex items-center justify-start gap-3">
-        <img src="/logo2.png" alt="Wealthportal" className="h-10 w-10 block" />
-
-        <h2 className="text-lg font-semibold text-gray-800">File name</h2>
+        <img src={config?.logo} alt="Wealthportal" className="h-10 w-10 block" />
+        <h2 className="text-lg font-semibold text-gray-800">{config?.legalName}</h2>
       </div>
-      <div className="h-[calc(100vh-66px)] p-4 bg-[#f5f5f5]">
+      {fileName && (<div className="p-3 border-1 border-b flex items-center justify-start gap-3">
+        <h2 className="text-l font-semibold text-gray-800">{fileName}</h2>
+      </div>)}
+      <div className="h-[calc(100vh-115px)] p-4 bg-[#f5f5f5]">
         <img src={itemUrl}  className="h-full w-full object-contain"/>
       </div>
     </div>
