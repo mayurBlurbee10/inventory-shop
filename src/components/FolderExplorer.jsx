@@ -75,7 +75,7 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
         },
         body: JSON.stringify({ userID:userID.value, "role": "viewer", "itemId":item?.id}),
       };
-      const response = await fetchWrapper(`api/box/files/share`, obj, 'addCollaborator');
+      const response = await fetchWrapper(`/api/box/files/share`, obj, 'addCollaborator');
       if (!response.ok) throw new Error('Failed to add collaborator');
       const data = await response.json();
       setCollabLoading(false);
@@ -133,7 +133,7 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
         method: "DELETE",
       };
       const response = await fetchWrapper(
-        `api/box/files/share?collaboratorId=${collaborator.id}&userId=${collaborator.user.id}`,
+        `/api/box/files/share?collaboratorId=${collaborator.id}&userId=${collaborator.user.id}`,
         obj,
         "removeCollaborator"
       );
@@ -181,7 +181,7 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
         },
         body: JSON.stringify({ userID:userId, role: newRole, "itemId":collaborationId, updateRole: true}),
       };
-      const response = await fetchWrapper(`api/box/files/share`, obj, 'changeCollaboratorRole');
+      const response = await fetchWrapper(`/api/box/files/share`, obj, 'changeCollaboratorRole');
       if (!response.ok) throw new Error('Failed to change collaborator role');
       const data = await response.json();
       setCollabLoading(false);
@@ -388,7 +388,7 @@ function FolderExplorer({
   const handleDownload = async (fileId, fileName) => {
     try {
       const response = await fetchWrapper(
-        `api/box/download?fileId=${fileId}`,
+        `/api/box/download?fileId=${fileId}`,
         {},
         "download"
       );

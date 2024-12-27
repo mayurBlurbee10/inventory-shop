@@ -239,7 +239,7 @@ const Sidepanel = ({
 
         <button
           className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
-          onClick={() => router.push("/home")}
+          onClick={() => router.push("home")}
         >
           <House className="h-5 w-5" /> Home
         </button>

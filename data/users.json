@@ -65,7 +65,13 @@
     "boxUserId": "38072701537",
     "folderId": "294688391795",
     "createdAt": "2024-11-20T05:57:54.287Z",
-    "role": "admin"
+    "role": "admin",
+    "collaborationIds": [
+      {
+        "folderId": "300627366056",
+        "role": "viewer"
+      }
+    ]
   },
   {
     "id": "1733835078761",
@@ -78,7 +84,12 @@
     "boxUserId": "38557869305",
     "folderId": "297725118276",
     "createdAt": "2024-12-10T12:51:18.761Z",
-    "collaborationIds": []
+    "collaborationIds": [
+      {
+        "folderId": "300627366056",
+        "role": "viewer"
+      }
+    ]
   },
   {
     "id": "1733835081309",
@@ -101,5 +112,15 @@
         "role": "viewer"
       }
     ]
+  },
+  {
+    "id": "1735310648141",
+    "email": "admin@demo.com",
+    "name": "Demo Account",
+    "password": "000",
+    "boxUserId": "38995423120",
+    "folderId": "300628886275",
+    "createdAt": "2024-12-27T14:44:08.142Z",
+    "role": "admin"
   }
 ]
