@@ -81,7 +81,7 @@ export default function SubsidiariesLoginPage() {
       <div className="bg-white relative z-10">
         <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center h-full">
           <div className="h-12 md:h-16 lg:h-20">
-            <img src={config?.logo} alt="Premierportal" className="h-full w-full hidden md:block" />
+            <img src={config?.logo} alt="Premierportal" className="h-full hidden md:block" />
             <img src={config?.logo} alt="Premierportal" className="h-full w-full block md:hidden" />
           </div>
           <div className="hidden md:flex space-x-4">
@@ -118,7 +118,7 @@ export default function SubsidiariesLoginPage() {
           <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
             <div>
               <h2 className="text-3xl font-normal leading-tight text-[#545454]">
-                Welcome {config ? config.legalName : ''}
+                Welcome M Strategy
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
                 As premier customer, we have created a customer portal solution for you. Please log into access your work orders, project files, invoices and other supporting documentation. You can also use the portal to request new quotes for services and more.

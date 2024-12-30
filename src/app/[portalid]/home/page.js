@@ -11,6 +11,7 @@ import {
   UsersRound,
   CircleUserRound,
   Search,
+  Headset,
   File,
   Eye,
   Download,
@@ -80,7 +81,7 @@ const Header = ({
     <div className="px-8 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         {/* <img src="/logo.png" alt="Wealthportal" className="h-12 w-auto" /> */}
-        <img src={config?.logo} alt="Premierportal" className="h-12 w-auto" />
+        <img src={config?.logo} alt="Premierportal" className="h-24 w-auto" />
       </div>
 
       <div className="flex items-center space-x-8">
@@ -117,6 +118,13 @@ const Header = ({
               >
                 <Settings className="h-5 w-5" />
                 Settings
+              </button>
+              <button
+                onClick={handelSettings}
+                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+              >
+                <Headset className="h-5 w-5" />
+                Tech Support
               </button>
               <button
                 onClick={handleLogout}
