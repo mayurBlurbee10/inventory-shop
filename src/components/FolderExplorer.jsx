@@ -443,6 +443,7 @@ function FolderExplorer({
       if (!response.ok) throw new Error("Failed to delete file");
       setIsLoading(false);
       console.log(response.json());
+      setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       onFileChanges(selectedItem.id);
     } catch (error) {
       console.error("Error deleting folder:", error);
@@ -469,6 +470,7 @@ function FolderExplorer({
       if (!response.ok) throw new Error("Failed to delete folder");
       setIsLoading(false);
       console.log(response.json());
+      setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       onFileChanges(folderId);
     } catch (error) {
       console.error("Error deleting folder:", error);
