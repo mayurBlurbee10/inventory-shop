@@ -17,20 +17,26 @@ import {
 import { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Select from 'react-select';
+import Select from "react-select";
 import { useParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 
-const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
+const ShareModal = ({
+  isOpen,
+  onClose,
+  item,
+  onShareLinkToggle,
+  usersList,
+}) => {
   const params = useParams();
-  const [userID, setUserID] = useState('');
+  const [userID, setUserID] = useState("");
   const [copied, setCopied] = useState(false);
   const [userList, setUserList] = useState([]);
   const [sharedLink, setSharedLink] = useState(
     item?.shared_link
       ? params.portalid
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-      :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+        ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+        : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
       : null
   );
   const [collabLoading, setCollabLoading] = useState(false);
@@ -39,18 +45,18 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
   useEffect(() => {
     setSharedLink(
       item?.shared_link
-      ? params.portalid
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-      :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
-      : null
+        ? params.portalid
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+          : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+        : null
     );
     setCollaborator(item?.collaborators ? item.collaborators : []);
   }, [item]);
 
   useEffect(() => {
-    const users = usersList.map(user => ({
+    const users = usersList.map((user) => ({
       value: user.boxUserId,
-      label: `${user.name} (${user.email})`
+      label: `${user.name} (${user.email})`,
     }));
     setUserList(users);
   }, [usersList]);
@@ -68,60 +74,71 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
   const handleEmailShare = async () => {
     try {
       setCollabLoading(true);
-      const obj =  {
+      const obj = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userID:userID.value, "role": "viewer", "itemId":item?.id}),
+        body: JSON.stringify({
+          userID: userID.value,
+          role: "viewer",
+          itemId: item?.id,
+        }),
       };
-      const response = await fetchWrapper(`/api/box/files/share`, obj, 'addCollaborator');
-      if (!response.ok) throw new Error('Failed to add collaborator');
+      const response = await fetchWrapper(
+        `/api/box/files/share`,
+        obj,
+        "addCollaborator"
+      );
+      if (!response.ok) throw new Error("Failed to add collaborator");
       const data = await response.json();
       setCollabLoading(false);
-      onAddCollaborator({'id':data.response.id, userID:userID.value, isForAdd: true})
-      setUserID('');
+      onAddCollaborator({
+        id: data.response.id,
+        userID: userID.value,
+        isForAdd: true,
+      });
+      setUserID("");
     } catch (error) {
-      console.error('Add Collaborator error:', error);
+      console.error("Add Collaborator error:", error);
       setCollabLoading(false);
     }
   };
 
-  const handleToggleShare = async() => {
-
-      const link = await generateSharedLink(item.id, sharedLink === null)
-      if(link !== undefined){
-        const newSharedLink =
-          sharedLink !== null
-            ? null
-            : params.portalid
-            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-            :`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
-            // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
-        setSharedLink(newSharedLink);
-        if (onShareLinkToggle) {
-          onShareLinkToggle(item.id, newSharedLink);
-        }
+  const handleToggleShare = async () => {
+    const link = await generateSharedLink(item.id, sharedLink === null);
+    if (link !== undefined) {
+      const newSharedLink =
+        sharedLink !== null
+          ? null
+          : params.portalid
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+          : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+      // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+      setSharedLink(newSharedLink);
+      if (onShareLinkToggle) {
+        onShareLinkToggle(item.id, newSharedLink);
       }
+    }
   };
 
-  const generateSharedLink = async(fileId, isShareable) => {
+  const generateSharedLink = async (fileId, isShareable) => {
     try {
       setCollabLoading(true);
       const requestOptions = {
-        method: 'GET',
+        method: "GET",
       };
       const response = await fetchWrapper(
-        `/api/box/files/share?fileId=${fileId}&isShareable=${isShareable}`, 
-        requestOptions, 
-        'generateSharedLink'
+        `/api/box/files/share?fileId=${fileId}&isShareable=${isShareable}`,
+        requestOptions,
+        "generateSharedLink"
       );
       setCollabLoading(false);
-      if (!response.ok) throw new Error('Failed to get links');
+      if (!response.ok) throw new Error("Failed to get links");
       const data = await response.json();
-      return data.sharedLink
+      return data.sharedLink;
     } catch (error) {
-      console.error('Failed to get links:', error);
+      console.error("Failed to get links:", error);
       setCollabLoading(false);
     }
   };
@@ -152,50 +169,71 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
   };
 
   const onAddCollaborator = (collab) => {
-    if(collab.isForAdd) {
-      const user = usersList.find((user)=>user.boxUserId == collab.userID)
-      const collabIndex = collaborator.findIndex(collabs => collabs.id == collab.id);
-      console.log('collabIndex: ^^^^^', collabIndex)
-      if(collabIndex>-1){
-        collaborator[collabIndex]={id:collab.id, role:collab.role, user:{name:user.name, id:user.boxUserId}};
+    if (collab.isForAdd) {
+      const user = usersList.find((user) => user.boxUserId == collab.userID);
+      const collabIndex = collaborator.findIndex(
+        (collabs) => collabs.id == collab.id
+      );
+      console.log("collabIndex: ^^^^^", collabIndex);
+      if (collabIndex > -1) {
+        collaborator[collabIndex] = {
+          id: collab.id,
+          role: collab.role,
+          user: { name: user.name, id: user.boxUserId },
+        };
       } else {
-        collaborator.push({id:collab.id, role:'viewer', user:{name:user.name, id:user.boxUserId}})
+        collaborator.push({
+          id: collab.id,
+          role: "viewer",
+          user: { name: user.name, id: user.boxUserId },
+        });
       }
     } else {
-      const index = collaborator.findIndex((collabs)=>collabs.id==collab.id);
+      const index = collaborator.findIndex(
+        (collabs) => collabs.id == collab.id
+      );
       if (index > -1) {
         collaborator.splice(index, 1);
       }
     }
-    setCollaborator(collaborator)
+    setCollaborator(collaborator);
   };
 
-  const handleRoleChange = async(event, userId, collaborationId) => {
+  const handleRoleChange = async (event, userId, collaborationId) => {
     try {
       setCollabLoading(true);
       const newRole = event.target.value;
-      const obj =  {
+      const obj = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userID:userId, role: newRole, "itemId":collaborationId, updateRole: true}),
+        body: JSON.stringify({
+          userID: userId,
+          role: newRole,
+          itemId: collaborationId,
+          updateRole: true,
+        }),
       };
-      const response = await fetchWrapper(`/api/box/files/share`, obj, 'changeCollaboratorRole');
-      if (!response.ok) throw new Error('Failed to change collaborator role');
+      const response = await fetchWrapper(
+        `/api/box/files/share`,
+        obj,
+        "changeCollaboratorRole"
+      );
+      if (!response.ok) throw new Error("Failed to change collaborator role");
       const data = await response.json();
       setCollabLoading(false);
       onAddCollaborator({
         id: collaborationId,
         userID: userId,
         isForAdd: true,
-        role: newRole
+        role: newRole,
       });
     } catch (error) {
       console.error("Change collaborator role error:", error);
       setCollabLoading(false);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -296,9 +334,11 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
                   <div className="flex items-center justify-between gap-3 text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group">
                     <div>{content?.user.name}</div>
                     <div>
-                      <select 
+                      <select
                         value={content?.role}
-                        onChange={(e) => handleRoleChange(e, content?.user.id, content.id)}
+                        onChange={(e) =>
+                          handleRoleChange(e, content?.user.id, content.id)
+                        }
                       >
                         <option value="viewer">Viewer</option>
                         <option value="editor">Editor</option>
@@ -324,10 +364,10 @@ const ShareModal = ({ isOpen, onClose, item, onShareLinkToggle, usersList}) => {
         </div>
 
         {collabLoading && (
-          <div className='absolute top-0 left-0 rounded-xl h-full w-full bg-[#00000038] flex items-center justify-center'>
+          <div className="absolute top-0 left-0 rounded-xl h-full w-full bg-[#00000038] flex items-center justify-center">
             <div className="border-blue-500 w-6 h-6 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
           </div>
-        ) }
+        )}
       </div>
     </div>
   );
@@ -363,7 +403,7 @@ function FolderExplorer({
 
   useEffect(() => {
     fetchUser();
-  }, [])
+  }, []);
 
   const handleFolderClick = (folder) => {
     setSelectedItem(folder);
@@ -409,19 +449,23 @@ function FolderExplorer({
   };
 
   const handleShareLinkToggle = (itemId, newSharedLink) => {
-    if(handleShareLink){
+    if (handleShareLink) {
       handleShareLink(itemId, newSharedLink);
     }
   };
 
   const fetchUser = async () => {
     try {
-      const response = await fetchWrapper(`/api/box/users`, {}, 'fetchUserList');
-      if (!response.ok) throw new Error('Download failed');
+      const response = await fetchWrapper(
+        `/api/box/users`,
+        {},
+        "fetchUserList"
+      );
+      if (!response.ok) throw new Error("Download failed");
       const data = await response.json();
       setUsersList(data);
     } catch (error) {
-      console.error('Download error:', error);
+      console.error("Download error:", error);
     }
   };
 
@@ -496,10 +540,14 @@ function FolderExplorer({
                 }
               >
                 <div className="flex items-center justify-start gap-3">
-                {file.type === "folder" ? (<Folder className="h-5 w-5 text-[#3c4043]"/>) : (<File className="h-5 w-5 text-[#3c4043]" />)}
-                  <span className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
+                  {file.type === "folder" ? (
+                    <Folder className="h-5 w-5 text-[#3c4043]" />
+                  ) : (
+                    <File className="h-5 w-5 text-[#3c4043]" />
+                  )}
+                  <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
                     {file?.name}
-                  </span>
+                  </p>
                 </div>
               </td>
 
@@ -528,12 +576,11 @@ function FolderExplorer({
               <td className="py-3">
                 <div className="flex items-center gap-3">
                   <UsersRound className="h-5 w-5 text-gray-600" />
-                  <span className="text-gray-600 text-sm truncate max-w-40 w-full">
-                  {pathName.startsWith("/home")
+                  <p className="text-gray-600 text-sm truncate max-w-40 w-full">
+                    {pathName.startsWith("/home")
                       ? "My Folders"
                       : "Shared wih me"}
-
-                  </span>
+                  </p>
                 </div>
               </td>
 
@@ -579,7 +626,6 @@ function FolderExplorer({
                         <Download className="h-4 w-4 text-gray-600" />
                       </button>
                     )}
-                    
                   </div>
                   <div className="relative">
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
@@ -620,18 +666,24 @@ function FolderExplorer({
           </td>
         </tr>
       )} */}
-      <PreviewModal
-        isOpen={isPreviewModalOpen}
-        onClose={() => setIsPreviewModalOpen(false)}
-        fileId={previewFileId}
-      />
-       <ShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        item={shareFile}
-        onShareLinkToggle={handleShareLinkToggle}
-        usersList={usersList}
-      />
+      <tr>
+        <td>
+          <PreviewModal
+            isOpen={isPreviewModalOpen}
+            onClose={() => setIsPreviewModalOpen(false)}
+            fileId={previewFileId}
+          />
+        </td>
+        <td>
+          <ShareModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            item={shareFile}
+            onShareLinkToggle={handleShareLinkToggle}
+            usersList={usersList}
+          />
+        </td>
+      </tr>
     </>
   );
 }

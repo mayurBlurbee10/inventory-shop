@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import FileExplorer from '../FileExplorer';
-import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import FileExplorer from "../FileExplorer";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 const processBoxFiles = (files) => {
+  if (!files) return;
   const itemsMap = new Map();
   const rootItems = [];
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const item = {
       id: file.id,
       name: file.name,
-      type: file.type || 'file',
+      type: file.type || "file",
       size: file.size,
       created_at: file.created_at,
       modified_at: file.modified_at,
-      children: []
+      children: [],
     };
     itemsMap.set(file.id, item);
 
@@ -33,25 +34,40 @@ const processBoxFiles = (files) => {
 const FileViewerModal = ({ isOpen, onClose, user }) => {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchFiles = async () => {
       try {
         setLoading(true);
-        setError('');
-        
-        const response = await fetchWrapper(`/api/box/files?folderId=${encodeURIComponent(user.folderId)}`,{}, 'fetch-file');
+        setError("");
+
+        const requestOptions = {
+          method: "GET",
+        };
+
+        // const response = await fetchWrapper(
+        //   `/api/box/files?folderId=${encodeURIComponent(user.folderId)}`,{},
+        //   "fetch-file"
+        // );
+
+        const response = await fetchWrapper(
+          `/api/box/folders?folderId=${encodeURIComponent(user.folderId)}`,
+          requestOptions,
+          "fetch-file"
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch files');
+          throw new Error("Failed to fetch files");
         }
-        
+
+        // setFiles(processBoxFiles(data));
         const data = await response.json();
-        setFiles(processBoxFiles(data));
+        const newData = data?.items || [];
+        setFiles(newData);
       } catch (error) {
-        setError('Failed to load files');
-        console.error('Error fetching files:', error);
+        setError("Failed to load files");
+        console.error("Error fetching files:", error);
       } finally {
         setLoading(false);
       }

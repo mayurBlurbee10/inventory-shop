@@ -1,6 +1,9 @@
 export const fetchWrapper = async (url, options = {}, type) => {
+
   // Get dynamic header values (e.g., from localStorage, cookies, or a session)
-  const user = JSON.parse(localStorage.getItem("user")) || { id: "defaultUser" };
+  const user = JSON.parse(localStorage.getItem("user")) || {
+    id: "defaultUser",
+  };
   const portal = localStorage.getItem("portal") || "defaultPortal";
 
   // Default headers
@@ -19,7 +22,6 @@ export const fetchWrapper = async (url, options = {}, type) => {
   try {
     // Make the fetch call
     const response = await fetch(url, options);
-
     // Handle non-OK responses
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

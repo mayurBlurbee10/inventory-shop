@@ -74,14 +74,14 @@ export default function SharedFilePage() {
   return (
     <div className="bg-white">
       <div className="p-3 border-1 border-b flex items-center justify-start gap-3">
-        <img src={config?.logo} alt="Wealthportal" className="h-10 w-10 block" />
+        <img src={config?.logo} alt="Wealthportal" className="h-10 w-auto block" />
         <h2 className="text-lg font-semibold text-gray-800">{config?.legalName}</h2>
       </div>
       {fileName && (<div className="p-3 border-1 border-b flex items-center justify-start gap-3">
         <h2 className="text-l font-semibold text-gray-800">{fileName}</h2>
       </div>)}
       <div className="h-[calc(100vh-115px)] p-4 bg-[#f5f5f5]">
-        <img src={itemUrl}  className="h-full w-full object-contain"/>
+        <img src={itemUrl || null} alt={fileName || "img"}  className="h-full w-full object-contain"/>
       </div>
     </div>
   );

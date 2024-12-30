@@ -31,6 +31,7 @@ import DialogBox from "@/components/DialogBox";
 import FolderExplorer from "@/components/FolderExplorer";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import SettingsModal from "@/components/Settings";
+import TechSupport from "@/components/TechSupport";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -65,8 +66,6 @@ const LoadingSpinner = () => (
   </div>
 );
 
-
-
 const Header = ({
   user,
   userIsAdmin,
@@ -76,6 +75,7 @@ const Header = ({
   setAccountDropdown,
   config,
   handelSettings,
+  handleTechSupport,
 }) => (
   <header className=" border-gray-100 py-2">
     <div className="px-8 flex items-center justify-between">
@@ -120,7 +120,7 @@ const Header = ({
                 Settings
               </button>
               <button
-                onClick={handelSettings}
+                onClick={handleTechSupport}
                 className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
               >
                 <Headset className="h-5 w-5" />
@@ -282,6 +282,7 @@ export default function HomePage() {
   const [showUploadArea, setShowUploadArea] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
+  const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploadedfilePath, setUpladedFilePath] = useState("");
   const [accountDropdown, setAccountDropdown] = useState(false);
@@ -382,7 +383,7 @@ export default function HomePage() {
   };
 
   const updatePath = (prevPath, filesList) => {
-    let updatedPath = [...prevPath]; 
+    let updatedPath = [...prevPath];
     let currentFolder = filesList;
 
     // Update the path incrementally
@@ -517,8 +518,6 @@ export default function HomePage() {
       setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -569,7 +568,6 @@ export default function HomePage() {
   }, [searchQuery, selectedItem]);
 
   if (isLoading) return <LoadingSpinner />;
-
   const userIsAdmin = isAdmin();
 
   return (
@@ -584,6 +582,7 @@ export default function HomePage() {
           handleLogout={handleLogout}
           config={config}
           handelSettings={() => setIsSettingsOpen(true)}
+          handleTechSupport={() => setIsTechSupportModalOpen((prev) => !prev)}
         />
 
         <div className="flex flex-row">
@@ -658,8 +657,14 @@ export default function HomePage() {
             <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
               <div className="bg-white pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                {currentFilesList && currentFilesList?.length === 0 ? (
-                    <EmptyState />
+                  {!currentFilesList || currentFilesList?.length === 0 ? (
+                    <thead>
+                      <tr>
+                        <th>
+                          <EmptyState />
+                        </th>
+                      </tr>
+                    </thead>
                   ) : (
                     <>
                       <thead>
@@ -676,6 +681,7 @@ export default function HomePage() {
                           <th className="text-start text-[#3c4043] py-2 text-sm">
                             Location
                           </th>
+                          <th className="py-2 text-sm"></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -713,6 +719,10 @@ export default function HomePage() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+      />
+      <TechSupport
+        isOpen={isTechSupportModalOpen}
+        onClose={() => setIsTechSupportModalOpen(false)}
       />
     </div>
   );

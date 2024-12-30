@@ -10,6 +10,12 @@ const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
 );
 
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
 export default function SubsidiariesLoginPage() {
   const router = useRouter();
   const params = useParams();
@@ -22,12 +28,16 @@ export default function SubsidiariesLoginPage() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await fetchWrapper(`/api/portal?portalid=${params.portalid}`, {}, 'portal-login');
+        const response = await fetchWrapper(
+          `/api/portal?portalid=${params.portalid}`,
+          {},
+          "portal-login"
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch users');
+          throw new Error("Failed to fetch users");
         }
         const data = await response.json();
-        setConfig(data.data)
+        setConfig(data.data);
       } catch (error) {
         console.log("error: ", error);
       } finally {
@@ -64,7 +74,7 @@ export default function SubsidiariesLoginPage() {
       // Store user data using auth utility
       const userData = data.user;
       setUserData(userData);
-      localStorage.setItem('portal', params);
+      localStorage.setItem("portal", params);
 
       console.log("Redirecting to home");
       router.push(`home`);
@@ -76,13 +86,23 @@ export default function SubsidiariesLoginPage() {
     }
   };
 
+  if (!config) return <LoadingSpinner />;
+
   return (
     <div className="min-h-screen flex flex-col items-start xl:items-center justify-center relative">
       <div className="bg-white relative z-10">
         <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center h-full">
           <div className="h-12 md:h-16 lg:h-20">
-            <img src={config?.logo} alt="Premierportal" className="h-full hidden md:block" />
-            <img src={config?.logo} alt="Premierportal" className="h-full w-full block md:hidden" />
+            <img
+              src={config?.logo}
+              alt="Premierportal"
+              className="h-full hidden md:block"
+            />
+            <img
+              src={config?.logo}
+              alt="Premierportal"
+              className="h-full w-full block md:hidden"
+            />
           </div>
           <div className="hidden md:flex space-x-4">
             {/* <NavBarItem title="Individual" />
@@ -112,7 +132,10 @@ export default function SubsidiariesLoginPage() {
         </nav>
 
         {/* GREEN LINE */}
-        <div style={{ backgroundColor: config?.primaryColor }} className="p-3"></div>
+        <div
+          style={{ backgroundColor: config?.primaryColor }}
+          className="p-3"
+        ></div>
 
         <div className="flex-1 flex flex-col lg:flex-row">
           <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
@@ -121,7 +144,10 @@ export default function SubsidiariesLoginPage() {
                 Welcome M Strategy
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
-                As premier customer, we have created a customer portal solution for you. Please log into access your work orders, project files, invoices and other supporting documentation. You can also use the portal to request new quotes for services and more.
+                As premier customer, we have created a customer portal solution
+                for you. Please log into access your work orders, project files,
+                invoices and other supporting documentation. You can also use
+                the portal to request new quotes for services and more.
               </p>
 
               {/* Feature Cards */}
@@ -144,7 +170,10 @@ export default function SubsidiariesLoginPage() {
                     Digitization Services
                   </h3>
                   <p className="text-text/60 mt-2">
-                    Commercial, archival scanning, digitization and micrographic services for those needing to digitally preserve important documents, newspapers, maps, books, microfilm, slides and more. Learn More
+                    Commercial, archival scanning, digitization and micrographic
+                    services for those needing to digitally preserve important
+                    documents, newspapers, maps, books, microfilm, slides and
+                    more. Learn More
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -165,7 +194,9 @@ export default function SubsidiariesLoginPage() {
                     Software Solutions
                   </h3>
                   <p className="text-text/60 mt-2">
-                    At Crowley, software systems are considered a critical component for maximum image quality, production efficiency, and content management. Learn More
+                    At Crowley, software systems are considered a critical
+                    component for maximum image quality, production efficiency,
+                    and content management. Learn More
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -186,7 +217,9 @@ export default function SubsidiariesLoginPage() {
                     Support Services
                   </h3>
                   <p className="text-text/60 mt-2">
-                    From beginning to end, your digitization projects are covered with the full breadth of Crowley support services. Learn More
+                    From beginning to end, your digitization projects are
+                    covered with the full breadth of Crowley support services.
+                    Learn More
                   </p>
                 </div>
               </div>
@@ -258,7 +291,7 @@ export default function SubsidiariesLoginPage() {
             </div>
           </div>
         </div>
-        <PortalFooter config={config}/>
+        <PortalFooter config={config} />
       </div>
       <div className="absolute bottom-1 xl:bottom-5 left-3 2xl:left-10 max-w-20 xl:max-w-36 w-full opacity-20 z-0">
         <img src="/logo_new.png" alt="Wealthportal" className="h-full w-full" />
