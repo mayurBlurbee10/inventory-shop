@@ -4,7 +4,19 @@ import React, { useEffect, useRef, useState } from "react";
 import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
 // import { fetchWrapper } from "../lib/fetchWrapper";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronRight, CircleUserRound, FileIcon, FolderPlus, House, LogOut, Plus, Search, Settings, Upload, UsersRound } from "lucide-react";
+import {
+  ChevronRight,
+  CircleUserRound,
+  FileIcon,
+  FolderPlus,
+  House,
+  LogOut,
+  Plus,
+  Search,
+  Settings,
+  Upload,
+  UsersRound,
+} from "lucide-react";
 import ActionButtons from "@/components/ActionButtons";
 import UploadArea from "@/components/UploadArea";
 import FolderExplorer from "@/components/FolderExplorer";
@@ -23,7 +35,7 @@ const EmptyState = () => (
     <FileIcon size={48} className="mb-4 opacity-50" />
     <p>No files or folders found</p>
   </div>
-)
+);
 
 const Header = ({
   user,
@@ -300,34 +312,43 @@ function SharewithMe() {
   };
 
   const updatePath = (prevPath, filesList) => {
-      let updatedPath = [...prevPath]; 
-      let currentFolder = updatedPath[updatedPath.length - 1];
-  
-      // Update the path incrementally
-      for (let level = 0; level < updatedPath.length; level++) {
-        const folderAtLevel = updatedPath[level];
-        // Find the folder in the filesList
-        const updatedFolder = filesList.find(
-          (item) => item.id === folderAtLevel.id
-        );
-        if (updatedFolder) {
-          updatedPath[level] = updatedFolder;
-        }
+    let updatedPath = [...prevPath];
+    let currentFolder = filesList;
+
+    // Update the path incrementally
+    for (let level = 0; level < updatedPath.length; level++) {
+      const folderAtLevel = updatedPath[level];
+      // Find the folder in the filesList
+      const updatedFolder = currentFolder.find(
+        (item) => item.id === folderAtLevel.id
+      );
+      console.log("updatedFolder : ", updatedFolder);
+      if (updatedFolder) {
+        updatedPath[level] = updatedFolder;
+        currentFolder = updatedFolder.children;
       }
-  
-      return updatedPath;
-    };
-  
-    console.log(path);
-  
-    useEffect(() => {
-      if (filesList.length > 0) {
-        setPath((prevPath) => updatePath(prevPath, filesList));
-        setCurrentFilesList(
-          path?.length === 0 ? filesList : path[path.length - 1]?.children || []
-        );
-      }
-    }, [filesList]);
+    }
+
+    return updatedPath;
+  };
+
+  console.log(path);
+
+  useEffect(() => {
+    if (filesList.length > 0) {
+      setPath((prevPath) => updatePath(prevPath, filesList));
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+    }
+  }, [filesList]);
+
+  useEffect(() => {
+    setCurrentFilesList(
+      path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+    );
+    setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+  }, [path]);
 
   const handleLogout = () => {
     clearUserData();
@@ -364,7 +385,7 @@ function SharewithMe() {
     return (
       <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
         <button
-          onClick={()=>setPath([])}
+          onClick={() => setPath([])}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
         >
           Shared Files
@@ -430,7 +451,7 @@ function SharewithMe() {
     // }
     refreshFiles();
     fetchConfig();
-    console.log("useEffect Shared with me")
+    console.log("useEffect Shared with me");
   }, [router]);
 
   useEffect(() => {
@@ -464,7 +485,7 @@ function SharewithMe() {
     return () => clearTimeout(timer); // Cleanup on query or component unmount
   }, [searchQuery, selectedItem, filesList]);
 
-  console.log("filelist", filesList)
+  console.log("filelist", filesList);
   if (isLoading) return <LoadingSpinner />;
 
   const userIsAdmin = isAdmin();
@@ -610,7 +631,7 @@ function SharewithMe() {
             <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
               <div className="bg-white pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                {currentFilesList && currentFilesList?.length === 0 ? (
+                  {currentFilesList && currentFilesList?.length === 0 ? (
                     <EmptyState />
                   ) : (
                     <>

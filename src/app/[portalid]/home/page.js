@@ -383,17 +383,19 @@ export default function HomePage() {
 
   const updatePath = (prevPath, filesList) => {
     let updatedPath = [...prevPath]; 
-    let currentFolder = updatedPath[updatedPath.length - 1];
+    let currentFolder = filesList;
 
     // Update the path incrementally
     for (let level = 0; level < updatedPath.length; level++) {
       const folderAtLevel = updatedPath[level];
       // Find the folder in the filesList
-      const updatedFolder = filesList.find(
+      const updatedFolder = currentFolder.find(
         (item) => item.id === folderAtLevel.id
       );
+      console.log("updatedFolder : ", updatedFolder);
       if (updatedFolder) {
         updatedPath[level] = updatedFolder;
+        currentFolder = updatedFolder.children;
       }
     }
 
@@ -410,6 +412,13 @@ export default function HomePage() {
       );
     }
   }, [filesList]);
+
+  useEffect(() => {
+    setCurrentFilesList(
+      path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+    );
+    setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+  }, [path]);
 
   const handleLogout = () => {
     clearUserData();
