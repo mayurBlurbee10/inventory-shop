@@ -1,0 +1,17 @@
+[
+  {
+    "id": "1733484284518",
+    "title": "Homepage Banner",
+    "type": "Image"
+  },
+  {
+    "id": "1733484303281",
+    "title": "Contact Info",
+    "type": "Text"
+  },
+  {
+    "id": "1733716063282",
+    "title": "About Us",
+    "type": "Text"
+  }
+]

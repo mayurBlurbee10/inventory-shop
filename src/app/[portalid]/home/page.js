@@ -403,7 +403,6 @@ export default function HomePage() {
     return updatedPath;
   };
 
-  console.log(path);
 
   useEffect(() => {
     if (filesList.length > 0) {

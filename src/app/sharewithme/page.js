@@ -177,7 +177,6 @@ function SharewithMe() {
     return updatedPath;
   };
 
-  console.log(path);
 
   useEffect(() => {
     if (filesList.length > 0) {

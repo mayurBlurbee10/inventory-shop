@@ -361,7 +361,6 @@ export default function HomePage() {
       setIsLoading(false);
     }
   };
-  console.log(path);
 
   const updatePath = (prevPath, filesList) => {
     let updatedPath = [...prevPath]; 
@@ -384,7 +383,6 @@ export default function HomePage() {
     return updatedPath;
   };
 
-  console.log(path);
 
   useEffect(() => {
     if (filesList.length > 0) {
