@@ -35,8 +35,8 @@ const ShareModal = ({
   const [sharedLink, setSharedLink] = useState(
     item?.shared_link
       ? params.portalid
-        ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-        : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+        ? `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/${params.portalid}/shared-file/${item?.id}`
+        : `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/shared-file/${item?.id}`
       : null
   );
   const [collabLoading, setCollabLoading] = useState(false);
@@ -46,8 +46,8 @@ const ShareModal = ({
     setSharedLink(
       item?.shared_link
         ? params.portalid
-          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-          : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/${params.portalid}/shared-file/${item?.id}`
+          : `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/shared-file/${item?.id}`
         : null
     );
     setCollaborator(item?.collaborators ? item.collaborators : []);
@@ -112,9 +112,9 @@ const ShareModal = ({
         sharedLink !== null
           ? null
           : params.portalid
-          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-          : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
-      // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/${params.portalid}/shared-file/${item?.id}`
+          : `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/shared-file/${item?.id}`;
+      // : `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/shared-file/${item?.id}`;
       setSharedLink(newSharedLink);
       if (onShareLinkToggle) {
         onShareLinkToggle(item.id, newSharedLink);
