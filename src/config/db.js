@@ -10,6 +10,7 @@ const config = {
       enableArithAbort: true          // Enable ArithAbort
     }
   };
+
 export async function connectToDatabase() {
   try {
     await sql.connect(config);
@@ -18,4 +19,5 @@ export async function connectToDatabase() {
     console.error('Database connection error:', error);
   }
 }
+
 export default sql;

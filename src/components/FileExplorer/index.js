@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, memo } from 'react';
-import PreviewModal from './PreviewModal';
-import { 
-  FolderIcon, 
-  FileIcon, 
-  ChevronRight, 
-  ChevronDown, 
+import React, { useState, useEffect, useRef, memo } from "react";
+import PreviewModal from "./PreviewModal";
+import {
+  FolderIcon,
+  FileIcon,
+  ChevronRight,
+  ChevronDown,
   FileText,
   Download,
   Eye,
@@ -16,11 +16,11 @@ import {
   Share2,
   Copy,
   Send,
-  X
-} from 'lucide-react';
-import { fetchWrapper } from '@/app/lib/fetchWrapper';
+  X,
+} from "lucide-react";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 const ShareModal = ({ isOpen, onClose, fileName }) => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
   const shareLink = `https://files.ethree.com/share/${fileName}`;
 
@@ -33,8 +33,8 @@ const ShareModal = ({ isOpen, onClose, fileName }) => {
   };
 
   const handleEmailShare = async () => {
-    console.log('Sharing via email:', email);
-    setEmail('');
+    console.log("Sharing via email:", email);
+    setEmail("");
     onClose();
   };
 
@@ -49,10 +49,12 @@ const ShareModal = ({ isOpen, onClose, fileName }) => {
         </button>
 
         <h3 className="text-xl font-semibold text-gray-900 mb-6">{fileName}</h3>
-        
+
         <div className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Share link</label>
+            <label className="text-sm font-medium text-gray-700">
+              Share link
+            </label>
             <div className="flex items-center gap-3">
               <input
                 type="text"
@@ -65,13 +67,15 @@ const ShareModal = ({ isOpen, onClose, fileName }) => {
                 className="shrink-0 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50 flex items-center gap-2 transition-colors"
               >
                 <Copy size={16} />
-                <span>{copied ? 'Copied!' : 'Copy'}</span>
+                <span>{copied ? "Copied!" : "Copy"}</span>
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Share via email</label>
+            <label className="text-sm font-medium text-gray-700">
+              Share via email
+            </label>
             <div className="flex items-center gap-3">
               <input
                 type="email"
@@ -84,9 +88,10 @@ const ShareModal = ({ isOpen, onClose, fileName }) => {
                 onClick={handleEmailShare}
                 disabled={!email}
                 className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
-                  ${email 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  ${
+                    email
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   }`}
               >
                 <Send size={16} />
@@ -95,8 +100,6 @@ const ShareModal = ({ isOpen, onClose, fileName }) => {
             </div>
           </div>
         </div>
-
-
       </div>
     </div>
   );
@@ -106,7 +109,7 @@ const SearchBar = memo(({ searchQuery, setSearchQuery, isSearching }) => {
   const inputRef = useRef(null);
 
   const handleClear = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     // Maintain focus after clearing
     inputRef.current?.focus();
   };
@@ -141,7 +144,7 @@ const SearchBar = memo(({ searchQuery, setSearchQuery, isSearching }) => {
   );
 });
 
-SearchBar.displayName = 'SearchBar';
+SearchBar.displayName = "SearchBar";
 
 const Breadcrumbs = ({ path, onNavigate }) => {
   return (
@@ -169,14 +172,14 @@ const Breadcrumbs = ({ path, onNavigate }) => {
 
 const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
   const [expandedFolders, setExpandedFolders] = useState(new Set());
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [previewFileId, setPreviewFileId] = useState(null);
-  const [shareFileName, setShareFileName] = useState('');
+  const [shareFileName, setShareFileName] = useState("");
   const [currentPath, setCurrentPath] = useState([]);
 
   const searchFiles = (items, query) => {
@@ -184,13 +187,13 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
 
     const results = [];
     const searchRecursive = (items, path = []) => {
-      items.forEach(item => {
+      items.forEach((item) => {
         const itemPath = [...path, item.name];
         if (item.name.toLowerCase().includes(query.toLowerCase())) {
           results.push({
             ...item,
             path: itemPath,
-            matchType: 'name'
+            matchType: "name",
           });
         }
         if (item.children?.length > 0) {
@@ -217,10 +220,10 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
       setIsSearching(false);
 
       const foldersToExpand = new Set();
-      results?.forEach(result => {
+      results?.forEach((result) => {
         result.path.forEach((_, index, array) => {
           if (index < array.length - 1) {
-            const folderPath = array.slice(0, index + 1).join('/');
+            const folderPath = array.slice(0, index + 1).join("/");
             foldersToExpand.add(folderPath);
           }
         });
@@ -233,12 +236,16 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
 
   const handleDownload = async (fileId, fileName) => {
     try {
-      const response = await fetchWrapper(`api/box/download?fileId=${fileId}`,{}, 'download');
-      if (!response.ok) throw new Error('Download failed');
+      const response = await fetchWrapper(
+        `api/box/download?fileId=${fileId}`,
+        {},
+        "download"
+      );
+      if (!response.ok) throw new Error("Download failed");
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = fileName;
       link.click();
@@ -246,7 +253,7 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Download error:', error);
+      console.error("Download error:", error);
     }
   };
 
@@ -261,17 +268,17 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
   };
 
   const toggleFolder = (pathString) => {
-    setExpandedFolders(prev => {
+    setExpandedFolders((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(pathString)) {
         newSet.delete(pathString);
-        const path = [...pathString.split('/')];
+        const path = [...pathString.split("/")];
         path.pop();
         setCurrentPath(path);
         navigateToPath(path);
       } else {
         newSet.add(pathString);
-        navigateToPath(pathString.split('/'))
+        navigateToPath(pathString.split("/"));
       }
       return newSet;
     });
@@ -280,12 +287,14 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
   const HighlightedText = ({ text, searchTerm }) => {
     if (!searchTerm) return text;
 
-    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+    const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
     return (
       <span>
-        {parts.map((part, i) => 
+        {parts.map((part, i) =>
           part.toLowerCase() === searchTerm.toLowerCase() ? (
-            <span key={i} className="bg-yellow-200">{part}</span>
+            <span key={i} className="bg-yellow-200">
+              {part}
+            </span>
           ) : (
             part
           )
@@ -296,24 +305,24 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
 
   const FileItem = ({ file, level = 0, parentPath = [] }) => {
     const paddingLeft = `${level * 20}px`;
-    const isFolder = file.type === 'folder';
+    const isFolder = file.type === "folder";
     const currentPath = [...parentPath, file.name];
-    const pathString = currentPath.join('/');
+    const pathString = currentPath.join("/");
     const isExpanded = expandedFolders.has(pathString);
     const isSelected = selectedItem?.id === file.id;
 
-    const showItem = !searchQuery || (
-      searchResults?.some(result => result.id === file.id) ||
-      expandedFolders.has(pathString)
-    );
+    const showItem =
+      !searchQuery ||
+      searchResults?.some((result) => result.id === file.id) ||
+      expandedFolders.has(pathString);
 
     if (!showItem) return null;
 
     return (
       <>
-        <div 
+        <div
           className={`flex items-center p-2 hover:bg-gray-50 rounded-lg group transition-colors
-            ${isSelected ? 'bg-blue-50' : ''}`}
+            ${isSelected ? "bg-blue-50" : ""}`}
           style={{ paddingLeft }}
           onClick={() => {
             setSelectedItem(file);
@@ -322,23 +331,33 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
         >
           <div className="flex-1 flex items-center min-w-0">
             {isFolder ? (
-              <button 
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleFolder(pathString);
                 }}
                 className="p-1 hover:bg-gray-100 rounded-md mr-2"
               >
-                {isExpanded ? <ChevronDown size={16} color="#374151"/> : <ChevronRight size={16} color="#374151"/>}
+                {isExpanded ? (
+                  <ChevronDown size={16} color="#374151" />
+                ) : (
+                  <ChevronRight size={16} color="#374151" />
+                )}
               </button>
             ) : (
               <span className="w-[28px] mr-2" />
             )}
 
             {isFolder ? (
-              <FolderIcon size={20} className="text-blue-500 mr-3 flex-shrink-0" />
+              <FolderIcon
+                size={20}
+                className="text-blue-500 mr-3 flex-shrink-0"
+              />
             ) : (
-              <FileText size={20} className="text-gray-500 mr-3 flex-shrink-0" />
+              <FileText
+                size={20}
+                className="text-gray-500 mr-3 flex-shrink-0"
+              />
             )}
 
             <span className="truncate text-gray-700">
@@ -387,14 +406,16 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
           )}
         </div>
 
-        {isFolder && isExpanded && file.children?.map(child => (
-          <FileItem 
-            key={child.id} 
-            file={child} 
-            level={level + 1} 
-            parentPath={currentPath}
-          />
-        ))}
+        {isFolder &&
+          isExpanded &&
+          file.children?.map((child) => (
+            <FileItem
+              key={child.id}
+              file={child}
+              level={level + 1}
+              parentPath={currentPath}
+            />
+          ))}
       </>
     );
   };
@@ -418,21 +439,24 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
     }
     return (
       <div className="py-2 px-4 bg-gray-50 border-b border-gray-200">
-        Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+        Found {searchResults.length} result
+        {searchResults.length !== 1 ? "s" : ""}
       </div>
     );
   };
 
   const navigateToPath = (path) => {
     setCurrentPath(path);
-    const folderPathStrings = path.map((_, idx) => path.slice(0, idx + 1).join('/'));
+    const folderPathStrings = path.map((_, idx) =>
+      path.slice(0, idx + 1).join("/")
+    );
     setExpandedFolders(new Set(folderPathStrings));
   };
 
   return (
     <div className="border border-gray-200 rounded-lg bg-white">
       <div className="p-4 border-b border-gray-200 space-y-4">
-      <Breadcrumbs path={currentPath} onNavigate={navigateToPath} />
+        <Breadcrumbs path={currentPath} onNavigate={navigateToPath} />
         <h3 className="font-medium text-gray-900">Files & Folders</h3>
         <SearchBar
           searchQuery={searchQuery}
@@ -443,9 +467,7 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem }) => {
       </div>
       <div className="p-2">
         {data && data.length > 0 ? (
-          data.map(item => (
-            <FileItem key={item.id} file={item} />
-          ))
+          data.map((item) => <FileItem key={item.id} file={item} />)
         ) : (
           <EmptyState />
         )}

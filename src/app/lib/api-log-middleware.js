@@ -18,11 +18,9 @@ export async function readJsonFile(filePath) {
   try {
     console.log("Reading users from:", filePath);
     const data = await fs.readFile(filePath, "utf8");
-    console.log("Current users data:", data);
     return JSON.parse(data);
   } catch (error) {
     console.log("Error reading users file (or file not found):", error.message);
-    console.log("Initializing with empty array");
     return [];
   }
 }
@@ -30,7 +28,6 @@ export async function readJsonFile(filePath) {
 export async function writeJsonFile(parentPath, path, data) {
   try {
     await ensureDirectory(parentPath);
-    console.log("Writing data to file:");
     await fs.writeFile(path, JSON.stringify(data, null, 2));
     console.log("Successfully wrote data to file");
   } catch (error) {

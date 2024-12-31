@@ -48,7 +48,7 @@ export default function LoginPage() {
       const userData = data.user;
       console.log('Storing user data:', userData);
       setUserData(userData);
-      
+      localStorage.setItem('portal', 'defaultPortal');
       console.log('Redirecting to home');
       router.push('/home');
     } catch (err) {

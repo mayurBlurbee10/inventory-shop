@@ -77,3 +77,29 @@ export async function POST(req) {
     );
   }
 }
+
+export async function DELETE(req) {
+  try{
+    await logApiCall(req, ()=>{});
+    const { searchParams } = new URL(req.url);
+    const fileId = searchParams.get('fileId');
+
+    if (!fileId) {
+      return NextResponse.json({ error: 'No fileId provided' }, { status: 400 });
+    }
+
+    await newClient.files.delete(fileId);
+
+    return NextResponse.json({
+      message: 'File deleted successfully',
+      fileId: fileId,
+    });
+
+  }catch (error) { 
+    console.error('Error deleting file:', error);
+    return NextResponse.json(
+      { error: error.message },
+      { status: error.response?.statusCode || 500 }
+    );
+  }
+}

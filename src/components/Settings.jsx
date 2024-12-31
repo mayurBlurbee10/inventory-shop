@@ -52,7 +52,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
       <div className="bg-white rounded-lg w-full max-w-7xl h-[90vh] flex relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+          className="absolute top-2 right-2 text-gray-400 hover:text-gray-500"
         >
           <X className="h-6 w-6" />
         </button>

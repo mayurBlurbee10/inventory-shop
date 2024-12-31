@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
   "tim.veneer@wildan.com": { email: "tim.veneer@wildan.com", role: "admin", name: "Tim Veneer" },
-  "thomas@perlint.com": { email: "thomas@perlint.com", role: "admin", name: "Thomas" }
+  "thomas@perlint.com": { email: "thomas@perlint.com", role: "admin", name: "Thomas" },
+  "admin@demo.com": { email: "admin@demo.com", role: "admin", name: "Demo" }
 };
 
 export default function AdminLoginPage() {
@@ -44,9 +45,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 bg-[#0161D5] py-2 rounded-md">
             <img
-              src="/level1.png"
+              src="/logo_admin.png"
               alt="Company Logo"
               priority
               className="h-16" 
@@ -103,6 +104,24 @@ export default function AdminLoginPage() {
             )}
           </button>
         </form>
+        <div className="mt-6 text-center">
+          <a href="#" className="text-blue-600 hover:text-blue-500 text-sm">
+            Forgot password?
+          </a>
+        </div>
+        {/* footer with copyright and some links */}
+        <div className="mt-6 text-center text-sm text-gray-500">
+          <p>&copy; 2024 MStrategy. All rights reserved.</p>
+          <p className="mt-2">
+            <a href="#" className="text-blue-600 hover:text-blue-500">
+              Privacy Policy
+            </a>
+            <span className="mx-2">•</span>
+            <a href="#" className="text-blue-600 hover:text-blue-500">
+              Terms of Service
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -1,49 +1,59 @@
-'use client';
-import { useState } from 'react';
-import { Dialog } from '@headlessui/react';
-import { FolderPlus, Upload, Share2, X, Loader2 } from 'lucide-react';
-import { getUserData } from '@/app/lib/auth';
-import { fetchWrapper } from '@/app/lib/fetchWrapper';
+"use client";
+import { useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { FolderPlus, Upload, Share2, X, Loader2 } from "lucide-react";
+import { getUserData } from "@/app/lib/auth";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
-export default function ActionButtons({ onFolderCreated, onUploadClick, selectedItem }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [folderName, setFolderName] = useState('');
+export default function ActionButtons({
+  onFolderCreated,
+  selectedItem,
+  isModalOpen,
+  setIsModalOpen
+}) {
+  // const [isModalOpen, setIsModalOpen] = useState(false);
+  const [folderName, setFolderName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleCreateFolder = async () => {
     if (!folderName.trim()) return;
-    
+
     setIsLoading(true);
     try {
       const userData = getUserData();
-      let obj ={
-        name: folderName, 
-        boxFolderId: userData.boxFolderId
+      let obj = {
+        name: folderName,
+        boxFolderId: userData.boxFolderId,
       };
-      if(!!selectedItem && selectedItem.type == "folder"){
+      console.log(selectedItem)
+      if (!!selectedItem && selectedItem.type == "folder") {
         obj.boxFolderId = selectedItem.id;
       }
-      const response = await fetchWrapper('/api/box/folders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetchWrapper(
+        "/api/box/folders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(obj),
         },
-        body: JSON.stringify(obj),
-      },'create-folder');
+        "create-folder"
+      );
 
-      if (!response.ok) throw new Error('Failed to create folder');
-      
+      if (!response.ok) throw new Error("Failed to create folder");
+
       setShowSuccess(true);
-      setFolderName('');
+      setFolderName("");
       // Reset after 3 seconds
       setTimeout(() => {
         setShowSuccess(false);
         setIsModalOpen(false);
-        onFolderCreated()
+        onFolderCreated();
       }, 3000);
     } catch (error) {
-      console.error('Error creating folder:', error);
+      console.error("Error creating folder:", error);
     } finally {
       setIsLoading(false);
     }
@@ -51,21 +61,21 @@ export default function ActionButtons({ onFolderCreated, onUploadClick, selected
 
   return (
     <div className="flex justify-end space-x-3 mb-4">
-<button
+      {/* <button
         onClick={() => setIsModalOpen(true)}
         className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#005071] rounded-md hover:bg-[#0072a3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A4C8A]"
       >
         <FolderPlus className="w-4 h-4 mr-2" />
         New Folder
       </button>
-      
-      <button 
+
+      <button
         onClick={onUploadClick}
         className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#005071] rounded-md hover:bg-[#0072a3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A4C8A]"
       >
         <Upload className="w-4 h-4 mr-2" />
         Upload
-      </button>
+      </button> */}
 
       <Dialog
         open={isModalOpen}
@@ -92,7 +102,9 @@ export default function ActionButtons({ onFolderCreated, onUploadClick, selected
 
             {showSuccess ? (
               <div className="text-center py-4">
-                <div className="text-green-600 mb-4">Folder successfully created!</div>
+                <div className="text-green-600 mb-4">
+                  Folder successfully created!
+                </div>
                 <div className="flex justify-center space-x-3">
                   <button
                     onClick={() => {}}
@@ -116,7 +128,7 @@ export default function ActionButtons({ onFolderCreated, onUploadClick, selected
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
                   placeholder="Enter folder name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={isLoading}
                 />
                 <div className="flex justify-end space-x-3 mt-4">
