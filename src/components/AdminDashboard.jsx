@@ -96,9 +96,9 @@ const CreateSubsidiaryButton = ({ onClick }) => (
 
 const DashboardHeader = ({ subsidiaryCount }) => (
   <div className="mb-8">
-    <h1 className="text-2xl font-semibold text-gray-900 mb-1">Subsidiaries</h1>
+    <h1 className="text-2xl font-semibold text-gray-900 mb-1">Portals</h1>
     <p className="text-sm text-gray-500">
-      Managing {subsidiaryCount} {subsidiaryCount === 1 ? 'subsidiary' : 'subsidiaries'}
+      Managing {subsidiaryCount} {subsidiaryCount === 1 ? 'portal' : 'portals'}
     </p>
   </div>
 );

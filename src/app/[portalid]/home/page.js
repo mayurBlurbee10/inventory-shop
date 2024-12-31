@@ -80,8 +80,8 @@ const Header = ({
   <header className=" border-gray-100 py-2">
     <div className="px-8 flex items-center justify-between">
       <div className="flex items-center space-x-4">
-        {/* <img src="/logo.png" alt="Wealthportal" className="h-12 w-auto" /> */}
-        <img src={config?.logo} alt="Premierportal" className="h-24 w-auto" />
+        <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" />
+        {/* <img src={config?.logo} alt="Premierportal" className="h-20 w-auto" /> */}
       </div>
 
       <div className="flex items-center space-x-8">
@@ -138,6 +138,18 @@ const Header = ({
         </div>
       </div>
     </div>
+    <div className="absolute bottom-0 right-0 pb-3 pl-3 pr-3">
+      <div className="flex items-center justify-center mt-5">
+        {/* <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" /> */}
+      <img src={config?.logo} alt="Premierportal" className="h-16 w-auto" />
+
+      </div>
+      <div className="flex items-center justify-center mt-5">
+        <p className="text-gray-500 text-sm">
+          Powered by Crowley Digital Systems.
+        </p>
+      </div>
+    </div>  
   </header>
 );
 
@@ -267,7 +279,12 @@ const Sidepanel = ({
         </button>
       </div>
     </div>
-  </div>
+
+    </div>
+       
+
+
+
 );
 
 export default function HomePage() {

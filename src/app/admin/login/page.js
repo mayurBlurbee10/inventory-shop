@@ -104,6 +104,24 @@ export default function AdminLoginPage() {
             )}
           </button>
         </form>
+        <div className="mt-6 text-center">
+          <a href="#" className="text-blue-600 hover:text-blue-500 text-sm">
+            Forgot password?
+          </a>
+        </div>
+        {/* footer with copyright and some links */}
+        <div className="mt-6 text-center text-sm text-gray-500">
+          <p>&copy; 2024 MStrategy. All rights reserved.</p>
+          <p className="mt-2">
+            <a href="#" className="text-blue-600 hover:text-blue-500">
+              Privacy Policy
+            </a>
+            <span className="mx-2">•</span>
+            <a href="#" className="text-blue-600 hover:text-blue-500">
+              Terms of Service
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
