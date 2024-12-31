@@ -79,12 +79,9 @@ export async function GET(request) {
         await ensureDirectory(dir);
         // Read content items from JSON file
         const contentItems = await readJsonFile(filePath);
-        const portalexist = contentItems.findIndex((item) => item.key === portalId);
+        let portalexist = contentItems.findIndex((item) => item.key === portalId);
         if(portalexist === -1) {
-            return NextResponse.json(
-                { error: 'Portal not found' },
-                { status: 404 }
-            );
+            portalexist = contentItems.findIndex((item) => item.key === 'default');
         }
         return NextResponse.json(contentItems[portalexist]['value'], { status: 200 });
     } catch (error) {

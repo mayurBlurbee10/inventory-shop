@@ -24,6 +24,8 @@ export default function SubsidiariesLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [config, setConfig] = useState(null);
+  const [content, setContent] = useState(null);
+  
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -45,7 +47,19 @@ export default function SubsidiariesLoginPage() {
       }
     };
     fetchConfig();
+    fetchContent();
   }, []);
+
+  const fetchContent = async () => {
+    const response = await fetchWrapper(
+      `/api/contentManagement?portalId=${params.portalid ?? 'default'}`,
+      { method: "GET" },
+      "fetchContentManagement"
+    );
+    if (!response.ok) throw new Error("Failed to fetch Content Management");
+    const data = await response.json();
+    setContent(data);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
