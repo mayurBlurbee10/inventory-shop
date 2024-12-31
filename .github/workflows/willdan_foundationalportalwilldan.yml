@@ -25,6 +25,7 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_SERVER: ${{ secrets.DB_SERVER }}
       DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      NEXT_PUBLIC_APP_BASE_URL: ${{ secrets.NEXT_PUBLIC_APP_BASE_URL }}
 
     steps:
     - uses: actions/checkout@v2
@@ -69,6 +70,7 @@ jobs:
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           DB_SERVER=${{ secrets.DB_SERVER }}
           DB_DATABASE=${{ secrets.DB_DATABASE }}
+          NEXT_PUBLIC_APP_BASE_URL=${{ secrets.NEXT_PUBLIC_APP_BASE_URL }}
 
   deploy:
     runs-on: ubuntu-latest
