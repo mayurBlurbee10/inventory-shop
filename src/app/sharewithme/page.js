@@ -5,12 +5,14 @@ import Sidepanel from "@/components/Sidepanel";
 import React, { useEffect, useRef, useState } from "react";
 import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
 import { fetchWrapper } from "../lib/fetchWrapper";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ChevronRight, FileIcon, Search } from "lucide-react";
 import ActionButtons from "@/components/ActionButtons";
 import UploadArea from "@/components/UploadArea";
 import FolderExplorer from "@/components/FolderExplorer";
 import DialogBox from "@/components/DialogBox";
+import SettingsModal from "@/components/Settings";
+import TechSupport from "@/components/TechSupport";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -27,6 +29,8 @@ const EmptyState = () => (
 
 function SharewithMe() {
   const router = useRouter();
+  const params = useParams();
+  const [config, setConfig] = useState(null);
   const fileInputRef = useRef(null);
   const [user, setUser] = useState(null);
   const [filesList, setFilesList] = useState([]);
@@ -35,6 +39,7 @@ function SharewithMe() {
   const [showUploadArea, setShowUploadArea] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
+  const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploadedfilePath, setUpladedFilePath] = useState("");
   const [accountDropdown, setAccountDropdown] = useState(false);
@@ -43,6 +48,7 @@ function SharewithMe() {
   const [path, setPath] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -159,24 +165,25 @@ function SharewithMe() {
   };
 
   const updatePath = (prevPath, filesList) => {
-    let updatedPath = [...prevPath]; 
-    let currentFolder = updatedPath[updatedPath.length - 1];
+    let updatedPath = [...prevPath];
+    let currentFolder = filesList;
 
     // Update the path incrementally
     for (let level = 0; level < updatedPath.length; level++) {
       const folderAtLevel = updatedPath[level];
       // Find the folder in the filesList
-      const updatedFolder = filesList.find(
+      const updatedFolder = currentFolder.find(
         (item) => item.id === folderAtLevel.id
       );
+      console.log("updatedFolder : ", updatedFolder);
       if (updatedFolder) {
         updatedPath[level] = updatedFolder;
+        currentFolder = updatedFolder.children;
       }
     }
 
     return updatedPath;
   };
-
 
   useEffect(() => {
     if (filesList.length > 0) {
@@ -186,6 +193,13 @@ function SharewithMe() {
       );
     }
   }, [filesList]);
+
+  useEffect(() => {
+    setCurrentFilesList(
+      path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+    );
+    setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+  }, [path]);
 
   const handleLogout = () => {
     clearUserData();
@@ -218,7 +232,7 @@ function SharewithMe() {
     };
 
     return (
-      <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
+      <nav className="flex items-center text-gray-500 text-sm xl:text-base space-x-1 py-1.5">
         <button
           onClick={() => setPath([])}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
@@ -254,6 +268,24 @@ function SharewithMe() {
     );
   };
 
+  const fetchConfig = async () => {
+    try {
+      if (!params?.portalid) return;
+      const response = await fetchWrapper(
+        `/api/portal?portalid=${params?.portalid}`,
+        {},
+        "portal-login"
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setConfig(data.data);
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+
   useEffect(() => {
     const userData = getUserData();
     if (!userData) {
@@ -267,6 +299,7 @@ function SharewithMe() {
     // }
     refreshFiles();
     console.log("useEffect Shared with me");
+    fetchConfig();
   }, [router]);
 
   useEffect(() => {
@@ -321,6 +354,11 @@ function SharewithMe() {
           accountDropdown={accountDropdown}
           setAccountDropdown={setAccountDropdown}
           handleLogout={handleLogout}
+          config={config}
+          handelSettings={() => setIsSettingsOpen(true)}
+          handleTechSupport={() => setIsTechSupportModalOpen((prev) => !prev)}
+          setIsNewFolderModalOpen={setIsNewFolderModalOpen}
+          setShowUploadArea={setShowUploadArea}
         />
 
         <div className="flex flex-row">
@@ -331,6 +369,7 @@ function SharewithMe() {
             showUploadArea={showUploadArea}
             setShowUploadArea={setShowUploadArea}
             router={router}
+            handelSettings={() => setIsSettingsOpen(true)}
           />
           {/* <div className="flex space-x-8">
           <div className="flex-[7]">
@@ -389,7 +428,7 @@ function SharewithMe() {
         </div> */}
 
           <div
-            className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
+            className="bg-white rounded-2xl w-full xl:mr-5 pt-5 pb-3 px-4"
             onClick={() => {
               setSidepanelDropdown(false);
               setAccountDropdown(false);
@@ -446,14 +485,20 @@ function SharewithMe() {
               <Breadcrumbs />
             </div>
             {/* TABLE START */}
-            <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
-              <div className="bg-white pr-1">
+            <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar flex-grow">
+              <div className="bg-white xl:pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
                   {currentFilesList && currentFilesList?.length === 0 ? (
-                    <EmptyState />
+                    <thead>
+                      <tr>
+                        <th>
+                          <EmptyState />
+                        </th>
+                      </tr>
+                    </thead>
                   ) : (
                     <>
-                      <thead>
+                      <thead className="hidden md:table-header-group">
                         <tr>
                           <th className="text-start text-[#3c4043] py-2 text-sm">
                             Name
@@ -503,6 +548,14 @@ function SharewithMe() {
         fileLocation={uploadedfilePath}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
+      />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+      <TechSupport
+        isOpen={isTechSupportModalOpen}
+        onClose={() => setIsTechSupportModalOpen(false)}
       />
     </div>
   );

@@ -100,7 +100,11 @@ export default function SubsidiariesLoginPage() {
     }
   };
 
-  if (!config) return <LoadingSpinner />;
+  const filterValue = (title)=>{
+    return content.find((item)=>item.title === title).value
+  }
+
+  if (!config || !content) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen flex flex-col items-start xl:items-center justify-center relative">
@@ -155,13 +159,15 @@ export default function SubsidiariesLoginPage() {
           <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
             <div>
               <h2 className="text-3xl font-normal leading-tight text-[#545454]">
-                Welcome M Strategy
+                {filterValue('Hero Title')} {config?.tradingName}
+                {/* Welcome M Strategy */}
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
-                As premier customer, we have created a customer portal solution
+                {/* As premier customer, we have created a customer portal solution
                 for you. Please log into access your work orders, project files,
                 invoices and other supporting documentation. You can also use
-                the portal to request new quotes for services and more.
+                the portal to request new quotes for services and more. */}
+                {filterValue("Hero Content")}
               </p>
 
               {/* Feature Cards */}
@@ -181,13 +187,15 @@ export default function SubsidiariesLoginPage() {
                     />
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
-                    Digitization Services
+                    {/* Digitization Services */}
+                    {filterValue("Service1 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
-                    Commercial, archival scanning, digitization and micrographic
+                    {/* Commercial, archival scanning, digitization and micrographic
                     services for those needing to digitally preserve important
                     documents, newspapers, maps, books, microfilm, slides and
-                    more. Learn More
+                    more. Learn More */}
+                     {filterValue("Service1 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -205,12 +213,14 @@ export default function SubsidiariesLoginPage() {
                     />
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
-                    Software Solutions
+                    {/* Software Solutions */}
+                    {filterValue("Service2 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
-                    At Crowley, software systems are considered a critical
+                    {/* At Crowley, software systems are considered a critical
                     component for maximum image quality, production efficiency,
-                    and content management. Learn More
+                    and content management. Learn More */}
+                     {filterValue("Service2 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -228,12 +238,14 @@ export default function SubsidiariesLoginPage() {
                     />
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
-                    Support Services
+                    {/* Support Services */}
+                    {filterValue("Service3 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
-                    From beginning to end, your digitization projects are
+                    {/* From beginning to end, your digitization projects are
                     covered with the full breadth of Crowley support services.
-                    Learn More
+                    Learn More */}
+                     {filterValue("Service3 Content")}
                   </p>
                 </div>
               </div>
@@ -305,7 +317,7 @@ export default function SubsidiariesLoginPage() {
             </div>
           </div>
         </div>
-        <PortalFooter config={config} />
+        <PortalFooter config={config} filterValue={filterValue}/>
       </div>
       <div className="absolute bottom-1 xl:bottom-5 left-3 2xl:left-10 max-w-20 xl:max-w-36 w-full opacity-20 z-0">
         <img src="/logo_new.png" alt="Wealthportal" className="h-full w-full" />

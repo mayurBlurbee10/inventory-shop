@@ -41,7 +41,7 @@ const ContentManagementContent = () => {
 
   const fetchData = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? 'default'}`,
+      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
       { method: "GET" },
       "fetchContentManagement"
     );
@@ -80,20 +80,33 @@ const ContentManagementContent = () => {
         imageUrl = uploadResult.url;
       }
 
+      console.log("newContent : ", newContent);
+
       const requestOptions = {
-        method: isEditMode? "PUT" : "POST",
+        method: isEditMode ? "PUT" : "POST",
         body: JSON.stringify(
           imageUrl
-            ? { ...newContent, value: imageUrl, portal: params.portalid ?? 'default'}
-            : {...newContent, portal: params.portalid ?? 'default'}
+            ? {
+                ...newContent,
+                value: imageUrl,
+                portal: params.portalid ?? "default",
+              }
+            : { ...newContent, portal: params.portalid ?? "default" }
         ),
       };
 
-      const apiType = isEditMode ? 'addContentManagement' : 'updateContentManagement';
+      const apiType = isEditMode
+        ? "addContentManagement"
+        : "updateContentManagement";
 
-      const response = await fetchWrapper(`/api/contentManagement`, requestOptions, apiType);
-      const newData = await response.json();
-      if (!response.ok) throw new Error(newData.error);
+      const response = await fetchWrapper(
+        `/api/contentManagement`,
+        requestOptions,
+        apiType
+      );
+
+      if (!response.ok) throw new Error(response.error);
+      
       fetchData();
       handleModalClose();
     } catch (error) {
@@ -110,7 +123,7 @@ const ContentManagementContent = () => {
     setIsEditMode(true);
     setIsDialogOpen(true);
     setFile(null);
-    if(contentToEdit.type == "Image"){
+    if (contentToEdit.type == "Image") {
       setPreviewUrl(contentToEdit.value || "");
     }
   };
@@ -154,9 +167,13 @@ const ContentManagementContent = () => {
     try {
       const requestOptions = {
         method: "POST",
-        body: JSON.stringify({title: newTitle, type: newType})
+        body: JSON.stringify({ title: newTitle, type: newType }),
       };
-      const response = await fetchWrapper(`/api/contentManagement/type`, requestOptions, 'add-content-title');
+      const response = await fetchWrapper(
+        `/api/contentManagement/type`,
+        requestOptions,
+        "add-content-title"
+      );
       const newData = await response.json();
       if (!response.ok) throw new Error(newData.error);
       setContentTypes((prev) => [
@@ -176,7 +193,7 @@ const ContentManagementContent = () => {
       console.error("Error adding content:", error);
       setTitleError(error.message || "An unexpected error occurred");
     }
-  }
+  };
 
   const handleNewTitleModalClose = () => {
     setNewTitle("");
@@ -222,7 +239,7 @@ const ContentManagementContent = () => {
                   Last Updated: {content.lastUpdated}
                 </p>
               </div>
-              <button 
+              <button
                 className="text-blue-600 hover:text-blue-900"
                 onClick={() => handleModalOpenForEdit(content.id)}
               >
@@ -356,14 +373,13 @@ const ContentManagementContent = () => {
                   disabled={isSubmitting}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
                 >
-                   {isSubmitting
-                      ? isEditMode
-                        ? "Updating..."
-                        : "Adding..."
-                      : isEditMode
-                      ? "Update"
-                      : "Add"
-                    }
+                  {isSubmitting
+                    ? isEditMode
+                      ? "Updating..."
+                      : "Adding..."
+                    : isEditMode
+                    ? "Update"
+                    : "Add"}
                 </button>
               </div>
             </form>
@@ -414,19 +430,19 @@ const ContentManagementContent = () => {
                 Type
               </label>
               <select
-                  id="newType"
-                  name="newType"
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                >
-                  <option value="" disabled>
-                    Select a Title Type
-                  </option>
-                  <option value="Text">Text</option>
-                  <option value="Image">Image</option>
-                </select>
+                id="newType"
+                name="newType"
+                value={newType}
+                onChange={(e) => setNewType(e.target.value)}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+              >
+                <option value="" disabled>
+                  Select a Title Type
+                </option>
+                <option value="Text">Text</option>
+                <option value="Image">Image</option>
+              </select>
             </div>
             <div className="flex justify-end space-x-3">
               <button

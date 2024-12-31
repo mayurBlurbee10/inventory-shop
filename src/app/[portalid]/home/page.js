@@ -21,6 +21,9 @@ import {
   ChevronRight,
   Upload,
   FileIcon,
+  Menu,
+  X,
+  ChevronDown,
 } from "lucide-react";
 import ActionButtons from "@/components/ActionButtons";
 import UploadArea from "@/components/UploadArea";
@@ -32,6 +35,8 @@ import FolderExplorer from "@/components/FolderExplorer";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import SettingsModal from "@/components/Settings";
 import TechSupport from "@/components/TechSupport";
+import Header from "@/components/Header";
+import Sidepanel from "@/components/Sidepanel";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -66,92 +71,189 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const Header = ({
-  user,
-  userIsAdmin,
-  router,
-  handleLogout,
-  accountDropdown,
-  setAccountDropdown,
-  config,
-  handelSettings,
-  handleTechSupport,
-}) => (
-  <header className=" border-gray-100 py-2">
-    <div className="px-8 flex items-center justify-between">
-      <div className="flex items-center space-x-4">
-        <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" />
-        {/* <img src={config?.logo} alt="Premierportal" className="h-20 w-auto" /> */}
-      </div>
+// const Header = ({
+//   user,
+//   userIsAdmin,
+//   router,
+//   handleLogout,
+//   accountDropdown,
+//   setAccountDropdown,
+//   config,
+//   handelSettings,
+//   handleTechSupport,
+//   setIsNewFolderModalOpen,
+//   setShowUploadArea,
+// }) => {
+//   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+//   const [isOpenNewFolder, setIsOpenNewFolder] = useState(false);
 
-      <div className="flex items-center space-x-8">
-        <div
-          className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
-          onClick={() => setAccountDropdown((prev) => !prev)}
-        >
-          {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-              userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-            }`}
-          >
-            {user?.name?.charAt(0) || "U"}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-gray-900 font-medium">{user?.name}</span>
-            {userIsAdmin && (
-              <span className="text-blue-600 text-sm font-medium">
-                Administrator
-              </span>
-            )}
-          </div>
+//   return (
+//     <>
+//       <header className=" border-gray-100 py-2">
+//         <div className="px-4 xl:px-8 flex items-center justify-between">
+//           <div className="flex items-center space-x-4">
+//             <div
+//               className="flex items-center md:hidden"
+//               onClick={() => setIsSideMenuOpen((prev) => !prev)}
+//             >
+//               <Menu className="translate-y-1/3 xl:translate-y-1/2 text-[#3c4043]" />
+//             </div>
+//             {/* <img src="/logo.png" alt="Wealthportal" className="h-12 w-auto" /> */}
+//             <img
+//               src={config?.logo}
+//               alt="Premierportal"
+//               className="h-12 xl:h-24 w-auto"
+//             />
+//           </div>
 
-          {/* DROPDOWN SECTION DONE*/}
-          {accountDropdown && (
-            <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-              <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
-                <CircleUserRound className="h-5 w-5" /> Account Info
-              </button>
-              <button
-                onClick={handelSettings}
-                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-              >
-                <Settings className="h-5 w-5" />
-                Settings
-              </button>
-              <button
-                onClick={handleTechSupport}
-                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-              >
-                <Headset className="h-5 w-5" />
-                Tech Support
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-              >
-                <LogOut className="h-5 w-5" />
-                Sign out
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-    <div className="absolute bottom-0 right-0 pb-3 pl-3 pr-3">
-      <div className="flex items-center justify-center mt-5">
-        {/* <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" /> */}
-      <img src={config?.logo} alt="Premierportal" className="h-16 w-auto" />
+//           <div className="flex items-center space-x-8">
+//             <div
+//               className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
+//               onClick={() => setAccountDropdown((prev) => !prev)}
+//             >
+//               {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+//               <div
+//                 className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+//                   userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+//                 }`}
+//               >
+//                 {user?.name?.charAt(0) || "U"}
+//               </div>
+//               <div className="flex flex-col text-sm xl:text-base">
+//                 <span className="text-gray-900 font-medium">{user?.name}</span>
+//                 {userIsAdmin && (
+//                   <span className="text-blue-600 text-sm font-medium">
+//                     Administrator
+//                   </span>
+//                 )}
+//               </div>
 
-      </div>
-      <div className="flex items-center justify-center mt-5">
-        <p className="text-gray-500 text-sm">
-          Powered by Crowley Digital Systems.
-        </p>
-      </div>
-    </div>  
-  </header>
-);
+//               {/* DROPDOWN SECTION DONE*/}
+//               {accountDropdown && (
+//                 <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+//                   <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
+//                     <CircleUserRound className="h-5 w-5" /> Account Info
+//                   </button>
+//                   <button
+//                     onClick={handelSettings}
+//                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+//                   >
+//                     <Settings className="h-5 w-5" />
+//                     Settings
+//                   </button>
+//                   <button
+//                     onClick={handleTechSupport}
+//                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+//                   >
+//                     <Headset className="h-5 w-5" />
+//                     Tech Support
+//                   </button>
+//                   <button
+//                     onClick={handleLogout}
+//                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+//                   >
+//                     <LogOut className="h-5 w-5" />
+//                     Sign out
+//                   </button>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+//         </div>
+//         <div className="absolute bottom-0 right-0 pb-3 pl-3 pr-3 hidden xl:block">
+//           <div className="flex items-center justify-center mt-5">
+//             {/* <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" /> */}
+//             <img
+//               src={config?.logo}
+//               alt="Premierportal"
+//               className="h-16 w-auto"
+//             />
+//           </div>
+//           <div className="flex items-center justify-center mt-5">
+//             <p className="text-gray-500 text-sm">
+//               Powered by Crowley Digital Systems.
+//             </p>
+//           </div>
+//         </div>
+//       </header>
+//       {isSideMenuOpen && (
+//         <div className="max-w-[260px] h-screen flex  md:hidden bg-gray-50 absolute left-0 top-0 text-[#3c4043] z-20">
+//           <div className="p-8">
+//             <div className="flex items-center justify-end">
+//               <button
+//                 onClick={() => setIsSideMenuOpen(false)}
+//                 className="text-gray-400 hover:text-gray-500"
+//               >
+//                 <X className="h-6 w-6 text-[#3c4043]" />
+//               </button>
+//             </div>
+//             <div className="flex flex-col px-5">
+//               <button
+//                 className="flex items-center justify-between w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
+//                 onClick={() => setIsOpenNewFolder((prev) => !prev)}
+//               >
+//                 <div className="flex items-center gap-2">
+//                   <Plus className="h-5 w-5" /> New
+//                 </div>
+//                 {isOpenNewFolder ? (
+//                   <ChevronDown size={16} color="#374151" />
+//                 ) : (
+//                   <ChevronRight size={16} color="#374151" />
+//                 )}
+//               </button>
+//               {isOpenNewFolder && (
+//                 <div>
+//                   <button
+//                     className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
+//                     onClick={() => {
+//                       setIsNewFolderModalOpen((prev) => !prev);
+//                       setIsOpenNewFolder(false);
+//                       setIsSideMenuOpen(false);
+//                     }}
+//                   >
+//                     <FolderPlus className="h-5 w-5" />
+//                     New folder
+//                   </button>
+//                   <button
+//                     className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
+//                     onClick={() => {
+//                       setShowUploadArea((prev) => !prev);
+//                       setIsOpenNewFolder(false);
+//                       setIsSideMenuOpen(false);
+//                     }}
+//                   >
+//                     <Upload className="h-5 w-5" />
+//                     Upload
+//                   </button>
+//                 </div>
+//               )}
+//               <button
+//                 className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
+//                 onClick={() => router.push("home")}
+//               >
+//                 <House className="h-5 w-5" /> Home
+//               </button>
+
+//               <button
+//                 className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+//                 onClick={() => router.push("sharewithme")}
+//               >
+//                 <UsersRound className="h-5 w-5" /> Shared with me
+//               </button>
+
+//               <button
+//                 className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+//                 onClick={handelSettings}
+//               >
+//                 <Settings className="h-5 w-5" /> Settings
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </>
+//   );
+// };
 
 const AccountInfo = ({ user, userIsAdmin }) => (
   <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
@@ -205,87 +307,82 @@ const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
   </div>
 );
 
-const Sidepanel = ({
-  sidepanelDropdown,
-  setSidepanelDropdown,
-  setIsNewFolderModalOpen,
-  setShowUploadArea,
-  router,
-  handelSettings,
-}) => (
-  <div className="max-w-[260px] w-full">
-    <div className="p-4">
-      <div className="relative">
-        {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-        <button
-          className="flex items-center gap-2 py-3 px-5 mb-4 bg-white rounded-lg custom-shadow text-gray-800 group hover:bg-blue-100 transition-all ease-in-out duration-100 relative"
-          onClick={() => setSidepanelDropdown((prev) => !prev)}
-        >
-          <Plus /> New
-        </button>
+// const Sidepanel = ({
+//   sidepanelDropdown,
+//   setSidepanelDropdown,
+//   setIsNewFolderModalOpen,
+//   setShowUploadArea,
+//   router,
+//   handelSettings,
+// }) => (
+//   <div className="max-w-[260px] hidden md:flex w-full">
+//     <div className="p-4">
+//       <div className="relative">
+//         {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+//         <button
+//           className="flex items-center gap-2 py-3 px-5 mb-4 bg-white rounded-lg custom-shadow text-gray-800 group hover:bg-blue-100 transition-all ease-in-out duration-100 relative"
+//           onClick={() => setSidepanelDropdown((prev) => !prev)}
+//         >
+//           <Plus /> New
+//         </button>
 
-        {/* DROPDOWN SECTION Done*/}
-        {sidepanelDropdown && (
-          <div className="absolute top-16 overflow-hidden left-0 max-w-52 w-full bg-white shadow py-2">
-            {/* <div className="pb-2 border-b-gray-300  border-b"> */}
-            {/* <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
-                <FilePlus className="h-5 w-5" />
-                New document
-              </button> */}
+//         {/* DROPDOWN SECTION Done*/}
+//         {sidepanelDropdown && (
+//           <div className="absolute top-16 overflow-hidden left-0 max-w-52 w-full bg-white shadow py-2">
+//             {/* <div className="pb-2 border-b-gray-300  border-b"> */}
+//             {/* <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
+//                 <FilePlus className="h-5 w-5" />
+//                 New document
+//               </button> */}
 
-            <button
-              className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
-              onClick={() => setIsNewFolderModalOpen((prev) => !prev)}
-            >
-              <FolderPlus className="h-5 w-5" />
-              New folder
-            </button>
-            <button
-              className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
-              onClick={() => setShowUploadArea((prev) => !prev)}
-            >
-              <Upload className="h-5 w-5" />
-              Upload
-            </button>
-            {/* </div> */}
-            {/* <div className="pt-2">
-              <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
-                <Upload className="h-5 w-5" />
-                Upload
-              </button>
-            </div> */}
-          </div>
-        )}
+//             <button
+//               className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
+//               onClick={() => setIsNewFolderModalOpen((prev) => !prev)}
+//             >
+//               <FolderPlus className="h-5 w-5" />
+//               New folder
+//             </button>
+//             <button
+//               className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
+//               onClick={() => setShowUploadArea((prev) => !prev)}
+//             >
+//               <Upload className="h-5 w-5" />
+//               Upload
+//             </button>
+//             {/* </div> */}
+//             {/* <div className="pt-2">
+//               <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
+//                 <Upload className="h-5 w-5" />
+//                 Upload
+//               </button>
+//             </div> */}
+//           </div>
+//         )}
 
-        <button
-          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
-          onClick={() => router.push("home")}
-        >
-          <House className="h-5 w-5" /> Home
-        </button>
+//         <button
+//           className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
+//           onClick={() => router.push("home")}
+//         >
+//           <House className="h-5 w-5" /> Home
+//         </button>
 
-        <button
-          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
-          onClick={() => router.push("sharewithme")}
-        >
-          <UsersRound className="h-5 w-5" /> Shared with me
-        </button>
+//         <button
+//           className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+//           onClick={() => router.push("sharewithme")}
+//         >
+//           <UsersRound className="h-5 w-5" /> Shared with me
+//         </button>
 
-        <button
-          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
-          onClick={handelSettings}
-        >
-          <Settings className="h-5 w-5" /> Settings
-        </button>
-      </div>
-    </div>
-
-    </div>
-       
-
-
-
-);
+//         <button
+//           className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+//           onClick={handelSettings}
+//         >
+//           <Settings className="h-5 w-5" /> Settings
+//         </button>
+//       </div>
+//     </div>
+//   </div>
+// );
 
 export default function HomePage() {
   const router = useRouter();
@@ -331,11 +428,11 @@ export default function HomePage() {
       try {
         setIsLoading(true);
         const uploadData = new FormData();
+        const userData = getUserData();
         uploadData.append("file", files[0]);
         if (!!selectedItem && selectedItem.type == "folder") {
           uploadData.append("boxFolderId", selectedItem.id);
         } else {
-          const userData = getUserData();
           uploadData.append("boxFolderId", userData.boxFolderId);
         }
 
@@ -355,7 +452,7 @@ export default function HomePage() {
         await refreshFiles();
         const path = getFolderPath(
           filesList,
-          selectedItem.id || userData.boxFolderId
+          selectedItem?.id || userData?.boxFolderId
         );
         const location = `
         <div>
@@ -420,6 +517,7 @@ export default function HomePage() {
     return updatedPath;
   };
 
+  console.log(path);
 
   useEffect(() => {
     if (filesList.length > 0) {
@@ -468,7 +566,7 @@ export default function HomePage() {
     };
 
     return (
-      <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
+      <nav className="flex items-center text-gray-500 text-sm xl:text-base space-x-1 py-1.5">
         <button
           onClick={() => setPath([])}
           className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
@@ -599,6 +697,8 @@ export default function HomePage() {
           config={config}
           handelSettings={() => setIsSettingsOpen(true)}
           handleTechSupport={() => setIsTechSupportModalOpen((prev) => !prev)}
+          setIsNewFolderModalOpen={setIsNewFolderModalOpen}
+          setShowUploadArea={setShowUploadArea}
         />
 
         <div className="flex flex-row">
@@ -613,14 +713,14 @@ export default function HomePage() {
           />
 
           <div
-            className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
+            className="bg-white rounded-2xl w-full xl:mr-5 pt-5 pb-3 px-4"
             onClick={() => {
               setSidepanelDropdown(false);
               setAccountDropdown(false);
             }}
           >
             <div className="mb-4">
-              <h3 className="text-2xl text-[#3c4043] font-medium text-center mb-5">
+              <h3 className="text-lg xl:text-2xl text-[#3c4043] font-medium text-center xl:mb-5">
                 Welcome, {user.name}
               </h3>
               {/* NEW FOLDER MODEL */}
@@ -670,8 +770,8 @@ export default function HomePage() {
               <Breadcrumbs />
             </div>
             {/* TABLE START */}
-            <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
-              <div className="bg-white pr-1">
+            <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar flex-grow">
+              <div className="bg-white xl:pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
                   {!currentFilesList || currentFilesList?.length === 0 ? (
                     <thead>
@@ -683,7 +783,7 @@ export default function HomePage() {
                     </thead>
                   ) : (
                     <>
-                      <thead>
+                      <thead className="hidden md:table-header-group">
                         <tr>
                           <th className="text-start text-[#3c4043] py-2 text-sm">
                             Name

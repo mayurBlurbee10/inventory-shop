@@ -13,5 +13,45 @@
     "id": "1733716063282",
     "title": "About Us",
     "type": "Text"
+  },
+  {
+    "id": "1735629189721",
+    "title": "Hero Title",
+    "type": "Text"
+  },
+  {
+    "id": "1735629217804",
+    "title": "Hero Content",
+    "type": "Text"
+  },
+  {
+    "id": "1735630293914",
+    "title": "Service1 Title",
+    "type": "Text"
+  },
+  {
+    "id": "1735630319683",
+    "title": "Service2 Title",
+    "type": "Text"
+  },
+  {
+    "id": "1735630340841",
+    "title": "Service3 Title",
+    "type": "Text"
+  },
+  {
+    "id": "1735630383449",
+    "title": "Service1 Content",
+    "type": "Text"
+  },
+  {
+    "id": "1735630422168",
+    "title": "Service2 Content",
+    "type": "Text"
+  },
+  {
+    "id": "1735630441887",
+    "title": "Service3 Content",
+    "type": "Text"
   }
 ]
