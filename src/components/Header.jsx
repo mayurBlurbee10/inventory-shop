@@ -1,5 +1,22 @@
-import { ChevronDown, ChevronRight, CircleUserRound, FolderPlus, Headset, House, LogOut, Menu, Plus, Settings, Upload, UsersRound, X } from "lucide-react";
-import React, { useState } from "react";
+"use client";
+
+import {
+  ChevronDown,
+  ChevronRight,
+  CircleUserRound,
+  FolderPlus,
+  Headset,
+  House,
+  LogOut,
+  Menu,
+  Plus,
+  Settings,
+  Upload,
+  UsersRound,
+  X,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import TechSupport from "./TechSupport";
 
 function Header({
   user,
@@ -10,12 +27,17 @@ function Header({
   setAccountDropdown,
   config,
   handelSettings,
-  handleTechSupport,
   setIsNewFolderModalOpen,
   setShowUploadArea,
 }) {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isOpenNewFolder, setIsOpenNewFolder] = useState(false);
+  const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
+
+  useEffect(() => {
+    setIsSideMenuOpen(false);
+  }, [router]);
+
   return (
     <>
       <header className=" border-gray-100 py-2">
@@ -29,7 +51,7 @@ function Header({
             </div>
             {/* <img src="/logo.png" alt="Wealthportal" className="h-12 w-auto" /> */}
             <img
-              src={config?.logo || '/logo.png'}
+              src={config?.logo || "/logo.png"}
               alt="Premierportal"
               className="h-12 xl:h-24 w-auto"
             />
@@ -71,7 +93,7 @@ function Header({
                     Settings
                   </button>
                   <button
-                    onClick={handleTechSupport}
+                    onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                   >
                     <Headset className="h-5 w-5" />
@@ -180,6 +202,10 @@ function Header({
           </div>
         </div>
       )}
+      <TechSupport
+        isOpen={isTechSupportModalOpen}
+        onClose={() => setIsTechSupportModalOpen(false)}
+      />
     </>
   );
 }

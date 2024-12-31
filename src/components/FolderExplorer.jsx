@@ -376,8 +376,6 @@ const ShareModal = ({
 
 function FolderExplorer({
   fileList,
-  setDeleteDropdown,
-  deleteDropdown,
   setPath,
   path,
   currentFilesList,
@@ -395,6 +393,7 @@ function FolderExplorer({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [usersList, setUsersList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteDropdown, setDeleteDropdown] = useState(null);
 
   useEffect(() => {
     setCurrentFilesList(
@@ -809,10 +808,4 @@ function FolderExplorer({
     </>
   );
 }
-const EmptyState = () => (
-  <div className="flex flex-col w-full items-center justify-center py-12 text-gray-500">
-    <FileIcon size={48} className="mb-4 opacity-50" />
-    <p>No files or folders found</p>
-  </div>
-);
 export default FolderExplorer;
