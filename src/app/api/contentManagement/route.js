@@ -4,6 +4,7 @@ import {
   readJsonFile,
   writeJsonFile,
 } from "@/app/lib/api-log-middleware";
+import contentManagementService from "@/services/contentManagementService";
 import { NextResponse } from "next/server";
 import path from "path";
 const dir = path.join(process.cwd(), "src", "app", "data");
@@ -18,69 +19,87 @@ const formatDate = () => {
   const seconds = String(date.getSeconds()).padStart(2, "0");
   return `${month}-${day}-${year} ${hours}:${minutes}:${seconds}`;
 };
+
 export async function POST(request) {
   try {
     await logApiCall(request);
     const contentData = await request.json();
+    console.log(contentData);
     if (
       !contentData.title ||
       !contentData.type ||
       !contentData.value ||
-      !contentData.portal
+      !contentData.portalId
     ) {
       return NextResponse.json(
         { error: "Missing required fields: title, type, value" },
         { status: 400 }
       );
     }
-    await ensureDirectory(dir);
-    const contentItems = await readJsonFile(filePath);
-    const portalexist = contentItems.findIndex(
-      (item) => item.key === contentData.portal
+    // await ensureDirectory(dir);
+    // const contentItems = await readJsonFile(filePath);
+    const contentItems = await contentManagementService.getContentManagement(
+      contentData.portalId
     );
-    const existingIndex = contentItems[portalexist]["value"].findIndex(
+    const existingIndex = contentItems.findIndex(
       (item) => item.title === contentData.title
     );
-    if (portalexist !== -1) {
-      if (existingIndex !== -1) {
-        contentItems[portalexist]["value"][existingIndex] = {
-          ...contentItems[portalexist]["value"][existingIndex],
-          lastUpdated: formatDate(),
-          title: contentData.title,
-          type: contentData.type,
-          value: contentData.value,
-        };
-      } else {
-        const newContentItem = {
-          id: Date.now().toString(),
-          title: contentData.title,
-          type: contentData.type,
-          value: contentData.value,
-          lastUpdated: formatDate(),
-        };
-        contentItems[portalexist]["value"].push(newContentItem);
-      }
-    } else {
-      const newContentItem = {
-        id: Date.now().toString(),
-        title: contentData.title,
-        type: contentData.type,
-        value: contentData.value,
-        lastUpdated: formatDate(),
-      };
-      const newContent = [];
-      newContent.push(newContentItem);
-      contentItems.push({ key: contentData.portal, value: newContent });
+    if (existingIndex === -1) {
+      return NextResponse.json(
+        { error: "Content item not found" },
+        { status: 404 }
+      );
     }
-    await writeJsonFile(dir, filePath, contentItems);
-    return NextResponse.json(
-      existingIndex !== -1
-        ? contentItems[portalexist]["value"][existingIndex]
-        : contentItems[portalexist]["value"][
-            contentItems[portalexist]["value"].length - 1
-          ],
-      { status: 201 }
-    );
+
+    // const portalexist = contentItems.findIndex(
+    //   (item) => item.key === contentData.portal
+    // );
+    // const existingIndex = contentItems[portalexist]["value"].findIndex(
+    //   (item) => item.title === contentData.title
+    // );
+    // if (portalexist !== -1) {
+    //   if (existingIndex !== -1) {
+    //     contentItems[portalexist]["value"][existingIndex] = {
+    //       ...contentItems[portalexist]["value"][existingIndex],
+    //       lastUpdated: formatDate(),
+    //       title: contentData.title,
+    //       type: contentData.type,
+    //       value: contentData.value,
+    //     };
+    //   } else {
+    //     const newContentItem = {
+    //       id: Date.now().toString(),
+    //       title: contentData.title,
+    //       type: contentData.type,
+    //       value: contentData.value,
+    //       lastUpdated: formatDate(),
+    //     };
+    //     contentItems[portalexist]["value"].push(newContentItem);
+    //   }
+    // } else {
+    //   const newContentItem = {
+    //     id: Date.now().toString(),
+    //     title: contentData.title,
+    //     type: contentData.type,
+    //     value: contentData.value,
+    //     lastUpdated: formatDate(),
+    //   };
+    //   const newContent = [];
+    //   newContent.push(newContentItem);
+    //   contentItems.push({ key: contentData.portal, value: newContent });
+    // }
+    // await writeJsonFile(dir, filePath, contentItems);
+    // return NextResponse.json(
+    //   existingIndex !== -1
+    //     ? contentItems[portalexist]["value"][existingIndex]
+    //     : contentItems[portalexist]["value"][
+    //         contentItems[portalexist]["value"].length - 1
+    //       ],
+    //   { status: 201 }
+    // );
+    const contentUpdated =
+      await contentManagementService.updateContentManagement(contentData);
+    return NextResponse.json(contentUpdated, { status: 201 });
   } catch (error) {
     console.error("Error in POST /api/content:", error);
     return NextResponse.json(
@@ -96,12 +115,18 @@ export async function GET(request) {
     // Ensure the directory exists
     await ensureDirectory(dir);
     // Read content items from JSON file
-    const contentItems = await readJsonFile(filePath);
-    let portalexist = contentItems.findIndex((item) => item.key === portalId);
-    if (portalexist === -1) {
-      portalexist = contentItems.findIndex((item) => item.key === "default");
-    }
-    return NextResponse.json(contentItems[portalexist]["value"], {
+    // const contentItems = await readJsonFile(filePath);
+    const contentItems = await contentManagementService.getContentManagement(
+      portalId
+    );
+    // let portalexist = contentItems.findIndex((item) => item.key === portalId);
+    // if (portalexist === -1) {
+    //   portalexist = contentItems.findIndex((item) => item.key === "default");
+    // }
+    // return NextResponse.json(contentItems[portalexist]["value"], {
+    //   status: 200,
+    // });
+    return NextResponse.json(contentItems, {
       status: 200,
     });
   } catch (error) {
@@ -123,7 +148,7 @@ export async function PUT(request) {
       !contentData.title ||
       !contentData.type ||
       !contentData.value ||
-      !contentData.portal
+      !contentData.portalId
     ) {
       return NextResponse.json(
         { error: "Missing required fields: id, title, type, value" },
@@ -131,14 +156,27 @@ export async function PUT(request) {
       );
     }
     await ensureDirectory(dir);
-    const contentItems = await readJsonFile(filePath);
-    const portalexist = contentItems.findIndex(
-      (item) => item.key === contentData.portal
+    // const contentItems = await readJsonFile(filePath);
+    const contentItems = await contentManagementService.getContentManagement(
+      contentData.portalId
     );
-    if (portalexist === -1) {
-      return NextResponse.json({ error: "Portal not found" }, { status: 404 });
-    }
-    const existingIndex = contentItems[portalexist]["value"].findIndex(
+    // const portalexist = contentItems.findIndex(
+    //   (item) => item.key === contentData.portal
+    // );
+    // if (portalexist === -1) {
+    //   return NextResponse.json({ error: "Portal not found" }, { status: 404 });
+    // }
+    // const existingIndex = contentItems[portalexist]["value"].findIndex(
+    //   (item) => item.title === contentData.title
+    // );
+    // if (existingIndex === -1) {
+    //   return NextResponse.json(
+    //     { error: "Content item not found" },
+    //     { status: 404 }
+    //   );
+    // }
+
+    const existingIndex = contentItems.findIndex(
       (item) => item.title === contentData.title
     );
     if (existingIndex === -1) {
@@ -148,19 +186,20 @@ export async function PUT(request) {
       );
     }
 
-    contentItems[portalexist]["value"][existingIndex] = {
-      ...contentItems[portalexist]["value"][existingIndex],
-      lastUpdated: formatDate(),
-      title: contentData.title,
-      type: contentData.type,
-      value: contentData.value,
-    };
+    // contentItems[portalexist]["value"][existingIndex] = {
+    //   ...contentItems[portalexist]["value"][existingIndex],
+    //   lastUpdated: formatDate(),
+    //   title: contentData.title,
+    //   type: contentData.type,
+    //   value: contentData.value,
+    // };
 
-    await writeJsonFile(dir, filePath, contentItems);
+    // await writeJsonFile(dir, filePath, contentItems);
 
-    const data = { ...contentItems[portalexist]["value"][existingIndex] };
-    return NextResponse.json(data, { status: 200 });
-    
+    // const data = { ...contentItems[portalexist]["value"][existingIndex] };
+    const contentUpdated =
+      await contentManagementService.updateContentManagement(contentData);
+    return NextResponse.json(contentUpdated, { status: 200 });
   } catch (error) {
     console.error("Error in PUT /api/content:", error);
     return NextResponse.json(

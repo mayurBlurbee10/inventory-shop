@@ -1,23 +1,35 @@
-import sql from 'mssql';
+import { ApiLogs } from "@/entities/ApiLogs";
+import { ContentManagement } from "@/entities/ContentManagement";
+import { Portals } from "@/entities/Portals";
+import { DataSource } from "typeorm";
 
-const config = {
-    user: process.env.DB_USER,        // SQL Server username
-    password: process.env.DB_PASSWORD,    // SQL Server password
-    server: process.env.DB_SERVER,   // SQL Server hostname, e.g., yourserver.database.windows.net
-    database: process.env.DB_DATABASE,   // Your database name
-    options: {
-      encrypt: true,                  // Use encryption
-      enableArithAbort: true          // Enable ArithAbort
-    }
-  };
+export const AppDataSource = new DataSource({
+  type: "mssql",
+  host: process.env.DB_SERVER,
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  entities: [ApiLogs, ContentManagement, Portals],
+  logging: true,
+  synchronize: true,
+});
 
-export async function connectToDatabase() {
-  try {
-    await sql.connect(config);
-    console.log('Connected to Azure SQL Database');
-  } catch (error) {
-    console.error('Database connection error:', error);
+export const connectDatabase = async () => {
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+    console.log("TypeORM connected");
   }
-}
+};
 
-export default sql;
+export const getConnection = () => {
+  if (!AppDataSource.isInitialized) {
+    throw new Error("Connection not established");
+  }
+  console.log(AppDataSource.options.entities);
+  console.log(
+    "Registered Entities:",
+    AppDataSource.entityMetadatas.map((meta) => meta.name)
+  );
+  // console.log("Entity Metadata:", AppDataSource.entityMetadatas);
+  return AppDataSource;
+};

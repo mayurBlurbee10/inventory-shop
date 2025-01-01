@@ -25,7 +25,6 @@ export default function SubsidiariesLoginPage() {
   const [password, setPassword] = useState("");
   const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
-  
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -52,7 +51,7 @@ export default function SubsidiariesLoginPage() {
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? 'default'}`,
+      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
       { method: "GET" },
       "fetchContentManagement"
     );
@@ -100,9 +99,9 @@ export default function SubsidiariesLoginPage() {
     }
   };
 
-  const filterValue = (title)=>{
-    return content.find((item)=>item.title === title).value
-  }
+  const filterValue = (title) => {
+    return content.find((item) => item.title === title).value;
+  };
 
   if (!config || !content) return <LoadingSpinner />;
 
@@ -159,7 +158,7 @@ export default function SubsidiariesLoginPage() {
           <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
             <div>
               <h2 className="text-3xl font-normal leading-tight text-[#545454]">
-                {filterValue('Hero Title')} {config?.tradingName}
+                {filterValue("Hero Title")} {config?.tradingName}
                 {/* Welcome M Strategy */}
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
@@ -195,7 +194,7 @@ export default function SubsidiariesLoginPage() {
                     services for those needing to digitally preserve important
                     documents, newspapers, maps, books, microfilm, slides and
                     more. Learn More */}
-                     {filterValue("Service1 Content")}
+                    {filterValue("Service1 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -220,7 +219,7 @@ export default function SubsidiariesLoginPage() {
                     {/* At Crowley, software systems are considered a critical
                     component for maximum image quality, production efficiency,
                     and content management. Learn More */}
-                     {filterValue("Service2 Content")}
+                    {filterValue("Service2 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -245,7 +244,7 @@ export default function SubsidiariesLoginPage() {
                     {/* From beginning to end, your digitization projects are
                     covered with the full breadth of Crowley support services.
                     Learn More */}
-                     {filterValue("Service3 Content")}
+                    {filterValue("Service3 Content")}
                   </p>
                 </div>
               </div>
@@ -317,7 +316,7 @@ export default function SubsidiariesLoginPage() {
             </div>
           </div>
         </div>
-        <PortalFooter config={config} filterValue={filterValue}/>
+        <PortalFooter config={config} filterValue={filterValue} />
       </div>
       <div className="absolute bottom-1 xl:bottom-5 left-3 2xl:left-10 max-w-20 xl:max-w-36 w-full opacity-20 z-0">
         <img src="/logo_new.png" alt="Wealthportal" className="h-full w-full" />

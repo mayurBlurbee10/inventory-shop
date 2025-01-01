@@ -23,6 +23,17 @@ const ContentManagementContent = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState("");
 
+  const formatDate = () => {
+    const date = new Date();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${month}-${day}-${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   useEffect(() => {
     fetchData();
     fetchContentType();
@@ -30,7 +41,7 @@ const ContentManagementContent = () => {
 
   const fetchContentType = async () => {
     const typesRequest = await fetchWrapper(
-      "/api/contentManagement/type",
+      `/api/contentManagement/type?portalId=${params.portalid ?? "default"}`,
       { method: "GET" },
       "fetchContentType"
     );
@@ -47,7 +58,8 @@ const ContentManagementContent = () => {
     );
     if (!response.ok) throw new Error("Failed to fetch Content Management");
     const data = await response.json();
-    setContent(data);
+    const content = data.filter((item) => item.value !== null);
+    setContent(content);
   };
 
   // Handle form submission
@@ -89,15 +101,15 @@ const ContentManagementContent = () => {
             ? {
                 ...newContent,
                 value: imageUrl,
-                portal: params.portalid ?? "default",
+                portalId: params.portalid ?? "default",
               }
-            : { ...newContent, portal: params.portalid ?? "default" }
+            : { ...newContent, portalId: params.portalid ?? "default" }
         ),
       };
 
       const apiType = isEditMode
-        ? "addContentManagement"
-        : "updateContentManagement";
+        ? "updateContentManagement"
+        : "addContentManagement";
 
       const response = await fetchWrapper(
         `/api/contentManagement`,
@@ -106,7 +118,7 @@ const ContentManagementContent = () => {
       );
 
       if (!response.ok) throw new Error(response.error);
-      
+
       fetchData();
       handleModalClose();
     } catch (error) {
@@ -167,7 +179,11 @@ const ContentManagementContent = () => {
     try {
       const requestOptions = {
         method: "POST",
-        body: JSON.stringify({ title: newTitle, type: newType }),
+        body: JSON.stringify({
+          title: newTitle,
+          type: newType,
+          portalId: params.portalid || "default",
+        }),
       };
       const response = await fetchWrapper(
         `/api/contentManagement/type`,
@@ -236,7 +252,7 @@ const ContentManagementContent = () => {
                 </h4>
                 <p className="text-sm text-gray-500">Type: {content.type}</p>
                 <p className="text-sm text-gray-500">
-                  Last Updated: {content.lastUpdated}
+                  Last Updated: {formatDate(content.updatedAt)}
                 </p>
               </div>
               <button

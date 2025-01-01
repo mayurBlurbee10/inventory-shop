@@ -122,7 +122,7 @@ function Header({
           </div>
           <div className="flex items-center justify-center mt-5">
             <p className="text-gray-500 text-sm">
-              Powered by Crowley Digital Systems.
+              Powered by {config?.tradingName || "M Strategy"} Digital Systems.
             </p>
           </div>
         </div>
