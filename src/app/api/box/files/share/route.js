@@ -52,7 +52,7 @@ export async function GET(request) {
     }
 
     // const sharedLink = isShareable ? response.shared_link?.url : null;
-    const sharedLink = isShareable ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${fileId}` : null;
+    const sharedLink = isShareable ? `${process.env.NEXT_PUBLIC_APP_BASE_URL_MAIN}/shared-file/${fileId}` : null;
 
     return NextResponse.json({
       message: isShareable

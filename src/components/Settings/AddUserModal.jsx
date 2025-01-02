@@ -45,7 +45,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      handleFormChange(logo, file);
+      handleFormChange('logo', file);
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
@@ -302,7 +302,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               onChange={(e) => handleFormChange('role', e.target.value)}
               style={{ height: '2.5rem' }}
             >
-              <option value="client">Client</option>
+              <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
           </div>

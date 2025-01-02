@@ -122,5 +122,28 @@
     "folderId": "300628886275",
     "createdAt": "2024-12-27T14:44:08.142Z",
     "role": "user"
+  },
+  {
+    "id": "1735642475474",
+    "email": "dainiktest007@yopmaiil.com",
+    "name": "Dainik Test 007",
+    "password": "000",
+    "role": "client",
+    "boxUserId": "39078222770",
+    "folderId": "300969930449",
+    "logoUrl": "/uploads/logo-1735643377177-731400873.jpg",
+    "createdAt": "2024-12-31T10:54:35.474Z"
+  },
+  {
+    "id": "1735726329278",
+    "email": "dainik.blurbee+1@gmail.com",
+    "name": "Dainik",
+    "password": "test123",
+    "role": "client",
+    "boxUserId": "39099728928",
+    "folderId": "301045931833",
+    "logoUrl": "/uploads/logo-1735726325860-172019445.jpg",
+    "createdAt": "2025-01-01T10:12:09.278Z",
+    "resetToken": null
   }
 ]

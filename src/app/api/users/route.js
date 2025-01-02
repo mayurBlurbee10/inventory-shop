@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { logApiCall } from '@/app/lib/api-log-middleware';
+import { generateNanoToken } from '@/app/lib/jwt';
+import { sendSetPasswordEmail } from '@/app/lib/email';
 
 const dataFilePath = path.join(process.cwd(), 'data', 'users.json');
 
@@ -79,21 +81,26 @@ export async function POST(request) {
       );
     }
 
+    const token = await generateNanoToken();
     // Add new user with password
     const newUser = {
       id: Date.now().toString(),
       email: userData.email,
       name: userData.name || userData.email.split('@')[0],
       password: '000', // Default password as requested
+      role: userData.role,
       boxUserId: userData.boxUserId,
       folderId: userData.folderId,
-      createdAt: new Date().toISOString()
+      logoUrl: userData.logoUrl,
+      createdAt: new Date().toISOString(),
+      resetToken: token
     };
 
     console.log('Created new user object:', newUser);
     users.push(newUser);
     
     await writeUsers(users);
+    sendSetPasswordEmail(newUser.email, newUser.name, token);
     console.log('Successfully saved new user');
 
     return NextResponse.json(newUser);

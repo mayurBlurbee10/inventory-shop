@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { cookies } from 'next/headers';
 import { logApiCall } from '@/app/lib/api-log-middleware';
+import { generateToken } from '@/app/lib/jwt';
 
 // Use the correct path to users.json in the data directory
 const dataFilePath = path.join(process.cwd(), 'data', 'users.json');
@@ -151,14 +152,24 @@ export async function POST(request) {
       collaborationIds: user.collaborationIds
     };
 
+    const accessToken = await generateToken(user, '168h')
+
     // Create response with cookie
     const response = NextResponse.json({
       success: true,
-      user: userData
+      user: userData,
+      accessToken
     });
 
     // Set cookie in response headers
     response.cookies.set('user', JSON.stringify(userData), {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 // 7 days
+    });
+    response.cookies.set('token', accessToken, {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
