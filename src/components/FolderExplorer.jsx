@@ -331,8 +331,11 @@ const ShareModal = ({
                 <div></div>
               </div>
               {collaborator.length > 0 &&
-                collaborator.slice(1).map((content) => (
-                  <div className="flex items-center justify-between gap-3 text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group">
+                collaborator.slice(1).map((content, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between gap-3 text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group"
+                  >
                     <div>{content?.user.name}</div>
                     <div>
                       <select
@@ -426,6 +429,29 @@ function FolderExplorer({
     setIsShareModalOpen(true);
   };
 
+  // const handleDownload = async (fileId, fileName) => {
+  //   try {
+  //     const response = await fetchWrapper(
+  //       `/api/box/download?fileId=${fileId}`,
+  //       {},
+  //       "download"
+  //     );
+  //     if (!response.ok) throw new Error("Download failed");
+
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.download = fileName;
+  //     link.click();
+
+  //     window.URL.revokeObjectURL(url);
+  //     document.body.removeChild(link);
+  //   } catch (error) {
+  //     console.error("Download error:", error);
+  //   }
+  // };
+
   const handleDownload = async (fileId, fileName) => {
     try {
       const response = await fetchWrapper(
@@ -443,7 +469,6 @@ function FolderExplorer({
       link.click();
 
       window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
     } catch (error) {
       console.error("Download error:", error);
     }

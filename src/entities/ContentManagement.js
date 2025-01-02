@@ -14,7 +14,6 @@ export class ContentManagement extends BaseTable {
   @Column({ type: "nvarchar", length: 500, nullable: true, default: null })
   value;
 
-  //   @ManyToOne(() => Portals, { nullable: true })
-  @Column({ type: "nvarchar", length: 255, default: "default" })
-  portalId;
+  @ManyToOne(() => Portals, (portal) => portal.content, { nullable: true })
+  portal;
 }

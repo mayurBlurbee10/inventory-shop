@@ -9,16 +9,16 @@ import {
 import BaseTable from "./BaseTable";
 
 @Entity()
-export class ApiLogs extends BaseTable{
-  @Column({ type: "text" })
+export class ApiLogs extends BaseTable {
+  @Column({ type: "nvarchar", length: 255 })
   date;
 
-  @Column({ type: "text" })
+  @Column({ type: "nvarchar", length: 255 })
   userId;
 
-  @Column({ type: "text" })
+  @Column({ type: "nvarchar", length: 255 })
   name;
 
-  @Column({ type: "text" })
+  @Column({ type: "nvarchar", length: 255 })
   type;
 }

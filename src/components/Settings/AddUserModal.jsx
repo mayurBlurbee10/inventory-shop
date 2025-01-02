@@ -45,13 +45,13 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      handleFormChange(logo, file);
+      handleFormChange("logo", file);
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleFormChange = (key, val) => {
-    if (!key || !val) return;
+    if (!key) return;
 
     setFormData({
       ...formData,
@@ -110,7 +110,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         title: formData.title,
         companyName: formData.companyName,
         role: formData.role,
-        logoUrl: logoUrl,
+        logo: logoUrl,
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId
       };
@@ -210,7 +210,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <input
               type="text"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.name}
               onChange={(e) => handleFormChange('name', e.target.value)}
             />
@@ -220,7 +220,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <input
               type="email"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.email}
               onChange={(e) => handleFormChange('email', e.target.value)}
             />
@@ -229,7 +229,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <label className="block text-sm font-medium text-gray-700">Title</label>
             <input
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.title}
               onChange={(e) => handleFormChange('title', e.target.value)}
             />
@@ -238,7 +238,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <label className="block text-sm font-medium text-gray-700">Company Name</label>
             <input
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.companyName}
               onChange={(e) => handleFormChange('companyName', e.target.value)}
             />

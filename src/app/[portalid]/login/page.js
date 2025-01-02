@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import PortalFooter from "@/components/PortalFooter";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { defaultPortal } from "@/app/lib/data/default-portal";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -26,11 +27,66 @@ export default function SubsidiariesLoginPage() {
   const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
 
+  // const handleCreate = async () => {
+  //   setIsLoading(true);
+
+  //   try {
+  //     // const boxResponse = await fetchWrapper(
+  //     //   "/api/box/create-user",
+  //     //   {
+  //     //     method: "POST",
+  //     //     headers: {
+  //     //       "Content-Type": "application/json",
+  //     //     },
+  //     //     body: JSON.stringify({
+  //     //       userName: "admin@demo.com",
+  //     //       externalId: `user_${Date.now()}`,
+  //     //     }),
+  //     //   },
+  //     //   "create-user-box"
+  //     // );
+
+  //     // const boxData = await boxResponse.json();
+
+  //     // if (!boxResponse.ok) {
+  //     //   throw new Error(boxData.error || "Failed to create Box user");
+  //     // }
+
+  //     // Save user data
+  //     const saveResponse = await fetchWrapper(
+  //       "/api/users",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         // body: json.stringify({
+  //         //   boxUserId: boxData.user.userId,
+  //         //   folderId: boxData.user.folderId,
+  //         // }),
+  //       },
+  //       "save-user"
+  //     );
+
+  //     if (!saveResponse.ok) {
+  //       throw new Error("Failed to save user data");
+  //     }
+
+  //     const savedData = await saveResponse.json();
+  //     console.log(savedData);
+  //   } catch (error) {
+  //     console.error("Error creating user:", error);
+  //     setError(error.message || "An unexpected error occurred");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid}`,
+          `/api/portal?portalid=${params.portalid || "default"}`,
           {},
           "portal-login"
         );
@@ -100,7 +156,14 @@ export default function SubsidiariesLoginPage() {
   };
 
   const filterValue = (title) => {
-    return content.find((item) => item.title === title).value;
+    const contentItem = content.find((item) => item.title === title);
+    const value = contentItem ? contentItem.value : null;
+
+    if (!value) {
+      const defaultItem = defaultPortal.find((item) => item.title === title);
+      return defaultItem ? defaultItem.value : null;
+    }
+    return value;
   };
 
   if (!config || !content) return <LoadingSpinner />;
@@ -111,12 +174,12 @@ export default function SubsidiariesLoginPage() {
         <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center h-full">
           <div className="h-12 md:h-16 lg:h-20">
             <img
-              src={config?.logo}
+              src={config?.logo || "/logo.png"}
               alt="Premierportal"
               className="h-full hidden md:block"
             />
             <img
-              src={config?.logo}
+              src={config?.logo || "/logo.png"}
               alt="Premierportal"
               className="h-full w-full block md:hidden"
             />

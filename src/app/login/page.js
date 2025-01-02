@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
 import { fetchWrapper } from "../lib/fetchWrapper";
+import { defaultPortal } from "../lib/data/default-portal";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -15,7 +16,6 @@ const LoadingSpinner = () => (
     <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
-
 
 export default function LoginPage() {
   const router = useRouter();
@@ -83,7 +83,14 @@ export default function LoginPage() {
   };
 
   const filterValue = (title) => {
-    return content.find((item) => item.title === title).value;
+    const contentItem = content.find((item) => item.title === title);
+    const value = contentItem ? contentItem.value : null;
+
+    if (!value) {
+      const defaultItem = defaultPortal.find((item) => item.title === title);
+      return defaultItem ? defaultItem.value : null;
+    }
+    return value;
   };
 
   if (!content) return <LoadingSpinner />;
@@ -150,7 +157,7 @@ export default function LoginPage() {
                 <p className="text-text/60 mt-2">
                   {/* Your data warehouse for portfolio analytics and risk
                   management. */}
-                   {filterValue("Service1 Content")}
+                  {filterValue("Service1 Content")}
                 </p>
               </div>
               <div className="bg-background-gray p-6 rounded-lg shadow-sm">
@@ -174,7 +181,7 @@ export default function LoginPage() {
                 <p className="text-text/60 mt-2">
                   {/* Elevate your business experience with our innovative
                   solutions. */}
-                   {filterValue("Service2 Content")}
+                  {filterValue("Service2 Content")}
                 </p>
               </div>
               <div className="bg-background-gray p-6 rounded-lg shadow-sm">
@@ -268,7 +275,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-      <Footer filterValue={filterValue}/>
+      <Footer filterValue={filterValue} />
     </div>
   );
 }

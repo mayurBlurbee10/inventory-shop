@@ -22,15 +22,17 @@ const ContentManagementContent = () => {
   const [isNewTitleDialogOpen, setIsNewTitleDialogOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const formatDate = () => {
-    const date = new Date();
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
     return `${month}-${day}-${year} ${hours}:${minutes}:${seconds}`;
   };
 
@@ -51,15 +53,22 @@ const ContentManagementContent = () => {
   };
 
   const fetchData = async () => {
-    const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
-      { method: "GET" },
-      "fetchContentManagement"
-    );
-    if (!response.ok) throw new Error("Failed to fetch Content Management");
-    const data = await response.json();
-    const content = data.filter((item) => item.value !== null);
-    setContent(content);
+    try {
+      setLoading(true);
+      const response = await fetchWrapper(
+        `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+        { method: "GET" },
+        "fetchContentManagement"
+      );
+      if (!response.ok) throw new Error("Failed to fetch Content Management");
+      const data = await response.json();
+      const content = data.filter((item) => item.value !== null);
+      setContent(content);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle form submission
@@ -242,29 +251,35 @@ const ContentManagementContent = () => {
           Add Content
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {content.map((content, idx) => (
-          <div key={idx} className="border rounded-lg p-4 bg-white">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="text-lg font-medium text-gray-900">
-                  {content.title}
-                </h4>
-                <p className="text-sm text-gray-500">Type: {content.type}</p>
-                <p className="text-sm text-gray-500">
-                  Last Updated: {formatDate(content.updatedAt)}
-                </p>
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {content.map((item, idx) => (
+            <div key={idx} className="border rounded-lg p-4 bg-white">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900">
+                    {item.title}
+                  </h4>
+                  <p className="text-sm text-gray-500">Type: {item.type}</p>
+                  <p className="text-sm text-gray-500">
+                    Last Updated: {formatDate(item?.updatedAt)}
+                  </p>
+                </div>
+                <button
+                  className="text-blue-600 hover:text-blue-900"
+                  onClick={() => handleModalOpenForEdit(item.id)}
+                >
+                  Edit
+                </button>
               </div>
-              <button
-                className="text-blue-600 hover:text-blue-900"
-                onClick={() => handleModalOpenForEdit(content.id)}
-              >
-                Edit
-              </button>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       {/* Dialog Box */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">

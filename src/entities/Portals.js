@@ -1,10 +1,12 @@
 import "reflect-metadata";
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, OneToMany } from "typeorm";
 import BaseTable from "./BaseTable";
+import { ContentManagement } from "./ContentManagement";
+import { Users } from "./Users";
 
 @Entity()
 export class Portals extends BaseTable {
-  @Column({ type: "nvarchar", length: 255 })
+  @Column({ type: "nvarchar", length: 255, unique: true })
   legalName;
 
   @Column({ type: "nvarchar", length: 255 })
@@ -16,10 +18,10 @@ export class Portals extends BaseTable {
   @Column({ type: "nvarchar", length: 255 })
   status;
 
-  @Column({ type: "int" })
+  @Column({ type: "int", default: 0 })
   userCount;
 
-  @Column({ type: "int" })
+  @Column({ type: "nvarchar", length: 255, default: "0 GB" })
   storageUsed;
 
   @Column({ type: "nvarchar", length: 255 })
@@ -51,4 +53,12 @@ export class Portals extends BaseTable {
 
   @Column({ type: "nvarchar", length: 255 })
   logo;
+
+  @OneToMany(() => ContentManagement, (content) => content.portal, {
+    cascade: true,
+  })
+  content;
+
+  @OneToMany(() => Users, (user) => user.portal, { cascade: true })
+  users;
 }

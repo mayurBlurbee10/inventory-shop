@@ -1,56 +1,66 @@
 import "reflect-metadata";
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from "typeorm";
 import BaseTable from "./BaseTable";
 import { Portals } from "./Portals";
+import * as bcrypt from "bcrypt";
 
 @Entity()
 export class Users extends BaseTable {
-  @Column({ type: "text", unique: true })
+  @Column({ type: "nvarchar", length: 255, unique: true })
   email;
 
-  @Column({ type: "text" })
+  @Column({ type: "nvarchar", length: 255 })
   name;
 
-  @ManyToOne(() => Portals, { nullable: true })
-  @Column({ type: "text" })
-  portalId;
+  @ManyToOne(() => Portals, (portal) => portal.users, { nullable: true })
+  portal;
 
   @Column({ type: "simple-json", nullable: true })
   company;
 
-  @Column({ type: "text" })
+  @Column({ type: "nvarchar", length: 255 })
   title;
 
   @Column({
-    type: "text",
+    type: "simple-enum",
     enum: ["user", "admin", "super_admin"],
     default: "user",
   })
   role;
 
-  @Column({ type: "text" })
+  @Column({ type: "nvarchar", length: 255 })
   boxUserId;
 
-  //   @OneToOne(() => Folders, (folder) => folder.user)  1-1
-  @Column({ type: "text" })
+  @Column({ type: "nvarchar", length: 255 })
   folderId;
 
-  @Column({ type: "text", default: null })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   password;
 
-  @Column({ type: "text", default: null })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   extra;
 
-  @Column({ type: "text", nullable: true, default: null })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   accessToken;
 
   @Column({ type: "uuid", nullable: true, default: null })
   resetPasswordToken;
 
   @Column({
-    type: "text",
+    type: "simple-enum",
     enum: ["google", "microsoft", "okta", "oauth", "email"],
     default: "email",
   })
   authStrategy;
+
+  @Column({ type: "simple-json", nullable: true, default: "[]" })
+  collaborationIds;
+
+  @BeforeInsert()
+  async hashPassword() {
+    if (this.password) {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+  }
 }

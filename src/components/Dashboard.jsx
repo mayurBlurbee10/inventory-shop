@@ -138,7 +138,6 @@ function Dashboard({ fileType }) {
       const userData = getUserData();
       console.log(userData);
       if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
-        console.log("Inside ");
         const requestOptions = {
           method: "POST",
           body: JSON.stringify({ collaborated: userData.collaborationIds }),

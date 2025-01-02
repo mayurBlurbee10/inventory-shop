@@ -113,7 +113,7 @@ export async function GET(request) {
     await logApiCall(request);
     const portalId = request.nextUrl.searchParams.get("portalId") || "default";
     // Ensure the directory exists
-    await ensureDirectory(dir);
+    // await ensureDirectory(dir);
     // Read content items from JSON file
     // const contentItems = await readJsonFile(filePath);
     const contentItems = await contentManagementService.getContentManagement(

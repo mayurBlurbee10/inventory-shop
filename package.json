@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
+    "bcrypt": "^5.1.1",
     "box-node-sdk": "^3.7.1",
     "box-ui-elements": "^22.0.0",
     "glob": "^11.0.0",

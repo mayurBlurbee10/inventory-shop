@@ -1,4 +1,9 @@
-import { logApiCall, readJsonFile, writeJsonFile } from "@/app/lib/api-log-middleware";
+import {
+  logApiCall,
+  readJsonFile,
+  writeJsonFile,
+} from "@/app/lib/api-log-middleware";
+import userService from "@/services/userService";
 import BoxSDK from "box-node-sdk";
 import { NextResponse } from "next/server";
 import path from "path";
@@ -52,7 +57,9 @@ export async function GET(request) {
     }
 
     // const sharedLink = isShareable ? response.shared_link?.url : null;
-    const sharedLink = isShareable ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${fileId}` : null;
+    const sharedLink = isShareable
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${fileId}`
+      : null;
 
     return NextResponse.json({
       message: isShareable
@@ -121,10 +128,13 @@ export async function DELETE(request) {
   try {
     await logApiCall(request);
     const { searchParams } = new URL(request.url);
-    const collaboratorId = searchParams.get('collaboratorId');
-    const userId = searchParams.get('userId');
+    const collaboratorId = searchParams.get("collaboratorId");
+    const userId = searchParams.get("userId");
     if (!collaboratorId) {
-      return NextResponse.json({ error: 'No collaboratorId provided' }, { status: 400 });
+      return NextResponse.json(
+        { error: "No collaboratorId provided" },
+        { status: 400 }
+      );
     }
     const collaboration = await getCollaboration(collaboratorId);
 
@@ -132,7 +142,7 @@ export async function DELETE(request) {
     await addCollaboratorId(collaboration.item.id, userId);
 
     return NextResponse.json({
-      message: 'Collaborator remove successfully'
+      message: "Collaborator remove successfully",
     });
   } catch (error) {
     console.error("Error removing collaborator:", error);
@@ -144,12 +154,16 @@ export async function DELETE(request) {
 }
 
 /**
- * 
+ *
  * @param role // 'viewer', 'editor', 'uploader', 'co-owner'
- * 
+ *
  */
 async function addCollaborator(itemId, userID, role) {
-  const collaboration = await client.collaborations.create({id:userID, type: 'user'}, itemId, role)
+  const collaboration = await client.collaborations.create(
+    { id: userID, type: "user" },
+    itemId,
+    role
+  );
   return collaboration;
 }
 
@@ -164,6 +178,7 @@ async function updateCollaboratorRole(collaborationId, newRole) {
     collaborationId,
     { role: newRole }
   );
+  
   return updatedCollaboration;
 }
 
@@ -172,7 +187,10 @@ async function acceptCollaboration(collaborationId) {
     // const updatedCollaboration = await client.collaborations.update(collaborationId, {
     //   status: "accepted",
     // });
-    const updatedCollaboration = await client.collaborations.respondToPending(collaborationId, 'accepted')
+    const updatedCollaboration = await client.collaborations.respondToPending(
+      collaborationId,
+      "accepted"
+    );
     return updatedCollaboration;
   } catch (error) {
     console.error("Error accepting collaboration:", error.message);
@@ -180,37 +198,60 @@ async function acceptCollaboration(collaborationId) {
   }
 }
 
-
 async function pendingCollaboration() {
   return await client.collaborations.getPending();
 }
 
 async function addCollaboratorId(folderId, userId, role) {
-  const dataFilePath = path.join(process.cwd(), 'data', 'users.json');
-  const users = await readJsonFile(dataFilePath);
-  const index = users.findIndex(element => element.boxUserId == userId);
+  // const dataFilePath = path.join(process.cwd(), 'data', 'users.json');
+  // const users = await readJsonFile(dataFilePath);
+  // const index = users.findIndex(element => element.boxUserId == userId);
 
-  if (index > -1) {
-    if (!users[index]['collaborationIds']) {
-      users[index]['collaborationIds'] = [];
-    }
+  // if (index > -1) {
+  //   if (!users[index]['collaborationIds']) {
+  //     users[index]['collaborationIds'] = [];
+  //   }
 
-    const collabIndex = users[index]['collaborationIds'].findIndex(
-      collab => collab.folderId == folderId
+  //   const collabIndex = users[index]['collaborationIds'].findIndex(
+  //     collab => collab.folderId == folderId
+  //   );
+
+  //   if (role) {
+  //     if (collabIndex > -1) {
+  //       users[index]['collaborationIds'][collabIndex].role = role;
+  //     } else {
+  //       users[index]['collaborationIds'].push({ folderId, role });
+  //     }
+  //   } else {
+  //     if (collabIndex > -1) {
+  //       users[index]['collaborationIds'].splice(collabIndex, 1);
+  //     }
+  //   }
+
+  //   await writeJsonFile(path.join(process.cwd(), 'data'), dataFilePath, users);
+  // }
+
+  // here userId is boxUserId
+  const user = await userService.getUserByBoxUserId(userId);
+
+  if (user) {
+    let collaborationIds = user.collaborationIds;
+    const collabIndex = collaborationIds.findIndex(
+      (collab) => collab.folderId == folderId
     );
 
     if (role) {
       if (collabIndex > -1) {
-        users[index]['collaborationIds'][collabIndex].role = role;
+        collaborationIds[collabIndex].role = role;
       } else {
-        users[index]['collaborationIds'].push({ folderId, role });
+        collaborationIds.push({ folderId, role });
       }
     } else {
       if (collabIndex > -1) {
-        users[index]['collaborationIds'].splice(collabIndex, 1);
+        collaborationIds.splice(collabIndex, 1);
       }
     }
 
-    await writeJsonFile(path.join(process.cwd(), 'data'), dataFilePath, users);
+    await userService.addCollaboratorId(user.id, collaborationIds);
   }
 }
