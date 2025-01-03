@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
@@ -21,8 +21,13 @@ export default function SetPassword() {
   const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+    const params = useParams();
+    console.log('params', params)
+    const token = params.token
+  // const searchParams = useSearchParams();
+  // let params = new URLSearchParams(window.location.search);
+  // console.log('params', params)
+  // const token = 'd746c62863eeb42347cd16b2cf83ed5f369e12b8d979468688dd6c6d041500c3' //searchParams.get('token');
 
   const handleSetPassword = async (e) => {
     e.preventDefault();

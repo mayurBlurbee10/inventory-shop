@@ -3,8 +3,8 @@ import { Column, Entity, ManyToOne } from "typeorm";
 import BaseTable from "./BaseTable";
 import { Portals } from "./Portals";
 
-@Entity()
-export class ContentManagement extends BaseTable {
+export @Entity()
+ class ContentManagement extends BaseTable {
   @Column({ type: "nvarchar", length: 255 })
   title;
 

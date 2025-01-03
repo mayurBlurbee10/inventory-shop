@@ -4,8 +4,8 @@ import BaseTable from "./BaseTable";
 import { ContentManagement } from "./ContentManagement";
 import { Users } from "./Users";
 
-@Entity()
-export class Portals extends BaseTable {
+export @Entity()
+ class Portals extends BaseTable {
   @Column({ type: "nvarchar", length: 255, unique: true })
   legalName;
 

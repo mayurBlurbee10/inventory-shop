@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { fetchWrapper } from "../lib/fetchWrapper";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -21,8 +21,12 @@ export default function SetPassword() {
   const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const params = useParams();
+  console.log('params', params)
+  const token = params.token
+  // let params = new URLSearchParams(window.location.search);
+  // const searchParams = useSearchParams();
+  // const token ='d746c62863eeb42347cd16b2cf83ed5f369e12b8d979468688dd6c6d041500c3' //searchParams.get('token');
 
   const handleSetPassword = async (e) => {
     e.preventDefault();
@@ -60,15 +64,14 @@ export default function SetPassword() {
         try { 
           setIsTokenExpired(false);
           const response = await fetchWrapper(`/api/setPassword?token=${token}`, {method: 'GET'}, 'validateLink')
-          if (!response.ok) throw new Error('Failed to fetch files');
+          if (!response.ok) throw new Error('Failed to fetch token');
         } catch (error) {
           setIsTokenExpired(true);
-          console.error('Error refreshing files:', error);
+          console.error('Error refreshing token:', error);
         } finally {
           setTokenLoading(false);
         }
       };
-  
       checkToken();
     }
   }, [router]);
@@ -154,3 +157,4 @@ export default function SetPassword() {
     </div>
   );
 }
+
