@@ -29,8 +29,8 @@ export const sendSetPasswordEmail = async (
   portalName
 ) => {
   try {
-    const portal = userData.portal != '' ? reverseSanitizeName(portalName) : 'Mstrategy';
-    const resetLink = userData.portal != '' 
+    const portal = portalName != '' ? reverseSanitizeName(portalName) : 'Mstrategy';
+    const resetLink = portalName != '' 
       ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/set-password?token=${resetToken}`
       : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/set-password?token=${resetToken}`;
 
