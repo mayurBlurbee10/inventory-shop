@@ -31,8 +31,8 @@ export const sendSetPasswordEmail = async (
   try {
     const portal = portalName != '' ? reverseSanitizeName(portalName) : 'Mstrategy';
     const resetLink = portalName != '' 
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/set-password?token=${resetToken}`
-      : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/set-password?token=${resetToken}`;
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}`
+      : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/setpassword/${resetToken}`;
 
     const emailContent = {
       senderAddress: process.env.AZURE_COMMUNICATION_SENDER_EMAIL, // Sender email
