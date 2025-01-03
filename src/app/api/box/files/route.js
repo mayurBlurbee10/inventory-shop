@@ -56,6 +56,7 @@ export async function POST(req) {
     const fileName = file.name;
     const fileBuffer = buffer;
     const boxFolderId = formData.get('boxFolderId') || '0';
+    const email = formData.get('email') || '';
 
     // Convert the buffer into a readable stream
     const fileStream = new Readable();
@@ -63,7 +64,7 @@ export async function POST(req) {
     fileStream.push(null);
 
     // Upload the file to Box
-    const uploadedFile = await newClient.files.uploadFile(boxFolderId, fileName, fileStream);
+    const uploadedFile = await newClient.files.uploadFile(boxFolderId, fileName, fileStream, {description:email});
 
     return NextResponse.json({
       message: 'File uploaded successfully',

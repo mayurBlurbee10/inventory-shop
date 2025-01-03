@@ -296,7 +296,7 @@ const ShareModal = ({
 
           {item?.type === "folder" && (
             <div className="space-y-2">
-              <label className="text-gray-800">Share via email</label>
+              <label className="text-gray-800">Share with user</label>
               <div className="flex items-center gap-3">
                 <Select
                   className="flex-1 py-2.5 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -346,8 +346,8 @@ const ShareModal = ({
                       >
                         <option value="viewer">Viewer</option>
                         <option value="editor">Editor</option>
-                        <option value="uploader">Uploader</option>
-                        <option value="co-owner">Co-owner</option>
+                        {/* <option value="uploader">Uploader</option>
+                        <option value="co-owner">Co-owner</option> */}
                       </select>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -387,6 +387,7 @@ function FolderExplorer({
   selectedItem,
   handleShareLink,
   onFileChanges,
+  listType
 }) {
   const pathName = usePathname();
   const [previewFileId, setPreviewFileId] = useState("");
@@ -415,8 +416,11 @@ function FolderExplorer({
     setDeleteDropdown(null);
   };
 
-  const handleDelete = (id) => {
-    setDeleteDropdown((prev) => (prev === id ? null : id));
+  const handleDelete = (file) => {
+    if(listType == 'shared' && file.currentUserRole == 'viewer'){
+      return
+    }
+    setDeleteDropdown((prev) => (prev === file.id ? null : file.id));
   };
 
   const handlePreview = (fileId) => {
@@ -553,6 +557,27 @@ function FolderExplorer({
     }
   };
 
+  const getUserName = (file) => {
+    if(file.collaborators.length>0 && file.type == 'folder'){
+      const findeduser = usersList.find((user)=>user.email == file.collaborators[0].user.name);
+      return findeduser ? findeduser.name : file.collaborators[0].user.name;
+    } else if(file.type == 'file' && file.description != '') {
+      const findeduser = usersList.find((user)=>user.email == file.description);
+      return findeduser ? findeduser.name : file.description;
+    } else {
+      return '';
+    }
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  }
+
   return (
     <>
       {currentFilesList &&
@@ -596,7 +621,7 @@ function FolderExplorer({
                       />
                     </div>
                     <p className="text-gray-600 text-sm truncate max-w-40 w-full">
-                      me
+                      {listType == 'shared'? getUserName(file) : 'me'}
                     </p>
                   </div>
                 </td>
@@ -610,6 +635,12 @@ function FolderExplorer({
                         : "Shared with me"}
                     </p>
                   </div>
+                </td>
+
+                <td className="py-3">
+                  <p className="text-gray-600 text-sm truncate max-w-40">
+                    {formatDate(file.modified_at)}
+                  </p>
                 </td>
 
                 <td className="py-3 pr-3">
@@ -659,7 +690,7 @@ function FolderExplorer({
                       {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                       <button
                         className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                        onClick={() => handleDelete(file?.id)}
+                        onClick={() => handleDelete(file)}
                       >
                         <EllipsisVertical className="h-4 w-4 text-gray-600" />
                       </button>

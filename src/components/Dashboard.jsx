@@ -174,6 +174,8 @@ function Dashboard({ fileType }) {
           uploadData.append("boxFolderId", userData.boxFolderId);
         }
 
+        uploadData.append("email", userData.email);
+
         const requestOptions = {
           method: "POST",
           body: uploadData,
@@ -516,6 +518,9 @@ function Dashboard({ fileType }) {
                           <th className="text-start text-[#3c4043] py-2 text-sm">
                             Location
                           </th>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Last Updated
+                          </th>
                           <th className="py-2 text-sm"></th>
                         </tr>
                       </thead>
@@ -530,6 +535,7 @@ function Dashboard({ fileType }) {
                             setSelectedItem={setSelectedItem}
                             selectedItem={selectedItem}
                             onFileChanges={refreshFiles}
+                            listType={fileType}
                           />
                         </>
                       </tbody>
