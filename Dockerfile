@@ -10,7 +10,7 @@ ARG BOX_PRIVATE_KEY_PASSWORD
 ARG BOX_PUBLIC_KEY_ID
 ARG BOX_DEVELOPER_TOKEN
 ARG BOX_PASSPHRASE
-ARG NEXT_PUBLIC_APP_BASE_URL_WILLDAN
+ARG NEXT_PUBLIC_APP_BASE_URL
 
 ENV BOX_CLIENT_ID=$BOX_CLIENT_ID
 ENV BOX_CLIENT_SECRET=$BOX_CLIENT_SECRET
@@ -20,7 +20,7 @@ ENV BOX_PRIVATE_KEY_PASSWORD=$BOX_PRIVATE_KEY_PASSWORD
 ENV BOX_PUBLIC_KEY_ID=$BOX_PUBLIC_KEY_ID
 ENV BOX_DEVELOPER_TOKEN=$BOX_DEVELOPER_TOKEN
 ENV BOX_PASSPHRASE=$BOX_PASSPHRASE
-ENV NEXT_PUBLIC_APP_BASE_URL=$NEXT_PUBLIC_APP_BASE_URL_WILLDAN
+ENV NEXT_PUBLIC_APP_BASE_URL=$NEXT_PUBLIC_APP_BASE_URL
 
 # Set the working directory in the container
 WORKDIR /app
@@ -46,7 +46,7 @@ COPY ./public/uploads /app/public/uploads
 
 # Build the Next.js application
 RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
+  if [ -f yarn.lock ]; then yarn build; \
   elif [ -f package-lock.json ]; then npm run build; \
   else echo "Lockfile not found." && exit 1; \
   fi
