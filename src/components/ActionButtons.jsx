@@ -9,7 +9,7 @@ export default function ActionButtons({
   onFolderCreated,
   selectedItem,
   isModalOpen,
-  setIsModalOpen
+  setIsModalOpen,
 }) {
   // const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
@@ -26,7 +26,7 @@ export default function ActionButtons({
         name: folderName,
         boxFolderId: userData.boxFolderId,
       };
-      console.log(selectedItem)
+      console.log(selectedItem);
       if (!!selectedItem && selectedItem.type == "folder") {
         obj.boxFolderId = selectedItem.id;
       }

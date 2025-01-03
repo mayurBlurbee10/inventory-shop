@@ -1,5 +1,6 @@
 import path from "path";
 import { promises as fs } from "fs";
+import apiLogService from "../../services/apiLogsService";
 
 const dir = path.join(process.cwd(), "src", "app", "data");
 const filePath = path.join(process.cwd(), "src", "app", "data", "api-log.json");
@@ -48,13 +49,13 @@ export const logApiCall = async (req, next) => {
 
   const data = await readJsonFile(filePath);
 
-  const userId = req.headers.get('x-user-id');
-  const portalId = req.headers.get('x-portal-id');
+  const userId = req.headers.get("x-user-id");
+  const portalId = req.headers.get("x-portal-id");
   const apiType = req.headers.get("x-api-type");
 
   if (!userId || !portalId || !apiType) {
     console.log("Missing required headers. Skipping logging.");
-    if (typeof next === 'function') {
+    if (typeof next === "function") {
       return next();
     }
     return;
@@ -69,9 +70,11 @@ export const logApiCall = async (req, next) => {
   };
 
   data.push(logEntry);
-
-  await writeJsonFile(dir, filePath, data);
-  if (typeof next === 'function') {
+  // const res = await apiLogService.createApiLogs(logEntry)
+  const res = await apiLogService.createApiLogs();
+  console.log("Response from api-log-middleware : ", res);
+  // await writeJsonFile(dir, filePath, data);
+  if (typeof next === "function") {
     next();
   }
 };

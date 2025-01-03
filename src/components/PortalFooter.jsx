@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const PortalFooter = ({ config }) => {
+const PortalFooter = ({ config, filterValue }) => {
+  const contactInfo = filterValue("Contact Info").split("\n");
   return (
     <footer className="bg-[#929493] text-white py-8 mt-auto">
       <div className="container mx-auto px-4">
@@ -19,10 +20,12 @@ const PortalFooter = ({ config }) => {
             </div>
             {/* <p className="mb-2">Energy and Environmental Economics, Inc. (E3)</p>
                 <p className="mb-4">Part of the Willdan Group, Inc.</p> */}
-            <p className="mb-2">
-              San Francisco 415.391.5100 | Boston 617.203.7689 | New York
-              646.699.3773
-            </p>
+            {/* San Francisco 415.391.5100 | Boston 617.203.7689 | New York
+              646.699.3773 */}
+            <ul className="space-y-2">
+              {contactInfo &&
+                contactInfo.map((item, index) => <li key={index}>{item}</li>)}
+            </ul>
             {/* <p>info@ethree.com</p> */}
           </div>
 

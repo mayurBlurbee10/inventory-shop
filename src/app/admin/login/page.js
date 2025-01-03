@@ -49,7 +49,7 @@ export default function AdminLoginPage() {
             <img
               src="/logo_admin.png"
               alt="Company Logo"
-              priority
+              priority="true"
               className="h-16" 
             />
           </div>
@@ -73,7 +73,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-gray-800 text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-gray-800 text-sm font-medium">
               Password
             </label>
             <input

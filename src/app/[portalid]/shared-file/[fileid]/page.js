@@ -15,6 +15,7 @@ export default function SharedFilePage() {
   const [itemUrl, setItemUrl] = useState("");
   const [config, setConfig] = useState(null);
   const [fileName, setFileName] = useState("");
+  const [fileType, setFileType] = useState("");
 
   useEffect(() => {
     getSharedFile(params.fileid);
@@ -43,6 +44,11 @@ export default function SharedFilePage() {
           setFileName(filename)
         }
       }
+
+      const contentType = headers.get("Content-Type");
+      if(contentType){
+        setFileType(contentType.split('/')[1]);
+      }
       
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -65,7 +71,49 @@ export default function SharedFilePage() {
     } catch (error) {
       console.log("error: ", error);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
+    }
+  };
+
+  const renderView = () => {
+    switch (fileType) {
+      case "png":
+        return <img src={itemUrl} className="h-full w-full object-contain" />;
+      case "pdf":
+        return (
+          <iframe
+            src={`/api/box/share?fileId=${params.fileid}#toolbar=0`}
+            width="100%"
+            height="100%"
+          ></iframe>
+        );
+      case "mp4":
+        return (
+          <video width="100%" height="100%" controls controlsList="nodownload">
+            <source src={itemUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        );
+      case "mp3":
+        return (
+          <audio controls controlsList="nodownload" style={{ width: "100%" }}>
+            <source src={itemUrl} type="audio/mp3" />
+            Your browser does not support the audio element.
+          </audio>
+        );
+      case "svg":
+        return (
+          <object
+            data={itemUrl}
+            type="image/svg+xml"
+            width="100%"
+            height="600px"
+          >
+            Your browser does not support SVGs.
+          </object>
+        );
+      default:
+        return <img src={itemUrl} className="h-full w-full object-contain" />;
     }
   };
 
@@ -81,7 +129,7 @@ export default function SharedFilePage() {
         <h2 className="text-l font-semibold text-gray-800">{fileName}</h2>
       </div>)}
       <div className="h-[calc(100vh-115px)] p-4 bg-[#f5f5f5]">
-        <img src={itemUrl || null} alt={fileName || "img"}  className="h-full w-full object-contain"/>
+        {renderView()}
       </div>
     </div>
   );

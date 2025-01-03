@@ -119,9 +119,11 @@ export const clearUserData = () => {
     console.log('Clearing user data');
     // Clear from localStorage
     localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
 
     // Clear from cookies
     document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
   } catch (error) {
     console.error('Error clearing user data:', error);
   }

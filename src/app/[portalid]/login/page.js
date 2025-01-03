@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import PortalFooter from "@/components/PortalFooter";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { defaultPortal } from "@/app/lib/data/default-portal";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -25,13 +26,67 @@ export default function SubsidiariesLoginPage() {
   const [password, setPassword] = useState("");
   const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
-  
+
+  // const handleCreate = async () => {
+  //   setIsLoading(true);
+
+  //   try {
+  //     // const boxResponse = await fetchWrapper(
+  //     //   "/api/box/create-user",
+  //     //   {
+  //     //     method: "POST",
+  //     //     headers: {
+  //     //       "Content-Type": "application/json",
+  //     //     },
+  //     //     body: JSON.stringify({
+  //     //       userName: "admin@demo.com",
+  //     //       externalId: `user_${Date.now()}`,
+  //     //     }),
+  //     //   },
+  //     //   "create-user-box"
+  //     // );
+
+  //     // const boxData = await boxResponse.json();
+
+  //     // if (!boxResponse.ok) {
+  //     //   throw new Error(boxData.error || "Failed to create Box user");
+  //     // }
+
+  //     // Save user data
+  //     const saveResponse = await fetchWrapper(
+  //       "/api/users",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         // body: json.stringify({
+  //         //   boxUserId: boxData.user.userId,
+  //         //   folderId: boxData.user.folderId,
+  //         // }),
+  //       },
+  //       "save-user"
+  //     );
+
+  //     if (!saveResponse.ok) {
+  //       throw new Error("Failed to save user data");
+  //     }
+
+  //     const savedData = await saveResponse.json();
+  //     console.log(savedData);
+  //   } catch (error) {
+  //     console.error("Error creating user:", error);
+  //     setError(error.message || "An unexpected error occurred");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid}`,
+          `/api/portal?portalid=${params.portalid || "default"}`,
           {},
           "portal-login"
         );
@@ -52,7 +107,7 @@ export default function SubsidiariesLoginPage() {
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? 'default'}`,
+      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
       { method: "GET" },
       "fetchContentManagement"
     );
@@ -65,7 +120,6 @@ export default function SubsidiariesLoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     try {
       const response = await fetchWrapper(
         "/api/auth/login",
@@ -79,28 +133,40 @@ export default function SubsidiariesLoginPage() {
         "default-login"
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || "Login failed");
       }
 
+      const data = await response.json();
       // Store user data using auth utility
       const userData = data.user;
       setUserData(userData);
-      localStorage.setItem("portal", params);
+      localStorage.setItem("portal", params.portalid);
+      localStorage.setItem('accessToken', data.accessToken);
 
       console.log("Redirecting to home");
       router.push(`home`);
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Login error:", err.message);
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!config) return <LoadingSpinner />;
+  const filterValue = (title) => {
+    const contentItem = content.find((item) => item.title === title);
+    const value = contentItem ? contentItem.value : null;
+
+    if (!value) {
+      const defaultItem = defaultPortal.find((item) => item.title === title);
+      return defaultItem ? defaultItem.value : null;
+    }
+    return value;
+  };
+
+  if (!config || !content) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen flex flex-col items-start xl:items-center justify-center relative">
@@ -108,12 +174,12 @@ export default function SubsidiariesLoginPage() {
         <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center h-full">
           <div className="h-12 md:h-16 lg:h-20">
             <img
-              src={config?.logo}
+              src={config?.logo || "/logo.png"}
               alt="Premierportal"
               className="h-full hidden md:block"
             />
             <img
-              src={config?.logo}
+              src={config?.logo || "/logo.png"}
               alt="Premierportal"
               className="h-full w-full block md:hidden"
             />
@@ -155,13 +221,15 @@ export default function SubsidiariesLoginPage() {
           <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
             <div>
               <h2 className="text-3xl font-normal leading-tight text-[#545454]">
-                Welcome M Strategy
+                {filterValue("Hero Title")} {config?.tradingName}
+                {/* Welcome M Strategy */}
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
-                As premier customer, we have created a customer portal solution
+                {/* As premier customer, we have created a customer portal solution
                 for you. Please log into access your work orders, project files,
                 invoices and other supporting documentation. You can also use
-                the portal to request new quotes for services and more.
+                the portal to request new quotes for services and more. */}
+                {filterValue("Hero Content")}
               </p>
 
               {/* Feature Cards */}
@@ -181,13 +249,15 @@ export default function SubsidiariesLoginPage() {
                     />
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
-                    Digitization Services
+                    {/* Digitization Services */}
+                    {filterValue("Service1 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
-                    Commercial, archival scanning, digitization and micrographic
+                    {/* Commercial, archival scanning, digitization and micrographic
                     services for those needing to digitally preserve important
                     documents, newspapers, maps, books, microfilm, slides and
-                    more. Learn More
+                    more. Learn More */}
+                    {filterValue("Service1 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -205,12 +275,14 @@ export default function SubsidiariesLoginPage() {
                     />
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
-                    Software Solutions
+                    {/* Software Solutions */}
+                    {filterValue("Service2 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
-                    At Crowley, software systems are considered a critical
+                    {/* At Crowley, software systems are considered a critical
                     component for maximum image quality, production efficiency,
-                    and content management. Learn More
+                    and content management. Learn More */}
+                    {filterValue("Service2 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -228,12 +300,14 @@ export default function SubsidiariesLoginPage() {
                     />
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
-                    Support Services
+                    {/* Support Services */}
+                    {filterValue("Service3 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
-                    From beginning to end, your digitization projects are
+                    {/* From beginning to end, your digitization projects are
                     covered with the full breadth of Crowley support services.
-                    Learn More
+                    Learn More */}
+                    {filterValue("Service3 Content")}
                   </p>
                 </div>
               </div>
@@ -297,15 +371,15 @@ export default function SubsidiariesLoginPage() {
                 </div>
               )}
 
-              <div className="text-center mt-4">
+              {/* <div className="text-center mt-4">
                 <button className="text-text/40 hover:text-text/60">
                   Forgot password?
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
-        <PortalFooter config={config} />
+        <PortalFooter config={config} filterValue={filterValue} />
       </div>
       <div className="absolute bottom-1 xl:bottom-5 left-3 2xl:left-10 max-w-20 xl:max-w-36 w-full opacity-20 z-0">
         <img src="/logo_new.png" alt="Wealthportal" className="h-full w-full" />

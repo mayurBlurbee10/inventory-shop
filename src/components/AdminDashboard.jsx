@@ -144,7 +144,6 @@ export default function AdminDashboard() {
 
   const handleCreateSubsidiary = async(formData) => {
     let newSubsidiary = {
-      id: Date.now(),
       legalName: formData.legalName,
       tradingName: formData.tradingName,
       domain: formData.domain,

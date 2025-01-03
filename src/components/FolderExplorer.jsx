@@ -14,12 +14,13 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
 import { useParams } from "next/navigation";
 import { usePathname } from "next/navigation";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
 const ShareModal = ({
   isOpen,
@@ -295,7 +296,7 @@ const ShareModal = ({
 
           {item?.type === "folder" && (
             <div className="space-y-2">
-              <label className="text-gray-800">Share via email</label>
+              <label className="text-gray-800">Share with user</label>
               <div className="flex items-center gap-3">
                 <Select
                   className="flex-1 py-2.5 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -330,8 +331,11 @@ const ShareModal = ({
                 <div></div>
               </div>
               {collaborator.length > 0 &&
-                collaborator.slice(1).map((content) => (
-                  <div className="flex items-center justify-between gap-3 text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group">
+                collaborator.slice(1).map((content, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between gap-3 text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group"
+                  >
                     <div>{content?.user.name}</div>
                     <div>
                       <select
@@ -342,8 +346,8 @@ const ShareModal = ({
                       >
                         <option value="viewer">Viewer</option>
                         <option value="editor">Editor</option>
-                        <option value="uploader">Uploader</option>
-                        <option value="co-owner">Co-owner</option>
+                        {/* <option value="uploader">Uploader</option>
+                        <option value="co-owner">Co-owner</option> */}
                       </select>
                     </div>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -375,8 +379,6 @@ const ShareModal = ({
 
 function FolderExplorer({
   fileList,
-  setDeleteDropdown,
-  deleteDropdown,
   setPath,
   path,
   currentFilesList,
@@ -385,14 +387,17 @@ function FolderExplorer({
   selectedItem,
   handleShareLink,
   onFileChanges,
+  listType
 }) {
   const pathName = usePathname();
   const [previewFileId, setPreviewFileId] = useState("");
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [usersList, setUsersList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteDropdown, setDeleteDropdown] = useState(null);
 
   useEffect(() => {
     setCurrentFilesList(
@@ -411,8 +416,11 @@ function FolderExplorer({
     setDeleteDropdown(null);
   };
 
-  const handleDelete = (id) => {
-    setDeleteDropdown((prev) => (prev === id ? null : id));
+  const handleDelete = (file) => {
+    if(listType == 'shared' && file.currentUserRole == 'viewer'){
+      return
+    }
+    setDeleteDropdown((prev) => (prev === file.id ? null : file.id));
   };
 
   const handlePreview = (fileId) => {
@@ -424,6 +432,29 @@ function FolderExplorer({
     setShareFile(file);
     setIsShareModalOpen(true);
   };
+
+  // const handleDownload = async (fileId, fileName) => {
+  //   try {
+  //     const response = await fetchWrapper(
+  //       `/api/box/download?fileId=${fileId}`,
+  //       {},
+  //       "download"
+  //     );
+  //     if (!response.ok) throw new Error("Download failed");
+
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.download = fileName;
+  //     link.click();
+
+  //     window.URL.revokeObjectURL(url);
+  //     document.body.removeChild(link);
+  //   } catch (error) {
+  //     console.error("Download error:", error);
+  //   }
+  // };
 
   const handleDownload = async (fileId, fileName) => {
     try {
@@ -442,7 +473,6 @@ function FolderExplorer({
       link.click();
 
       window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
     } catch (error) {
       console.error("Download error:", error);
     }
@@ -488,7 +518,9 @@ function FolderExplorer({
       setIsLoading(false);
       console.log(response.json());
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
-      onFileChanges(selectedItem.id);
+      setIsDeleteModalOpen(false);
+      setDeleteDropdown(null);
+      onFileChanges(selectedItem?.id);
     } catch (error) {
       console.error("Error deleting folder:", error);
     } finally {
@@ -515,6 +547,8 @@ function FolderExplorer({
       setIsLoading(false);
       console.log(response.json());
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+      setIsDeleteModalOpen(false);
+      setDeleteDropdown(null);
       onFileChanges(folderId);
     } catch (error) {
       console.error("Error deleting folder:", error);
@@ -523,35 +557,54 @@ function FolderExplorer({
     }
   };
 
+  const getUserName = (file) => {
+    if(file.collaborators.length>0 && file.type == 'folder'){
+      const findeduser = usersList.find((user)=>user.email == file.collaborators[0].user.name);
+      return findeduser ? findeduser.name : file.collaborators[0].user.name;
+    } else if(file.type == 'file' && file.description != '') {
+      const findeduser = usersList.find((user)=>user.email == file.description);
+      return findeduser ? findeduser.name : file.description;
+    } else {
+      return '';
+    }
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  }
+
   return (
     <>
       {currentFilesList &&
         currentFilesList.length > 0 &&
         currentFilesList.map((file, index) => {
           return (
-            <tr
-              key={index}
-              className="px-3 hover:bg-gray-50 divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800"
-            >
-              <td
-                className="py-3 pl-4"
-                onClick={() =>
-                  file.type === "folder" && handleFolderClick(file)
-                }
-              >
-                <div className="flex items-center justify-start gap-3">
-                  {file.type === "folder" ? (
-                    <Folder className="h-5 w-5 text-[#3c4043]" />
-                  ) : (
-                    <File className="h-5 w-5 text-[#3c4043]" />
-                  )}
-                  <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
-                    {file?.name}
-                  </p>
-                </div>
-              </td>
+            <React.Fragment key={index}>
+              <tr className="px-3 hover:bg-gray-50 hidden md:table-row divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800">
+                <td
+                  className="py-3 pl-4"
+                  onClick={() =>
+                    file.type === "folder" && handleFolderClick(file)
+                  }
+                >
+                  <div className="flex items-center justify-start gap-3">
+                    {file.type === "folder" ? (
+                      <Folder className="h-5 w-5 text-[#3c4043]" />
+                    ) : (
+                      <File className="h-5 w-5 text-[#3c4043]" />
+                    )}
+                    <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
+                      {file?.name}
+                    </p>
+                  </div>
+                </td>
 
-              {/* <td className="py-3">
+                {/* <td className="py-3">
                 <div className="flex items-center justify-start gap-2">
                   <span className="text-gray-600 text-sm">You opened</span>
                   <span className="rounded-full bg-gray-600 h-1 w-1 block"></span>
@@ -559,106 +612,230 @@ function FolderExplorer({
                 </div>
               </td> */}
 
-              <td className="py-3">
-                <div className="flex items-center">
-                  <div>
-                    <img
-                      src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?uid=R149831676&ga=GA1.1.983684055.1709024503&semt=ais_hybrid"
-                      className="h-8 w-8 object-contain rounded-full mr-3"
-                    />
+                <td className="py-3">
+                  <div className="flex items-center">
+                    <div>
+                      <img
+                        src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?uid=R149831676&ga=GA1.1.983684055.1709024503&semt=ais_hybrid"
+                        className="h-8 w-8 object-contain rounded-full mr-3"
+                      />
+                    </div>
+                    <p className="text-gray-600 text-sm truncate max-w-40 w-full">
+                      {listType == 'shared'? getUserName(file) : 'me'}
+                    </p>
                   </div>
-                  <p className="text-gray-600 text-sm truncate max-w-40 w-full">
-                    me
-                  </p>
-                </div>
-              </td>
+                </td>
 
-              <td className="py-3">
-                <div className="flex items-center gap-3">
-                  <UsersRound className="h-5 w-5 text-gray-600" />
-                  <p className="text-gray-600 text-sm truncate max-w-40 w-full">
-                    {pathName.startsWith("/home")
-                      ? "My Folders"
-                      : "Shared wih me"}
-                  </p>
-                </div>
-              </td>
-
-              <td className="py-3 pr-3">
-                <div className="flex items-center justify-end">
-                  <div className="opacity-0 flex items-center justify-start gap-2 group-hover:opacity-100">
-                    {/* FOR ONLY FILES */}
-                    {file.type === "file" && (
-                      <button
-                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePreview(file?.id);
-                          setDeleteDropdown(null);
-                        }}
-                      >
-                        <Eye className="h-4 w-4 text-gray-600" />
-                      </button>
-                    )}
-                    {pathName.includes("/home") && (
-                      <button
-                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleShare(file);
-                          setDeleteDropdown(null);
-                        }}
-                        title="Share"
-                      >
-                        <Share2 className="h-4 w-4 text-gray-600" />
-                      </button>
-                    )}
-                    {file.type === "file" && (
-                      <button
-                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(file.id, file.name);
-                          setDeleteDropdown(null);
-                        }}
-                        title="Download"
-                      >
-                        <Download className="h-4 w-4 text-gray-600" />
-                      </button>
-                    )}
+                <td className="py-3">
+                  <div className="flex items-center gap-3">
+                    <UsersRound className="h-5 w-5 text-gray-600" />
+                    <p className="text-gray-600 text-sm truncate max-w-40">
+                      {pathName.includes("/home")
+                        ? "My Folders"
+                        : "Shared with me"}
+                    </p>
                   </div>
-                  <div className="relative">
-                    {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                    <button
-                      className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                      onClick={() => handleDelete(file?.id)}
-                    >
-                      <EllipsisVertical className="h-4 w-4 text-gray-600" />
-                    </button>
+                </td>
 
-                    {/* DELETE DROPDOWN DONE*/}
-                    {deleteDropdown === file?.id && (
-                      <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-10 overflow-hidden">
+                <td className="py-3">
+                  <p className="text-gray-600 text-sm truncate max-w-40">
+                    {formatDate(file.modified_at)}
+                  </p>
+                </td>
+
+                <td className="py-3 pr-3">
+                  <div className="flex items-center justify-end">
+                    <div className="opacity-0 flex items-center justify-start gap-2 group-hover:opacity-100">
+                      {/* FOR ONLY FILES */}
+                      {file.type === "file" && (
                         <button
-                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
-                          onClick={() => {
-                            if (file.type === "folder") {
-                              handleDeleteFolder(file?.id);
-                            } else {
-                              handleDeleteFile(file?.id);
-                            }
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePreview(file?.id);
+                            setDeleteDropdown(null);
                           }}
                         >
-                          <Trash2 className="h-4 w-4 text-gray-600" /> Delete
+                          <Eye className="h-4 w-4 text-gray-600" />
                         </button>
-                      </div>
-                    )}
+                      )}
+                      {pathName.includes("/home") && (
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleShare(file);
+                            setDeleteDropdown(null);
+                          }}
+                          title="Share"
+                        >
+                          <Share2 className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
+                      {file.type === "file" && (
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownload(file.id, file.name);
+                            setDeleteDropdown(null);
+                          }}
+                          title="Download"
+                        >
+                          <Download className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+                      <button
+                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                        onClick={() => handleDelete(file)}
+                      >
+                        <EllipsisVertical className="h-4 w-4 text-gray-600" />
+                      </button>
+
+                      {/* DELETE DROPDOWN DONE*/}
+                      {deleteDropdown === file?.id && (
+                        <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-10 overflow-hidden">
+                          <button
+                            className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                            // onClick={() => {
+                            //   if (file.type === "folder") {
+                            //     handleDeleteFolder(file?.id);
+                            //   } else {
+                            //     handleDeleteFile(file?.id);
+                            //   }
+                            // }}
+                            onClick={() =>
+                              setIsDeleteModalOpen((prev) => !prev)
+                            }
+                          >
+                            <Trash2 className="h-4 w-4 text-gray-600" /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </td>
-            </tr>
+                </td>
+              </tr>
+
+              {/* MOBILE SCREEN */}
+
+              <tr className="hover:bg-gray-50 overflow-x-hidden flex md:hidden shadow-md rounded-xl mt-2 divide-gray-200 active:bg-sky-200 active:text-sky-800">
+                <td className="py-3 px-4 col-span-2 w-full bg-white rounded-lg">
+                  <div className="flex flex-col gap-3 space-y-2 w-full">
+                    <div
+                      onClick={() =>
+                        file.type === "folder" && handleFolderClick(file)
+                      }
+                      className="cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        {file.type === "folder" ? (
+                          <Folder className="h-5 w-5 text-[#3c4043]" />
+                        ) : (
+                          <File className="h-5 w-5 text-[#3c4043]" />
+                        )}
+                        <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
+                          {file?.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-center bg-gray-50 py-8">
+                        {file.type === "folder" ? (
+                          <Folder className="h-10 w-10 text-[#3c4043]" />
+                        ) : (
+                          <File className="h-10 w-10 text-[#3c4043]" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between w-full flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          <img
+                            src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?uid=R149831676&ga=GA1.1.983684055.1709024503&semt=ais_hybrid"
+                            className="size-6 object-cover rounded-full mr-1"
+                            alt="User Avatar"
+                          />
+                          <p className="text-gray-600 text-xs truncate max-w-40">
+                            me
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <UsersRound className="size-4 text-gray-600" />
+                          <p className="text-gray-600 text-xs truncate max-w-40">
+                            {pathName.includes("/home")
+                              ? "My Folders"
+                              : "Shared with me"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {file.type === "file" && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreview(file?.id);
+                              setDeleteDropdown(null);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
+                        {pathName.includes("/home") && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(file);
+                              setDeleteDropdown(null);
+                            }}
+                            title="Share"
+                          >
+                            <Share2 className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
+                        {file.type === "file" && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(file.id, file.name);
+                              setDeleteDropdown(null);
+                            }}
+                            title="Download"
+                          >
+                            <Download className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                          onClick={() => {
+                            setIsDeleteModalOpen((prev) => !prev);
+                            setDeleteDropdown(file?.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-gray-600" />
+                        </button>
+                        <DeleteConfirmDialog
+                          isModalOpen={isDeleteModalOpen}
+                          setIsModalOpen={setIsDeleteModalOpen}
+                          handleDelete={
+                            file?.type === "file"
+                              ? () => handleDeleteFile(deleteDropdown)
+                              : () => handleDeleteFolder(deleteDropdown)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </React.Fragment>
           );
         })}
+
       {/* {currentFilesList && currentFilesList?.length === 0 && (
         <tr className="px-3">
           <td className="col-span-4">
@@ -687,10 +864,4 @@ function FolderExplorer({
     </>
   );
 }
-const EmptyState = () => (
-  <div className="flex flex-col w-full items-center justify-center py-12 text-gray-500">
-    <FileIcon size={48} className="mb-4 opacity-50" />
-    <p>No files or folders found</p>
-  </div>
-);
 export default FolderExplorer;

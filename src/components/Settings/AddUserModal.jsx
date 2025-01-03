@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import { useParams } from 'next/navigation';
 
 const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -8,7 +9,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
     email: '',
     title: '',
     companyName: '',
-    role: 'client',
+    role: 'user',
     logo: null
   });
   const [error, setError] = useState('');
@@ -20,6 +21,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
     filteredData: []
   });
   const [companySearched, setCompanySearched] = useState('');
+  const params = useParams();
   
   const handleModalClose = () => {
     // reset state on modal close
@@ -28,7 +30,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
       email: '',
       title: '',
       companyName: '',
-      role: 'client',
+      role: 'user',
       logo: null
     })
     setCompanyOptions({
@@ -45,13 +47,13 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      handleFormChange(logo, file);
+      handleFormChange("logo", file);
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const handleFormChange = (key, val) => {
-    if (!key || !val) return;
+    if (!key) return;
 
     setFormData({
       ...formData,
@@ -110,9 +112,10 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         title: formData.title,
         companyName: formData.companyName,
         role: formData.role,
-        logoUrl: logoUrl,
+        logo: logoUrl,
         boxUserId: boxData.user.userId,
-        folderId: boxData.user.folderId
+        folderId: boxData.user.folderId,
+        portal: params.portalid || ""
       };
 
       // Save user data
@@ -210,7 +213,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <input
               type="text"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.name}
               onChange={(e) => handleFormChange('name', e.target.value)}
             />
@@ -220,7 +223,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <input
               type="email"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.email}
               onChange={(e) => handleFormChange('email', e.target.value)}
             />
@@ -229,7 +232,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <label className="block text-sm font-medium text-gray-700">Title</label>
             <input
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.title}
               onChange={(e) => handleFormChange('title', e.target.value)}
             />
@@ -238,7 +241,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <label className="block text-sm font-medium text-gray-700">Company Name</label>
             <input
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.companyName}
               onChange={(e) => handleFormChange('companyName', e.target.value)}
             />
@@ -302,7 +305,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               onChange={(e) => handleFormChange('role', e.target.value)}
               style={{ height: '2.5rem' }}
             >
-              <option value="client">Client</option>
+              <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
           </div>

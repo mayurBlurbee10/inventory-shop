@@ -7,7 +7,9 @@
       "@/lib/*": ["./src/app/lib/*"],
       "@/app/*": ["./src/app/*"]
     },
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
   },
   "include": ["src"],
   "exclude": ["node_modules"]
