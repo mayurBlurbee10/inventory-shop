@@ -102,7 +102,7 @@ export async function POST(request) {
       folderId: userData.folderId,
       company: {
         name: userData.companyName,
-        logo: userData.logoUrl,
+        logo: userData.logo,
       },
       collaborationIds: [],
       // createdAt: new Date().toISOString(),

@@ -186,7 +186,8 @@ export async function POST(request) {
       collaborationIds: user.collaborationIds,
     };
 
-    const accessToken = await generateToken(user, '168h')
+    const accessToken = await generateToken(userData, '168h');
+    await userService.setUserAccessToken(data.email, accessToken)
 
     // Create response with cookie
     const response = NextResponse.json({

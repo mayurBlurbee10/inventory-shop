@@ -40,10 +40,10 @@ export class Users extends BaseTable {
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   extra;
 
-  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
+  @Column({ type: "nvarchar", length: "MAX", nullable: true, default: null })
   accessToken;
 
-  @Column({ type: "uuid", nullable: true, default: null })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   resetPasswordToken;
 
   @Column({

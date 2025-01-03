@@ -8,7 +8,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
     email: '',
     title: '',
     companyName: '',
-    role: 'client',
+    role: 'user',
     logo: null
   });
   const [error, setError] = useState('');
@@ -28,7 +28,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
       email: '',
       title: '',
       companyName: '',
-      role: 'client',
+      role: 'user',
       logo: null
     })
     setCompanyOptions({

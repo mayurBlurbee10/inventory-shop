@@ -1,4 +1,5 @@
-import { ensureDirectory, logApiCall, readJsonFile, writeJsonFile } from "@/app/lib/api-log-middleware";
+import { logApiCall } from "@/app/lib/api-log-middleware";
+import userService from "@/services/userService";
 import { NextResponse } from "next/server";
 import path from "path";
 
@@ -17,10 +18,7 @@ export async function GET(request) {
       );
     }
 
-    await ensureDirectory(dir);
-    const users = await readJsonFile(filePath);
-
-    const selectedUser = users.find((user) => user.resetToken === token);
+    const selectedUser = await userService.getUserByResetPasswordToken(token);
     if (!selectedUser) {
       return NextResponse.json(
         { error: "Link may have expired." },
@@ -49,20 +47,8 @@ export async function POST(request) {
       );
     }
 
-    await ensureDirectory(dir);
-    const users = await readJsonFile(filePath);
-    const userIndex = users.findIndex((item) => item?.resetToken === token);
-    if (userIndex < 0) {
-      return NextResponse.json(
-        { error: "Link may have expired." },
-        { status: 404 }
-      );
-    }
-    users[userIndex].resetToken = null;
-    users[userIndex].password = password;
-
-    await writeJsonFile(dir, filePath, users);
-    return NextResponse.json({ message: "Password Set successfully" }, { status: 200 });
+    const message = await userService.setPasswordByResetPasswordToken(token, password);
+    return NextResponse.json({ message }, { status: 200 });
 
   } catch (error) {
     console.error("Error in POST /api/setPassword:", error);
