@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
-import BoxSDK from "box-node-sdk";
-import { promises as fs } from "fs";
-import path from "path";
-import { cookies } from "next/headers";
-import { logApiCall } from "@/app/lib/api-log-middleware";
+import { NextResponse } from 'next/server';
+import BoxSDK from 'box-node-sdk';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { cookies } from 'next/headers';
+import { logApiCall } from '@/app/lib/api-log-middleware';
+import { generateToken } from '@/app/lib/jwt';
 import * as bcrypt from "bcrypt";
 import userService from "@/services/userService";
 
@@ -185,10 +186,13 @@ export async function POST(request) {
       collaborationIds: user.collaborationIds,
     };
 
+    const accessToken = await generateToken(user, '168h')
+
     // Create response with cookie
     const response = NextResponse.json({
       success: true,
       user: userData,
+      accessToken
     });
 
     // Set cookie in response headers
@@ -198,6 +202,13 @@ export async function POST(request) {
       sameSite: "lax",
       path: "/",
       maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+    response.cookies.set('token', accessToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 // 7 days
     });
 
     console.log("Sending response with user data:", userData);

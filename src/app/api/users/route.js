@@ -1,8 +1,10 @@
 // src/app/api/users/route.js
-import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-import { logApiCall } from "@/app/lib/api-log-middleware";
+import { NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { logApiCall } from '@/app/lib/api-log-middleware';
+import { generateNanoToken } from '@/app/lib/jwt';
+import { sendSetPasswordEmail } from '@/app/lib/email';
 import userService from "@/services/userService";
 
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
@@ -87,6 +89,7 @@ export async function POST(request) {
     //   );
     // }
 
+    const token = await generateNanoToken();
     // Add new user with password
     const newUser = {
       // id: Date.now().toString(),
@@ -99,10 +102,12 @@ export async function POST(request) {
       folderId: userData.folderId,
       company: {
         name: userData.companyName,
-        logo: userData.logo,
+        logo: userData.logoUrl,
       },
       collaborationIds: [],
       // createdAt: new Date().toISOString(),
+      role:userData.role,
+      resetPasswordToken: token
     };
 
     // console.log("Created new user object:", newUser);
@@ -110,6 +115,7 @@ export async function POST(request) {
 
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
+    sendSetPasswordEmail(newUser.email, newUser.name, token);
     console.log("Successfully saved new user");
 
     return NextResponse.json(user);

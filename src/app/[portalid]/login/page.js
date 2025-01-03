@@ -143,7 +143,8 @@ export default function SubsidiariesLoginPage() {
       // Store user data using auth utility
       const userData = data.user;
       setUserData(userData);
-      localStorage.setItem("portal", params);
+      localStorage.setItem("portal", params.portalid);
+      localStorage.setItem('accessToken', data.accessToken);
 
       console.log("Redirecting to home");
       router.push(`home`);

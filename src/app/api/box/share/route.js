@@ -31,7 +31,7 @@ export async function GET(request) {
     }
 
     const fileDetails = await client.files.get(fileId);
-
+    
     if (!fileDetails) {
       return NextResponse.json(
         { error: "File not found." },
@@ -61,11 +61,22 @@ export async function GET(request) {
           fileStream.on("error", (err) => controller.error(err));
         },
       });
+
+      const mimeType = {
+        pdf: 'application/pdf',
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        mp4: 'video/mp4',
+        mp3: 'audio/mp3',
+        svg: 'image/svg+xml',
+      };
+      
+      const extension = fileDetails.name.split('.')[1]; 
   
 
       const headers = new Headers({
-        "Content-Type": "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${fileDetails.name}"`,
+        "Content-Type": mimeType[extension] || "application/octet-stream",
+        "Content-Disposition": `inline; filename="${fileDetails.name}"`,
       });
   
       return new NextResponse(stream, { headers });

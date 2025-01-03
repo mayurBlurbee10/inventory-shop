@@ -30,7 +30,7 @@ export async function POST(request) {
     
     // Return the public URL
     return NextResponse.json({ 
-      url: `/uploads/${filename}`
+      url: `/api/upload/${filename}`
     });
   } catch (error) {
     console.error('Error uploading file:', error);

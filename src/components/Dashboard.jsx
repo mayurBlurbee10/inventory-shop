@@ -356,7 +356,7 @@ function Dashboard({ fileType }) {
   useEffect(() => {
     const userData = getUserData();
     if (!userData) {
-      router.push("/login");
+      router.push("login");
       return;
     }
 
