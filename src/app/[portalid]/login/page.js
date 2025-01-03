@@ -120,7 +120,6 @@ export default function SubsidiariesLoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     try {
       const response = await fetchWrapper(
         "/api/auth/login",
@@ -134,12 +133,12 @@ export default function SubsidiariesLoginPage() {
         "default-login"
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || "Login failed");
       }
 
+      const data = await response.json();
       // Store user data using auth utility
       const userData = data.user;
       setUserData(userData);
@@ -149,7 +148,7 @@ export default function SubsidiariesLoginPage() {
       console.log("Redirecting to home");
       router.push(`home`);
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Login error:", err.message);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -372,11 +371,11 @@ export default function SubsidiariesLoginPage() {
                 </div>
               )}
 
-              <div className="text-center mt-4">
+              {/* <div className="text-center mt-4">
                 <button className="text-text/40 hover:text-text/60">
                   Forgot password?
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

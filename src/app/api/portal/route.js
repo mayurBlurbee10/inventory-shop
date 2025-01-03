@@ -49,13 +49,8 @@ export async function POST(req) {
   if (!legalName) {
     return NextResponse.json({ error: "Name are required" }, { status: 400 });
   }
-  // legalName = sanitizeName(legalName);
-  // const filePath = path.join(portalsDir, `${legalName}.config`);
 
   try {
-    // await ensurePortalsDirectory();
-    // try {
-    // await fs.access(filePath);
     const portalExist = await portalService.getPortalByLegalName(legalName);
     if (portalExist) {
       return NextResponse.json(
@@ -63,14 +58,6 @@ export async function POST(req) {
         { status: 409 }
       );
     }
-    // } catch {
-    //   // File does not exist, proceed to create it
-    //   await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-    //   console.log(`Config file ${legalName}.config created successfully.`);
-    //   return NextResponse.json({
-    //     message: `Config file ${legalName}.config created successfully.`,
-    //   });
-    // }
     const portal = await portalService.createPortal(data);
     if (!portal) {
       return NextResponse.json(
@@ -97,48 +84,27 @@ export async function GET(req) {
     await ensurePortalsDirectory();
 
     const { searchParams } = new URL(req.url);
-    const fileName = searchParams.get("portalid");
-
-    // const files = await fs.readdir(portalsDir);
-    // const portalFiles = files.filter((file) => file.endsWith(".config"));
-
-    // if (fileName) {
-    //   const sanitizedFileName = fileName.endsWith(".config")
-    //     ? fileName
-    //     : `${fileName}.config`;
-    //   if (portalFiles.includes(sanitizedFileName)) {
-    //     const filePath = path.join(portalsDir, sanitizedFileName);
-    //     const fileContent = await fs.readFile(filePath, "utf8");
-    //     return NextResponse.json({
-    //       message: `File ${sanitizedFileName} retrieved successfully.`,
-    //       data: JSON.parse(fileContent),
-    //     });
-    //   } else {
-    //     return NextResponse.json(
-    //       { error: `File ${sanitizedFileName} not found.` },
-    //       { status: 404 }
-    //     );
-    //   }
-    // }
-
-    // const portalData = {};
-    // for (const file of portalFiles) {
-    //   const filePath = path.join(portalsDir, file);
-    //   const fileContent = await fs.readFile(filePath, "utf8");
-    //   portalData[file] = JSON.parse(fileContent);
-    // }
-    const portalLegalName = reverseSanitizeName(fileName);
-    const portal = await portalService.getPortalByLegalName(portalLegalName);
-    if (!portal) {
-      return NextResponse.json(
-        { error: `portal ${fileName} not found.` },
-        { status: 404 }
-      );
+    const portalId = searchParams.get("portalid");
+    if (!!portalId) {
+      const portalLegalName = reverseSanitizeName(portalId);
+      const portal = await portalService.getPortalByLegalName(portalLegalName);
+      if (!portal) {
+        return NextResponse.json(
+          { error: `portal ${portalId} not found.` },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({
+        message: `portal retrieved successfully.`,
+        data: portal,
+      });
+    } else {
+      const portals = await portalService.getPortals();
+      return NextResponse.json({
+        message: `portals retrieved successfully.`,
+        data: portals
+      })
     }
-    return NextResponse.json({
-      message: `portal retrieved successfully.`,
-      data: portal,
-    });
   } catch (error) {
     console.error("Error fetching portal files:", error.message);
     return NextResponse.json(

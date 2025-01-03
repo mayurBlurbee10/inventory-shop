@@ -85,13 +85,15 @@ function Header({
                   <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
                     <CircleUserRound className="h-5 w-5" /> Account Info
                   </button>
-                  <button
-                    onClick={handelSettings}
-                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                  >
-                    <Settings className="h-5 w-5" />
-                    Settings
-                  </button>
+                  {userIsAdmin && (
+                    <button
+                      onClick={handelSettings}
+                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                    >
+                      <Settings className="h-5 w-5" />
+                      Settings
+                    </button>
+                  )}
                   <button
                     onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
@@ -111,7 +113,7 @@ function Header({
             </div>
           </div>
         </div>
-        <div className="absolute bottom-0 right-0 pb-3 pl-3 pr-3 hidden xl:block">
+        <div className="fixed bottom-0 left-0 pb-3 pl-3 pr-3 hidden xl:block">
           <div className="flex items-center justify-center mt-5">
             {/* <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" /> */}
             <img

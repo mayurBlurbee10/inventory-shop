@@ -6,19 +6,23 @@ import {
   Upload,
   UsersRound,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 function Sidepanel({
+  userIsAdmin,
   sidepanelDropdown,
   setSidepanelDropdown,
   setIsNewFolderModalOpen,
   setShowUploadArea,
   router,
+  isSettingsOpen,
   handelSettings,
 }) {
+  const pathName = usePathname();
   return (
     <div className="max-w-[260px] hidden md:flex w-full">
-      <div className="p-4">
+      <div className="p-4 w-full">
         <div className="relative">
           {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
           <button
@@ -62,25 +66,45 @@ function Sidepanel({
           )}
 
           <button
-            className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
+            className={`flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-sm my-1 
+            ${
+              pathName.includes("/home")
+                ? "bg-sky-200 text-sky-800"
+                : "text-gray-800 hover:bg-gray-200"
+            }
+          `}
             onClick={() => router.push("home")}
           >
             <House className="h-5 w-5" /> Home
           </button>
 
           <button
-            className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+            className={`flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-sm my-1 
+            ${
+              pathName.includes("/sharewithme")
+                ? "bg-sky-200 text-sky-800"
+                : "text-gray-800 hover:bg-gray-200"
+            }
+          `}
             onClick={() => router.push("sharewithme")}
           >
             <UsersRound className="h-5 w-5" /> Shared with me
           </button>
 
-          <button
-            className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
-            onClick={handelSettings}
-          >
-            <Settings className="h-5 w-5" /> Settings
-          </button>
+          {userIsAdmin && (
+            <button
+            className={`flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-sm my-1 
+            ${
+              isSettingsOpen
+                ? "bg-sky-200 text-sky-800"
+                : "text-gray-800 hover:bg-gray-200"
+            }
+          `}
+              onClick={handelSettings}
+            >
+              <Settings className="h-5 w-5" /> Settings
+            </button>
+          )}
         </div>
       </div>
     </div>

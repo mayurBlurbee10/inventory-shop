@@ -420,12 +420,14 @@ function Dashboard({ fileType }) {
 
         <div className="flex flex-row">
           <Sidepanel
+            userIsAdmin={userIsAdmin}
             sidepanelDropdown={sidepanelDropdown}
             setSidepanelDropdown={setSidepanelDropdown}
             setIsNewFolderModalOpen={setIsNewFolderModalOpen}
             showUploadArea={showUploadArea}
             setShowUploadArea={setShowUploadArea}
             router={router}
+            isSettingsOpen={isSettingsOpen}
             handelSettings={() => setIsSettingsOpen(true)}
           />
 
@@ -487,7 +489,7 @@ function Dashboard({ fileType }) {
               <Breadcrumbs path={path} setPath={setPath} />
             </div>
             {/* TABLE START */}
-            <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar flex-grow">
+            <div className="overflow-auto h-[calc(100vh-314px)] custom-scrollbar flex-grow">
               <div className="bg-white xl:pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
                   {!currentFilesList || currentFilesList?.length === 0 ? (

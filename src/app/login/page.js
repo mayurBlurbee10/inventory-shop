@@ -61,12 +61,12 @@ export default function LoginPage() {
         "default-login"
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || "Login failed");
       }
-
+      
+      const data = await response.json();
       // Store user data using auth utility
       const userData = data.user;
       console.log("Storing user data:", userData);
@@ -268,11 +268,11 @@ export default function LoginPage() {
               </div>
             )}
 
-            <div className="text-center mt-4">
+            {/* <div className="text-center mt-4">
               <button className="text-text/40 hover:text-text/60">
                 Forgot password?
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

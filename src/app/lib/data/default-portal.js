@@ -4,7 +4,7 @@ export const defaultPortal = [
     title: "Contact Info",
     type: "Text",
     value:
-      "Energy and Environmental Economics, Inc. (E3)\nPart of the Willdan Group, Inc.\nSan Francisco 415.391.5100 | Boston 617.203.7689 | New York 646.699.3773\ninfo@ethree.com",
+      "San Francisco 415.391.5100 | Boston 617.203.7689 | New York 646.699.3773",
     lastUpdated: "12-31-2024 14:21:58",
     portal: "crowley",
   },
