@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import { useParams } from 'next/navigation';
 
 const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -20,6 +21,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
     filteredData: []
   });
   const [companySearched, setCompanySearched] = useState('');
+  const params = useParams();
   
   const handleModalClose = () => {
     // reset state on modal close
@@ -112,7 +114,8 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         role: formData.role,
         logo: logoUrl,
         boxUserId: boxData.user.userId,
-        folderId: boxData.user.folderId
+        folderId: boxData.user.folderId,
+        portal: params.portalid || ""
       };
 
       // Save user data

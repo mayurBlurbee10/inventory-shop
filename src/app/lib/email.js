@@ -3,13 +3,36 @@ import { EmailClient } from "@azure/communication-email";
 const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const client = new EmailClient(connectionString);
 
+function reverseSanitizeName(sanitizedName) {
+  // If the sanitized name ends with a hyphen, remove it
+  let reversedName = sanitizedName.endsWith("-")
+    ? sanitizedName.slice(0, -1)
+    : sanitizedName;
+
+  // Replace hyphens with spaces
+  reversedName = reversedName.replace(/-/g, " ");
+
+  // Capitalize the first letter of each word
+  reversedName = reversedName
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  // Return the reconstructed name
+  return reversedName;
+}
+
 export const sendSetPasswordEmail = async (
   userEmail,
   userName,
-  resetToken
+  resetToken,
+  portalName
 ) => {
   try {
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/set-password?token=${resetToken}`;
+    const portal = userData.portal != '' ? reverseSanitizeName(portalName) : 'Mstrategy';
+    const resetLink = userData.portal != '' 
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/set-password?token=${resetToken}`
+      : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/set-password?token=${resetToken}`;
 
     const emailContent = {
       senderAddress: process.env.AZURE_COMMUNICATION_SENDER_EMAIL, // Sender email
@@ -44,7 +67,7 @@ export const sendSetPasswordEmail = async (
                   >
                     <div style="padding: 40px 50px; line-height: 1.6">
                       <h1 style="font-family: Lato, Helvetica" class="align-left">
-                        Welcome to Mstrategy<br />
+                        Welcome to ${portal}<br />
                       </h1>
                       <p
                         style="margin: 0px 0px 20px; text-align: left"
@@ -66,7 +89,7 @@ export const sendSetPasswordEmail = async (
                           ><span
                             class="size"
                             style="font-size: 16px; margin: 0px 0px 20px"
-                            >Welcome to Mstrategy We're excited to have you on
+                            >Welcome to ${portal} We're excited to have you on
                             board.</span
                           ></span
                         ><br />
@@ -129,7 +152,7 @@ export const sendSetPasswordEmail = async (
                               font-size: 14px;
                               margin: 0px 0px 10px;
                             "
-                            >© 2024 Mstrategy portal</span
+                            >© 2024 ${portal} portal</span
                           ><span
                             class="size"
                             style="

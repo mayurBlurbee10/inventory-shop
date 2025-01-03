@@ -115,7 +115,7 @@ export async function POST(request) {
 
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
-    sendSetPasswordEmail(newUser.email, newUser.name, token);
+    sendSetPasswordEmail(newUser.email, newUser.name, token, userData.portal);
     console.log("Successfully saved new user");
 
     return NextResponse.json(user);
