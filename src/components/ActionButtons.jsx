@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import { FolderPlus, Upload, Share2, X, Loader2 } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
@@ -15,6 +15,33 @@ export default function ActionButtons({
   const [folderName, setFolderName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [config, setConfig] = useState(null);
+
+      useEffect(() => {
+        const fetchConfig = async () => {
+          try {
+            setIsLoading(true);
+            const portalId = localStorage.getItem('portal');
+            
+            const response = await fetchWrapper(
+              `/api/portal?portalid=${portalId || "default"}`,
+              {},
+              "portal-config"
+            );
+            if (!response.ok) {
+              throw new Error("Failed to fetch users");
+            }
+            const data = await response.json();
+            setConfig(data.data);
+          } catch (error) {
+            console.log("error: ", error);
+            setIsLoading(false);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        fetchConfig();
+      }, []);
 
   const handleCreateFolder = async () => {
     if (!folderName.trim()) return;
@@ -107,17 +134,15 @@ export default function ActionButtons({
                 </div>
                 <div className="flex justify-center space-x-3">
                   <button
-                    onClick={() => {}}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </button>
-                  <button
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                    className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200"
+                    style={{ backgroundColor: config?.secondaryColor }}
                   >
-                    Close
+                    {isLoading ? (
+                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                    ) : (
+                      "Done"
+                    )}
                   </button>
                 </div>
               </div>
@@ -133,7 +158,10 @@ export default function ActionButtons({
                 />
                 <div className="flex justify-end space-x-3 mt-4">
                   <button
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setFolderName("");
+                    }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                     disabled={isLoading}
                   >

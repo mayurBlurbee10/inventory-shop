@@ -585,7 +585,7 @@ function FolderExplorer({
         currentFilesList.map((file, index) => {
           return (
             <React.Fragment key={index}>
-              <tr className="px-3 hover:bg-gray-50 hidden md:table-row divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800">
+              <tr className="px-3 hover:bg-gray-50 hidden md:table-row divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800 relative z-[20]">
                 <td
                   className="py-3 pl-4"
                   onClick={() =>

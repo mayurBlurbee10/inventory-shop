@@ -177,6 +177,7 @@ export async function POST(request) {
       email: user.email,
       name: user.name,
       role: user.role,
+      company: user.company,
       boxUserId: user.boxUserId,
       boxFolderId: user.folderId,
       boxFiles: boxData?.files || [],

@@ -40,7 +40,7 @@ export const sendSetPasswordEmail = async (
         to: [{ address: userEmail }],
       }, // Recipient email address
       content: {
-        subject: "Set Password Request",
+        subject: `You got invited to ${portal}'s portal!`,
         html: `
         <div><br /></div>
           <table
@@ -67,7 +67,7 @@ export const sendSetPasswordEmail = async (
                   >
                     <div style="padding: 40px 50px; line-height: 1.6">
                       <h1 style="font-family: Lato, Helvetica" class="align-left">
-                        Welcome to ${portal}<br />
+                        Welcome to ${portal}'s Portal<br />
                       </h1>
                       <p
                         style="margin: 0px 0px 20px; text-align: left"
@@ -89,8 +89,7 @@ export const sendSetPasswordEmail = async (
                           ><span
                             class="size"
                             style="font-size: 16px; margin: 0px 0px 20px"
-                            >Welcome to ${portal} We're excited to have you on
-                            board.</span
+                            >You just got invited to see and share files on ${portal}'s Portal. We're excited to have you on board. Get started by clicking the link below to finish setting up your account.</span
                           ></span
                         ><br />
                       </p>

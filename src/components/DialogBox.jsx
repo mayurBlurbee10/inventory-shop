@@ -1,7 +1,38 @@
 import { Dialog, DialogBackdrop } from "@headlessui/react";
+import { useEffect, useState } from "react";
 import { Share2, X } from "lucide-react";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 const DialogBox = ({title, message, fileLocation, isModalOpen, setIsModalOpen}) => {
+  const [config, setConfig] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+      const fetchConfig = async () => {
+        try {
+          setIsLoading(true);
+          const portalId = localStorage.getItem('portal');
+          
+          const response = await fetchWrapper(
+            `/api/portal?portalid=${portalId || "default"}`,
+            {},
+            "portal-config"
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch users");
+          }
+          const data = await response.json();
+          setConfig(data.data);
+        } catch (error) {
+          console.log("error: ", error);
+          setIsLoading(false);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchConfig();
+    }, []);
+
   return (
     <Dialog
       open={isModalOpen}
@@ -25,23 +56,24 @@ const DialogBox = ({title, message, fileLocation, isModalOpen, setIsModalOpen}) 
             </button>
           </div>
           <div className="text-center py-4">
-            <div className="text-lg text-green-600 mb-4">
-              {message}
-            </div>
-           { fileLocation && <div className="text-gray-600 mb-4" dangerouslySetInnerHTML={{__html:fileLocation}}></div>}
+            <div className="text-lg text-green-600 mb-4">{message}</div>
+            {fileLocation && (
+              <div
+                className="text-gray-600 mb-4"
+                dangerouslySetInnerHTML={{ __html: fileLocation }}
+              ></div>
+            )}
             <div className="flex justify-center space-x-3">
               <button
-                onClick={() => {}}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </button>
-              <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200"
+                style={{ backgroundColor: config?.secondaryColor }}
               >
-                Close
+                {isLoading ? (
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                ) : (
+                  "Done"
+                )}
               </button>
             </div>
           </div>

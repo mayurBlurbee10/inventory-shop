@@ -51,7 +51,11 @@ function Header({
             </div>
             {/* <img src="/logo.png" alt="Wealthportal" className="h-12 w-auto" /> */}
             <img
-              src={config?.logo || "/logo.png"}
+              src={
+                user?.company?.logo
+                  ? user.company.logo.replace("/api/upload", "/uploads")
+                  : config?.logo || "/logo.png"
+              }
               alt="Premierportal"
               className="h-12 xl:h-24 w-auto"
             />
@@ -113,21 +117,21 @@ function Header({
             </div>
           </div>
         </div>
-        <div className="fixed bottom-0 left-0 pb-3 pl-3 pr-3 hidden xl:block">
-          <div className="flex items-center justify-center mt-5">
-            {/* <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" /> */}
-            <img
-              src={config?.logo || "/logo.png"}
-              alt="Premierportal"
-              className="h-16 w-auto"
-            />
+        {user?.company?.logo && (
+          <div className="fixed bottom-1 right-7 pb-1 pl-3 pr-3 mr-5 hidden xl:block bg-white shadow p-1 rounded-md z-10">
+            <div>
+              <p className="text-gray-500 text-[9px]">Powered by</p>
+            </div>
+            <div className="flex items-center justify-center">
+              {/* <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" /> */}
+              <img
+                src={config?.logo || "/logo.png"}
+                alt="Premierportal"
+                className="h-16 w-auto"
+              />
+            </div>
           </div>
-          <div className="flex items-center justify-center mt-5">
-            <p className="text-gray-500 text-sm">
-              Powered by {config?.tradingName || "M Strategy"} Digital Systems.
-            </p>
-          </div>
-        </div>
+        )}
       </header>
       {isSideMenuOpen && (
         <div className="max-w-[260px] h-screen flex  md:hidden bg-gray-50 absolute left-0 top-0 text-[#3c4043] z-20">
