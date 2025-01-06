@@ -16,6 +16,7 @@ export const AppDataSource = new DataSource({
 });
 
 export const connectDatabase = async () => {
+  console.log('connect Database: ', AppDataSource.isInitialized)
   if (!AppDataSource.isInitialized) {
     await AppDataSource.initialize();
     console.log("TypeORM connected");
@@ -24,6 +25,7 @@ export const connectDatabase = async () => {
 
 export const getConnection = () => {
   if (!AppDataSource.isInitialized) {
+    console.log('get connection: ', 'Connection not established')
     throw new Error("Connection not established");
   }
   console.log(AppDataSource.options.entities);
@@ -31,6 +33,6 @@ export const getConnection = () => {
     "Registered Entities:",
     AppDataSource.entityMetadatas.map((meta) => meta.name)
   );
-  // console.log("Entity Metadata:", AppDataSource.entityMetadatas);
+  console.log("Entity Metadata:", AppDataSource.entityMetadatas);
   return AppDataSource;
 };

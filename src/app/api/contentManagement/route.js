@@ -109,9 +109,11 @@ export async function POST(request) {
   }
 }
 export async function GET(request) {
+  console.log('getContentManagement')
   try {
     await logApiCall(request);
     const portalId = request.nextUrl.searchParams.get("portalId") || "default";
+    console.log('content portalId: ', portalId)
     // Ensure the directory exists
     // await ensureDirectory(dir);
     // Read content items from JSON file
@@ -119,6 +121,7 @@ export async function GET(request) {
     const contentItems = await contentManagementService.getContentManagement(
       portalId
     );
+    console.log('contentItems: ', JSON.stringify(contentItems))
     // let portalexist = contentItems.findIndex((item) => item.key === portalId);
     // if (portalexist === -1) {
     //   portalexist = contentItems.findIndex((item) => item.key === "default");

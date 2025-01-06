@@ -16,24 +16,28 @@ const createPortal = async (data) => {
 };
 
 const getPortals = async () => {
+  console.log('getPortals')
   await connectDatabase();
   const connection = getConnection();
   const portalRepository = connection.getRepository(Portals);
   try {
-    return await portalRepository.find();
+    const portals = await portalRepository.find();
+    console.log('portals: ', portals)
   } catch (error) {
     throw new Error("Failed to get portal.");
   }
 };
 
 const getPortalByLegalName = async (legalName) => {
+  console.log('getPortalByLegalName')
   await connectDatabase();
   const connection = getConnection();
   const portalRepository = connection.getRepository(Portals);
   try {
-    return await portalRepository.findOneBy({
+    const portal = await portalRepository.findOneBy({
       legalName: legalName,
     });
+    console.log('portal: ', portal)
   } catch (error) {
     throw new Error("Failed to get portal.");
   }
