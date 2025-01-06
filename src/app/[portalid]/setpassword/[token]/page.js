@@ -48,7 +48,7 @@ export default function SetPassword() {
       const data = await response.json();
       if (response.ok) {
         setSuccess(true);
-        setTimeout(() => router.push("/login"), 3000);
+        setTimeout(() => router.push("login"), 3000);
       } else {
         setError(data.error || "Failed to set password.");
       }

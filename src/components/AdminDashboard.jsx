@@ -142,6 +142,11 @@ export default function AdminDashboard() {
     router.push(`/admin/subsidiaries/${subsidiary.id}`);
   };
 
+  const sanitizeName = (name) => {
+    let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+    return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
+  }
+
   const handleCreateSubsidiary = async(formData) => {
     let newSubsidiary = {
       legalName: formData.legalName,
@@ -207,6 +212,50 @@ export default function AdminDashboard() {
       if (!saveResponse.ok) {
         throw new Error('Failed to save user data');
       }
+
+      // Create Box user
+      const boxResponse = await fetchWrapper('/api/box/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userName: formData.adminEmail,
+          externalId: `user_${Date.now()}`
+        }),
+      },'create-user-box');
+
+      const boxData = await boxResponse.json();
+
+      if (!boxResponse.ok) {
+        throw new Error(boxData.error || 'Failed to create Box user');
+      }
+
+      const userData = {
+        email: formData.adminEmail,
+        name: `${formData.firstName} ${formData.lastName}`,
+        title: formData.jobTitle,
+        companyName: formData.legalName,
+        role: 'admin',
+        logo: logoUrl,
+        boxUserId: boxData.user.userId,
+        folderId: boxData.user.folderId,
+        portal: sanitizeName(formData.legalName) || "",
+        isOnboardingRequired: true
+      };
+
+      const UserResponse = await fetchWrapper('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      },'save-user');
+
+      if (!UserResponse.ok) {
+        throw new Error('Failed to save user data');
+      }
+
       setSubsidiaries(prev => [...prev, newSubsidiary]);
     } catch (error) {
       console.error('Error uploading files:', error);

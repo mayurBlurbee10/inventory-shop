@@ -115,7 +115,8 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         logo: logoUrl,
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId,
-        portal: params.portalid || ""
+        portal: params.portalid || "",
+        isOnboardingRequired: false
       };
 
       // Save user data

@@ -185,9 +185,12 @@ export async function POST(request) {
       boxFolderInfo: boxData?.folder || null,
       boxError: boxData?.error,
       collaborationIds: user.collaborationIds,
+      isOnboardingRequired: user.isOnboardingRequired
     };
 
-    const accessToken = await generateToken(userData, '168h');
+    const {boxFiles,boxUserInfo,boxFolderInfo,boxError,...rest} = userData;
+
+    const accessToken = await generateToken(rest, '168h');
     await userService.setUserAccessToken(data.email, accessToken)
 
     // Create response with cookie
@@ -198,7 +201,7 @@ export async function POST(request) {
     });
 
     // Set cookie in response headers
-    response.cookies.set("user", JSON.stringify(userData), {
+    response.cookies.set("user", JSON.stringify(rest), {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

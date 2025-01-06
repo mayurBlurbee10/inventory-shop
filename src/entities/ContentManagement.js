@@ -14,6 +14,6 @@ export @Entity()
   @Column({ type: "nvarchar", length: 500, nullable: true, default: null })
   value;
 
-  @ManyToOne(() => Portals, (portal) => portal.content, { nullable: true })
-  portal;
+  @Column({ type: "nvarchar", length: 255, nullable: true })
+  portalId;
 }

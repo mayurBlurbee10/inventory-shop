@@ -14,11 +14,11 @@ export async function GET(request) {
   try {
     await logApiCall(request);
     await ensureDirectory(dir);
-    const portalId = request.nextUrl.searchParams.get("portalId") || "default";
-    // const contentTypes = await readJsonFile(filePath);
-    const contentTypes = await contentManagementService.getContentManagement(
-      portalId
-    );
+    const contentTypes = await readJsonFile(filePath);
+    // const portalId = request.nextUrl.searchParams.get("portalId") || "default";
+    // const contentTypes = await contentManagementService.getContentManagement(
+    //   portalId
+    // );
     return NextResponse.json(contentTypes, { status: 200 });
   } catch (error) {
     console.error("Error in GET /api/content-type:", error);

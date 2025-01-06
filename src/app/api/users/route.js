@@ -51,7 +51,15 @@ async function writeUsers(users) {
 export async function GET(request) {
   console.log("GET request received for users");
   await logApiCall(request);
-  const users = await userService.getUsers();
+  const { searchParams } = new URL(request.url);
+  const portalid = searchParams.get('portalid');
+  let users = {}
+  if(portalid){
+    users = await userService.getUsersByPortal(portalid);
+  } else {
+    users = await userService.getUsers();
+  }
+  
   return NextResponse.json(users);
 }
 
@@ -107,7 +115,9 @@ export async function POST(request) {
       collaborationIds: [],
       // createdAt: new Date().toISOString(),
       role:userData.role,
-      resetPasswordToken: token
+      resetPasswordToken: token,
+      isOnboardingRequired: userData.isOnboardingRequired,
+      portalId:userData.portal
     };
 
     // console.log("Created new user object:", newUser);
@@ -123,6 +133,21 @@ export async function POST(request) {
     console.error("Error in POST /api/users:", error);
     return NextResponse.json(
       { error: "Failed to save user", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request) {
+  try {
+    await logApiCall(request);
+    const userData = await request.json();
+    const user = await userService.setUserOnboarding(userData.id);
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("Error in PUT /api/users:", error);
+    return NextResponse.json(
+      { error: "Failed to edit user", details: error.message },
       { status: 500 }
     );
   }

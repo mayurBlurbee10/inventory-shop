@@ -35,9 +35,10 @@ const createContentManagement = async (data) => {
 
     // Create ContentManagement entry
     const content = contentRepository.create({
-      portal,
+      portalId: data.portalId,
       title: data.title,
       type: data.type,
+      value: data.value,
     });
 
     return await contentRepository.save(content);
@@ -47,29 +48,28 @@ const createContentManagement = async (data) => {
 };
 
 const getContentManagement = async (portalId) => {
-  const sanitizedLegalName = reverseSanitizeName(portalId);
   await connectDatabase();
   const connection = getConnection();
   const contentRepository = connection.getRepository(ContentManagement);
   try {
-    return await contentRepository.find({
-      where: { portal: { legalName: sanitizedLegalName } },
+    const contents = await contentRepository.find({
+      where: { portalId },
     });
+    console.log('contents: ', contents)
+    return contents;
   } catch (error) {
     throw new Error("Failed to get content.");
   }
 };
 
 const updateContentManagement = async (data) => {
-  const sanitizedLegalName = reverseSanitizeName(data.portalId);
   await connectDatabase();
   const connection = getConnection();
   const contentRepository = connection.getRepository(ContentManagement);
 
   try {
     const content = await contentRepository.findOne({
-      where: { portal: { legalName: sanitizedLegalName }, title: data.title },
-      relations: ["portal"],
+      where: { portalId: data.portalId, title: data.title }
     });
 
     if (!content) {
@@ -84,8 +84,20 @@ const updateContentManagement = async (data) => {
   }
 };
 
+const removeOldEntry = async(entity) => {
+  await connectDatabase();
+  const connection = getConnection();
+  const contentRepository = connection.getRepository(ContentManagement);
+  try {
+   return contentRepository.remove(entity)
+  } catch (error) {
+    throw new Error(`Failed to remove content: ${error.message}`);
+  }
+};
+
 export default {
   createContentManagement,
   getContentManagement,
   updateContentManagement,
+  removeOldEntry
 };

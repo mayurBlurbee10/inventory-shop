@@ -29,6 +29,19 @@ const getUsers = async () => {
   }
 };
 
+const getUsersByPortal = async (portal) => {
+  const userRepository = await getRepository(Users);
+  try {
+    return await userRepository.find({
+      where: {
+        portalId: portal
+      },
+    });
+  } catch (error) {
+    throw new Error("Failed to get users.");
+  }
+}
+
 const getUserByEmail = async (email) => {
   const userRepository = await getRepository(Users);
   try {
@@ -110,6 +123,18 @@ const setUserAccessToken = async (email, token) => {
   }
 };
 
+const setUserOnboarding = async(id) => {
+  const userRepository = await getRepository(Users);
+  const user = await userRepository.findOne({
+    where: {
+      id
+    },
+  });
+  user.isOnboardingRequired = false;
+  await userRepository.save(user);
+  return user;
+}
+
 export default {
   createUser,
   getUsers,
@@ -118,5 +143,7 @@ export default {
   addCollaboratorId,
   getUserByResetPasswordToken,
   setPasswordByResetPasswordToken,
-  setUserAccessToken
+  setUserAccessToken,
+  getUsersByPortal,
+  setUserOnboarding
 };

@@ -5,6 +5,7 @@ import AddUserModal from './AddUserModal';
 import FileViewerModal from './FileViewerModal';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
 import UploadArea from '../UploadArea';
+import { useParams } from 'next/navigation';
 
 const UsersContent = () => {
   const [users, setUsers] = useState([]);
@@ -15,11 +16,13 @@ const UsersContent = () => {
   const [error, setError] = useState('');
   const [showUploadArea, setShowUploadArea] = useState(false);
   const fileInputRef = useRef(null);
+  const params = useParams();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetchWrapper('/api/users',{}, 'fetch-user');
+        const url = params.portalid ? `/api/users?portalid=${params.portalid}` : '/api/users'
+        const response = await fetchWrapper(url, {}, 'fetch-user');
         if (!response.ok) {
           throw new Error('Failed to fetch users');
         }
@@ -86,7 +89,7 @@ const UsersContent = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center space-x-4 pr-4">
-        <div className="flex justify-start items-center space-x-4">
+        <div className="flex justify-between items-center w-full">
           <h3 className="text-lg font-medium text-gray-900">User Management</h3>
           <button 
             onClick={() => setShowAddModal(true)}

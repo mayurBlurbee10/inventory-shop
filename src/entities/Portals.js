@@ -54,11 +54,11 @@ export @Entity()
   @Column({ type: "nvarchar", length: 255 })
   logo;
 
-  @OneToMany(() => ContentManagement, (content) => content.portal, {
-    cascade: true,
-  })
-  content;
+  // @OneToMany(() => ContentManagement, (content) => content.portal, {
+  //   cascade: true,
+  // })
+  // content;
 
-  @OneToMany(() => Users, (user) => user.portal, { cascade: true })
-  users;
+  // @OneToMany(() => Users, (user) => user.portal, { cascade: true })
+  // users;
 }

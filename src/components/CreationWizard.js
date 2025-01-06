@@ -610,7 +610,7 @@ const AdministratorStep = ({ formData, setFormData }) => (
         if (currentStep === 3) {
           setIsSubmitting(true);
           // Simulate API call with 3 second delay
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise(resolve => setTimeout(resolve, 6000));
           onCreateSubsidiary(formData);
           setIsSubmitting(false);
           setShowSuccess(true);

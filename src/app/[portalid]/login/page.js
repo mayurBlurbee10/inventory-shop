@@ -146,7 +146,11 @@ export default function SubsidiariesLoginPage() {
       localStorage.setItem('accessToken', data.accessToken);
 
       console.log("Redirecting to home");
-      router.push(`home`);
+      if(userData.isOnboardingRequired){
+        router.push(`onboarding`);
+      } else {
+        router.push(`home`);
+      }
     } catch (err) {
       console.error("Login error:", err.message);
       setError(err.message);

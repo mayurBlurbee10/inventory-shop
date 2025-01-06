@@ -44,11 +44,8 @@ export async function POST(request) {
     const existingIndex = contentItems.findIndex(
       (item) => item.title === contentData.title
     );
-    if (existingIndex === -1) {
-      return NextResponse.json(
-        { error: "Content item not found" },
-        { status: 404 }
-      );
+    if (existingIndex > -1) {
+      await contentManagementService.removeOldEntry(contentItems[existingIndex])
     }
 
     // const portalexist = contentItems.findIndex(
@@ -98,7 +95,7 @@ export async function POST(request) {
     //   { status: 201 }
     // );
     const contentUpdated =
-      await contentManagementService.updateContentManagement(contentData);
+      await contentManagementService.createContentManagement(contentData);
     return NextResponse.json(contentUpdated, { status: 201 });
   } catch (error) {
     console.error("Error in POST /api/content:", error);
@@ -111,7 +108,10 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     await logApiCall(request);
-    const portalId = request.nextUrl.searchParams.get("portalId") || "default";
+    const { searchParams } = new URL(request.url);
+    const portalId = searchParams.get('portalId') || "default";
+    // const portalId = request.nextUrl.searchParams.get("portalId") || "default";
+    console.log('content portalId: ', portalId)
     // Ensure the directory exists
     // await ensureDirectory(dir);
     // Read content items from JSON file
@@ -119,6 +119,7 @@ export async function GET(request) {
     const contentItems = await contentManagementService.getContentManagement(
       portalId
     );
+    // console.log('contentItems: ', JSON.stringify(contentItems))
     // let portalexist = contentItems.findIndex((item) => item.key === portalId);
     // if (portalexist === -1) {
     //   portalexist = contentItems.findIndex((item) => item.key === "default");

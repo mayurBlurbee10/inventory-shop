@@ -12,8 +12,8 @@ export @Entity()
   @Column({ type: "nvarchar", length: 255 })
   name;
 
-  @ManyToOne(() => Portals, (portal) => portal.users, { nullable: true })
-  portal;
+  @Column({ type: "nvarchar", length: 255, nullable: true })
+  portalId;
 
   @Column({ type: "simple-json", nullable: true })
   company;
@@ -55,6 +55,9 @@ export @Entity()
 
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   collaborationIds;
+
+  @Column({ type:"bit", nullable: false, default:0})
+  isOnboardingRequired;
 
   @BeforeInsert()
   async hashPassword() {
