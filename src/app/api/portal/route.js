@@ -22,12 +22,11 @@ function sanitizeName(name) {
 }
 
 function reverseSanitizeName(sanitizedName) {
-  console.log('reverseSanitizeName: ', sanitizedName)
   // If the sanitized name ends with a hyphen, remove it
   let reversedName = sanitizedName.endsWith("-")
     ? sanitizedName.slice(0, -1)
     : sanitizedName;
-  console.log('reversedName 1: ', JSON.parse(JSON.stringify(reversedName)))
+
   // Replace hyphens with spaces
   reversedName = reversedName.replace(/-/g, " ");
 
@@ -36,7 +35,7 @@ function reverseSanitizeName(sanitizedName) {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-  console.log('reversedName 2: ', reversedName)
+
   // Return the reconstructed name
   return reversedName;
 }
@@ -80,21 +79,16 @@ export async function POST(req) {
 }
 
 export async function GET(req) {
-  console.log('GET PORTALS API')
   try {
     await logApiCall(req);
-    // await ensurePortalsDirectory();
+    await ensurePortalsDirectory();
 
     const { searchParams } = new URL(req.url);
     const portalId = searchParams.get("portalid");
-    console.log('searchParams portalId: ', portalId)
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
-      console.log('portalLegalName: ', portalLegalName)
       const portal = await portalService.getPortalByLegalName(portalLegalName);
-      console.log('portal: ', JSON.stringify(portal))
       if (!portal) {
-        console.log('if not portal')
         return NextResponse.json(
           { error: `portal ${portalId} not found.` },
           { status: 404 }
@@ -105,9 +99,7 @@ export async function GET(req) {
         data: portal,
       });
     } else {
-      console.log('else not portal')
       const portals = await portalService.getPortals();
-      console.log('portals: ', JSON.stringify(portals))
       return NextResponse.json({
         message: `portals retrieved successfully.`,
         data: portals

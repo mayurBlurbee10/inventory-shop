@@ -4,7 +4,6 @@ import { ContentManagement } from "@/entities/ContentManagement";
 import { Portals } from "@/entities/Portals";
 
 function reverseSanitizeName(sanitizedName) {
-  console.log('content sanitizedName: ', sanitizedName)
   let reversedName = sanitizedName.endsWith("-")
     ? sanitizedName.slice(0, -1)
     : sanitizedName;
@@ -15,7 +14,6 @@ function reverseSanitizeName(sanitizedName) {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-    console.log('content reversedName: ', reversedName)
   return reversedName;
 }
 
@@ -49,18 +47,14 @@ const createContentManagement = async (data) => {
 };
 
 const getContentManagement = async (portalId) => {
-  console.log('getContentManagement: ', portalId)
   const sanitizedLegalName = reverseSanitizeName(portalId);
-  console.log('content sanitizedLegalName: ', sanitizedLegalName)
   await connectDatabase();
   const connection = getConnection();
   const contentRepository = connection.getRepository(ContentManagement);
-  console.log('contentRepository: ', contentRepository)
   try {
-    const contents = await contentRepository.find({
+    return await contentRepository.find({
       where: { portal: { legalName: sanitizedLegalName } },
     });
-    console.log('contents: ', contents)
   } catch (error) {
     throw new Error("Failed to get content.");
   }
