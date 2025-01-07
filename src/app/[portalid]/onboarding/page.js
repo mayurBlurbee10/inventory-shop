@@ -6,7 +6,7 @@ import ContentManagementContent from "@/components/Settings/ContentManagementCon
 import UsersContent from "@/components/Settings/UsersContent";
 import { ChevronRight, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -46,23 +46,36 @@ export default function OnBoardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contentLength, setContentLength] = useState(0);
+  const [errors, setErrors] = useState({});
 
   const steps = [{ component: ContentManagementContent }, { component: UsersContent }];
   const CurrentStepComponent = steps[currentStep].component;
+
+  useEffect(() => {
+    const userData = getUserData();
+    if(!userData?.isOnboardingRequired) {
+      router.push("login");
+    }
+  }, [router]);
 
   const handleBack = () => {
     setCurrentStep(currentStep - 1);
   };
 
   const handleNext = async () => {
-    if (currentStep === 1) {
-      setIsSubmitting(true);
-      const userData = getUserData();
-      console.log('userData: ', userData)
-      completeOnboarding(userData.id)
-    } else {
-      setCurrentStep(currentStep + 1);
+    if(validateStep()){
+      if (currentStep === 1) {
+        setIsSubmitting(true);
+        const userData = getUserData();
+        completeOnboarding(userData.id)
+      } else {
+        setCurrentStep(currentStep + 1);
+      }
     }
+    setTimeout(()=>{
+      setErrors({});
+    },3000)
   };
 
   const completeOnboarding = async(id) => {
@@ -80,7 +93,23 @@ export default function OnBoardingPage() {
     router.push(`home`);
   }
 
+  const handleContentLengthChange = (event) =>{
+    setContentLength(event);
+  };
 
+  const validateStep = () => {
+    const errors = {};
+
+    switch (currentStep) {
+      case 0:
+        if (contentLength<9) errors.contentLength = 'Please add all content items.';
+        break;
+      case 2:
+        break;
+    }
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -112,8 +141,15 @@ export default function OnBoardingPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          <CurrentStepComponent />
+          <CurrentStepComponent  isAddRequired='true' onContentLengthChange={handleContentLengthChange}  />
         </div>
+        {errors.contentLength && (
+          <div className="flex items-center p-4 m-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50" role="alert">
+            <div>
+              {errors.contentLength}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">

@@ -133,7 +133,7 @@ export async function DELETE(req) {
 
   }catch (error) { 
     console.error('Error deleting folder:', error);
-    return NextResponse.json(
+    return Response.json(
       { error: error.message },
       { status: error.response?.statusCode || 500 }
     );

@@ -43,7 +43,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Error fetching collaborated folder:", error);
     return NextResponse.json(
-      { error: { message: "Failed to fetch collaborated folder", details: error.message } },
+      { error: "Failed to fetch collaborated folder", details: error.message },
       { status: 500 }
     );
   }

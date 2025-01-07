@@ -614,11 +614,11 @@ const AdministratorStep = ({ formData, setFormData }) => (
           onCreateSubsidiary(formData);
           setIsSubmitting(false);
           setShowSuccess(true);
-          // Close the modal after showing success for 1.5 seconds
+          // Close the modal after showing success for 3 seconds
           setTimeout(() => {
             setShowSuccess(false);
-            onClose();
-          }, 1500);
+            // onClose();
+          }, 3000);
         } else {
           setCurrentStep(currentStep + 1);
         }

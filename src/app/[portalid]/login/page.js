@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import PortalFooter from "@/components/PortalFooter";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { defaultPortal } from "@/app/lib/data/default-portal";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -90,10 +89,10 @@ export default function SubsidiariesLoginPage() {
           {},
           "portal-login"
         );
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
         const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch portal config");
+        }
         setConfig(data.data);
       } catch (error) {
         console.log("error: ", error);
@@ -128,7 +127,7 @@ export default function SubsidiariesLoginPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, portalid:params.portalid || "default" }),
         },
         "default-login"
       );
@@ -160,11 +159,11 @@ export default function SubsidiariesLoginPage() {
   };
 
   const filterValue = (title) => {
-    const contentItem = content.find((item) => item.title === title);
+    const contentItem = content.portalContent.find((item) => item.title === title);
     const value = contentItem ? contentItem.value : null;
 
     if (!value) {
-      const defaultItem = defaultPortal.find((item) => item.title === title);
+      const defaultItem = content.defaultContent.find((item) => item.title === title);
       return defaultItem ? defaultItem.value : null;
     }
     return value;
@@ -225,7 +224,7 @@ export default function SubsidiariesLoginPage() {
           <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
             <div>
               <h2 className="text-3xl font-normal leading-tight text-[#545454]">
-                {filterValue("Hero Title")} {config?.tradingName}
+                {config?.tradingName} {filterValue("Title")}
                 {/* Welcome M Strategy */}
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
@@ -233,7 +232,7 @@ export default function SubsidiariesLoginPage() {
                 for you. Please log into access your work orders, project files,
                 invoices and other supporting documentation. You can also use
                 the portal to request new quotes for services and more. */}
-                {filterValue("Hero Content")}
+                {filterValue("Paragraph")}
               </p>
 
               {/* Feature Cards */}
@@ -254,14 +253,14 @@ export default function SubsidiariesLoginPage() {
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
                     {/* Digitization Services */}
-                    {filterValue("Service1 Title")}
+                    {filterValue("Card1 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
                     {/* Commercial, archival scanning, digitization and micrographic
                     services for those needing to digitally preserve important
                     documents, newspapers, maps, books, microfilm, slides and
                     more. Learn More */}
-                    {filterValue("Service1 Content")}
+                    {filterValue("Card1 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -280,13 +279,13 @@ export default function SubsidiariesLoginPage() {
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
                     {/* Software Solutions */}
-                    {filterValue("Service2 Title")}
+                    {filterValue("Card2 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
                     {/* At Crowley, software systems are considered a critical
                     component for maximum image quality, production efficiency,
                     and content management. Learn More */}
-                    {filterValue("Service2 Content")}
+                    {filterValue("Card2 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-44 max-h-64 h-full overflow-y-auto scrollbar-visibility-hidden">
@@ -305,13 +304,13 @@ export default function SubsidiariesLoginPage() {
                   </svg> */}
                   <h3 className="text-lg font-bold text-text">
                     {/* Support Services */}
-                    {filterValue("Service3 Title")}
+                    {filterValue("Card3 Title")}
                   </h3>
                   <p className="text-text/60 mt-2">
                     {/* From beginning to end, your digitization projects are
                     covered with the full breadth of Crowley support services.
                     Learn More */}
-                    {filterValue("Service3 Content")}
+                    {filterValue("Card3 Content")}
                   </p>
                 </div>
               </div>

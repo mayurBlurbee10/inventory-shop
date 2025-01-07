@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
 import { fetchWrapper } from "../lib/fetchWrapper";
-import { defaultPortal } from "../lib/data/default-portal";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -36,8 +35,10 @@ export default function LoginPage() {
       { method: "GET" },
       "fetchContentManagement"
     );
-    if (!response.ok) throw new Error("Failed to fetch Content Management");
     const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to fetch Content Management");
+    }
     setContent(data);
   };
 
@@ -56,7 +57,7 @@ export default function LoginPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, portalid: "default" }),
         },
         "default-login"
       );
@@ -84,11 +85,11 @@ export default function LoginPage() {
   };
 
   const filterValue = (title) => {
-    const contentItem = content.find((item) => item.title === title);
+    const contentItem = content.portalContent.find((item) => item.title === title);
     const value = contentItem ? contentItem.value : null;
 
     if (!value) {
-      const defaultItem = defaultPortal.find((item) => item.title === title);
+      const defaultItem = content.defaultContent.find((item) => item.title === title);
       return defaultItem ? defaultItem.value : null;
     }
     return value;
@@ -128,11 +129,11 @@ export default function LoginPage() {
           <div>
             <h2 className="text-5xl font-bold leading-tight mt-12 text-text">
               {/* Ethree - Deep energy expertise */}
-              {filterValue("Hero Title")}
+              {filterValue("Title")}
             </h2>
             <p className="text-lg text-text/70 mt-4 leading-relaxed">
               {/* E3’s greatest strengths lie in its team of consultants—the analysts, engineers, policy experts, economists, scientists, and others who have a deep understanding of contemporary analytical techniques, electricity industry economics, energy markets, and regulatory institutions. E3 partners are fully engaged and have a hand in every project, so clients benefit from their expertise in every engagement. */}
-              {filterValue("Hero Content")}
+              {filterValue("Paragraph")}
             </p>
 
             {/* Feature Cards */}
@@ -153,12 +154,12 @@ export default function LoginPage() {
                 </svg>
                 <h3 className="text-lg font-bold mt-4 text-text">
                   {/* Enterprise Data Center */}
-                  {filterValue("Service1 Title")}
+                  {filterValue("Card1 Title")}
                 </h3>
                 <p className="text-text/60 mt-2">
                   {/* Your data warehouse for portfolio analytics and risk
                   management. */}
-                  {filterValue("Service1 Content")}
+                  {filterValue("Card1 Content")}
                 </p>
               </div>
               <div className="bg-background-gray p-6 rounded-lg shadow-sm">
@@ -177,12 +178,12 @@ export default function LoginPage() {
                 </svg>
                 <h3 className="text-lg font-bold mt-4 text-text">
                   {/* Experience Enhancement */}
-                  {filterValue("Service2 Title")}
+                  {filterValue("Card2 Title")}
                 </h3>
                 <p className="text-text/60 mt-2">
                   {/* Elevate your business experience with our innovative
                   solutions. */}
-                  {filterValue("Service2 Content")}
+                  {filterValue("Card2 Content")}
                 </p>
               </div>
               <div className="bg-background-gray p-6 rounded-lg shadow-sm">
@@ -201,11 +202,11 @@ export default function LoginPage() {
                 </svg>
                 <h3 className="text-lg font-bold mt-4 text-text">
                   {/* Enterprise Execution */}
-                  {filterValue("Service3 Title")}
+                  {filterValue("Card3 Title")}
                 </h3>
                 <p className="text-text/60 mt-2">
                   {/* Execute your strategies with precision and scale. */}
-                  {filterValue("Service3 Content")}
+                  {filterValue("Card3 Content")}
                 </p>
               </div>
             </div>

@@ -253,7 +253,7 @@ export default function AdminDashboard() {
       },'save-user');
 
       if (!UserResponse.ok) {
-        throw new Error('Failed to save user data');
+        throw new Error('Failed to create user data');
       }
 
       setSubsidiaries(prev => [...prev, newSubsidiary]);

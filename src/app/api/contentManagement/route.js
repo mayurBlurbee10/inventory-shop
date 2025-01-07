@@ -119,6 +119,11 @@ export async function GET(request) {
     const contentItems = await contentManagementService.getContentManagement(
       portalId
     );
+
+    let defaultContentItems = []
+    if(portalId != 'default'){
+      defaultContentItems = await contentManagementService.getContentManagement('default');
+    }
     // console.log('contentItems: ', JSON.stringify(contentItems))
     // let portalexist = contentItems.findIndex((item) => item.key === portalId);
     // if (portalexist === -1) {
@@ -127,7 +132,12 @@ export async function GET(request) {
     // return NextResponse.json(contentItems[portalexist]["value"], {
     //   status: 200,
     // });
-    return NextResponse.json(contentItems, {
+    return NextResponse.json(
+      {
+        portalContent:contentItems,
+        defaultContent:defaultContentItems
+      }, 
+      {
       status: 200,
     });
   } catch (error) {
