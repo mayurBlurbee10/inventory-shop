@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/config/constants';
+import { fetchWrapper } from '@/app/lib/fetchWrapper';
 
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
@@ -30,28 +31,32 @@ export default function AdminLoginPage() {
     if (user && password === 'admin123') {
         // Prepare user data for superadmin role
         // this code will go to signup once it is made
-        const userData = {
-          email: user.email,
-          name: user.name,
-          password: 'admin123',
-          role: UserRole.SUPER_ADMIN,
-          isOnboardingRequired: false
-        };
+        // const userData = {
+        //   email: user.email,
+        //   name: user.name,
+        //   password: 'admin123',
+        //   role: UserRole.SUPER_ADMIN,
+        //   isOnboardingRequired: false
+        // };
   
-        // Save user data
-        const saveResponse = await fetchWrapper('/api/users', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        },'save-user');
+        // // Save user data
+        // const saveResponse = await fetchWrapper('/api/users', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify(userData),
+        // },'save-user');
   
-        if (!saveResponse.ok) {
-          throw new Error('Failed to save user data');
-        }
+        // if (!saveResponse.ok) {
+        //   throw new Error('Failed to save user data');
+        // }
       // Store complete user data including role
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify({
+        email: user.email,
+        role: user.role,
+        name: user.name
+      }));
       localStorage.setItem('portal','admin')
       router.push('/admin/dashboard');
     } else {
