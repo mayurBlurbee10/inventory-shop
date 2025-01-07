@@ -615,10 +615,10 @@ const AdministratorStep = ({ formData, setFormData }) => (
           setIsSubmitting(false);
           setShowSuccess(true);
           // Close the modal after showing success for 3 seconds
-          setTimeout(() => {
+          // setTimeout(() => {
             setShowSuccess(false);
             // onClose();
-          }, 3000);
+          // }, 3000);
         } else {
           setCurrentStep(currentStep + 1);
         }
