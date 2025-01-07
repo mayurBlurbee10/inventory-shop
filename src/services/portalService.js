@@ -20,9 +20,11 @@ const getPortals = async () => {
   const connection = getConnection();
   const portalRepository = connection.getRepository(Portals);
   try {
-    return await portalRepository.find();
+    const portals = await portalRepository.find();
+    console.log('portals: ', JSON.stringify(portals));
+    return portals;
   } catch (error) {
-    throw new Error("Failed to get portal.");
+    throw new Error("Failed to get portals.");
   }
 };
 
@@ -31,9 +33,11 @@ const getPortalByLegalName = async (legalName) => {
   const connection = getConnection();
   const portalRepository = connection.getRepository(Portals);
   try {
-    return await portalRepository.findOneBy({
+    const portal = await portalRepository.findOneBy({
       legalName: legalName,
     });
+    console.log('portal legalName: ', JSON.stringify(portal));
+    return portal;
   } catch (error) {
     throw new Error("Failed to get portal.");
   }

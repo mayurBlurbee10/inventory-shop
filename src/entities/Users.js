@@ -4,7 +4,7 @@ import BaseTable from "./BaseTable";
 import { Portals } from "./Portals";
 import * as bcrypt from "bcrypt";
 
-export @Entity()
+export @Entity("users")
  class Users extends BaseTable {
   @Column({ type: "nvarchar", length: 255, unique: true })
   email;

@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import BaseTable from "./BaseTable";
 
-export @Entity()
+export @Entity("api_logs")
   class ApiLogs extends BaseTable {
   @Column({ type: "nvarchar", length: 255 })
   date;

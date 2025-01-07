@@ -43,15 +43,18 @@ function reverseSanitizeName(sanitizedName) {
 // Create or update the config file
 export async function POST(req) {
   await logApiCall(req);
+  await ensurePortalsDirectory();
   const data = await req.json();
   console.log("data: ", data);
   let { legalName } = data;
+  console.log('legalName: ', legalName)
   if (!legalName) {
     return NextResponse.json({ error: "Name are required" }, { status: 400 });
   }
 
   try {
     const portalExist = await portalService.getPortalByLegalName(legalName);
+    console.log('portalExist: ', portalExist)
     if (portalExist) {
       return NextResponse.json(
         { error: `${legalName} already exists.` },
@@ -59,6 +62,7 @@ export async function POST(req) {
       );
     }
     const portal = await portalService.createPortal(data);
+    console.log('portal post: ', portal)
     if (!portal) {
       return NextResponse.json(
         { error: `portal ${legalName} not found.` },
@@ -85,9 +89,11 @@ export async function GET(req) {
 
     const { searchParams } = new URL(req.url);
     const portalId = searchParams.get("portalid");
+    console.log('portalId get: ', portalId)
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
       const portal = await portalService.getPortalByLegalName(portalLegalName);
+      console.log('if portal: ', JSON.stringify(portal))
       if (!portal) {
         return NextResponse.json(
           { error: `portal ${portalId} not found.` },
@@ -100,6 +106,7 @@ export async function GET(req) {
       });
     } else {
       const portals = await portalService.getPortals();
+      console.log('else portals: ', JSON.stringify(portals))
       return NextResponse.json({
         message: `portals retrieved successfully.`,
         data: portals

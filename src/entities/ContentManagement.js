@@ -3,7 +3,7 @@ import { Column, Entity, ManyToOne } from "typeorm";
 import BaseTable from "./BaseTable";
 import { Portals } from "./Portals";
 
-export @Entity()
+export @Entity("content_management")
  class ContentManagement extends BaseTable {
   @Column({ type: "nvarchar", length: 255 })
   title;
