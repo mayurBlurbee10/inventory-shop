@@ -98,6 +98,7 @@ export async function POST(request) {
     //   );
     // }
 
+    const token = await generateNanoToken();
     // Add new user with password
     let newUser = {
       // id: Date.now().toString(),
@@ -112,7 +113,6 @@ export async function POST(request) {
     };
 
     if (userData.role !== UserRole.SUPER_ADMIN) {
-      const token = await generateNanoToken();
       newUser.resetPasswordToken = token;
       newUser.isOnboardingRequired = userData.isOnboardingRequired;
       newUser.portalId = userData.portal;
