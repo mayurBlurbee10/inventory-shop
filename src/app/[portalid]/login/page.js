@@ -128,7 +128,7 @@ export default function SubsidiariesLoginPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, portalId: params.portalid }),
         },
         "default-login"
       );

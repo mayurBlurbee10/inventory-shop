@@ -3,6 +3,8 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from "typeorm";
 import BaseTable from "./BaseTable";
 import { Portals } from "./Portals";
 import * as bcrypt from "bcrypt";
+import { IsNotEmpty, ValidateIf } from "class-validator";
+import { UserRole } from "@/config/constants";
 
 export @Entity("users")
  class Users extends BaseTable {
@@ -23,8 +25,8 @@ export @Entity("users")
 
   @Column({
     type: "simple-enum",
-    enum: ["user", "admin", "super_admin"],
-    default: "user",
+    enum: UserRole,
+    default: UserRole.USER,
   })
   role;
 
@@ -58,6 +60,22 @@ export @Entity("users")
 
   @Column({ type:"bit", nullable: false, default:0})
   isOnboardingRequired;
+
+  // Make fields optional for super_admin and required for admin/user roles
+  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
+  @IsNotEmpty()
+  @Column({ type: "nvarchar", length: 255 })
+  title;
+
+  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
+  @IsNotEmpty()
+  @Column({ type: "nvarchar", length: 255 })
+  boxUserId;
+
+  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
+  @IsNotEmpty()
+  @Column({ type: "nvarchar", length: 255 })
+  folderId;
 
   @BeforeInsert()
   async hashPassword() {

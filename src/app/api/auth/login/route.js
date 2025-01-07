@@ -118,6 +118,14 @@ export async function POST(request) {
       );
     }
 
+    // check if this is the same portal's user
+    if (data.portalId != user.portalId) {
+      return NextResponse.json(
+        { error: "This user does not have access to this portal" },
+        { status: 403 }
+      );
+    }
+
     // check if password is correct or not
     const isPasswordCorrect = await bcrypt.compare(
       data.password,

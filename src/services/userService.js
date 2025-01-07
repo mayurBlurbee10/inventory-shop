@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { connectDatabase, getConnection } from "@/config/db";
 import { Users } from "@/entities/Users";
 import * as bcrypt from "bcrypt";
+import { validateOrReject } from "class-validator";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -13,6 +14,8 @@ const createUser = async (data) => {
   const userRepository = await getRepository(Users);
   try {
     const user = userRepository.create(data);
+    // Validate user data according to the role-specific rules
+    await validateOrReject(user);
     await userRepository.save(user);
     return user;
   } catch (error) {

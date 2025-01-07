@@ -6,6 +6,7 @@ import { Folder, Settings, Users, Layout, Plus, FileText, HeadphonesIcon } from 
 import CreationWizard from './CreationWizard';
 import Image from 'next/image';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import { UserRole } from '@/config/constants';
 
 const SidePanel = () => (
   <div className="w-80 bg-[#0161D5] p-6 flex flex-col h-screen fixed left-0">
@@ -236,7 +237,8 @@ export default function AdminDashboard() {
         name: `${formData.firstName} ${formData.lastName}`,
         title: formData.jobTitle,
         companyName: formData.legalName,
-        role: 'admin',
+        role: UserRole.ADMIN,
+        password: '000',
         logo: logoUrl,
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId,
