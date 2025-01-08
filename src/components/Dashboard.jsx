@@ -15,6 +15,7 @@ import DialogBox from "./DialogBox";
 import FolderExplorer from "./FolderExplorer";
 import UploadArea from "./UploadArea";
 import ActionButtons from "./ActionButtons";
+import { getSession } from "next-auth/react";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -121,6 +122,7 @@ function Dashboard({ fileType }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [session, setSession] = useState(null);
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -356,6 +358,11 @@ function Dashboard({ fileType }) {
   };
 
   useEffect(() => {
+    const fetchSession = async () => {
+      const sessionData = await getSession();
+      setSession(sessionData);
+    };
+    fetchSession();
     const userData = getUserData();
     if (!userData) {
       router.push("login");
@@ -442,7 +449,7 @@ function Dashboard({ fileType }) {
           >
             <div className="mb-4">
               <h3 className="text-lg xl:text-2xl text-[#3c4043] font-medium text-center xl:mb-5">
-                Welcome, {user.name}
+                Welcome, {session?.user?.name}
               </h3>
               {/* NEW FOLDER MODEL */}
               <div className="flex items-center gap-3">

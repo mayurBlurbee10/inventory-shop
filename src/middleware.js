@@ -10,6 +10,7 @@ const excludedRoutes = {
 
 const publicRoutes = [
   '/api/upload/',
+  '/api/auth',
 ];
 
 export function middleware(request) {
@@ -17,7 +18,7 @@ export function middleware(request) {
   const { pathname } = request.nextUrl;
 
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.next();
+  return NextResponse.next();
   }
 
   if (request.nextUrl.pathname.startsWith('/api')) {

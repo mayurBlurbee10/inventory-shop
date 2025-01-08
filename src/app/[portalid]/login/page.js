@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import PortalFooter from "@/components/PortalFooter";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { signIn, signOut } from "next-auth/react";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -167,6 +168,14 @@ export default function SubsidiariesLoginPage() {
       return defaultItem ? defaultItem.value : null;
     }
     return value;
+  };
+
+  const login = async () => {
+    try {
+      await signIn("okta");
+    } catch (error) {
+      console.log('error: ', error)
+    }
   };
 
   if (!config || !content) return <LoadingSpinner />;
@@ -365,6 +374,9 @@ export default function SubsidiariesLoginPage() {
                       "Log In"
                     )}
                   </button>
+                  <div className="text-center mt-4">
+                    <button className="text-text/40 hover:text-text/60" onClick={login}>Login by Okta</button>
+                  </div>
                 </div>
               </form>
 
