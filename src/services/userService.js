@@ -45,10 +45,10 @@ const getUsersByPortal = async (portal) => {
   }
 }
 
-const getUserByEmail = async (email) => {
+const getUserByEmail = async (email, portalId) => {
   const userRepository = await getRepository(Users);
   try {
-    return await userRepository.findOneBy({ email });
+    return await userRepository.findOneBy({ email, portalId });
   } catch (error) {
     throw new Error("Failed to get users.");
   }

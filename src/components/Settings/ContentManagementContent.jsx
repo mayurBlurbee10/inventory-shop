@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-const ContentManagementContent = () => {
+const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   const params = useParams();
   const [content, setContent] = useState([]);
   const [contentTypes, setContentTypes] = useState([]);
@@ -39,7 +39,17 @@ const ContentManagementContent = () => {
   useEffect(() => {
     fetchData();
     fetchContentType();
-  }, []);
+  }, [params.portalid]);
+
+  useEffect(() => {
+    const filterTypes = contentTypes.filter(ct => 
+      !content.some(c => c.title === ct.title)
+    );
+    setContentTypes(filterTypes)
+    if (onContentLengthChange) {
+      onContentLengthChange(content.length);
+    }
+  }, [content]);
 
   const fetchContentType = async () => {
     const typesRequest = await fetchWrapper(
@@ -62,8 +72,8 @@ const ContentManagementContent = () => {
       );
       if (!response.ok) throw new Error("Failed to fetch Content Management");
       const data = await response.json();
-      const content = data.filter((item) => item.value !== null);
-      setContent(content);
+      // const content = data.filter((item) => item.value !== null);
+      setContent(data.portalContent);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -125,8 +135,10 @@ const ContentManagementContent = () => {
         requestOptions,
         apiType
       );
-
-      if (!response.ok) throw new Error(response.error);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
 
       fetchData();
       handleModalClose();
@@ -244,12 +256,13 @@ const ContentManagementContent = () => {
         <h3 className="text-lg font-medium text-gray-900">
           Content Management
         </h3>
-        <button
+        { isAddRequired && (<button
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          Add Content
-        </button>
+            onClick={() => setIsDialogOpen(true)}
+          >
+            Add Content
+          </button>
+        )}
       </div>
       {loading ? (
         <div className="flex justify-center py-8">

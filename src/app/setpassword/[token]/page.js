@@ -64,7 +64,7 @@ export default function SetPassword() {
         try { 
           setIsTokenExpired(false);
           const response = await fetchWrapper(`/api/setPassword?token=${token}`, {method: 'GET'}, 'validateLink')
-          if (!response.ok) throw new Error('Failed to fetch token');
+          if (!response.ok) throw new Error('Failed to validate the link.');
         } catch (error) {
           setIsTokenExpired(true);
           console.error('Error refreshing token:', error);

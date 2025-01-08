@@ -63,10 +63,10 @@ export default function SharedFilePage() {
   const fetchConfig = async () => {
     try {
       const response = await fetchWrapper(`/api/portal?portalid=${params.portalid}`, {}, 'portal-login');
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch portal config");
+      }
       setConfig(data.data)
     } catch (error) {
       console.log("error: ", error);

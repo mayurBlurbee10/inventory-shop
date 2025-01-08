@@ -110,7 +110,7 @@ export async function POST(request) {
     // );
 
     // check user exist
-    const user = await userService.getUserByEmail(data.email);
+    const user = await userService.getUserByEmail(data.email, data.portalid);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials!! user not found with this email" },

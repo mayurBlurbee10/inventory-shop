@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const PortalFooter = ({ config, filterValue }) => {
-  const contactInfo = filterValue("Contact Info").split("\n");
+  // const contactInfo = filterValue("Contact Info").split("\n");
+  const contactInfo = 'San Francisco 415.391.5100 | Boston 617.203.7689 | New York 646.699.3773'.split("\n");
   return (
     <footer className="bg-[#929493] text-white py-8 mt-auto">
       <div className="container mx-auto px-4">

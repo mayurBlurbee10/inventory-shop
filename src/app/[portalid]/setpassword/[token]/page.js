@@ -48,7 +48,7 @@ export default function SetPassword() {
       const data = await response.json();
       if (response.ok) {
         setSuccess(true);
-        setTimeout(() => router.push("login"), 3000);
+        setTimeout(() => router.push(`/${params.portalid}/login`), 3000);
       } else {
         setError(data.error || "Failed to set password.");
       }
@@ -65,7 +65,10 @@ export default function SetPassword() {
         try { 
           setIsTokenExpired(false);
           const response = await fetchWrapper(`/api/setPassword?token=${token}`, {method: 'GET'}, 'validateLink')
-          if (!response.ok) throw new Error('Failed to fetch files');
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to validate Link");
+          }
         } catch (error) {
           setIsTokenExpired(true);
           console.error('Error refreshing files:', error);

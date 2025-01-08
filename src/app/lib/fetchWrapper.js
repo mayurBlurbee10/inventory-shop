@@ -23,9 +23,9 @@ export const fetchWrapper = async (url, options = {}, type) => {
     // Make the fetch call
     const response = await fetch(url, options);
     // Handle non-OK responses
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`HTTP error! status: ${response.status}`);
+    // }
 
     // Return JSON response
     return response;
