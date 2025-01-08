@@ -54,9 +54,12 @@ export async function GET(request) {
   await logApiCall(request);
   const { searchParams } = new URL(request.url);
   const portalid = searchParams.get('portalid');
+  const email = searchParams.get('email');
   let users = {}
   if(portalid){
     users = await userService.getUsersByPortal(portalid);
+  } else if (email) {
+    users = await userService.getUserByEmail(email);
   } else {
     users = await userService.getUsers();
   }

@@ -17,10 +17,10 @@ export @Entity("users")
   @Column({ type: "nvarchar", length: 255, nullable: true })
   portalId;
 
-  @Column({ type: "simple-json", nullable: true })
+  @Column({ type: "simple-json", nullable: true, default: "{}" })
   company;
 
-  @Column({ type: "nvarchar", length: 255 })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   title;
 
   @Column({
@@ -30,10 +30,10 @@ export @Entity("users")
   })
   role;
 
-  @Column({ type: "nvarchar", length: 255 })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   boxUserId;
 
-  @Column({ type: "nvarchar", length: 255 })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   folderId;
 
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
@@ -58,23 +58,23 @@ export @Entity("users")
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   collaborationIds;
 
-  @Column({ type:"bit", nullable: false, default:0})
+  @Column({ type:"bit", nullable: false, default: 0})
   isOnboardingRequired;
 
   // Make fields optional for super_admin and required for admin/user roles
   @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
   @IsNotEmpty()
-  @Column({ type: "nvarchar", length: 255 })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   title;
 
   @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
   @IsNotEmpty()
-  @Column({ type: "nvarchar", length: 255 })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   boxUserId;
 
   @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
   @IsNotEmpty()
-  @Column({ type: "nvarchar", length: 255 })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   folderId;
 
   @BeforeInsert()

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/config/constants';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import { setUserData } from '@/app/lib/auth';
 
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
@@ -31,33 +32,72 @@ export default function AdminLoginPage() {
     if (user && password === 'admin123') {
         // Prepare user data for superadmin role
         // this code will go to signup once it is made
-        // const userData = {
-        //   email: user.email,
-        //   name: user.name,
-        //   password: 'admin123',
-        //   role: UserRole.SUPER_ADMIN,
-        //   isOnboardingRequired: false
-        // };
+        const userRes = await fetchWrapper(`/api/users?email=${user.email}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },'get-user');
+        const userResData = await userRes.json();
+        if (!userRes.ok) {
+          throw new Error('Failed to check user');
+        }
+
+        const userData = {
+          email: user.email,
+          name: user.name,
+          password: 'admin123',
+          role: UserRole.SUPER_ADMIN,
+          isOnboardingRequired: false
+        };
+        
+        // if user with this email does not exists, then create the new one
+        if (!userResData) {
+          // Save user data
+          const saveResponse = await fetchWrapper('/api/users', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData),
+          },'save-user');
+    
+          if (!saveResponse.ok) {
+            throw new Error('Failed to save user data');
+          }
   
-        // // Save user data
-        // const saveResponse = await fetchWrapper('/api/users', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify(userData),
-        // },'save-user');
+          const saveRes = await saveResponse.json();
+        }
+
+        const response = await fetchWrapper(
+          "/api/auth/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: userData.email, password: userData.password }),
+          },
+          "default-login"
+        );
   
-        // if (!saveResponse.ok) {
-        //   throw new Error('Failed to save user data');
-        // }
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Login failed");
+        }
+  
+        const data = await response.json();
+        // Store user data using auth utility
+        setUserData(data.user);
+        localStorage.setItem("portal", 'admin');
+        localStorage.setItem('accessToken', data.accessToken);
       // Store complete user data including role
-      localStorage.setItem('user', JSON.stringify({
-        email: user.email,
-        role: user.role,
-        name: user.name
-      }));
-      localStorage.setItem('portal','admin')
+      // localStorage.setItem('user', JSON.stringify({
+      //   email: user.email,
+      //   role: user.role,
+      //   name: user.name
+      // }));
+      // localStorage.setItem('portal','admin')
       router.push('/admin/dashboard');
     } else {
       setError('Invalid email or password');

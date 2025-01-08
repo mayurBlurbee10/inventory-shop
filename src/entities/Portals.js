@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Column, Entity, OneToMany } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import BaseTable from "./BaseTable";
 import { ContentManagement } from "./ContentManagement";
 import { Users } from "./Users";
@@ -53,6 +53,14 @@ export @Entity("portals")
 
   @Column({ type: "nvarchar", length: 255 })
   logo;
+
+  @ManyToOne(() => Users, { nullable: true })
+  @JoinColumn({ name: 'createdBy' })
+  createdBy;
+
+  @ManyToOne(() => Users, { nullable: true })
+  @JoinColumn({ name: 'updatedBy' })
+  updatedBy;
 
   // @OneToMany(() => ContentManagement, (content) => content.portal, {
   //   cascade: true,

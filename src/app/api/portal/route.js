@@ -86,9 +86,11 @@ export async function GET(req) {
   try {
     await logApiCall(req);
     await ensurePortalsDirectory();
+  
 
     const { searchParams } = new URL(req.url);
     const portalId = searchParams.get("portalid");
+    const userId = searchParams.get("userId");
     console.log('portalId get: ', portalId)
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
@@ -104,6 +106,14 @@ export async function GET(req) {
         message: `portal retrieved successfully.`,
         data: portal,
       });
+    } else if (!!userId) {
+      console.log('userd: ', userId)
+      const portals = await portalService.getPortalsByUser(String(userId).toLowerCase());
+      console.log('else users portals: ', JSON.stringify(portals))
+      return NextResponse.json({
+        message: `portals retrieved successfully.`,
+        data: portals
+      })
     } else {
       const portals = await portalService.getPortals();
       console.log('else portals: ', JSON.stringify(portals))

@@ -7,6 +7,7 @@ import { logApiCall } from '@/app/lib/api-log-middleware';
 import { generateToken } from '@/app/lib/jwt';
 import * as bcrypt from "bcrypt";
 import userService from "@/services/userService";
+import { UserRole } from '@/config/constants';
 
 // Use the correct path to users.json in the data directory
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
@@ -117,9 +118,10 @@ export async function POST(request) {
         { status: 404 }
       );
     }
-
+    
+    console.log('DATA.PORTALID: ', data.portalid, user.portalId)
     // check if this is the same portal's user
-    if (data.portalId != user.portalId) {
+    if (data.portalid != user.portalId) {
       return NextResponse.json(
         { error: "This user does not have access to this portal" },
         { status: 403 }
@@ -180,21 +182,24 @@ export async function POST(request) {
     }
 
     // Include role in the response and ensure it's properly set
-    const userData = {
+    let userData = {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
       company: user.company,
-      boxUserId: user.boxUserId,
-      boxFolderId: user.folderId,
-      boxFiles: boxData?.files || [],
-      boxUserInfo: boxData?.user || null,
-      boxFolderInfo: boxData?.folder || null,
-      boxError: boxData?.error,
-      collaborationIds: user.collaborationIds,
       isOnboardingRequired: user.isOnboardingRequired
     };
+
+    if (user.role != UserRole.SUPER_ADMIN) {
+      userData.boxUserId = user.boxUserId;
+      userData.boxFolderId = user.folderId;
+      userData.boxFiles = boxData?.files || [];
+      userData.boxUserInfo = boxData?.user || null;
+      userData.boxFolderInfo = boxData?.folder || null;
+      userData.boxError = boxData?.error;
+      userData.collaborationIds = user.collaborationIds;
+    }
 
     const {boxFiles,boxUserInfo,boxFolderInfo,boxError,...rest} = userData;
 
