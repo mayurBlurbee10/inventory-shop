@@ -6,6 +6,8 @@ const excludedRoutes = {
   '/api/portal': ['GET'],
   '/api/auth/login': ['POST'],
   '/api/box/share': ['GET'],
+  '/api/users': ['POST'],
+  '/api/users': ['GET'],
 };
 
 const publicRoutes = [
