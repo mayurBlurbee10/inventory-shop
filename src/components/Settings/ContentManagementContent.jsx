@@ -1,5 +1,5 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -7,6 +7,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   const params = useParams();
   const [content, setContent] = useState([]);
   const [contentTypes, setContentTypes] = useState([]);
+  const [originalContentTypes, setOriginalContentTypes] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [newContent, setNewContent] = useState({
@@ -23,6 +24,8 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState("");
   const [loading, setLoading] = useState(false);
+  const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
+
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -42,10 +45,6 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   }, [params.portalid]);
 
   useEffect(() => {
-    const filterTypes = contentTypes.filter(ct => 
-      !content.some(c => c.title === ct.title)
-    );
-    setContentTypes(filterTypes)
     if (onContentLengthChange) {
       onContentLengthChange(content.length);
     }
@@ -60,6 +59,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
     if (!typesRequest.ok) throw new Error("Failed to fetch Content type");
     const typesData = await typesRequest.json();
     setContentTypes(typesData);
+    setOriginalContentTypes(typesData);
   };
 
   const fetchData = async () => {
@@ -113,17 +113,19 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
 
       console.log("newContent : ", newContent);
 
+      const obj = imageUrl 
+        ? {
+            ...newContent,
+           
+            portalId: params.portalid ?? "default",
+          }
+        : newContent.type === "Links"
+          ? { ...newContent, value: JSON.stringify(linkFields), portalId: params.portalid ?? "default" }
+          : { ...newContent, portalId: params.portalid ?? "default" }
+
       const requestOptions = {
         method: isEditMode ? "PUT" : "POST",
-        body: JSON.stringify(
-          imageUrl
-            ? {
-                ...newContent,
-                value: imageUrl,
-                portalId: params.portalid ?? "default",
-              }
-            : { ...newContent, portalId: params.portalid ?? "default" }
-        ),
+        body: JSON.stringify(obj),
       };
 
       const apiType = isEditMode
@@ -159,6 +161,9 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
     if (contentToEdit.type == "Image") {
       setPreviewUrl(contentToEdit.value || "");
     }
+    if(contentToEdit.type === "Links"){
+      setLinkFields(JSON.parse(contentToEdit.value)|| [{ label: "", link: "" }]);
+    }
   };
 
   const handleModalClose = () => {
@@ -167,11 +172,13 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
       type: "",
       value: "",
     });
+    setLinkFields([{ label: "", link: "" }]);
     setIsEditMode(false);
     setIsDialogOpen(false);
     setError("");
     setPreviewUrl("");
     setFile(null);
+    setContentTypes(originalContentTypes);
   };
 
   const handleTitleChange = (e) => {
@@ -250,6 +257,33 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
     }
   };
 
+  const handleLinkChange = (index, field, value) => {
+    const updatedLinks = linkFields.map((item, idx) =>
+      idx === index ? { ...item, [field]: value } : item
+    );
+    setLinkFields(updatedLinks);
+  };
+
+  const handleRemoveLinkField = (index) => {
+    const updatedLinks = linkFields.filter((_, idx) => idx !== index);
+    setLinkFields(updatedLinks);
+  };
+
+  const handleAddLinkField = () => {
+    if (linkFields.length < 10 && linkFields[linkFields.length-1].label != '') {
+      setLinkFields([...linkFields, { label: "", link: "" }]);
+    }
+  };
+
+  const addContent = () => {
+    const filterTypes = originalContentTypes.filter(ct => 
+      !content.some(c => c.title === ct.title)
+    );
+    setContentTypes(filterTypes);
+    setIsDialogOpen(true);
+  };
+
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -258,7 +292,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
         </h3>
         { isAddRequired && (<button
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={() => setIsDialogOpen(true)}
+            onClick={addContent}
           >
             Add Content
           </button>
@@ -328,6 +362,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                   onChange={handleTitleChange}
                   required
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                  disabled={isEditMode}
                 >
                   <option value="" disabled>
                     Select a Content Title
@@ -357,6 +392,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100 text-gray-500"
                 />
               </div> */}
+              {/* Text */}
               {newContent.type === "Text" && (
                 <div className="mb-4">
                   <label
@@ -375,6 +411,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                   />
                 </div>
               )}
+              {/* Image */}
               {newContent.type === "Image" && (
                 <div className="mb-4">
                   <label
@@ -400,6 +437,47 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                     alt="Logo preview"
                     className="h-20 w-20 object-contain rounded border"
                   />
+                </div>
+              )}
+
+              {/* Links */}
+              {newContent.type === "Links" && (
+                <div className="space-y-4">
+                  {linkFields.map((item, index) => (
+                    <div key={index} className="flex space-x-2 items-center">
+                       <input
+                        type="text"
+                        placeholder="Label"
+                        value={item.label}
+                        onChange={(e) =>
+                          handleLinkChange(index, "label", e.target.value)
+                        }
+                        className="p-2 border rounded-md text-gray-700 max-w-[160px]"
+                      />
+                      <input
+                        type="url"
+                        placeholder="Link"
+                        value={item.link}
+                        onChange={(e) =>
+                          handleLinkChange(index, "link", e.target.value)
+                        }
+                        className="p-2 border rounded-md text-gray-700"
+                      />
+                      <button type="button" onClick={() => handleRemoveLinkField(index)}>
+                        <X className="text-red-500 h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                   {linkFields.length < 10 && (
+                    <button
+                      type="button"
+                      onClick={handleAddLinkField}
+                      className="flex items-center text-blue-600"
+                    >
+                      <PlusCircle className="mr-2 h-5 w-5" />
+                      Add More
+                    </button>
+                  )}
                 </div>
               )}
 

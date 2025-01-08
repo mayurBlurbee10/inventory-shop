@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const Footer = ({ filterValue }) => {
-  // const contactInfo = filterValue("Contact Info").split("\n");
-  const contactInfo = 'San Francisco 415.391.5100 | Boston 617.203.7689 | New York 646.699.3773'.split("\n");
+  const contactInfo = filterValue("Footer Content").split("\n");
+  const links = JSON.parse(filterValue("Footer Links") || 'null') || [];
   return (
     <footer className="bg-[#929493] text-white py-8 mt-auto">
       <div className="container mx-auto px-4">
@@ -27,36 +27,13 @@ const Footer = ({ filterValue }) => {
           <div className="flex justify-start md:justify-center">
             <div>
               <ul className="space-y-2">
-                <li>
-                  <Link href="#" className="hover:underline">
-                    About E3
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Our people
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Our clients
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Areas of expertise
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Projects
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Tools
-                  </Link>
-                </li>
+                {links.length > 0 && links.slice(0, 5).map((item,index)=>(
+                  <li key={index}>
+                   <Link href={item.link} className="hover:underline">
+                      {item.label}
+                   </Link>
+                 </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -65,26 +42,13 @@ const Footer = ({ filterValue }) => {
           <div className="flex justify-start md:justify-center">
             <div>
               <ul className="space-y-2">
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    News and Notes
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Public proceedings
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Contact
-                  </Link>
-                </li>
+                {links.length > 5 && links.slice(5).map((item,index)=>(
+                  <li key={index}>
+                   <Link href={item.link} className="hover:underline">
+                      {item.label}
+                   </Link>
+                 </li>
+                ))}
               </ul>
             </div>
           </div>

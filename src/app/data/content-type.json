@@ -43,5 +43,15 @@
     "id": "1735630441887",
     "title": "Card3 Content",
     "type": "Text"
+  },
+  {
+    "id": "1735630441887",
+    "title": "Footer Content",
+    "type": "Text"
+  },
+  {
+    "id": "1735630441887",
+    "title": "Footer Links",
+    "type": "Links"
   }
 ]

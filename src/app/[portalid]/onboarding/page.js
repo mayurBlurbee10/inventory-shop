@@ -102,7 +102,7 @@ export default function OnBoardingPage() {
 
     switch (currentStep) {
       case 0:
-        if (contentLength<9) errors.contentLength = 'Please add all content items.';
+        if (contentLength<11) errors.contentLength = 'Please add all content items.';
         break;
       case 2:
         break;
