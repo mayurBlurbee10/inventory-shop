@@ -1,48 +1,48 @@
-import React, { useState } from 'react';
-import { ChevronDown, X } from 'lucide-react';
-import { fetchWrapper } from '@/app/lib/fetchWrapper';
-import { useParams } from 'next/navigation';
+import React, { useState } from "react";
+import { ChevronDown, X } from "lucide-react";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { useParams } from "next/navigation";
 
 const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    title: '',
-    companyName: '',
-    role: 'user',
-    logo: null
+    name: "",
+    email: "",
+    title: "",
+    companyName: "",
+    role: "user",
+    logo: null,
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewUrl, setPreviewUrl] = useState("");
   const [companyOptions, setCompanyOptions] = useState({
     visible: false,
     data: [],
-    filteredData: []
+    filteredData: [],
   });
-  const [companySearched, setCompanySearched] = useState('');
+  const [companySearched, setCompanySearched] = useState("");
   const params = useParams();
-  
+
   const handleModalClose = () => {
     // reset state on modal close
     setFormData({
-      name: '',
-      email: '',
-      title: '',
-      companyName: '',
-      role: 'user',
-      logo: null
-    })
+      name: "",
+      email: "",
+      title: "",
+      companyName: "",
+      role: "user",
+      logo: null,
+    });
     setCompanyOptions({
       visible: false,
       data: [],
-      filteredData: []
-    })
-    setError('')
-    setPreviewUrl('')
-    setCompanySearched('')
-    onClose()
-  }
+      filteredData: [],
+    });
+    setError("");
+    setPreviewUrl("");
+    setCompanySearched("");
+    onClose();
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -57,52 +57,62 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
 
     setFormData({
       ...formData,
-      [key]: val
-    })
-  }
+      [key]: val,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      let logoUrl = '';
+      let logoUrl = "";
 
       // Upload logo if selected
       if (formData.logo) {
         const uploadData = new FormData();
-        uploadData.append('file', formData.logo);
+        uploadData.append("file", formData.logo);
 
-        const uploadResponse = await fetchWrapper('/api/upload', {
-          method: 'POST',
-          body: uploadData,
-        }, 'user-logo');
+        const uploadResponse = await fetchWrapper(
+          "/api/upload",
+          {
+            method: "POST",
+            body: uploadData,
+          },
+          "user-logo"
+        );
 
         if (!uploadResponse.ok) {
-          throw new Error('Failed to upload logo');
+          throw new Error("Failed to upload logo");
         }
 
         const uploadResult = await uploadResponse.json();
         logoUrl = uploadResult.url;
       }
 
+
+
       // Create Box user
-      const boxResponse = await fetchWrapper('/api/box/create-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const boxResponse = await fetchWrapper(
+        "/api/box/create-user",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userName: formData.email,
+            externalId: `user_${Date.now()}`,
+          }),
         },
-        body: JSON.stringify({
-          userName: formData.email,
-          externalId: `user_${Date.now()}`
-        }),
-      },'create-user-box');
+        "create-user-box"
+      );
 
       const boxData = await boxResponse.json();
 
       if (!boxResponse.ok) {
-        throw new Error(boxData.error || 'Failed to create Box user');
+        throw new Error(boxData.error || "Failed to create Box user");
       }
 
       // Prepare user data for storage
@@ -111,82 +121,92 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         name: formData.name,
         title: formData.title,
         companyName: formData.companyName,
-        password: '000',
+        password: "000",
         role: formData.role,
         logo: logoUrl,
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId,
         portal: params.portalid || "",
-        isOnboardingRequired: false
+        isOnboardingRequired: false,
       };
 
       // Save user data
-      const saveResponse = await fetchWrapper('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const saveResponse = await fetchWrapper(
+        "/api/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
         },
-        body: JSON.stringify(userData),
-      },'save-user');
+        "save-user"
+      );
 
       if (!saveResponse.ok) {
-        throw new Error('Failed to save user data');
+        throw new Error("Failed to save user data");
       }
 
       const savedData = await saveResponse.json();
       onAdd(savedData);
       handleModalClose();
     } catch (error) {
-      console.error('Error creating user:', error);
-      setError(error.message || 'An unexpected error occurred');
+      console.error("Error creating user:", error);
+      setError(error.message || "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   const onCompanyNameSearch = (e) => {
-    const searchedText = e.target.value
+    const searchedText = e.target.value;
     setCompanySearched(searchedText);
     setTimeout(() => {
-      onApplySearchFilter(searchedText)
+      onApplySearchFilter(searchedText);
     }, 1000);
-  }
+  };
 
   const onApplySearchFilter = (searchedText, visible) => {
     searchedText = String(searchedText).trim().toLowerCase();
-    const data = companyOptions.data.length > 0 ? companyOptions.data : users.map((x) => x.name)
+    const data =
+      companyOptions.data.length > 0
+        ? companyOptions.data
+        : users.map((x) => x.name);
     let companyData = JSON.parse(JSON.stringify(data));
 
     if (!!searchedText)
-      companyData = companyData.filter((x) => String(x).trim().toLowerCase().startsWith(searchedText));
-    else
-      companyData = data
-    
-    setCompanyOptions({ visible: companyOptions.visible || visible, data, filteredData: companyData })
-  }
+      companyData = companyData.filter((x) =>
+        String(x).trim().toLowerCase().startsWith(searchedText)
+      );
+    else companyData = data;
+
+    setCompanyOptions({
+      visible: companyOptions.visible || visible,
+      data,
+      filteredData: companyData,
+    });
+  };
 
   const toggleCompanyDropdown = () => {
-    if (!companyOptions.visible)
-      onApplySearchFilter(companySearched, true)
-    else
-      onCompanyNameBlur()
-  }
+    if (!companyOptions.visible) onApplySearchFilter(companySearched, true);
+    else onCompanyNameBlur();
+  };
 
   const onCompanyNameBlur = () => {
-    setCompanyOptions({ ...companyOptions, visible: false })
-    setCompanySearched('')
-  }
+    setCompanyOptions({ ...companyOptions, visible: false });
+    setCompanySearched("");
+  };
 
   const onCompanyNameSelect = (item) => {
-    handleFormChange('companyName', item)
-    onCompanyNameBlur()
-  }
+    handleFormChange("companyName", item);
+    onCompanyNameBlur();
+  };
 
   const onAddCompany = () => {
-    setCompanySearched('')
-    const data = [...companyOptions.data, companySearched]
-    setCompanyOptions({ ...companyOptions, data, filteredData: data })
-  }
+    setCompanySearched("");
+    const data = [...companyOptions.data, companySearched];
+    setCompanyOptions({ ...companyOptions, data, filteredData: data });
+  };
 
   if (!isOpen) return null;
 
@@ -211,41 +231,49 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
             <input
               type="text"
               required
               className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.name}
-              onChange={(e) => handleFormChange('name', e.target.value)}
+              onChange={(e) => handleFormChange("name", e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <input
               type="email"
               required
               className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.email}
-              onChange={(e) => handleFormChange('email', e.target.value)}
+              onChange={(e) => handleFormChange("email", e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Title</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Title
+            </label>
             <input
               type="text"
               className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.title}
-              onChange={(e) => handleFormChange('title', e.target.value)}
+              onChange={(e) => handleFormChange("title", e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Company Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Company Name
+            </label>
             <input
               type="text"
               className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.companyName}
-              onChange={(e) => handleFormChange('companyName', e.target.value)}
+              onChange={(e) => handleFormChange("companyName", e.target.value)}
             />
           </div>
 
@@ -300,19 +328,23 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
 
           </div> */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Role</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Role
+            </label>
             <select
               className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               value={formData.role}
-              onChange={(e) => handleFormChange('role', e.target.value)}
-              style={{ height: '2.5rem' }}
+              onChange={(e) => handleFormChange("role", e.target.value)}
+              style={{ height: "2.5rem" }}
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Company Logo</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Company Logo
+            </label>
             <div className="mt-1 flex items-center space-x-4">
               <input
                 type="file"
@@ -345,7 +377,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
               disabled={loading}
             >
-              {loading ? 'Creating...' : 'Add User'}
+              {loading ? "Creating..." : "Add User"}
             </button>
           </div>
         </form>

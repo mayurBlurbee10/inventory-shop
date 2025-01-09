@@ -26,11 +26,11 @@ export const getConnection = () => {
   if (!AppDataSource.isInitialized) {
     throw new Error("Connection not established");
   }
-  console.log(AppDataSource.options.entities);
-  console.log(
-    "Registered Entities:",
-    AppDataSource.entityMetadatas.map((meta) => meta.name)
-  );
+  // console.log(AppDataSource.options.entities);
+  // console.log(
+  //   "Registered Entities:",
+  //   AppDataSource.entityMetadatas.map((meta) => meta.name)
+  // );
   // console.log("Entity Metadata:", AppDataSource.entityMetadatas);
   return AppDataSource;
 };
