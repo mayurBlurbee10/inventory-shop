@@ -21,20 +21,20 @@ export default function SetPassword() {
   const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
-    const params = useParams();
-    console.log('params', params)
-    const token = params.token
-  // const searchParams = useSearchParams();
-  // let params = new URLSearchParams(window.location.search);
-  // console.log('params', params)
-  // const token = 'd746c62863eeb42347cd16b2cf83ed5f369e12b8d979468688dd6c6d041500c3' //searchParams.get('token');
+  const params = useParams();
+  const token = params.token;
 
-  const handleSetPassword = async (e) => {
+  const handleSetPassword = async (e, isFrom) => {
     e.preventDefault();
     setError("");
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+    if(isFrom === 'standardUser'){
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      } else if (!password) {
+        setError("Please enter the password");
+        return;
+      }
     }
 
     try {
@@ -60,61 +60,81 @@ export default function SetPassword() {
   };
 
   useEffect(() => {
-    if(token) {
-      const checkToken = async() => {
-        try { 
+    if (token) {
+      const checkToken = async () => {
+        try {
           setIsTokenExpired(false);
-          const response = await fetchWrapper(`/api/setPassword?token=${token}`, {method: 'GET'}, 'validateLink')
+          const response = await fetchWrapper(
+            `/api/setPassword?token=${token}`,
+            { method: "GET" }
+          );
           const data = await response.json();
           if (!response.ok) {
             throw new Error(data.error || "Failed to validate Link");
           }
         } catch (error) {
           setIsTokenExpired(true);
-          console.error('Error refreshing files:', error);
         } finally {
           setTokenLoading(false);
         }
       };
-  
+
       checkToken();
     }
   }, [router]);
 
   if (tokenLoading) return <LoadingSpinner />;
 
-  if(isTokenExpired) {
+  if (isTokenExpired) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="text-lg font-medium text-red-600">
-         Link is invalid or expired.
+          Link is invalid or expired.
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-800">
-          Set Password
+        <h2 className="text-xl font-bold text-center text-gray-800">
+          Finish setting up your account for the {params.portalid} Portal
         </h2>
-        <form className="mt-6 text-gray-700" onSubmit={handleSetPassword}>
+        <p className="text-sm text-gray-600 text-center mt-2">
+          If you have an OKTA account, we can directly sign you in. Click the
+          button below:
+        </p>
+        <div className="flex justify-center mt-4">
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+            onClick={(e)=>{handleSetPassword(e,'okta')}}
+            disabled={loading}
+          >
+            Sign in with OKTA
+          </button>
+        </div>
+        <hr className="my-6 border-gray-200" />
+        <p className="text-sm text-gray-600 text-center mb-4">
+          To create a standard user, please finish setting up your account by
+          creating a password below:
+        </p>
+        <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
           {success ? (
             <p className="text-green-500 text-center mb-4">
-              Password Set successfully! Redirecting to login...
+              Password set successfully! Redirecting to login...
             </p>
           ) : (
             <>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-600">
-                  New Password
+                  Password
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     className="w-full px-4 py-2 mt-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                    placeholder="Enter new password"
+                    placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -124,11 +144,7 @@ export default function SetPassword() {
                     className="absolute top-[58%] right-4 transform -translate-y-1/2"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? (
-                      <Eye />
-                    ) : (
-                      <EyeOff />
-                    )}
+                    {showPassword ? <Eye /> : <EyeOff />}
                   </button>
                 </div>
               </div>

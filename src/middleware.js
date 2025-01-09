@@ -1,13 +1,14 @@
+import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
-import { verifyToken } from "./app/lib/jwt";
 
 const excludedRoutes = {
   '/api/contentManagement': ['GET'],
   '/api/portal': ['GET'],
   '/api/auth/login': ['POST'],
   '/api/box/share': ['GET'],
-  '/api/users': ['POST'],
-  '/api/users': ['GET'],
+  '/api/users': ['POST','GET'],
+  '/api/users/loginByProvider': ['POST'],
+  '/api/setPassword': ['POST','GET']
 };
 
 const publicRoutes = [
@@ -34,7 +35,8 @@ export function middleware(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     try {
-      const decoded = verifyToken(authToken);
+      const secretKey = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET_KEY);
+      const { payload } = jwtVerify(authToken, secretKey);
     } catch (error) {
       console.log('Token verification failed: ' + error.message);
       return NextResponse.json({ error: 'Unauthorized;Token verification failed' }, { status: 401 });
@@ -60,7 +62,7 @@ export function middleware(request) {
 // Configure which routes to run middleware on
 export const config = {
   matcher: [
-    "/home",
+    // "/home",
     "/login",
     "/settings",
     // "/shared-file",

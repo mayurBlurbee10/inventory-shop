@@ -62,7 +62,6 @@ const getPortalByLegalName = async (legalName) => {
     const portal = await portalRepository.findOneBy({
       legalName: legalName,
     });
-    console.log('portal legalName: ', JSON.stringify(portal));
     return portal;
   } catch (error) {
     throw new Error("Failed to get portal.");

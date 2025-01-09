@@ -15,7 +15,8 @@ import DialogBox from "./DialogBox";
 import FolderExplorer from "./FolderExplorer";
 import UploadArea from "./UploadArea";
 import ActionButtons from "./ActionButtons";
-import { getSession } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
+import { setUserData } from "@/lib/auth";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -298,8 +299,9 @@ function Dashboard({ fileType }) {
     setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
   }, [path]);
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
     clearUserData();
+    await signOut();
     router.push("login");
   };
 
@@ -357,24 +359,46 @@ function Dashboard({ fileType }) {
     }
   };
 
+  const getUserDetailsByEmail = async (email) => {
+    try {
+      let url = `/api/users/loginByProvider`
+      const body = {
+        method: "POST",
+        body: JSON.stringify({email, portalid:params.portalid}),
+      };
+      const response = await fetchWrapper(url, body, "fetchUserByEmail");
+      if (!response.ok) throw new Error("Failed to get user from email");
+      const data = await response.json();
+      console.log("user ==> ", data);
+      const userData = data.user;
+      setUserData(userData);
+      localStorage.setItem("portal", params.portalid);
+      localStorage.setItem('accessToken', data.accessToken);
+    } catch (error) {
+      console.error("Failed to get user from email:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchSession = async () => {
       const sessionData = await getSession();
+      console.log("sessionData ==> ", sessionData);
       setSession(sessionData);
+      if(sessionData){
+        await getUserDetailsByEmail(sessionData.user.email);
+      }
     };
-    fetchSession();
-    const userData = getUserData();
-    if (!userData) {
-      router.push("login");
-      return;
-    }
-
-    setUser(userData);
-    // if (userData.boxFiles) {
-    //   setFiles(processBoxFiles(userData.boxFiles));
-    // }
-    refreshFiles();
-    fetchConfig();
+    fetchSession().then(()=>{
+      const userData = getUserData();
+      if (!userData) {
+        router.push("login");
+        return;
+      }
+  
+      setUser(userData);
+      refreshFiles();
+      fetchConfig();
+    });
   }, [router]);
 
   useEffect(() => {
@@ -449,7 +473,7 @@ function Dashboard({ fileType }) {
           >
             <div className="mb-4">
               <h3 className="text-lg xl:text-2xl text-[#3c4043] font-medium text-center xl:mb-5">
-                Welcome, {session?.user?.name}
+                Welcome, {user.name}
               </h3>
               {/* NEW FOLDER MODEL */}
               <div className="flex items-center gap-3">

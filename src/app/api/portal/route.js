@@ -95,7 +95,6 @@ export async function GET(req) {
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
       const portal = await portalService.getPortalByLegalName(portalLegalName);
-      console.log('if portal: ', JSON.stringify(portal))
       if (!portal) {
         return NextResponse.json(
           { error: `portal ${portalId} not found.` },

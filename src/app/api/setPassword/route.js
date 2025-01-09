@@ -40,7 +40,7 @@ export async function POST(request) {
   try {
     await logApiCall(request);
     const { token, password } = await request.json();
-    if (!token || !password) {
+    if (!token) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }

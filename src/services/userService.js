@@ -102,9 +102,13 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
       throw new Error("Invalid or expired reset token");
     }
   
-    // Hash and set the new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    if(newPassword!='') {
+      // Hash and set the new password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    } else {
+      user.password = null;
+    }
   
     // Invalidate token after reset
     user.resetPasswordToken = null;

@@ -72,7 +72,6 @@ export const logApiCall = async (req, next) => {
   data.push(logEntry);
   // const res = await apiLogService.createApiLogs(logEntry)
   const res = await apiLogService.createApiLogs();
-  console.log("Response from api-log-middleware : ", res);
   // await writeJsonFile(dir, filePath, data);
   if (typeof next === "function") {
     next();

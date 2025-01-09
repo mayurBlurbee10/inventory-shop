@@ -375,7 +375,7 @@ export default function SubsidiariesLoginPage() {
                     )}
                   </button>
                   <div className="text-center mt-4">
-                    <button className="text-text/40 hover:text-text/60" onClick={login}>Login by Okta</button>
+                    <button type="button" className="text-text/40 hover:text-text/60" onClick={login}>Login with Okta</button>
                   </div>
                 </div>
               </form>

@@ -25,7 +25,10 @@ export default NextAuth({
     },
     async redirect({ url, baseUrl }) {
       // If the user is authenticated, redirect to home
-      if (url.startsWith(baseUrl)) return `${baseUrl}/home`;
+      if (url.startsWith(baseUrl)) {
+        const updatedUrl = url.replace("/login", "/home");
+        return updatedUrl
+      };
       return baseUrl;
     }
   },

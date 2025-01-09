@@ -55,7 +55,6 @@ const getContentManagement = async (portalId) => {
     const contents = await contentRepository.find({
       where: { portalId },
     });
-    console.log('contents: ', contents)
     return contents;
   } catch (error) {
     throw new Error("Failed to get content.");
