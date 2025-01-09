@@ -64,15 +64,14 @@ export const logApiCall = async (req, next) => {
   const now = new Date();
   const logEntry = {
     date: formatDate(now),
-    user: userId,
-    portal: portalId,
+    userId: userId,
+    name: portalId,
     type: apiType,
   };
 
-  data.push(logEntry);
+  // data.push(logEntry);
   // const res = await apiLogService.createApiLogs(logEntry)
-  const res = await apiLogService.createApiLogs();
-  console.log("Response from api-log-middleware : ", res);
+  // console.log("Response from api-log-middleware : ", res);
   // await writeJsonFile(dir, filePath, data);
   if (typeof next === "function") {
     next();

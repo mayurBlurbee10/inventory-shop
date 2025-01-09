@@ -93,13 +93,13 @@ export async function POST(request) {
     //     { status: 409 }
     //   );
     // }
-    // const userExist = await userService.getUserByEmail(userData.email);
-    // if (userExist) {
-    //   return NextResponse.json(
-    //     { error: "User already exists" },
-    //     { status: 409 }
-    //   );
-    // }
+    const userExist = await userService.getUserByEmail(userData.email);
+    if (userExist) {
+      return NextResponse.json(
+        { error: "User already exists" },
+        { status: 409 }
+      );
+    }
 
     const token = await generateNanoToken();
     // Add new user with password
