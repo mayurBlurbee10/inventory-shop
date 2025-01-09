@@ -2,6 +2,12 @@ import "reflect-metadata";
 import { connectDatabase, getConnection } from "@/config/db";
 import { Portals } from "@/entities/Portals";
 
+const getRepository = async (entity) => {
+  await connectDatabase();
+  const connection = getConnection();
+  return connection.getRepository(entity);
+};
+
 const createPortal = async (data) => {
   await connectDatabase();
   const connection = getConnection();
@@ -14,6 +20,26 @@ const createPortal = async (data) => {
     throw new Error("Failed to create portal.");
   }
 };
+
+const getPortalsByUser = async (user) => {
+  console.log('getPortalsByUser: ', user)
+  const portalRepository = await getRepository(Portals);
+  try {
+    const userId = String(user).toLowerCase();
+    const portals = await portalRepository.find({
+      where: {
+        createdBy: {
+          id: userId, // Querying for the userId in the createdBy relation
+        },
+      },
+      relations: ['createdBy'],
+    });
+    console.log('portals', portals)
+    return portals
+  } catch (error) {
+    throw new Error("Failed to get portals.");
+  }
+}
 
 const getPortals = async () => {
   await connectDatabase();
@@ -45,6 +71,7 @@ const getPortalByLegalName = async (legalName) => {
 
 export default {
   createPortal,
+  getPortalsByUser,
   getPortals,
   getPortalByLegalName,
 };

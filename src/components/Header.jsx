@@ -98,13 +98,15 @@ function Header({
                       Settings
                     </button>
                   )}
-                  <button
-                    onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
-                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                  >
-                    <Headset className="h-5 w-5" />
-                    Tech Support
-                  </button>
+                  {userIsAdmin && (
+                    <button
+                      onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
+                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                    >
+                      <Headset className="h-5 w-5" />
+                      Tech Support
+                    </button>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"

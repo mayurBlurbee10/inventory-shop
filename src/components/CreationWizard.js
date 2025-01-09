@@ -537,12 +537,8 @@ const AdministratorStep = ({ formData, setFormData }) => (
     </div>
   );
   
-  const CreationWizard = ({ isOpen, onClose, onCreateSubsidiary }) => {
-    const [currentStep, setCurrentStep] = useState(0);
-    const [formErrors, setFormErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [formData, setFormData] = useState({
+  const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
+    const initialFormData = {
       legalName: '',
       tradingName: '',
       region: '',
@@ -576,7 +572,12 @@ const AdministratorStep = ({ formData, setFormData }) => (
       },
       retentionAudit: '90',
       retentionBackup: 'daily'
-    });
+    }
+    const [currentStep, setCurrentStep] = useState(0);
+    const [formErrors, setFormErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [formData, setFormData] = useState(initialFormData);
   
     const validateStep = () => {
       const errors = {};
@@ -612,6 +613,7 @@ const AdministratorStep = ({ formData, setFormData }) => (
           // Simulate API call with 3 second delay
           await new Promise(resolve => setTimeout(resolve, 6000));
           onCreateSubsidiary(formData);
+          resetOnClose();
           setIsSubmitting(false);
           setShowSuccess(true);
           // Close the modal after showing success for 3 seconds
@@ -624,10 +626,20 @@ const AdministratorStep = ({ formData, setFormData }) => (
         }
       }
     };
-  
+
+    const resetOnClose = () => {
+      setFormData(initialFormData);
+      setCurrentStep(0);
+    }
+
     const handleBack = () => {
       setCurrentStep(currentStep - 1);
     };
+
+    const handleClose = () => {
+      resetOnClose();
+      onClose();
+    }
   
     if (!isOpen) return null;
   
@@ -656,7 +668,7 @@ const AdministratorStep = ({ formData, setFormData }) => (
           )}
   
           {/* Loading Overlay */}
-          {isSubmitting && (
+          {(isSubmitting || isLoading) && (
             <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
               <div className="text-center space-y-3">
                 <div className="mx-auto h-8 w-8 animate-spin">
@@ -689,17 +701,17 @@ const AdministratorStep = ({ formData, setFormData }) => (
           {/* Footer */}
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
             <button
-              onClick={currentStep === 0 ? onClose : handleBack}
+              onClick={currentStep === 0 ? handleClose : handleBack}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
             >
               {currentStep === 0 ? 'Cancel' : 'Back'}
             </button>
             <button
               onClick={handleNext}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
               className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-                isSubmitting 
+                (isSubmitting || isLoading)
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-gray-900 hover:bg-gray-800'
               }`}

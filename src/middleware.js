@@ -6,6 +6,8 @@ const excludedRoutes = {
   '/api/portal': ['GET'],
   '/api/auth/login': ['POST'],
   '/api/box/share': ['GET'],
+  '/api/users': ['POST'],
+  '/api/users': ['GET'],
 };
 
 const publicRoutes = [
@@ -32,7 +34,7 @@ export function middleware(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     try {
-      const decoded = verifyToken(token, SECRET_KEY);
+      const decoded = verifyToken(authToken);
     } catch (error) {
       console.log('Token verification failed: ' + error.message);
       return NextResponse.json({ error: 'Unauthorized;Token verification failed' }, { status: 401 });

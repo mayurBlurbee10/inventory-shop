@@ -6,6 +6,7 @@ import { logApiCall } from '@/app/lib/api-log-middleware';
 import { generateNanoToken } from '@/app/lib/jwt';
 import { sendSetPasswordEmail } from '@/app/lib/email';
 import userService from "@/services/userService";
+import { UserRole } from '@/config/constants';
 
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
 
@@ -53,9 +54,12 @@ export async function GET(request) {
   await logApiCall(request);
   const { searchParams } = new URL(request.url);
   const portalid = searchParams.get('portalid');
+  const email = searchParams.get('email');
   let users = {}
   if(portalid){
     users = await userService.getUsersByPortal(portalid);
+  } else if (email) {
+    users = await userService.getUserByEmail(email);
   } else {
     users = await userService.getUsers();
   }
@@ -99,32 +103,37 @@ export async function POST(request) {
 
     const token = await generateNanoToken();
     // Add new user with password
-    const newUser = {
+    let newUser = {
       // id: Date.now().toString(),
       email: userData.email,
       name: userData.name || userData.email.split("@")[0],
-      password: "000", // Default password as requested
-      extra: "000", // Default password as requested
-      title: userData.title,
-      boxUserId: userData.boxUserId,
-      folderId: userData.folderId,
-      company: {
-        name: userData.companyName,
-        logo: userData.logo,
-      },
+      password: userData.password, // Default password as requested
+      extra: userData.password, // Default password as requested
+      company: {},
       collaborationIds: [],
       // createdAt: new Date().toISOString(),
-      role:userData.role,
-      resetPasswordToken: token,
-      isOnboardingRequired: userData.isOnboardingRequired,
-      portalId:userData.portal
+      role: userData.role,
     };
+
+    if (userData.role !== UserRole.SUPER_ADMIN) {
+      newUser.resetPasswordToken = token;
+      newUser.isOnboardingRequired = userData.isOnboardingRequired;
+      newUser.portalId = userData.portal;
+      newUser.title = userData.title;
+      newUser.boxUserId = userData.boxUserId;
+      newUser.folderId = userData.folderId;
+      newUser.company = {
+        name: userData.companyName,
+        logo: userData.logo,
+      }
+    }
 
     // console.log("Created new user object:", newUser);
     // users.push(newUser);
 
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
+    if (userData.role !== UserRole.SUPER_ADMIN)
     sendSetPasswordEmail(newUser.email, newUser.name, token, userData.portal);
     console.log("Successfully saved new user");
 

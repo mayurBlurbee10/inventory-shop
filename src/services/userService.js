@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { connectDatabase, getConnection } from "@/config/db";
 import { Users } from "@/entities/Users";
 import * as bcrypt from "bcrypt";
+import { validateOrReject } from "class-validator";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -13,6 +14,10 @@ const createUser = async (data) => {
   const userRepository = await getRepository(Users);
   try {
     const user = userRepository.create(data);
+    // Validate user data according to the role-specific rules
+    console.log('user', user)
+    const valid = await validateOrReject(user);
+    console.log('valid', valid)
     await userRepository.save(user);
     return user;
   } catch (error) {
@@ -45,7 +50,11 @@ const getUsersByPortal = async (portal) => {
 const getUserByEmail = async (email, portalId) => {
   const userRepository = await getRepository(Users);
   try {
-    return await userRepository.findOneBy({ email, portalId });
+    const query = { email };
+    if (portalId) {
+      query.portalId = portalId;
+    }
+    return await userRepository.findOneBy(query);
   } catch (error) {
     throw new Error("Failed to get users.");
   }

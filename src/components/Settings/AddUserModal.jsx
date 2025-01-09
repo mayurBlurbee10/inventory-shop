@@ -111,6 +111,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         name: formData.name,
         title: formData.title,
         companyName: formData.companyName,
+        password: '000',
         role: formData.role,
         logo: logoUrl,
         boxUserId: boxData.user.userId,
