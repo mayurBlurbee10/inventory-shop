@@ -29,46 +29,7 @@ export default function AdminLoginPage() {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const user = ADMIN_USERS[email];
-    if (user && password === 'admin123') {
-        // Prepare user data for superadmin role
-        // this code will go to signup once it is made
-        const userRes = await fetchWrapper(`/api/users?email=${user.email}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },'get-user');
-        const userResData = await userRes.json();
-        if (!userRes.ok) {
-          throw new Error('Failed to check user');
-        }
-
-        const userData = {
-          email: user.email,
-          name: user.name,
-          password: 'admin123',
-          role: UserRole.SUPER_ADMIN,
-          isOnboardingRequired: false
-        };
-        
-        // if user with this email does not exists, then create the new one
-        if (!userResData) {
-          // Save user data
-          const saveResponse = await fetchWrapper('/api/users', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData),
-          },'save-user');
-    
-          if (!saveResponse.ok) {
-            throw new Error('Failed to save user data');
-          }
-  
-          const saveRes = await saveResponse.json();
-        }
-
+    if (email && password !== '') {
         const response = await fetchWrapper(
           "/api/auth/login",
           {
@@ -76,17 +37,16 @@ export default function AdminLoginPage() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email: userData.email, password: userData.password }),
+            body: JSON.stringify({ email: email, password: password }),
           },
           "default-login"
         );
   
+        const data = await response.json();
         if (!response.ok) {
-          const data = await response.json();
           throw new Error(data.error || "Login failed");
         }
-  
-        const data = await response.json();
+
         // Store user data using auth utility
         setUserData(data.user);
         localStorage.setItem("portal", 'admin');
@@ -103,6 +63,10 @@ export default function AdminLoginPage() {
       setError('Invalid email or password');
     }
     setIsLoading(false);
+  };
+
+  const navigatToSignUp = () => {
+    router.push("/admin/signup");
   };
 
   return (
@@ -172,6 +136,14 @@ export default function AdminLoginPage() {
           <a href="#" className="text-blue-600 hover:text-blue-500 text-sm">
             Forgot password?
           </a>
+        </div>
+        <div className="mt-6 text-center">
+          <div className="text-blue-600 text-sm">
+            Don't have an account?{" "}
+            <span className='cursor-pointer hover:text-blue-500' onClick={navigatToSignUp}>
+              Sign up
+            </span>
+          </div>
         </div>
         {/* footer with copyright and some links */}
         <div className="mt-6 text-center text-sm text-gray-500">

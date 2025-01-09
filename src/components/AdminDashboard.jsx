@@ -252,36 +252,37 @@ export default function AdminDashboard() {
 
   const handleCreateSubsidiary = async (formData) => {
     setIsLoading(true);
-    let newSubsidiary = {
-      legalName: formData.legalName,
-      tradingName: formData.tradingName,
-      domain: formData.domain,
-      status: "setup",
-      userCount: 0,
-      storageUsed: "0 GB",
-      theme: formData.theme || "minimal",
-      primaryColor: formData.primaryColor || "#000000",
-      secondaryColor: formData.secondaryColor || "#4F46E5",
-      accentColor: formData.accentColor,
-      security: {
-        mfa: formData.security?.mfa || true,
-        sso: formData.security?.sso || false,
-        audit: formData.security?.audit || true,
-        ip_restrict: formData.security?.ip_restrict || false,
-      },
-      permissions: {
-        billing: formData.permissions?.billing || true,
-        users: formData.permissions?.users || true,
-        security: formData.permissions?.security || false,
-        api: formData.permissions?.api || false,
-      },
-      retentionAudit: formData.retentionAudit || "90",
-      retentionBackup: formData.retentionBackup || "daily",
-      storageLimit: formData.storageLimit || 1000,
-      userLimit: formData.userLimit || 100,
-      createdBy: user.id,
-    };
     try {
+      let newSubsidiary = {
+        legalName: formData.legalName,
+        tradingName: formData.tradingName,
+        domain: formData.domain,
+        status: "setup",
+        userCount: 0,
+        storageUsed: "0 GB",
+        theme: formData.theme || "minimal",
+        primaryColor: formData.primaryColor || "#000000",
+        secondaryColor: formData.secondaryColor || "#4F46E5",
+        accentColor: formData.accentColor,
+        security: {
+          mfa: formData.security?.mfa || true,
+          sso: formData.security?.sso || false,
+          audit: formData.security?.audit || true,
+          ip_restrict: formData.security?.ip_restrict || false,
+        },
+        permissions: {
+          billing: formData.permissions?.billing || true,
+          users: formData.permissions?.users || true,
+          security: formData.permissions?.security || false,
+          api: formData.permissions?.api || false,
+        },
+        retentionAudit: formData.retentionAudit || "90",
+        retentionBackup: formData.retentionBackup || "daily",
+        storageLimit: formData.storageLimit || 1000,
+        userLimit: formData.userLimit || 100,
+        createdBy: user.id,
+      };
+
       let logoUrl = "";
 
       // Upload logo if selected
@@ -306,24 +307,19 @@ export default function AdminDashboard() {
         logoUrl = uploadResult.url;
       }
 
-      newSubsidiary = {
-        ...newSubsidiary,
-        logo: logoUrl,
-      };
+      newSubsidiary.logo = logoUrl;
       const saveResponse = await fetchWrapper(
         "/api/portal",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newSubsidiary),
         },
         "create-portal"
       );
 
       if (!saveResponse.ok) {
-        throw new Error("Failed to save user data");
+        throw new Error("Failed to save subsidiary data");
       }
 
       const subsidiary = await saveResponse.json();
@@ -333,9 +329,7 @@ export default function AdminDashboard() {
         "/api/box/create-user",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userName: formData.adminEmail,
             externalId: `user_${Date.now()}`,
@@ -343,9 +337,9 @@ export default function AdminDashboard() {
         },
         "create-user-box"
       );
-
+  
       const boxData = await boxResponse.json();
-
+  
       if (!boxResponse.ok) {
         throw new Error(boxData.error || "Failed to create Box user");
       }
@@ -368,9 +362,7 @@ export default function AdminDashboard() {
         "/api/users",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(userData),
         },
         "save-user"
@@ -381,7 +373,7 @@ export default function AdminDashboard() {
       }
       setSubsidiaries((prev) => [...prev, subsidiary.data]);
     } catch (error) {
-      console.error("Error uploading files:", error);
+      console.error("Error creating subsidiary:", error);
     } finally {
       setIsLoading(false);
       setShowCreationModal(false);

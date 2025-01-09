@@ -121,7 +121,7 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
   }
 };
 
-const setUserAccessToken = async (email, token) => {
+const setUserAccessToken = async (email, token, authStrategy) => {
   const userRepository = await getRepository(Users);
   try {
     const user = await userRepository.findOne({
@@ -130,6 +130,9 @@ const setUserAccessToken = async (email, token) => {
       },
     });
     user.accessToken = token;
+    if(!!authStrategy){
+      user.authStrategy = authStrategy;
+    }
     await userRepository.save(user);
   } catch (error) {
     throw new Error("Failed to get users.");

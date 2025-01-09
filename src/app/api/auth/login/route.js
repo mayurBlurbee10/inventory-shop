@@ -134,9 +134,6 @@ export async function POST(request) {
       user.password
     );
 
-    const hash = await bcrypt.hash(data.password, 10);
-    console.log("Invalid isPasswordCorrect:", isPasswordCorrect);
-    console.log("Invalid hash:", hash);
 
     if (!isPasswordCorrect) {
       console.log("Invalid credentials for:", data.email);

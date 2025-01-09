@@ -376,6 +376,7 @@ function Dashboard({ fileType }) {
       localStorage.setItem('accessToken', data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
+      router.push("login");
     }
   };
 

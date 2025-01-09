@@ -112,7 +112,7 @@ export default function OnBoardingPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="fixed inset-0 min-h-screen bg-gray-50 bg-opacity-80 flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
         {/* Loading Overlay */}
         {isSubmitting && (

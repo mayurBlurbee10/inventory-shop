@@ -33,6 +33,7 @@ export async function POST(request) {
     };
 
     const accessToken = await generateToken(userData, "168h");
+    await userService.setUserAccessToken(data.email, accessToken, 'okta');
     const response = NextResponse.json({
       success: true,
       user: userData,
