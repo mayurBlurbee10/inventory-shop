@@ -431,6 +431,30 @@ function Dashboard({ fileType }) {
   };
 
   useEffect(() => {
+    if (!searchQuery) {
+      setCurrentFilesList(
+        path.length === 0 ? filesList : path[path.length - 1].children
+      );
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const timer = setTimeout(() => {
+      const source =
+        path.length === 0 ? filesList : path[path.length - 1].children;
+      const results = source.filter((item) =>
+        item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setCurrentFilesList(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer); // Cleanup on query or component unmount
+  }, [searchQuery, selectedItem]);
+
+  useEffect(() => {
     const fetchSession = async () => {
       const sessionData = await getSession();
       setSession(sessionData);
@@ -528,7 +552,7 @@ function Dashboard({ fileType }) {
                     type="text"
                     placeholder="Search"
                     value={searchQuery}
-                    onChange={handleSearch}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
                       ${suggestions.length === 0 ? "rounded-bl-[30px] rounded-br-[30px]" : "border-t-gray-200 border-s-gray-200 border-e-gray-200"}`}
                   />
