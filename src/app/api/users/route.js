@@ -1,12 +1,12 @@
 // src/app/api/users/route.js
-import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { logApiCall } from '@/app/lib/api-log-middleware';
-import { generateNanoToken } from '@/app/lib/jwt';
-import { sendSetPasswordEmail } from '@/app/lib/email';
+import { NextResponse } from "next/server";
+import { promises as fs } from "fs";
+import path from "path";
+import { logApiCall } from "@/app/lib/api-log-middleware";
+import { generateNanoToken } from "@/app/lib/jwt";
+import { sendSetPasswordEmail } from "@/app/lib/email";
 import userService from "@/services/userService";
-import { UserRole } from '@/config/constants';
+import { UserRole } from "@/config/constants";
 
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
 
@@ -53,17 +53,17 @@ export async function GET(request) {
   console.log("GET request received for users");
   await logApiCall(request);
   const { searchParams } = new URL(request.url);
-  const portalid = searchParams.get('portalid');
-  const email = searchParams.get('email');
-  let users = {}
-  if(portalid){
+  const portalid = searchParams.get("portalid");
+  const email = searchParams.get("email");
+  let users = {};
+  if (portalid) {
     users = await userService.getUsersByPortal(portalid);
   } else if (email) {
     users = await userService.getUserByEmail(email);
   } else {
     users = await userService.getUsers();
   }
-  
+
   return NextResponse.json(users);
 }
 
@@ -125,7 +125,7 @@ export async function POST(request) {
       newUser.company = {
         name: userData.companyName,
         logo: userData.logo,
-      }
+      };
     }
 
     // console.log("Created new user object:", newUser);
@@ -134,7 +134,7 @@ export async function POST(request) {
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
     if (userData.role !== UserRole.SUPER_ADMIN)
-    sendSetPasswordEmail(newUser.email, newUser.name, token, userData.portal);
+      sendSetPasswordEmail(newUser.email, newUser.name, token, userData.portal);
     console.log("Successfully saved new user");
 
     return NextResponse.json(user);
@@ -157,6 +157,21 @@ export async function PUT(request) {
     console.error("Error in PUT /api/users:", error);
     return NextResponse.json(
       { error: "Failed to edit user", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    await logApiCall(request);
+    const userData = await request.json();
+    const res = await userService.deleteUser(userData.id);
+    return NextResponse.json(res);
+  } catch (error) {
+    console.error("Error in DELETE /api/users:", error);
+    return NextResponse.json(
+      { error: "Failed to delete user", details: error.message },
       { status: 500 }
     );
   }

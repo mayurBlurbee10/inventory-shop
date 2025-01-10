@@ -85,8 +85,6 @@ export async function POST(req) {
 export async function GET(req) {
   try {
     await logApiCall(req);
-    await ensurePortalsDirectory();
-  
 
     const { searchParams } = new URL(req.url);
     const portalId = searchParams.get("portalid");
@@ -125,6 +123,24 @@ export async function GET(req) {
     console.error("Error fetching portal files:", error.message);
     return NextResponse.json(
       { error: "Failed to retrieve portal files.", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req) {
+  try {
+    await logApiCall(req);
+    const portalData = await req.json();
+    const portal = await portalService.updatePortalThemes(portalData);
+    return NextResponse.json({
+      message: `portal updated successfully.`,
+      data: portal,
+    });
+  } catch (error) {
+    console.error("Error update portal:", error.message);
+    return NextResponse.json(
+      { error: "Failed to update portal.", details: error.message },
       { status: 500 }
     );
   }

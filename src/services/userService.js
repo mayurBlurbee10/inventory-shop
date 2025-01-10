@@ -15,9 +15,9 @@ const createUser = async (data) => {
   try {
     const user = userRepository.create(data);
     // Validate user data according to the role-specific rules
-    console.log('user', user)
+    console.log("user", user);
     const valid = await validateOrReject(user);
-    console.log('valid', valid)
+    console.log("valid", valid);
     await userRepository.save(user);
     return user;
   } catch (error) {
@@ -39,13 +39,13 @@ const getUsersByPortal = async (portal) => {
   try {
     return await userRepository.find({
       where: {
-        portalId: portal
+        portalId: portal,
       },
     });
   } catch (error) {
     throw new Error("Failed to get users.");
   }
-}
+};
 
 const getUserByEmail = async (email, portalId) => {
   const userRepository = await getRepository(Users);
@@ -94,7 +94,7 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
   try {
     const user = await userRepository.findOne({
       where: {
-        resetPasswordToken: token
+        resetPasswordToken: token,
       },
     });
 
@@ -112,7 +112,7 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
   
     // Invalidate token after reset
     user.resetPasswordToken = null;
-  
+
     await userRepository.save(user);
     return "Password successfully set";
   } catch (error) {
@@ -126,7 +126,7 @@ const setUserAccessToken = async (email, token, authStrategy) => {
   try {
     const user = await userRepository.findOne({
       where: {
-        email
+        email,
       },
     });
     user.accessToken = token;
@@ -139,17 +139,31 @@ const setUserAccessToken = async (email, token, authStrategy) => {
   }
 };
 
-const setUserOnboarding = async(id) => {
+const setUserOnboarding = async (id) => {
   const userRepository = await getRepository(Users);
   const user = await userRepository.findOne({
     where: {
-      id
+      id,
     },
   });
   user.isOnboardingRequired = false;
   await userRepository.save(user);
   return user;
-}
+};
+
+const deleteUser = async (userId) => {
+  const userRepository = await getRepository(Users);
+  try {
+    const userExist = await userRepository.findOneBy({ id: userId });
+    if (!userExist) {
+      throw new Error("user not exist");
+    }
+    await userRepository.delete({ id: userId });
+    return "User deleted successfully.";
+  } catch (error) {
+    throw new Error(`Failed to delete user. ${error.message}`);
+  }
+};
 
 export default {
   createUser,
@@ -161,5 +175,6 @@ export default {
   setPasswordByResetPasswordToken,
   setUserAccessToken,
   getUsersByPortal,
-  setUserOnboarding
+  setUserOnboarding,
+  deleteUser,
 };

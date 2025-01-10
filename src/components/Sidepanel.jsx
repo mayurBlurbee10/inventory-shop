@@ -68,7 +68,7 @@ function Sidepanel({
           <button
             className={`flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-sm my-1 
             ${
-              pathName.includes("/home")
+              pathName.includes("/home") && !isSettingsOpen
                 ? "bg-sky-200 text-sky-800"
                 : "text-gray-800 hover:bg-gray-200"
             }
@@ -81,7 +81,7 @@ function Sidepanel({
           <button
             className={`flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-sm my-1 
             ${
-              pathName.includes("/sharewithme")
+              pathName.includes("/sharewithme") && !isSettingsOpen
                 ? "bg-sky-200 text-sky-800"
                 : "text-gray-800 hover:bg-gray-200"
             }
@@ -93,7 +93,7 @@ function Sidepanel({
 
           {userIsAdmin && (
             <button
-            className={`flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-sm my-1 
+              className={`flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-sm my-1 
             ${
               isSettingsOpen
                 ? "bg-sky-200 text-sky-800"

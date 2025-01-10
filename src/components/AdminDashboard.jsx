@@ -263,7 +263,8 @@ export default function AdminDashboard() {
         theme: formData.theme || "minimal",
         primaryColor: formData.primaryColor || "#000000",
         secondaryColor: formData.secondaryColor || "#4F46E5",
-        accentColor: formData.accentColor,
+        accentColor: formData.accentColor || "#000000",
+        faviconUrl : formData.faviconUrl || "",
         security: {
           mfa: formData.security?.mfa || true,
           sso: formData.security?.sso || false,

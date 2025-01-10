@@ -247,26 +247,26 @@ export default function SubsidiariesLoginPage() {
                 {/* Adjusted to stretch and take full height */}
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-72 max-h-80 flex flex-col">
                   <h3 className="text-lg font-bold text-text">
-                    {filterValue("Card1 Title")}
+                    {filterValue("Card 1 Title")}
                   </h3>
                   <p className="text-text/60 mt-2 flex-grow">
-                    {filterValue("Card1 Content")}
+                    {filterValue("Card 1 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-72 max-h-80 flex flex-col">
                   <h3 className="text-lg font-bold text-text">
-                    {filterValue("Card2 Title")}
+                    {filterValue("Card 2 Title")}
                   </h3>
                   <p className="text-text/60 mt-2 flex-grow">
-                    {filterValue("Card2 Content")}
+                    {filterValue("Card 2 Content")}
                   </p>
                 </div>
                 <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-72 max-h-80 flex flex-col">
                   <h3 className="text-lg font-bold text-text">
-                    {filterValue("Card3 Title")}
+                    {filterValue("Card 3 Title")}
                   </h3>
                   <p className="text-text/60 mt-2 flex-grow">
-                    {filterValue("Card3 Content")}
+                    {filterValue("Card 3 Content")}
                   </p>
                 </div>
               </div>

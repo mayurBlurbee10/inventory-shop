@@ -1,46 +1,56 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
-import { Import, Plus } from 'lucide-react';
-import AddUserModal from './AddUserModal';
-import FileViewerModal from './FileViewerModal';
-import { fetchWrapper } from '@/app/lib/fetchWrapper';
-import UploadArea from '../UploadArea';
-import { useParams } from 'next/navigation';
+import React, { useState, useEffect, useRef } from "react";
+import { Import, Plus } from "lucide-react";
+import AddUserModal from "./AddUserModal";
+import FileViewerModal from "./FileViewerModal";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import UploadArea from "../UploadArea";
+import { useParams } from "next/navigation";
+import ViewProfileModal from "./ViewProfileModal";
 
 const UsersContent = () => {
   const [users, setUsers] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showFileViewer, setShowFileViewer] = useState(false);
+  const [isViewProfileModal, setIsViewProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showUploadArea, setShowUploadArea] = useState(false);
+  const [onDeleteUser, setOnDeleteUser] = useState(false);
   const fileInputRef = useRef(null);
   const params = useParams();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const url = params.portalid ? `/api/users?portalid=${params.portalid}` : '/api/users'
-        const response = await fetchWrapper(url, {}, 'fetch-user');
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        setError('Failed to load users');
-        console.error('Error fetching users:', error);
-      } finally {
-        setLoading(false);
+  const fetchUsers = async () => {
+    try {
+      const url = params.portalid
+        ? `/api/users?portalid=${params.portalid}`
+        : "/api/users";
+      const response = await fetchWrapper(url, {}, "fetch-user");
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
       }
-    };
-
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      setError("Failed to load users");
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchUsers();
   }, []);
+  useEffect(() => {
+    if(onDeleteUser){
+      fetchUsers();
+      setOnDeleteUser(false)
+    }
+  }, [onDeleteUser]);
 
   const handleAddUser = (newUser) => {
-    setUsers(prev => [...prev, newUser]);
+    setUsers((prev) => [...prev, newUser]);
   };
 
   const handleViewFiles = (user) => {
@@ -49,37 +59,41 @@ const UsersContent = () => {
   };
 
   const handleBrowse = (event) => {
-    if(event.type === "click"){
+    if (event.type === "click") {
       fileInputRef.current?.click();
     } else {
       handleFileSelect(event);
     }
-  }
+  };
 
   const handleFileSelect = async (event) => {
     const files = event.target.files;
     if (files.length > 0) {
       try {
-        setError('');
+        setError("");
         setLoading(true);
         const uploadData = new FormData();
         uploadData.append("file", files[0]);
         const requestOptions = {
-          method: 'POST',
+          method: "POST",
           body: uploadData,
         };
-        const response = await fetchWrapper("/api/box/create-user/bulk", requestOptions, 'bulk')
-        if (!response.ok) throw new Error('Failed to create users');
+        const response = await fetchWrapper(
+          "/api/box/create-user/bulk",
+          requestOptions,
+          "bulk"
+        );
+        if (!response.ok) throw new Error("Failed to create users");
         const savedData = await response.json();
-        if(savedData.createdUsers.length>0){
-          setUsers(prev => [...prev, ...savedData.createdUsers]);
+        if (savedData.createdUsers.length > 0) {
+          setUsers((prev) => [...prev, ...savedData.createdUsers]);
         }
         setShowUploadArea(false);
-        if(savedData.errors.length>0){
+        if (savedData.errors.length > 0) {
           setError(JSON.stringify(savedData.errors));
         }
       } catch (error) {
-        console.error('Error uploading files:', error);
+        console.error("Error uploading files:", error);
       } finally {
         setLoading(false);
       }
@@ -91,7 +105,7 @@ const UsersContent = () => {
       <div className="flex justify-between items-center space-x-4 pr-4">
         <div className="flex justify-between items-center w-full">
           <h3 className="text-lg font-medium text-gray-900">User Management</h3>
-          <button 
+          <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB] inline-flex items-center"
           >
@@ -113,7 +127,7 @@ const UsersContent = () => {
       {showUploadArea && (
         <div className="mb-6">
           <UploadArea
-            isForImport = {true}
+            isForImport={true}
             onBrowse={handleBrowse}
             onClose={() => setShowUploadArea(false)}
           />
@@ -129,9 +143,7 @@ const UsersContent = () => {
       />
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-md">
-          {error}
-        </div>
+        <div className="p-4 bg-red-50 text-red-600 rounded-md">{error}</div>
       )}
 
       {loading ? (
@@ -143,9 +155,15 @@ const UsersContent = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Company
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -154,8 +172,8 @@ const UsersContent = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {user.logoUrl ? (
-                        <img 
-                          src={user.logoUrl} 
+                        <img
+                          src={user.logoUrl}
                           alt={`${user.name} logo`}
                           className="h-8 w-8 object-contain rounded-full mr-3"
                         />
@@ -166,20 +184,30 @@ const UsersContent = () => {
                           </span>
                         </div>
                       )}
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {user.name}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user.email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
+                    <button
                       className="text-[#1A4C8A] hover:text-[#15407A] mr-4"
                       onClick={() => handleViewFiles(user)}
                     >
                       View Files
                     </button>
-                    <button className="text-[#1A4C8A] hover:text-[#15407A]">View Profile</button>
+                    <button
+                      className="text-[#1A4C8A] hover:text-[#15407A]"
+                      onClick={() => {
+                        setIsViewProfileModal((prev) => !prev);
+                        setSelectedUser(user);
+                      }}
+                    >
+                      View Profile
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -187,6 +215,16 @@ const UsersContent = () => {
           </table>
         </div>
       )}
+
+      <ViewProfileModal
+        isOpen={isViewProfileModal}
+        handleClose={() => {
+          setIsViewProfileModal(false);
+        }}
+        user={selectedUser}
+        setUser={setSelectedUser}
+        setOnDeleteUser={setOnDeleteUser}
+      />
 
       <AddUserModal
         users={users}

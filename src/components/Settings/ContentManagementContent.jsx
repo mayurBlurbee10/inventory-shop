@@ -367,8 +367,8 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                   <option value="" disabled>
                     Select a Content Title
                   </option>
-                  {contentTypes.map((type) => (
-                    <option key={type.title} value={type.title}>
+                  {contentTypes.map((type, idx) => (
+                    <option key={idx} value={type.title}>
                       {type.title}
                     </option>
                   ))}

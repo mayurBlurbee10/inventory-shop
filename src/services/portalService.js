@@ -9,9 +9,7 @@ const getRepository = async (entity) => {
 };
 
 const createPortal = async (data) => {
-  await connectDatabase();
-  const connection = getConnection();
-  const portalRepository = connection.getRepository(Portals);
+  const portalRepository = getRepository(Portals);
   try {
     const portal = portalRepository.create(data);
     await portalRepository.save(portal);
@@ -22,7 +20,7 @@ const createPortal = async (data) => {
 };
 
 const getPortalsByUser = async (user) => {
-  console.log('getPortalsByUser: ', user)
+  console.log("getPortalsByUser: ", user);
   const portalRepository = await getRepository(Portals);
   try {
     const userId = String(user).toLowerCase();
@@ -32,22 +30,20 @@ const getPortalsByUser = async (user) => {
           id: userId, // Querying for the userId in the createdBy relation
         },
       },
-      relations: ['createdBy'],
+      relations: ["createdBy"],
     });
-    console.log('portals', portals)
-    return portals
+    console.log("portals", portals);
+    return portals;
   } catch (error) {
     throw new Error("Failed to get portals.");
   }
-}
+};
 
 const getPortals = async () => {
-  await connectDatabase();
-  const connection = getConnection();
-  const portalRepository = connection.getRepository(Portals);
+  const portalRepository = await getRepository(Portals);
   try {
     const portals = await portalRepository.find();
-    console.log('portals: ', JSON.stringify(portals));
+    console.log("portals: ", JSON.stringify(portals));
     return portals;
   } catch (error) {
     throw new Error("Failed to get portals.");
@@ -55,16 +51,32 @@ const getPortals = async () => {
 };
 
 const getPortalByLegalName = async (legalName) => {
-  await connectDatabase();
-  const connection = getConnection();
-  const portalRepository = connection.getRepository(Portals);
+  const portalRepository = await getRepository(Portals);
   try {
-    const portal = await portalRepository.findOneBy({
-      legalName: legalName,
-    });
-    return portal;
+    return await portalRepository.findOneBy({ legalName });
   } catch (error) {
     throw new Error("Failed to get portal.");
+  }
+};
+
+const updatePortalThemes = async (portalData) => {
+  const portalRepository = await getRepository(Portals);
+  try {
+    console.log(portalData.id)
+    const portalExist = await portalRepository.findOneBy({ id: portalData.id });
+    if (!portalExist) {
+      throw new Error("portal doesn't exist");
+    }
+    portalExist.theme = portalData.theme;
+    portalExist.logo = portalData.logo;
+    portalExist.primaryColor = portalData.primaryColor;
+    portalExist.secondaryColor = portalData.secondaryColor;
+    portalExist.accentColor = portalData.accentColor;
+
+    await portalRepository.save(portalExist);
+    return portalExist;
+  } catch (error) {
+    throw new Error("Failed to update portal.");
   }
 };
 
@@ -73,6 +85,5 @@ export default {
   getPortalsByUser,
   getPortals,
   getPortalByLegalName,
+  updatePortalThemes,
 };
-
-

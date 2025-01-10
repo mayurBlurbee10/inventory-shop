@@ -1,11 +1,20 @@
 import "reflect-metadata";
-import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm";
 import BaseTable from "./BaseTable";
 import { ContentManagement } from "./ContentManagement";
 import { Users } from "./Users";
 
-export @Entity("portals")
- class Portals extends BaseTable {
+export
+@Entity("portals")
+class Portals extends BaseTable {
   @Column({ type: "nvarchar", length: 255, unique: true })
   legalName;
 
@@ -33,6 +42,9 @@ export @Entity("portals")
   @Column({ type: "nvarchar", length: 255 })
   secondaryColor;
 
+  @Column({ type: "nvarchar", length: 255, nullable: true })
+  accentColor;
+
   @Column({ type: "simple-json", nullable: true })
   security;
 
@@ -54,12 +66,15 @@ export @Entity("portals")
   @Column({ type: "nvarchar", length: 255 })
   logo;
 
+  @Column({ type: "nvarchar", length: 255, nullable: true })
+  faviconUrl;
+
   @ManyToOne(() => Users, { nullable: true })
-  @JoinColumn({ name: 'createdBy' })
+  @JoinColumn({ name: "createdBy" })
   createdBy;
 
   @ManyToOne(() => Users, { nullable: true })
-  @JoinColumn({ name: 'updatedBy' })
+  @JoinColumn({ name: "updatedBy" })
   updatedBy;
 
   // @OneToMany(() => ContentManagement, (content) => content.portal, {

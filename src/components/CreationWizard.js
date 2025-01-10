@@ -548,6 +548,7 @@ const AdministratorStep = ({ formData, setFormData }) => (
       theme: 'minimal',
       primaryColor: '#000000',
       secondaryColor: '#4F46E5',
+      accentColor : "#000000",
       logo: null,
       faviconUrl: '',
       firstName: '',
