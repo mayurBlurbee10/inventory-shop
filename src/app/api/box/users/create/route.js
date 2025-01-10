@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { logApiCall } from '@/app/lib/api-log-middleware';
 
 async function generateJWTAssertion() {
-  const privateKey = process.env.BOX_PRIVATE_KEY.replace(/\\n/g, '\n');
+  const privateKey = process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, '\n');
   
   const claims = {
     iss: process.env.BOX_CLIENT_ID,

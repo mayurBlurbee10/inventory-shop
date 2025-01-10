@@ -8,7 +8,7 @@ const sdk = new BoxSDK({
   clientSecret: process.env.BOX_CLIENT_SECRET,
   appAuth: {
     keyID: process.env.BOX_PUBLIC_KEY_ID,
-    privateKey: process.env.BOX_PRIVATE_KEY,
+    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     passphrase: process.env.BOX_PASSPHRASE,
   },
 });

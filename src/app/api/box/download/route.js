@@ -5,7 +5,7 @@ const sdkConfig = {
   clientSecret: process.env.BOX_CLIENT_SECRET,
   appAuth: {
     keyID: process.env.BOX_PUBLIC_KEY_ID,
-    privateKey: process.env.BOX_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     passphrase: process.env.BOX_PASSPHRASE,
   },
   enterpriseID: process.env.BOX_ENTERPRISE_ID,
