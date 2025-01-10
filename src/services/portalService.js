@@ -9,7 +9,7 @@ const getRepository = async (entity) => {
 };
 
 const createPortal = async (data) => {
-  const portalRepository = getRepository(Portals);
+  const portalRepository = await getRepository(Portals);
   try {
     const portal = portalRepository.create(data);
     await portalRepository.save(portal);
