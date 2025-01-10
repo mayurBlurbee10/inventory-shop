@@ -284,6 +284,26 @@ export default function AdminDashboard() {
         createdBy: user.id,
       };
 
+      // Create Box user
+      const boxResponse = await fetchWrapper(
+        "/api/box/create-user",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userName: formData.adminEmail,
+            externalId: `user_${Date.now()}`,
+          }),
+        },
+        "create-user-box"
+      );
+  
+      const boxData = await boxResponse.json();
+  
+      if (!boxResponse.ok) {
+        throw new Error(boxData.error || "Failed to create Box user");
+      }
+
       let logoUrl = "";
 
       // Upload logo if selected
@@ -309,42 +329,6 @@ export default function AdminDashboard() {
       }
 
       newSubsidiary.logo = logoUrl;
-      const saveResponse = await fetchWrapper(
-        "/api/portal",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newSubsidiary),
-        },
-        "create-portal"
-      );
-
-      if (!saveResponse.ok) {
-        throw new Error("Failed to save subsidiary data");
-      }
-
-      const subsidiary = await saveResponse.json();
-
-      // Create Box user
-      const boxResponse = await fetchWrapper(
-        "/api/box/create-user",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userName: formData.adminEmail,
-            externalId: `user_${Date.now()}`,
-          }),
-        },
-        "create-user-box"
-      );
-  
-      const boxData = await boxResponse.json();
-  
-      if (!boxResponse.ok) {
-        throw new Error(boxData.error || "Failed to create Box user");
-      }
-
       const userData = {
         email: formData.adminEmail,
         name: `${formData.firstName} ${formData.lastName}`,
@@ -372,6 +356,23 @@ export default function AdminDashboard() {
       if (!UserResponse.ok) {
         throw new Error("Failed to create user data");
       }
+
+      const saveResponse = await fetchWrapper(
+        "/api/portal",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newSubsidiary),
+        },
+        "create-portal"
+      );
+
+      if (!saveResponse.ok) {
+        throw new Error("Failed to save subsidiary data");
+      }
+
+      const subsidiary = await saveResponse.json();
+
       setSubsidiaries((prev) => [...prev, subsidiary.data]);
     } catch (error) {
       console.error("Error creating subsidiary:", error);

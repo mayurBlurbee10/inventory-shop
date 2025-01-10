@@ -175,7 +175,6 @@ const ShareModal = ({
       const collabIndex = collaborator.findIndex(
         (collabs) => collabs.id == collab.id
       );
-      console.log("collabIndex: ^^^^^", collabIndex);
       if (collabIndex > -1) {
         collaborator[collabIndex] = {
           id: collab.id,
@@ -246,7 +245,7 @@ const ShareModal = ({
           <X size={20} />
         </button>
 
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">
           {item?.name}
         </h3>
 
@@ -296,10 +295,10 @@ const ShareModal = ({
 
           {item?.type === "folder" && (
             <div className="space-y-2">
-              <label className="text-gray-800">Share with user</label>
+              <label className="text-gray-800 font-semibold">Share with user</label>
               <div className="flex items-center gap-3">
                 <Select
-                  className="flex-1 py-2.5 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   classNamePrefix="Enter email address"
                   isClearable={true}
                   isSearchable={true}
@@ -324,21 +323,22 @@ const ShareModal = ({
             </div>
           )}
           {collaborator.slice(1).length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-3 text-gray-700 py-2 pr-2">
-                <div>Name</div>
-                <div>Permissions</div>
+            <div>
+              <div className="text-gray-700 py-2 pr-2 grid grid-cols-2">
+                <div className="font-semibold">Name</div>
+                <div className="font-semibold">Permissions</div>
                 <div></div>
               </div>
               {collaborator.length > 0 &&
                 collaborator.slice(1).map((content, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between gap-3 text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group"
+                    className="text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group grid grid-cols-2"
                   >
-                    <div>{content?.user.name}</div>
-                    <div>
+                    <div className="flex items-center">{content?.user.name}</div>
+                    <div className="flex items-center justify-between">
                       <select
+                      className="py-2 px-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
                         value={content?.role}
                         onChange={(e) =>
                           handleRoleChange(e, content?.user.id, content.id)
@@ -349,17 +349,17 @@ const ShareModal = ({
                         {/* <option value="uploader">Uploader</option>
                         <option value="co-owner">Co-owner</option> */}
                       </select>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => {
-                          handelRemoveCollaborator(content);
-                        }}
-                        className="p-1.5 hover:bg-gray-100 rounded-md text-gray-600"
-                        title="Remove"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => {
+                            handelRemoveCollaborator(content);
+                          }}
+                          className="p-1.5 hover:bg-gray-100 rounded-md text-gray-600"
+                          title="Remove"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -387,7 +387,8 @@ function FolderExplorer({
   selectedItem,
   handleShareLink,
   onFileChanges,
-  listType
+  listType,
+  setSearchQuery
 }) {
   const params = useParams();
   const pathName = usePathname();
@@ -401,17 +402,11 @@ function FolderExplorer({
   const [deleteDropdown, setDeleteDropdown] = useState(null);
 
   useEffect(() => {
-    setCurrentFilesList(
-      path.length === 0 ? fileList : path[path.length - 1].children
-    );
-    // setSelectedItem(path.length === 0 && null);
-  }, [path]);
-
-  useEffect(() => {
     fetchUser();
   }, []);
 
   const handleFolderClick = (folder) => {
+    setSearchQuery('');
     setSelectedItem(folder);
     setPath((prev) => [...prev, folder]);
     setDeleteDropdown(null);
@@ -518,7 +513,6 @@ function FolderExplorer({
 
       if (!response.ok) throw new Error("Failed to delete file");
       setIsLoading(false);
-      console.log(response.json());
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       setIsDeleteModalOpen(false);
       setDeleteDropdown(null);
@@ -547,7 +541,6 @@ function FolderExplorer({
 
       if (!response.ok) throw new Error("Failed to delete folder");
       setIsLoading(false);
-      console.log(response.json());
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       setIsDeleteModalOpen(false);
       setDeleteDropdown(null);

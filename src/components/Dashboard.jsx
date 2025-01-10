@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Settings, LogOut, Search } from "lucide-react";
+import { Settings, LogOut, Search, Folder, File, X } from "lucide-react";
 
 import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -124,6 +124,7 @@ function Dashboard({ fileType }) {
   const [isSearching, setIsSearching] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [session, setSession] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -134,12 +135,9 @@ function Dashboard({ fileType }) {
   };
 
   const refreshSharedFiles = async (folderId) => {
-    console.log("folderid ", folderId);
     try {
       setIsLoading(true);
-      console.log("User Api calling");
       const userData = getUserData();
-      console.log(userData);
       if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
         const requestOptions = {
           method: "POST",
@@ -154,7 +152,6 @@ function Dashboard({ fileType }) {
         const data = await response.json();
         const newFilesList = data?.items;
         setFilesList(newFilesList);
-        console.log("shared files and folder: ", data?.items[0]);
       }
     } catch (error) {
       console.error("Error get collaborated folder:", error);
@@ -228,7 +225,6 @@ function Dashboard({ fileType }) {
           userData?.collaborationIds &&
           userData.collaborationIds.length > 0
         ) {
-          console.log("Inside ");
           const requestOptions = {
             method: "POST",
             body: JSON.stringify({ collaborated: userData.collaborationIds }),
@@ -273,7 +269,6 @@ function Dashboard({ fileType }) {
       const updatedFolder = currentFolder.find(
         (item) => item.id === folderAtLevel.id
       );
-      console.log("updatedFolder : ", updatedFolder);
       if (updatedFolder) {
         updatedPath[level] = updatedFolder;
         currentFolder = updatedFolder.children;
@@ -293,10 +288,12 @@ function Dashboard({ fileType }) {
   }, [filesList]);
 
   useEffect(() => {
-    setCurrentFilesList(
-      path?.length === 0 ? filesList : path[path.length - 1]?.children || []
-    );
-    setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+    if(!searchQuery) {
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+      setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+    }
   }, [path]);
 
   const handleLogout = async() => {
@@ -369,7 +366,6 @@ function Dashboard({ fileType }) {
       const response = await fetchWrapper(url, body, "fetchUserByEmail");
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
-      console.log("user ==> ", data);
       const userData = data.user;
       setUserData(userData);
       localStorage.setItem("portal", params.portalid);
@@ -380,10 +376,63 @@ function Dashboard({ fileType }) {
     }
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim() === "") {
+      setSuggestions([]);
+      return;
+    }
+
+    const results = searchWithPaths(filesList, value);
+    setSuggestions(results);
+  };
+
+  const searchWithPaths = (nodes, query, currentPath = []) => {
+    const results = [];
+  
+    nodes.forEach((node) => {
+      const newPath = [...currentPath, node]; // Add the current node to the path
+  
+      // Check if the node matches the query
+      if (node.name.toLowerCase().includes(query.toLowerCase())) {
+        results.push({
+          ...node,
+          path: newPath, // Store the full path to this node
+        });
+      }
+  
+      // If the node has children, continue searching recursively
+      if (node.children && node.children.length > 0) {
+        results.push(...searchWithPaths(node.children, query, newPath));
+      }
+    });
+  
+    return results;
+  };
+
+  const handleSuggestionClick = (item) => {
+    setSearchQuery(item.name);
+    // if(item.type !== "folder" ){
+      item.path.pop();
+    // }
+    setPath(item.path);
+    setCurrentFilesList([item]);
+    setSuggestions([]);
+    
+  };
+
+  const handelClearSearch = () => {
+    setSearchQuery('');
+    setSuggestions([]);
+    setCurrentFilesList(filesList);
+    setPath([]);
+  };
+
   useEffect(() => {
     const fetchSession = async () => {
       const sessionData = await getSession();
-      console.log("sessionData ==> ", sessionData);
       setSession(sessionData);
       if(sessionData){
         await getUserDetailsByEmail(sessionData.user.email);
@@ -401,37 +450,6 @@ function Dashboard({ fileType }) {
       fetchConfig();
     });
   }, [router]);
-
-  useEffect(() => {
-    setSearchQuery("");
-    setCurrentFilesList(
-      path.length === 0 ? filesList : path[path.length - 1].children
-    );
-  }, [path]);
-
-  useEffect(() => {
-    if (!searchQuery) {
-      setCurrentFilesList(
-        path.length === 0 ? filesList : path[path.length - 1].children
-      );
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-
-    const timer = setTimeout(() => {
-      const source =
-        path.length === 0 ? filesList : path[path.length - 1].children;
-      const results = source.filter((item) =>
-        item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setCurrentFilesList(results);
-      setIsSearching(false);
-    }, 300);
-
-    return () => clearTimeout(timer); // Cleanup on query or component unmount
-  }, [searchQuery, selectedItem]);
 
   if (isLoading) return <LoadingSpinner />;
   const userIsAdmin = isAdmin();
@@ -504,23 +522,49 @@ function Dashboard({ fileType }) {
                 multiple
               />
               {/* Search BoX */}
-              <div>
+              <div className="relative">
                 <div className="max-w-xl w-full mx-auto block relative">
                   <input
                     type="text"
                     placeholder="Search"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="relative py-3 pl-14 pr-4 w-full rounded-full text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]"
+                    onChange={handleSearch}
+                    className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
+                      ${suggestions.length === 0 ? "rounded-bl-[30px] rounded-br-[30px]" : "border-t-gray-200 border-s-gray-200 border-e-gray-200"}`}
                   />
                   <div className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 left-2 h-9 w-9 rounded-full hover:bg-gray-200">
                     <Search className="h-5 w-5 text-[#3c4043]" />
                   </div>
+                  {searchQuery.length > 0 && (
+                    <div onClick={handelClearSearch}
+                      className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer">
+                      <X className="h-5 w-5 text-[#3c4043]" />
+                    </div>
+                  )}
                 </div>
+                {/* Suggestions */}
+                {suggestions.length > 0 && (
+                  <ul className="bg-white rounded-md max-w-xl mx-auto border border-gray-200 absolute top-[46px] z-[99] left-1/2 -translate-x-1/2 w-full bg-white max-w-[576px] rounded-bl-[30px] rounded-br-[30px] rounded-tl-none rounded-tr-none">
+                    {suggestions.map((item,index) => (
+                      <li
+                        onClick={()=>{handleSuggestionClick(item)}}
+                        key={item.id}
+                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${suggestions.length-1 === index?"rounded-bl-[30px] rounded-br-[30px]":""}`}
+                      >
+                        <span className="mr-2">
+                          {item.type === "folder" 
+                          ? <Folder className="h-5 w-5 text-[#3c4043]" /> 
+                          : <File className="h-5 w-5 text-[#3c4043]" />}
+                        </span>
+                        <span className="text-gray-700 font-medium">{item.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
             <div>
-              <Breadcrumbs path={path} setPath={setPath} />
+              <Breadcrumbs path={path} setPath={setPath} setSearchQuery={setSearchQuery}/>
             </div>
             {/* TABLE START */}
             <div className="overflow-auto h-[calc(100vh-314px)] custom-scrollbar flex-grow">
@@ -568,6 +612,7 @@ function Dashboard({ fileType }) {
                             selectedItem={selectedItem}
                             onFileChanges={refreshFiles}
                             listType={fileType}
+                            setSearchQuery={setSearchQuery}
                           />
                         </>
                       </tbody>

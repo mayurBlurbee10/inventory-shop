@@ -287,9 +287,12 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
+      <div>
         <h3 className="text-lg font-medium text-gray-900">
-          Content Management
+            Content Management
         </h3>
+        <p className="text-gray-600 text-sm">Organize and edit the information displayed across your platform.</p>
+      </div>
         { isAddRequired && (<button
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             onClick={addContent}

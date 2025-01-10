@@ -16,6 +16,9 @@ const nextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+  images: {
+    domains: ['boxpartner.blob.core.windows.net'], // Add the external domain here
+  },
   // Ensure client-side navigation works properly
   pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
   webpack: (config) => {
