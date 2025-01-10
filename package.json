@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@azure/communication-email": "^1.0.0",
+    "@azure/storage-blob": "^12.26.0",
     "@headlessui/react": "^2.2.0",
     "bcrypt": "^5.1.1",
     "box-node-sdk": "^3.7.1",

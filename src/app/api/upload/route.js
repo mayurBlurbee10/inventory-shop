@@ -1,4 +1,5 @@
 import { logApiCall } from '@/app/lib/api-log-middleware';
+import { uploadToAzureBlob } from '@/app/lib/blobStorage';
 import { writeFile } from 'fs/promises';
 import { NextResponse } from 'next/server';
 import path from 'path';
@@ -16,22 +17,14 @@ export async function POST(request) {
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     // Create a unique filename
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const filename = `logo-${uniqueSuffix}${path.extname(file.name)}`;
-    
-    // Save to public directory so it's accessible via URL
-    const filepath = path.join(process.cwd(), 'public/uploads', filename);
-    
-    await writeFile(filepath, buffer);
-    
+
+    const url = await uploadToAzureBlob(file,filename);
+
     // Return the public URL
-    return NextResponse.json({ 
-      url: `/api/upload/${filename}`
-    });
+    return NextResponse.json({ url });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
