@@ -317,7 +317,10 @@ export default function SubsidiariesLoginPage() {
                     )}
                   </button>
                   <div className="text-center mt-4">
-                    <button type="button" className="text-text/40 hover:text-text/60" onClick={login}>Login with Okta</button>
+                    <button type="button" className="text-white uppercase font-semibold bg-[#3475ba] py-3 px-4 w-full rounded flex items-center justify-center gap-4" onClick={login}>
+                      <div className="h-6 w-6 border-[5px] border-solid border-white rounded-full"></div>
+                      Login with Okta
+                    </button>
                   </div>
                 </div>
               </form>

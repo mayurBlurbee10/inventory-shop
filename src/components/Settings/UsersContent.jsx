@@ -90,7 +90,10 @@ const UsersContent = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center space-x-4 pr-4">
         <div className="flex justify-between items-center w-full">
-          <h3 className="text-lg font-medium text-gray-900">User Management</h3>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">User Management</h3>
+            <p className='text-gray-600 text-sm'>Manage user accounts, roles, and permissions efficiently</p>
+          </div>
           <button 
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB] inline-flex items-center"

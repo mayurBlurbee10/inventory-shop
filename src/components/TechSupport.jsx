@@ -66,11 +66,11 @@ function TechSupport({ isOpen, onClose }) {
 
         <form onSubmit={handleSubmit} className="space-y-6 mb-8">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Issue Type
             </label>
             <select
-              className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 h-11"
+              className="block w-full rounded-lg border border-solid border-gray-200 text-gray-600 focus:border-blue-500 focus:ring-blue-500 h-11 ps-2 outline-none"
               value={formData.issueType}
               onChange={(e) => handleFormChange("issueType", e.target.value)}
             >
@@ -81,14 +81,14 @@ function TechSupport({ isOpen, onClose }) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Message
             </label>
             <textarea
               name="message"
               required
               rows="4"
-              className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 text-gray-700 resize-none"
+              className="block w-full rounded-lg border-gray-200 border border-solid outline-none focus:border-blue-500 focus:ring-blue-500 p-3 text-gray-700 resize-none"
               value={formData.message}
               onChange={(e) => handleFormChange("message", e.target.value)}
               placeholder="Please describe your issue or request..."

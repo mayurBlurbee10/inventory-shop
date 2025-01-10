@@ -56,7 +56,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
         >
           <X className="h-6 w-6" />
         </button>
-        <div className="w-64 border-r border-blue-600 p-4 bg-blue-600">
+        <div className="w-64 border-r border-gray-600 p-4 bg-[#3f4347]">
           <h2 className="text-xl font-semibold text-white mb-6">Settings</h2>
           <nav className="space-y-1">
             {tabs.map(({ id, label, icon: Icon }) => (
@@ -65,18 +65,18 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 onClick={() => setActiveTab(id)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${
                   activeTab === id
-                    ? 'bg-white/95 text-blue-900'
+                    ? 'bg-white/95 text-gray-900'
                     : 'text-white/90 hover:bg-white/10'
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   <Icon className={`w-5 h-5 ${
-                    activeTab === id ? 'text-blue-600' : 'text-white/90'
+                    activeTab === id ? 'text-gray-700' : 'text-white/90'
                   }`} />
                   <span>{label}</span>
                 </div>
                 <ChevronRight className={`w-4 h-4 ${
-                  activeTab === id ? 'text-blue-600' : 'text-white/80'
+                  activeTab === id ? 'text-gray-700' : 'text-white/80'
                 }`} />
               </button>
             ))}

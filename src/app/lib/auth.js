@@ -34,7 +34,6 @@ export const getUserData = () => {
       const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
       // Sync back to localStorage
       localStorage.setItem('user', JSON.stringify(userData));
-      console.log('Restored user data from cookie:', userData);
       return userData;
     }
 
@@ -42,7 +41,6 @@ export const getUserData = () => {
     // Ensure cookie is in sync
     const cookieStr = `user=${encodeURIComponent(storedUser)}; path=${COOKIE_OPTIONS.path}; samesite=${COOKIE_OPTIONS.sameSite}; max-age=${COOKIE_OPTIONS.maxAge}${COOKIE_OPTIONS.secure ? '; secure' : ''}`;
     document.cookie = cookieStr;
-    console.log('Retrieved user data:', userData);
     return userData;
   } catch (error) {
     console.error('Error getting user data:', error);
@@ -68,7 +66,6 @@ export const isAdmin = () => {
     }
 
     const isUserAdmin = userData.role === 'admin';
-    console.log('Is user admin?', isUserAdmin, 'Role:', userData.role);
     return isUserAdmin;
   } catch (error) {
     console.error('Error checking admin status:', error);

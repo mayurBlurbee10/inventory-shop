@@ -237,7 +237,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <input
               type="text"
               required
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.name}
               onChange={(e) => handleFormChange("name", e.target.value)}
             />
@@ -249,7 +249,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <input
               type="email"
               required
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.email}
               onChange={(e) => handleFormChange("email", e.target.value)}
             />
@@ -260,7 +260,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             </label>
             <input
               type="text"
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.title}
               onChange={(e) => handleFormChange("title", e.target.value)}
             />
@@ -271,7 +271,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             </label>
             <input
               type="text"
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.companyName}
               onChange={(e) => handleFormChange("companyName", e.target.value)}
             />
@@ -282,7 +282,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             <div className="relative">
               <button
                 type="button"
-                className={`relative w-full ${!!formData.companyName ? 'py-2' : 'py-5'} rounded-lg shadow-sm text-left px-2 text-gray-700`}
+                className={`relative w-full ${!!formData.companyName ? 'py-2' : 'py-5'} rounded border border-solid py-2 outline-none-lg text-left px-2 text-gray-700`}
                 onClick={toggleCompanyDropdown}
               >
                 {formData.companyName}
@@ -332,7 +332,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               Role
             </label>
             <select
-              className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.role}
               onChange={(e) => handleFormChange("role", e.target.value)}
               style={{ height: "2.5rem" }}

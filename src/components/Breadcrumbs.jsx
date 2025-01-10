@@ -2,15 +2,20 @@
 
 import { ChevronRight } from "lucide-react";
 
-const Breadcrumbs = ({ path, setPath }) => {
+const Breadcrumbs = ({ path, setPath, setSearchQuery }) => {
   const handleBreadcrumbClick = (index) => {
-    setPath((prev) => prev.slice(0, index + 1));
+    setSearchQuery('');
+    if(index === -1){
+      setPath([]);
+    } else {
+      setPath((prev) => prev.slice(0, index + 1));
+    }
   };
 
   return (
     <nav className="flex items-center text-gray-500 text-sm xl:text-base space-x-1 py-1.5">
       <button
-        onClick={() => setPath([])}
+        onClick={() => handleBreadcrumbClick(-1)}
         className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
       >
         My Files

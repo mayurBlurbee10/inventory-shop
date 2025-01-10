@@ -63,7 +63,10 @@ const AppearanceContent = () => {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium text-gray-900">Theme Selection</h3>
+      <div>
+        <h3 className="text-lg font-medium text-gray-900">Theme Selection</h3>
+        <p className='text-gray-600 text-sm'>Choose and customize the look and feel of your application</p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {themes.map((theme) => {
           const Icon = theme.icon;
