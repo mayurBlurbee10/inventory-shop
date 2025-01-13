@@ -2,6 +2,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { PlusCircle, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   const params = useParams();
@@ -144,7 +145,9 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
 
       fetchData();
       handleModalClose();
+      toast.success(`${apiType === 'updateContentManagement' ? "Content updated successfully" : "Content added successfully"}`)
     } catch (error) {
+      toast.error(error.message)
       console.error("Error adding content:", error);
       setError(error.message || "An unexpected error occurred");
     } finally {
@@ -233,7 +236,9 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
       setNewTitle("");
       setNewType("");
       setIsNewTitleDialogOpen(false);
+      toast.success(newData.message)
     } catch (error) {
+      toast.error(error.message)
       console.error("Error adding content:", error);
       setTitleError(error.message || "An unexpected error occurred");
     }
@@ -270,7 +275,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   };
 
   const handleAddLinkField = () => {
-    if (linkFields.length < 10 && linkFields[linkFields.length-1].label != '') {
+    if (linkFields.length < 10 && linkFields[linkFields.length-1].label != '' && linkFields[linkFields.length-1].link != '') {
       setLinkFields([...linkFields, { label: "", link: "" }]);
     }
   };

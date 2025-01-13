@@ -21,6 +21,7 @@ import Select from "react-select";
 import { useParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import { toast } from "react-toastify";
 
 const ShareModal = ({
   isOpen,
@@ -91,8 +92,9 @@ const ShareModal = ({
         obj,
         "addCollaborator"
       );
-      if (!response.ok) throw new Error("Failed to add collaborator");
       const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Failed to add collaborator");
       setCollabLoading(false);
       onAddCollaborator({
         id: data.response.id,
@@ -100,7 +102,9 @@ const ShareModal = ({
         isForAdd: true,
       });
       setUserID("");
+      toast.success("File shared successfully");
     } catch (error) {
+      toast.error(error.message);
       console.error("Add Collaborator error:", error);
       setCollabLoading(false);
     }
@@ -135,10 +139,12 @@ const ShareModal = ({
         "generateSharedLink"
       );
       setCollabLoading(false);
-      if (!response.ok) throw new Error("Failed to get links");
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to get links");
+      toast.success(data.message || "File share link generated successfully");
       return data.sharedLink;
     } catch (error) {
+      toast.error(error.message);
       console.error("Failed to get links:", error);
       setCollabLoading(false);
     }
@@ -155,15 +161,18 @@ const ShareModal = ({
         obj,
         "removeCollaborator"
       );
-      if (!response.ok) throw new Error("Failed to remove collaborator");
       const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Failed to remove collaborator");
       setCollabLoading(false);
       onAddCollaborator({
         id: collaborator.id,
         userID: collaborator.user.id,
         isForAdd: false,
       });
+      toast.success(data.message || "Collaborator removed successfully");
     } catch (error) {
+      toast.error(error.message);
       console.error("Remove collaborator error:", error);
       setCollabLoading(false);
     }
@@ -220,8 +229,9 @@ const ShareModal = ({
         obj,
         "changeCollaboratorRole"
       );
-      if (!response.ok) throw new Error("Failed to change collaborator role");
       const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Failed to change collaborator role");
       setCollabLoading(false);
       onAddCollaborator({
         id: collaborationId,
@@ -229,7 +239,9 @@ const ShareModal = ({
         isForAdd: true,
         role: newRole,
       });
+      toast.success(data.message || "Collaborator Role Changed");
     } catch (error) {
+      toast.error(error.message);
       console.error("Change collaborator role error:", error);
       setCollabLoading(false);
     }
@@ -295,7 +307,9 @@ const ShareModal = ({
 
           {item?.type === "folder" && (
             <div className="space-y-2">
-              <label className="text-gray-800 font-semibold">Share with user</label>
+              <label className="text-gray-800 font-semibold">
+                Share with user
+              </label>
               <div className="flex items-center gap-3">
                 <Select
                   className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -335,10 +349,12 @@ const ShareModal = ({
                     key={idx}
                     className="text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group grid grid-cols-2"
                   >
-                    <div className="flex items-center">{content?.user.name}</div>
+                    <div className="flex items-center">
+                      {content?.user.name}
+                    </div>
                     <div className="flex items-center justify-between">
                       <select
-                      className="py-2 px-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
+                        className="py-2 px-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
                         value={content?.role}
                         onChange={(e) =>
                           handleRoleChange(e, content?.user.id, content.id)
@@ -388,7 +404,7 @@ function FolderExplorer({
   handleShareLink,
   onFileChanges,
   listType,
-  setSearchQuery
+  setSearchQuery,
 }) {
   const params = useParams();
   const pathName = usePathname();
@@ -406,15 +422,15 @@ function FolderExplorer({
   }, []);
 
   const handleFolderClick = (folder) => {
-    setSearchQuery('');
+    setSearchQuery("");
     setSelectedItem(folder);
     setPath((prev) => [...prev, folder]);
     setDeleteDropdown(null);
   };
 
   const handleDelete = (file) => {
-    if(listType == 'shared' && file.currentUserRole == 'viewer'){
-      return
+    if (listType == "shared" && file.currentUserRole == "viewer") {
+      return;
     }
     setDeleteDropdown((prev) => (prev === file.id ? null : file.id));
   };
@@ -469,7 +485,9 @@ function FolderExplorer({
       link.click();
 
       window.URL.revokeObjectURL(url);
+      toast.success("File dowloaded successfully")
     } catch (error) {
+      toast.error(error.message)
       console.error("Download error:", error);
     }
   };
@@ -482,12 +500,10 @@ function FolderExplorer({
 
   const fetchUser = async () => {
     try {
-      const url = params.portalid ? `/api/users?portalid=${params.portalid}` : '/api/users'
-      const response = await fetchWrapper(
-        url,
-        {},
-        "fetchUserList"
-      );
+      const url = params.portalid
+        ? `/api/users?portalid=${params.portalid}`
+        : "/api/users";
+      const response = await fetchWrapper(url, {}, "fetchUserList");
       if (!response.ok) throw new Error("Download failed");
       const data = await response.json();
       setUsersList(data);
@@ -511,14 +527,18 @@ function FolderExplorer({
         "delete-file"
       );
 
-      if (!response.ok) throw new Error("Failed to delete file");
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || "Failed to delete file");
       setIsLoading(false);
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       setIsDeleteModalOpen(false);
       setDeleteDropdown(null);
       onFileChanges(selectedItem?.id);
+      toast.success(data.message || "File deleted Successfully");
     } catch (error) {
-      console.error("Error deleting folder:", error);
+      toast.error(error.message);
+      console.error("Error deleting file:", error);
     } finally {
       setIsLoading(false);
     }
@@ -539,13 +559,17 @@ function FolderExplorer({
         "delete-folder"
       );
 
-      if (!response.ok) throw new Error("Failed to delete folder");
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || "Failed to delete folder");
       setIsLoading(false);
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       setIsDeleteModalOpen(false);
       setDeleteDropdown(null);
       onFileChanges(folderId);
+      toast.success(data.message || "Folder deleted Successfully");
     } catch (error) {
+      toast.error(error.message);
       console.error("Error deleting folder:", error);
     } finally {
       setIsLoading(false);
@@ -553,25 +577,29 @@ function FolderExplorer({
   };
 
   const getUserName = (file) => {
-    if(file.collaborators.length>0 && file.type == 'folder'){
-      const findeduser = usersList.find((user)=>user.email == file.collaborators[0].user.name);
+    if (file.collaborators.length > 0 && file.type == "folder") {
+      const findeduser = usersList.find(
+        (user) => user.email == file.collaborators[0].user.name
+      );
       return findeduser ? findeduser.name : file.collaborators[0].user.name;
-    } else if(file.type == 'file' && file.description != '') {
-      const findeduser = usersList.find((user)=>user.email == file.description);
+    } else if (file.type == "file" && file.description != "") {
+      const findeduser = usersList.find(
+        (user) => user.email == file.description
+      );
       return findeduser ? findeduser.name : file.description;
     } else {
-      return '';
+      return "";
     }
-  }
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
     }).format(date);
-  }
+  };
 
   return (
     <>
@@ -616,7 +644,7 @@ function FolderExplorer({
                       />
                     </div>
                     <p className="text-gray-600 text-sm truncate max-w-40 w-full">
-                      {listType == 'shared'? getUserName(file) : 'me'}
+                      {listType == "shared" ? getUserName(file) : "me"}
                     </p>
                   </div>
                 </td>
@@ -692,7 +720,7 @@ function FolderExplorer({
 
                       {/* DELETE DROPDOWN DONE*/}
                       {deleteDropdown === file?.id && (
-                        <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-10 overflow-hidden">
+                        <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
                           <button
                             className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
                             // onClick={() => {
@@ -807,8 +835,15 @@ function FolderExplorer({
                         <button
                           className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
                           onClick={() => {
-                            setIsDeleteModalOpen((prev) => !prev);
-                            setDeleteDropdown(file?.id);
+                            if (
+                              listType == "shared" &&
+                              file.currentUserRole == "viewer"
+                            ) {
+                              return;
+                            } else {
+                              setIsDeleteModalOpen((prev) => !prev);
+                              setDeleteDropdown(file?.id);
+                            }
                           }}
                         >
                           <Trash2 className="h-4 w-4 text-gray-600" />

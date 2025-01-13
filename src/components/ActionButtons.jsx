@@ -4,6 +4,7 @@ import { Dialog } from "@headlessui/react";
 import { FolderPlus, Upload, Share2, X, Loader2 } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { toast } from "react-toastify";
 
 export default function ActionButtons({
   onFolderCreated,
@@ -17,31 +18,31 @@ export default function ActionButtons({
   const [showSuccess, setShowSuccess] = useState(false);
   const [config, setConfig] = useState(null);
 
-      useEffect(() => {
-        const fetchConfig = async () => {
-          try {
-            setIsLoading(true);
-            const portalId = localStorage.getItem('portal');
-            
-            const response = await fetchWrapper(
-              `/api/portal?portalid=${portalId || "default"}`,
-              {},
-              "portal-config"
-            );
-            if (!response.ok) {
-              throw new Error("Failed to fetch users");
-            }
-            const data = await response.json();
-            setConfig(data.data);
-          } catch (error) {
-            console.log("error: ", error);
-            setIsLoading(false);
-          } finally {
-            setIsLoading(false);
-          }
-        };
-        fetchConfig();
-      }, []);
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        setIsLoading(true);
+        const portalId = localStorage.getItem("portal");
+
+        const response = await fetchWrapper(
+          `/api/portal?portalid=${portalId || "default"}`,
+          {},
+          "portal-config"
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        setConfig(data.data);
+      } catch (error) {
+        console.log("error: ", error);
+        setIsLoading(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchConfig();
+  }, []);
 
   const handleCreateFolder = async () => {
     if (!folderName.trim()) return;
@@ -69,7 +70,10 @@ export default function ActionButtons({
         "create-folder"
       );
 
-      if (!response.ok) throw new Error("Failed to create folder");
+      const folderResponse = await response.json();
+
+      if (!response.ok)
+        throw new Error(folderResponse.error || "Failed to create folder");
 
       setShowSuccess(true);
       setFolderName("");
@@ -79,7 +83,9 @@ export default function ActionButtons({
         setIsModalOpen(false);
         onFolderCreated();
       }, 3000);
+      toast.success("Folder created successfully");
     } catch (error) {
+      toast.error(error.message);
       console.error("Error creating folder:", error);
     } finally {
       setIsLoading(false);

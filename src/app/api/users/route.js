@@ -108,7 +108,7 @@ export async function POST(request) {
       email: userData.email,
       name: userData.name || userData.email.split("@")[0],
       password: userData.password, // Default password as requested
-      extra: userData.password, // Default password as requested
+      extra: process.env.NODE_ENV === "development" ? userData.password : null, // Default password as requested
       company: {},
       collaborationIds: [],
       // createdAt: new Date().toISOString(),

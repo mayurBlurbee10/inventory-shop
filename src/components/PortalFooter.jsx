@@ -13,8 +13,8 @@ const PortalFooter = ({ config, filterValue }) => {
               <Image
                 src={config?.logo}
                 alt={config?.legalName || "Default Company Name"}
-                width={50}
-                height={50}
+                width={75}
+                height={75}
                 style={{ width: "auto", height: "auto" }}
               />
               {/* <img src={config?.logo} alt={config?.legalName} width="auto" height="auto" className='w-auto h-12'/> */}

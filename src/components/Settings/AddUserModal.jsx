@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
+import { toast } from "react-toastify";
+import { UserRole } from "@/config/constants";
 
 const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -9,7 +11,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
     email: "",
     title: "",
     companyName: "",
-    role: "user",
+    role: UserRole.USER,
     logo: null,
   });
   const [error, setError] = useState("");
@@ -91,8 +93,6 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         logoUrl = uploadResult.url;
       }
 
-
-
       // Create Box user
       const boxResponse = await fetchWrapper(
         "/api/box/create-user",
@@ -142,15 +142,16 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         },
         "save-user"
       );
-
+      const savedData = await saveResponse.json();
       if (!saveResponse.ok) {
-        throw new Error("Failed to save user data");
+        throw new Error(savedData.error || "Failed to save user data");
       }
 
-      const savedData = await saveResponse.json();
       onAdd(savedData);
       handleModalClose();
+      toast.success("User created successfully");
     } catch (error) {
+      toast.error(error.message);
       console.error("Error creating user:", error);
       setError(error.message || "An unexpected error occurred");
     } finally {
@@ -337,8 +338,8 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               onChange={(e) => handleFormChange("role", e.target.value)}
               style={{ height: "2.5rem" }}
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value={UserRole.USER}>User</option>
+              <option value={UserRole.ADMIN}>Admin</option>
             </select>
           </div>
           <div>

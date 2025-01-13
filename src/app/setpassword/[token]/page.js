@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { toast } from "react-toastify";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -50,8 +51,11 @@ export default function SetPassword() {
         setTimeout(() => router.push("/login"), 3000);
       } else {
         setError(data.error || "Failed to set password.");
+        throw new Error(data.error)
       }
+      toast.success("Password set successfully")
     } catch (err) {
+      toast.error(err.message)
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Sun, Moon, Palette } from "lucide-react";
 import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { toast } from "react-toastify";
 
 const AppearanceContent = () => {
   const params = useParams();
@@ -129,8 +130,11 @@ const AppearanceContent = () => {
 
         if (!response.ok) throw new Error("Failed to update portal theme");
       };
-      updatePortalTheme();
+      updatePortalTheme().then(() => {
+        toast.success("Portal Theme updated successfully");
+      });
     } catch (error) {
+      toast.error(error.message);
       console.log(error);
     } finally {
       setIsLoading(false);
@@ -206,7 +210,9 @@ const AppearanceContent = () => {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium text-gray-900">Theme Selection</h3>
-        <p className='text-gray-600 text-sm'>Choose and customize the look and feel of your application</p>
+        <p className="text-gray-600 text-sm">
+          Choose and customize the look and feel of your application
+        </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {themes.map((theme) => {

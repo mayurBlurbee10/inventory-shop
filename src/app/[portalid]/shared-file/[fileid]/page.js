@@ -2,6 +2,7 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -54,6 +55,7 @@ export default function SharedFilePage() {
       const url = window.URL.createObjectURL(blob);
       setItemUrl(url);
     } catch (error) {
+      toast.error(error.message || "Error while getting shared files")
       console.error("Error get shared files:", error);
     } finally {
       setIsLoading(false);
