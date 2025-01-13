@@ -5,6 +5,7 @@ import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 function ViewProfileModal({
   isOpen,
@@ -41,8 +42,10 @@ function ViewProfileModal({
           "delete-user"
         );
 
+        const data = await response.json()
+
         if (!response.ok) {
-          throw new Error("Failed to delete user account");
+          throw new Error(data.error || "Failed to delete user account");
         }
       };
 
@@ -56,7 +59,9 @@ function ViewProfileModal({
       setTimeout(() => {
         handleClose();
       }, 2000);
+      toast.success("User account deleted successfully");
     } catch (error) {
+      toast.error(error.message);
       console.error("Error deleting user account:", error);
       setError("Failed to delete user account. Please try again.");
     } finally {

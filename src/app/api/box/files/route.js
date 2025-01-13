@@ -99,7 +99,7 @@ export async function DELETE(req) {
   }catch (error) { 
     console.error('Error deleting file:', error);
     return NextResponse.json(
-      { error: error.message },
+      { error: error.response?.body.message, details: error.message },
       { status: error.response?.statusCode || 500 }
     );
   }

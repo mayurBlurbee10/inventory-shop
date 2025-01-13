@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { UserRole } from '@/config/constants';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
 import { setUserData } from '@/app/lib/auth';
+import { toast } from 'react-toastify';
 
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
@@ -64,6 +65,7 @@ export default function AdminLoginPage() {
         setError(error.message);
       }
     } else {
+      toast.error("Invalid email or password")
       setError('Invalid email or password');
     }
     setIsLoading(false);

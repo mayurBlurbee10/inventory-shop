@@ -17,6 +17,7 @@ import UploadArea from "./UploadArea";
 import ActionButtons from "./ActionButtons";
 import { getSession, signOut } from "next-auth/react";
 import { setUserData } from "@/lib/auth";
+import { toast } from "react-toastify";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -205,7 +206,9 @@ function Dashboard({ fileType }) {
         </div>
         `;
         setUpladedFilePath(location);
+        toast.success("File uploaded successfully")
       } catch (error) {
+        toast.error(error.message)
         console.error("Error uploading files:", error);
       } finally {
         setIsLoading(false);
@@ -288,7 +291,7 @@ function Dashboard({ fileType }) {
   }, [filesList]);
 
   useEffect(() => {
-    if(!searchQuery) {
+    if (!searchQuery) {
       setCurrentFilesList(
         path?.length === 0 ? filesList : path[path.length - 1]?.children || []
       );
@@ -296,9 +299,10 @@ function Dashboard({ fileType }) {
     }
   }, [path]);
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     clearUserData();
     await signOut();
+    toast.success("User signout successfully");
     router.push("login");
   };
 
@@ -358,10 +362,10 @@ function Dashboard({ fileType }) {
 
   const getUserDetailsByEmail = async (email) => {
     try {
-      let url = `/api/users/loginByProvider`
+      let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
-        body: JSON.stringify({email, portalid:params.portalid}),
+        body: JSON.stringify({ email, portalid: params.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetchUserByEmail");
       if (!response.ok) throw new Error("Failed to get user from email");
@@ -369,7 +373,7 @@ function Dashboard({ fileType }) {
       const userData = data.user;
       setUserData(userData);
       localStorage.setItem("portal", params.portalid);
-      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
       router.push("login");
@@ -391,10 +395,10 @@ function Dashboard({ fileType }) {
 
   const searchWithPaths = (nodes, query, currentPath = []) => {
     const results = [];
-  
+
     nodes.forEach((node) => {
       const newPath = [...currentPath, node]; // Add the current node to the path
-  
+
       // Check if the node matches the query
       if (node.name.toLowerCase().includes(query.toLowerCase())) {
         results.push({
@@ -402,29 +406,28 @@ function Dashboard({ fileType }) {
           path: newPath, // Store the full path to this node
         });
       }
-  
+
       // If the node has children, continue searching recursively
       if (node.children && node.children.length > 0) {
         results.push(...searchWithPaths(node.children, query, newPath));
       }
     });
-  
+
     return results;
   };
 
   const handleSuggestionClick = (item) => {
     setSearchQuery(item.name);
     // if(item.type !== "folder" ){
-      item.path.pop();
+    item.path.pop();
     // }
     setPath(item.path);
     setCurrentFilesList([item]);
     setSuggestions([]);
-    
   };
 
   const handelClearSearch = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     setSuggestions([]);
     setCurrentFilesList(filesList);
     setPath([]);
@@ -458,17 +461,17 @@ function Dashboard({ fileType }) {
     const fetchSession = async () => {
       const sessionData = await getSession();
       setSession(sessionData);
-      if(sessionData){
+      if (sessionData) {
         await getUserDetailsByEmail(sessionData.user.email);
       }
     };
-    fetchSession().then(()=>{
+    fetchSession().then(() => {
       const userData = getUserData();
       if (!userData) {
         router.push("login");
         return;
       }
-  
+
       setUser(userData);
       refreshFiles();
       fetchConfig();
@@ -554,33 +557,49 @@ function Dashboard({ fileType }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
-                      ${suggestions.length === 0 ? "rounded-bl-[30px] rounded-br-[30px]" : "border-t-gray-200 border-s-gray-200 border-e-gray-200"}`}
+                      ${
+                        suggestions.length === 0
+                          ? "rounded-bl-[30px] rounded-br-[30px]"
+                          : "border-t-gray-200 border-s-gray-200 border-e-gray-200"
+                      }`}
                   />
                   <div className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 left-2 h-9 w-9 rounded-full hover:bg-gray-200">
                     <Search className="h-5 w-5 text-[#3c4043]" />
                   </div>
                   {searchQuery.length > 0 && (
-                    <div onClick={handelClearSearch}
-                      className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer">
+                    <div
+                      onClick={handelClearSearch}
+                      className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer"
+                    >
                       <X className="h-5 w-5 text-[#3c4043]" />
                     </div>
                   )}
                 </div>
                 {/* Suggestions */}
                 {suggestions.length > 0 && (
-                  <ul className="bg-white rounded-md max-w-xl mx-auto border border-gray-200 absolute top-[46px] z-[99] left-1/2 -translate-x-1/2 w-full bg-white max-w-[576px] rounded-bl-[30px] rounded-br-[30px] rounded-tl-none rounded-tr-none">
-                    {suggestions.map((item,index) => (
+                  <ul className="bg-white rounded-md max-w-xl mx-auto border border-gray-200 absolute top-[46px] z-[99] left-1/2 -translate-x-1/2 w-full rounded-bl-[30px] rounded-br-[30px] rounded-tl-none rounded-tr-none">
+                    {suggestions.map((item, index) => (
                       <li
-                        onClick={()=>{handleSuggestionClick(item)}}
+                        onClick={() => {
+                          handleSuggestionClick(item);
+                        }}
                         key={item.id}
-                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${suggestions.length-1 === index?"rounded-bl-[30px] rounded-br-[30px]":""}`}
+                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${
+                          suggestions.length - 1 === index
+                            ? "rounded-bl-[30px] rounded-br-[30px]"
+                            : ""
+                        }`}
                       >
                         <span className="mr-2">
-                          {item.type === "folder" 
-                          ? <Folder className="h-5 w-5 text-[#3c4043]" /> 
-                          : <File className="h-5 w-5 text-[#3c4043]" />}
+                          {item.type === "folder" ? (
+                            <Folder className="h-5 w-5 text-[#3c4043]" />
+                          ) : (
+                            <File className="h-5 w-5 text-[#3c4043]" />
+                          )}
                         </span>
-                        <span className="text-gray-700 font-medium">{item.name}</span>
+                        <span className="text-gray-700 font-medium">
+                          {item.name}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -588,7 +607,11 @@ function Dashboard({ fileType }) {
               </div>
             </div>
             <div>
-              <Breadcrumbs path={path} setPath={setPath} setSearchQuery={setSearchQuery}/>
+              <Breadcrumbs
+                path={path}
+                setPath={setPath}
+                setSearchQuery={setSearchQuery}
+              />
             </div>
             {/* TABLE START */}
             <div className="overflow-auto h-[calc(100vh-314px)] custom-scrollbar flex-grow">

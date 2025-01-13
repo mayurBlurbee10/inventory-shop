@@ -23,7 +23,7 @@ const getApiLogs = async () => {
     const apiLog = apiLogRepository.find();
     return apiLog;
   } catch (error) {
-    throw new Error("Failed to create API log.");
+    throw new Error("Failed to get API log.");
   }
 };
 

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
 import { fetchWrapper } from "../lib/fetchWrapper";
+import { toast } from "react-toastify";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -76,7 +77,9 @@ export default function LoginPage() {
       localStorage.setItem('accessToken', data.accessToken);
       console.log('Redirecting to home');
       router.push('home');
+      toast.success("Redirecting o home")
     } catch (err) {
+      toast.error(err.message)
       console.error("Login error:", err);
       setError(err.message);
     } finally {

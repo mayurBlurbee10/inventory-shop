@@ -118,7 +118,11 @@ export async function POST(request) {
   } catch (error) {
     console.error("Error adding collaborator:", error);
     return NextResponse.json(
-      { error: "Failed to share item via userID", details: error.message },
+      {
+        error:
+          error.response?.body.message || "Failed to share item via userID",
+        details: error.message,
+      },
       { status: 500 }
     );
   }
@@ -178,7 +182,7 @@ async function updateCollaboratorRole(collaborationId, newRole) {
     collaborationId,
     { role: newRole }
   );
-  
+
   return updatedCollaboration;
 }
 

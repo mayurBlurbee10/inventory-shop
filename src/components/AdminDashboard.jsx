@@ -18,6 +18,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { clearUserData, getUserData } from "@/app/lib/auth";
 import MasterUsersContent from "./Master/MasterUsersContent";
+import { toast } from "react-toastify";
 
 const SidePanel = ({ setCurrentPage }) => (
   <div className="w-80 bg-[#0161D5] p-6 flex flex-col h-screen fixed left-0">
@@ -374,14 +375,16 @@ export default function AdminDashboard() {
         "create-portal"
       );
 
+      const subsidiary = await saveResponse.json();
       if (!saveResponse.ok) {
-        throw new Error("Failed to save subsidiary data");
+        throw new Error(subsidiary.error || "Failed to save subsidiary data");
       }
 
-      const subsidiary = await saveResponse.json();
 
       setSubsidiaries((prev) => [...prev, subsidiary.data]);
+      toast.success(subsidiary.message || "Subsidiary created successfully")
     } catch (error) {
+      toast.error(error.message)
       console.error("Error creating subsidiary:", error);
     } finally {
       setIsLoading(false);

@@ -6,6 +6,7 @@ import { setUserData } from "@/app/lib/auth";
 import PortalFooter from "@/components/PortalFooter";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { signIn, signOut } from "next-auth/react";
+import { toast } from "react-toastify";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -150,6 +151,7 @@ export default function SubsidiariesLoginPage() {
       localStorage.setItem("accessToken", data.accessToken);
 
       console.log("Redirecting to home");
+      toast.success("Redirecting to home");
       if (userData.isOnboardingRequired) {
         router.push(`onboarding`);
       } else {
@@ -157,6 +159,7 @@ export default function SubsidiariesLoginPage() {
       }
     } catch (err) {
       console.error("Login error:", err.message);
+      toast.error(err.message);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -182,7 +185,7 @@ export default function SubsidiariesLoginPage() {
     try {
       await signIn("okta");
     } catch (error) {
-      console.log('error: ', error)
+      console.log("error: ", error);
     }
   };
 
@@ -236,7 +239,7 @@ export default function SubsidiariesLoginPage() {
           <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary h-full">
             <div>
               <h2 className="text-3xl font-normal leading-tight text-[#545454]">
-                {config?.tradingName} {filterValue("Title")}
+                {filterValue("Title")}
               </h2>
               <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
                 {filterValue("Paragraph")}
@@ -317,7 +320,11 @@ export default function SubsidiariesLoginPage() {
                     )}
                   </button>
                   <div className="text-center mt-4">
-                    <button type="button" className="text-white uppercase font-semibold bg-[#3475ba] py-3 px-4 w-full rounded flex items-center justify-center gap-4" onClick={login}>
+                    <button
+                      type="button"
+                      className="text-white uppercase font-semibold bg-[#3475ba] py-3 px-4 w-full rounded flex items-center justify-center gap-4"
+                      onClick={login}
+                    >
                       <div className="h-6 w-6 border-[5px] border-solid border-white rounded-full"></div>
                       Login with Okta
                     </button>
