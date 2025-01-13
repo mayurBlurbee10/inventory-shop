@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,4 +48,8 @@ body {
 .custom-shadow {
   box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em,
     rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
+}
+
+.custom-shadow-sm {
+  box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075) !important;
 }

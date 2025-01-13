@@ -101,7 +101,7 @@ const UsersContent = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-b-6">
       <div className="flex justify-between items-center space-x-4 pr-4">
         <div className="flex justify-between items-center w-full">
           <div>

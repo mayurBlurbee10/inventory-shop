@@ -21,6 +21,9 @@ module.exports = {
         text: {
           DEFAULT: '#333333',  // textColor
         }
+      },
+      fontFamily: {
+        'lato':  ['Lato', 'sans-serif'],
       }
     },
   },

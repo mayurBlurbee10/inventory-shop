@@ -192,7 +192,7 @@ export default function SubsidiariesLoginPage() {
   if (!config || !content) return <LoadingSpinner />;
 
   return (
-    <div className="h-screen w-screen flex items-start xl:items-center justify-center relative overflow-x-hidden">
+    <div className="flex items-start xl:items-center justify-center relative overflow-x-hidden">
       <div className="bg-white relative z-10 w-full h-full flex flex-col">
         <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center">
           <div className="h-12 md:h-16 lg:h-20">
@@ -235,8 +235,8 @@ export default function SubsidiariesLoginPage() {
           className="p-3 w-full"
         ></div>
 
-        <div className="flex-1 flex flex-col lg:flex-row w-full h-full">
-          <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary h-full">
+        <div className="flex flex-col lg:flex-row w-full">
+          <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
             <div>
               <h2 className="text-3xl font-normal leading-tight text-[#545454]">
                 {filterValue("Title")}
@@ -277,7 +277,7 @@ export default function SubsidiariesLoginPage() {
           </div>
 
           {/* Right Panel - Login Form */}
-          <div className="w-full xl:w-2/5 bg-background-gray p-4 md:p-10 xl:p-12 flex items-center justify-center h-full">
+          <div className="w-full xl:w-2/5 bg-background-gray p-4 md:p-10 xl:p-12 flex items-center justify-center">
             <div className="w-full max-w-md bg-secondary rounded-lg shadow-lg p-3 md:p-8">
               <div className="text-center mb-8">
                 <p className="text-text/60 mt-2">
