@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import BaseTable from "./BaseTable";
 import { Portals } from "./Portals";
 import * as bcrypt from "bcrypt";
@@ -62,20 +62,28 @@ export @Entity("users")
   isOnboardingRequired;
 
   // Make fields optional for super_admin and required for admin/user roles
-  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
+  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER)
   @IsNotEmpty()
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   title;
 
-  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
+  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER)
   @IsNotEmpty()
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   boxUserId;
 
-  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN)
+  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER)
   @IsNotEmpty()
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   folderId;
+
+  @ManyToOne(() => Users, { nullable: true })
+  @JoinColumn({ name: "createdBy" })
+  createdBy;
+
+  @ManyToOne(() => Users, { nullable: true })
+  @JoinColumn({ name: "updatedBy" })
+  updatedBy;
 
   @BeforeInsert()
   async hashPassword() {

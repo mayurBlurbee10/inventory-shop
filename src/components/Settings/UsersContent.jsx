@@ -174,9 +174,9 @@ const UsersContent = () => {
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      {user.logoUrl ? (
+                      {user?.company?.logo ? (
                         <img
-                          src={user.logoUrl}
+                          src={user.company.logo}
                           alt={`${user.name} logo`}
                           className="h-8 w-8 object-contain rounded-full mr-3"
                         />

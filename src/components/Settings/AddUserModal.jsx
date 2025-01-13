@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
+import { getUserData } from "@/app/lib/auth";
 
 const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -116,6 +117,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
       }
 
       // Prepare user data for storage
+      const user = getUserData();
       const userData = {
         email: formData.email,
         name: formData.name,
@@ -128,6 +130,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         folderId: boxData.user.folderId,
         portal: params.portalid || "",
         isOnboardingRequired: false,
+        createdBy: user.id
       };
 
       // Save user data

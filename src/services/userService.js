@@ -60,6 +60,19 @@ const getUserByEmail = async (email, portalId) => {
   }
 };
 
+const getUserByRole = async (role, userId) => {
+  const userRepository = await getRepository(Users);
+  try {
+    let where = {role};
+    if(userId){
+      condition['createdBy'] = userId;
+    }
+    return await userRepository.find({ where });
+  } catch (error) {
+    throw new Error("Failed to get users.");
+  }
+};
+
 const getUserByBoxUserId = async (boxUserId) => {
   const userRepository = await getRepository(Users);
   try {
@@ -177,4 +190,5 @@ export default {
   getUsersByPortal,
   setUserOnboarding,
   deleteUser,
+  getUserByRole
 };

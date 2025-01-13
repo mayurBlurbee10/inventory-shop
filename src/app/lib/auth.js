@@ -1,5 +1,7 @@
 "use client";
 
+import { UserRole } from "@/config/constants";
+
 const isBrowser = () => typeof window !== 'undefined';
 
 const COOKIE_OPTIONS = {
@@ -65,7 +67,7 @@ export const isAdmin = () => {
       return false;
     }
 
-    const isUserAdmin = userData.role === 'admin';
+    const isUserAdmin = userData.role === UserRole.ADMIN || userData.role === UserRole.SUPER_ADMIN;
     return isUserAdmin;
   } catch (error) {
     console.error('Error checking admin status:', error);

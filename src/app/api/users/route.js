@@ -55,11 +55,15 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const portalid = searchParams.get("portalid");
   const email = searchParams.get("email");
+  const role = searchParams.get("role");
+  const userId = searchParams.get("userId");
   let users = {};
   if (portalid) {
     users = await userService.getUsersByPortal(portalid);
   } else if (email) {
     users = await userService.getUserByEmail(email);
+  } else if (role) {
+    users = await userService.getUserByRole(role, userId);
   } else {
     users = await userService.getUsers();
   }
@@ -115,11 +119,19 @@ export async function POST(request) {
       role: userData.role,
     };
 
-    if (userData.role !== UserRole.SUPER_ADMIN) {
+    if (userData.role !== UserRole.SUPER_ADMIN && userData.role !== UserRole.MASTER) {
       newUser.resetPasswordToken = token;
       newUser.isOnboardingRequired = userData.isOnboardingRequired;
       newUser.portalId = userData.portal;
       newUser.title = userData.title;
+      newUser.boxUserId = userData.boxUserId;
+      newUser.folderId = userData.folderId;
+      newUser.company = {
+        name: userData.companyName,
+        logo: userData.logo,
+      };
+    } else if(userData.role === UserRole.SUPER_ADMIN) {
+      newUser.isOnboardingRequired = userData.isOnboardingRequired;
       newUser.boxUserId = userData.boxUserId;
       newUser.folderId = userData.folderId;
       newUser.company = {
@@ -133,8 +145,9 @@ export async function POST(request) {
 
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
-    if (userData.role !== UserRole.SUPER_ADMIN)
+    if (userData.role !== UserRole.SUPER_ADMIN && userData.role !== UserRole.MASTER){
       sendSetPasswordEmail(newUser.email, newUser.name, token, userData.portal);
+    }
     console.log("Successfully saved new user");
 
     return NextResponse.json(user);

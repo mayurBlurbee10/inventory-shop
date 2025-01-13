@@ -17,8 +17,9 @@ import Image from "next/image";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { clearUserData, getUserData } from "@/app/lib/auth";
+import MasterUsersContent from "./Master/MasterUsersContent";
 
-const SidePanel = () => (
+const SidePanel = ({ setCurrentPage }) => (
   <div className="w-80 bg-[#0161D5] p-6 flex flex-col h-screen fixed left-0">
     <div className="mb-8">
       <Image
@@ -31,7 +32,8 @@ const SidePanel = () => (
     </div>
 
     <nav className="space-y-4 flex-1">
-      <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors">
+      <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
+        onClick={()=>setCurrentPage('Portals')}>
         <Layout className="w-5 h-5 mr-3" />
         Dashboard
       </button>
@@ -41,6 +43,7 @@ const SidePanel = () => (
       </button>
 
       <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors">
+        {/* onClick={()=>setCurrentPage('Super User')} */}
         <Users className="w-5 h-5 mr-3" />
         User Management
       </button>
@@ -118,7 +121,8 @@ const CreateSubsidiaryButton = ({ onClick }) => (
 );
 
 const DashboardHeader = ({
-  subsidiaryCount,
+  currentPage,
+  currentPageCount,
   user,
   accountDropdown,
   setAccountDropdown,
@@ -127,10 +131,10 @@ const DashboardHeader = ({
   <>
     <div className="flex justify-between items-start">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-1">Portals</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-1">{currentPage}</h1>
         <p className="text-sm text-gray-500">
-          Managing {subsidiaryCount}{" "}
-          {subsidiaryCount === 1 ? "portal" : "portals"}
+          Managing {currentPageCount}{" "}
+          {currentPageCount > 1 ? `${currentPage}s` : `${currentPage}`}
         </p>
       </div>
       <div className="flex items-center space-x-8 cursor-pointer">
@@ -238,6 +242,8 @@ export default function AdminDashboard() {
   const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   const [showCreationModal, setShowCreationModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState("Portals");
+  const [currentPageCount, setCurrentPageCount] = useState(0);
 
   const handleSelectSubsidiary = (subsidiary) => {
     router.push(`/admin/subsidiaries/${subsidiary.id}`);
@@ -336,11 +342,12 @@ export default function AdminDashboard() {
         companyName: formData.legalName,
         role: UserRole.ADMIN,
         password: "000",
-        logo: logoUrl,
+        logo: null,
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId,
         portal: sanitizeName(formData.legalName) || "",
         isOnboardingRequired: true,
+        createdBy: user.id
       };
 
       const UserResponse = await fetchWrapper(
@@ -395,6 +402,7 @@ export default function AdminDashboard() {
       const data = await response.json();
       const subsidiaries = Object.values(data.data);
       setSubsidiaries(subsidiaries);
+      setCurrentPageCount(subsidiaries.length);
     } catch (err) {
       console.error("Error while fetching portals");
     } finally {
@@ -413,6 +421,13 @@ export default function AdminDashboard() {
     getPortal();
   }, [router]);
 
+  useEffect(()=>{
+    setCurrentPageCount(0);
+    if(currentPage==='Portals'){
+      setCurrentPageCount(subsidiaries.length);
+    }
+  },[currentPage])
+
   const handleLogout = () => {
     setAccountDropdown(false);
     clearUserData();
@@ -421,25 +436,32 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex" onClick={() => {setAccountDropdown(false)}}>
-      <SidePanel />
+      <SidePanel setCurrentPage={setCurrentPage}/>
       <div className="flex-1 ml-80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <DashboardHeader
-            subsidiaryCount={subsidiaries.length}
+            currentPageCount={currentPageCount}
+            currentPage={currentPage}
             user={user}
             accountDropdown={accountDropdown}
             setAccountDropdown={setAccountDropdown}
             handleLogout={handleLogout}
           />
-          <SubsidiaryMetrics />
-          <SubsidiaryGrid
-            isLoading={isPortalLoading}
-            subsidiaries={subsidiaries}
-            onSelectSubsidiary={handleSelectSubsidiary}
-            onCreateNew={() => {
-              setShowCreationModal(true);
-            }}
-          />
+          {currentPage === 'Portals' && (
+            <>
+              <SubsidiaryMetrics />
+              <SubsidiaryGrid
+                isLoading={isPortalLoading}
+                subsidiaries={subsidiaries}
+                onSelectSubsidiary={handleSelectSubsidiary}
+                onCreateNew={() => {
+                  setShowCreationModal(true);
+                }}
+              />
+            </>
+          )}
+
+          {currentPage === 'Super User' && <MasterUsersContent setCurrentPageCount={setCurrentPageCount} />}
         </div>
 
         <CreationWizard

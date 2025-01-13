@@ -1,13 +1,14 @@
-import { NextResponse } from 'next/server';
-import BoxSDK from 'box-node-sdk';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { cookies } from 'next/headers';
-import { logApiCall } from '@/app/lib/api-log-middleware';
-import { generateToken } from '@/app/lib/jwt';
+import { NextResponse } from "next/server";
+import BoxSDK from "box-node-sdk";
+import { promises as fs } from "fs";
+import path from "path";
+import { cookies } from "next/headers";
+import { logApiCall } from "@/app/lib/api-log-middleware";
+import { generateToken } from "@/app/lib/jwt";
 import * as bcrypt from "bcrypt";
 import userService from "@/services/userService";
-import { UserRole } from '@/config/constants';
+import { UserRole } from "@/config/constants";
+import portalService from "@/services/portalService";
 
 // Use the correct path to users.json in the data directory
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
@@ -34,7 +35,7 @@ try {
     clientSecret: process.env.BOX_CLIENT_SECRET,
     appAuth: {
       keyID: process.env.BOX_PUBLIC_KEY_ID,
-      privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       passphrase: process.env.BOX_PASSPHRASE,
     },
   });
@@ -94,6 +95,11 @@ try {
   console.error("Failed to initialize Box SDK:", error);
 }
 
+function sanitizeName(name) {
+  let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+  return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
+}
+
 export async function POST(request) {
   try {
     await logApiCall(request, () => {});
@@ -111,17 +117,38 @@ export async function POST(request) {
     // );
 
     // check user exist
-    const user = await userService.getUserByEmail(data.email, data.portalid);
+    const user = await userService.getUserByEmail(data.email);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials!! user not found with this email" },
         { status: 404 }
       );
     }
-    
-    console.log('DATA.PORTALID: ', data.portalid, user.portalId)
+
+    console.log("DATA.PORTALID: ", data.portalid, user.portalId);
     // check if this is the same portal's user
     if (data.portalid != user.portalId) {
+      console.log('user.role: ', user.role)
+      if (user.role === UserRole.SUPER_ADMIN) {
+        const portals = await portalService.getPortalsByUser(user.id);
+        const portalOwner = portals.some(
+          (portal) => sanitizeName(portal.legalName) === data.portalid
+        );
+        if (!portalOwner) {
+          return NextResponse.json(
+            { error: "This user does not have access to this portal" },
+            { status: 403 }
+          );
+        }
+      } else {
+        return NextResponse.json(
+          { error: "This user does not have access to this portal" },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (data.role && data.role !== user.role) {
       return NextResponse.json(
         { error: "This user does not have access to this portal" },
         { status: 403 }
@@ -133,7 +160,6 @@ export async function POST(request) {
       data.password,
       user.password
     );
-
 
     if (!isPasswordCorrect) {
       console.log("Invalid credentials for:", data.email);
@@ -185,7 +211,10 @@ export async function POST(request) {
       name: user.name,
       role: user.role,
       company: user.company,
-      isOnboardingRequired: user.isOnboardingRequired
+      isOnboardingRequired: user.isOnboardingRequired,
+      boxUserId: user.boxUserId,
+      boxFolderId: user.folderId,
+      collaborationIds: user.collaborationIds
     };
 
     if (user.role != UserRole.SUPER_ADMIN) {
@@ -198,16 +227,17 @@ export async function POST(request) {
       userData.collaborationIds = user.collaborationIds;
     }
 
-    const {boxFiles,boxUserInfo,boxFolderInfo,boxError,...rest} = userData;
+    const { boxFiles, boxUserInfo, boxFolderInfo, boxError, ...rest } =
+      userData;
 
-    const accessToken = await generateToken(rest, '168h');
-    await userService.setUserAccessToken(data.email, accessToken)
+    const accessToken = await generateToken(rest, "168h");
+    await userService.setUserAccessToken(data.email, accessToken);
 
     // Create response with cookie
     const response = NextResponse.json({
       success: true,
       user: userData,
-      accessToken
+      accessToken,
     });
 
     // Set cookie in response headers
@@ -218,12 +248,12 @@ export async function POST(request) {
       path: "/",
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });
-    response.cookies.set('token', accessToken, {
+    response.cookies.set("token", accessToken, {
       httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 // 7 days
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
     });
 
     console.log("Sending response with user data:", userData);

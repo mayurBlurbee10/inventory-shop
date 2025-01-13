@@ -30,35 +30,39 @@ export default function AdminLoginPage() {
 
     const user = ADMIN_USERS[email];
     if (email && password !== '') {
-        const response = await fetchWrapper(
-          "/api/auth/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
+      try {
+          const response = await fetchWrapper(
+            "/api/auth/login",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email: email, password: password, role: UserRole.SUPER_ADMIN }),
             },
-            body: JSON.stringify({ email: email, password: password }),
-          },
-          "default-login"
-        );
-  
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Login failed");
-        }
+            "admin-login"
+          );
+    
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Login failed");
+          }
 
-        // Store user data using auth utility
-        setUserData(data.user);
-        localStorage.setItem("portal", 'admin');
-        localStorage.setItem('accessToken', data.accessToken);
-      // Store complete user data including role
-      // localStorage.setItem('user', JSON.stringify({
-      //   email: user.email,
-      //   role: user.role,
-      //   name: user.name
-      // }));
-      // localStorage.setItem('portal','admin')
-      router.push('/admin/dashboard');
+          // Store user data using auth utility
+          setUserData(data.user);
+          localStorage.setItem("portal", 'admin');
+          localStorage.setItem('accessToken', data.accessToken);
+        // Store complete user data including role
+        // localStorage.setItem('user', JSON.stringify({
+        //   email: user.email,
+        //   role: user.role,
+        //   name: user.name
+        // }));
+        // localStorage.setItem('portal','admin')
+        router.push('/admin/dashboard');
+      } catch(error) {
+        setError(error.message);
+      }
     } else {
       setError('Invalid email or password');
     }
@@ -137,14 +141,14 @@ export default function AdminLoginPage() {
             Forgot password?
           </a>
         </div>
-        <div className="mt-6 text-center">
+        {/* <div className="mt-6 text-center">
           <div className="text-blue-600 text-sm">
             Don't have an account?{" "}
             <span className='cursor-pointer hover:text-blue-500' onClick={navigatToSignUp}>
               Sign up
             </span>
           </div>
-        </div>
+        </div> */}
         {/* footer with copyright and some links */}
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>&copy; 2024 MStrategy. All rights reserved.</p>
