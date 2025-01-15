@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const Footer = ({ filterValue }) => {
-  const contactInfo = filterValue("Footer Content").split("\n");
-  const links = JSON.parse(filterValue("Footer Links") || "null") || [];
+  // const contactInfo = filterValue("Footer Content").split("\n");
+  // const links = JSON.parse(filterValue("Footer Links") || "null") || [];
   return (
     <footer className=" pt-12 mt-auto">
       <div className="container mx-auto px-4">
