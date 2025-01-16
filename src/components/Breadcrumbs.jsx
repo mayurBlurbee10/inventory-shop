@@ -1,11 +1,9 @@
-
-
 import { ChevronRight } from "lucide-react";
 
-const Breadcrumbs = ({ path, setPath, setSearchQuery }) => {
+const Breadcrumbs = ({ path, setPath, setSearchQuery, user }) => {
   const handleBreadcrumbClick = (index) => {
-    setSearchQuery('');
-    if(index === -1){
+    setSearchQuery("");
+    if (index === -1) {
       setPath([]);
     } else {
       setPath((prev) => prev.slice(0, index + 1));
@@ -13,12 +11,12 @@ const Breadcrumbs = ({ path, setPath, setSearchQuery }) => {
   };
 
   return (
-    <nav className="flex items-center text-gray-500 text-sm xl:text-base space-x-1 py-1.5">
+    <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
       <button
         onClick={() => handleBreadcrumbClick(-1)}
-        className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
+        className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato"
       >
-        My Files
+        {user?.email}
       </button>
       {path &&
         path.length > 0 &&
@@ -27,7 +25,7 @@ const Breadcrumbs = ({ path, setPath, setSearchQuery }) => {
             <ChevronRight className="h-5 w-5" />
             <button
               onClick={() => handleBreadcrumbClick(index)}
-              className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
+              className="text-gray-500 transition-colors text-sm font-normal hover:text-gray-950 font-lato"
             >
               {p.name}
             </button>
@@ -37,4 +35,4 @@ const Breadcrumbs = ({ path, setPath, setSearchQuery }) => {
   );
 };
 
-export default Breadcrumbs
+export default Breadcrumbs;

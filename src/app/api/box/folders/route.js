@@ -76,7 +76,7 @@ async function fetchNestedItems(folderId) {
   const result = [];
   try {
     const folderItems = await client.folders.getItems(folderId, {
-      fields: "id,name,type,shared_link,created_at,modified_at,collaborators",
+      fields: "id,name,type,shared_link,created_at,modified_at,collaborators,size",
       limit: 100,
     });
 

@@ -178,6 +178,28 @@ const deleteUser = async (userId) => {
   }
 };
 
+const getUserById = async (id) => {
+  const userRepository = await getRepository(Users);
+  try {
+    return await userRepository.findOneBy({id});
+  } catch (error) {
+    throw new Error("Failed to get users.");
+  }
+};
+
+const updateUser = async (id, updatedData) => {
+  const userRepository = await getRepository(Users);
+  try {
+    const mainUser = await getUserById(id);
+    Object.assign(mainUser, updatedData);
+    await userRepository.save(mainUser);
+    console.log("User updated successfully!");
+  } catch (error) {
+    console.error("Error updating user:", error.message);
+    throw error;
+  }
+};
+
 export default {
   createUser,
   getUsers,
@@ -190,5 +212,7 @@ export default {
   getUsersByPortal,
   setUserOnboarding,
   deleteUser,
-  getUserByRole
+  getUserByRole,
+  getUserById,
+  updateUser,
 };

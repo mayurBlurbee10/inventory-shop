@@ -6,6 +6,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --slider-thumb-size: 15px;
+  --slider-height: 3px;
+  --slider-color: #3c3f42;
+  --slider-track-color: #e8e8e8;
+  --transition-duration: 0.2s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,17 +77,72 @@ body {
 }
 
 .custom-box-shadow {
-  box-shadow: 0 4px 6px -2px rgba(51, 51, 51, .04);
+  box-shadow: 0 4px 6px -2px rgba(51,51,51,.04);
 }
 
 .card-shadow {
-  box-shadow: 0 1px 5px rgba(50, 50, 50, .1);
+  box-shadow: 0 1px 5px rgba(50,50,50,.1);
 }
 
 .shadow-inset {
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .1);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.1);
 }
 
-.pulse-animation {
-  animation: pulseAnimation 2s infinite;
+
+/* Styling for the range slider */
+.range-slider {
+  -webkit-appearance: none; /* Remove default styles */
+  appearance: none;
+  width: 100%; /* Full width */
+  height: var(--slider-height); /* Height of the slider track */
+  background: linear-gradient(
+    to right, /* Change gradient direction to right */
+    var(--slider-track-color) calc(var(--value-percent) * 1%),
+    var(--slider-color) calc(var(--value-percent) * 1%)
+  ); /* Adjust fill dynamically */
+  border-radius: 5px;
+  outline: none; /* Remove focus outline */
+  transition: background var(--transition-duration) ease-in-out;
 }
+
+.range-slider::-webkit-slider-runnable-track {
+  background: var(--slider-track-color);
+  height: var(--slider-height);
+  cursor: pointer;
+}
+
+/* Thumb styling */
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--slider-thumb-size); /* Thumb width */
+  height: var(--slider-thumb-size); /* Thumb height */
+  background: var(--slider-color); /* Thumb color */
+  border-radius: 50%; /* Circular thumb */
+  cursor: pointer;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.2); /* Slight shadow */
+  transition: background var(--transition-duration) ease-in-out;
+  margin-top: -6px;
+}
+
+.range-slider::-moz-range-thumb {
+  width: var(--slider-thumb-size);
+  height: var(--slider-thumb-size);
+  background: var(--slider-color);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* For Internet Explorer and Edge */
+.range-slider::-ms-thumb {
+  width: var(--slider-thumb-size);
+  height: var(--slider-thumb-size);
+  background: var(--slider-color);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+

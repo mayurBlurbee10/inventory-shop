@@ -1,3 +1,4 @@
+"use client";
 import Dashboard from "@/components/Dashboard";
 import Footer from "@/components/Footer";
 import {
@@ -12,12 +13,135 @@ import {
   Minus,
   Pencil,
   Plus,
-  RotateCw,
   SquarePen,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { getUserData } from "@/lib/auth";
+import { fetchWrapper } from "../lib/fetchWrapper";
+import EmptyState from "@/components/FileExplorer/EmptyState";
+import FolderExplorer from "@/components/FolderExplorer";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default function HomePage() {
   // return <Dashboard fileType={'my'}/>;
+  const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
+  const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
+  const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
+  const [filesList, setFilesList] = useState(null);
+  const [filteredFilesList, setFilteredFilesList] = useState(filesList);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [path, setPath] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cols, setCols] = useState(1);
+  const [view, setView] = useState("list");
+  const router = useRouter();
+
+  const handleSliderChange = (e) => {
+    const value = Number(e.target.value);
+    setCols(value);
+
+    // Calculate percentage for the custom CSS variable
+    const percentage = ((5 - value) / 4) * 100; // 5 should be 0%, 1 should be 100%
+    e.target.style.setProperty("--value-percent", percentage);
+  };
+
+  const refreshFiles = async () => {
+    try {
+      setIsLoading(true);
+      const userData = getUserData();
+      const requestOptions = {
+        method: "GET",
+      };
+      // if (fileType === "shared") {
+      //   if (
+      //     userData?.collaborationIds &&
+      //     userData.collaborationIds.length > 0
+      //   ) {
+      //     const requestOptions = {
+      //       method: "POST",
+      //       body: JSON.stringify({ collaborated: userData.collaborationIds }),
+      //     };
+      //     const response = await fetchWrapper(
+      //       `/api/box/collaborations`,
+      //       requestOptions,
+      //       "fetchCollaboratedFolder"
+      //     );
+      //     if (!response.ok)
+      //       throw new Error("Failed to get collaborated folder");
+      //     const data = await response.json();
+      //     const newFilesList = data?.items;
+      //     setFilesList(newFilesList);
+      //   }
+      // } else {
+      const response = await fetchWrapper(
+        `/api/box/folders?folderId=${userData.boxFolderId}`,
+        requestOptions,
+        "fetchFile"
+      );
+      if (!response.ok) throw new Error("Failed to fetch files");
+      const data = await response.json();
+      const newFilesList = data?.items || [];
+      setFilesList(newFilesList);
+      // }
+    } catch (error) {
+      console.error("Error refreshing files:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updatePath = (prevPath, filesList) => {
+    let updatedPath = [...prevPath];
+    let currentFolder = filesList;
+
+    // Update the path incrementally
+    for (let level = 0; level < updatedPath.length; level++) {
+      const folderAtLevel = updatedPath[level];
+      // Find the folder in the filesList
+      const updatedFolder = currentFolder.find(
+        (item) => item.id === folderAtLevel.id
+      );
+      if (updatedFolder) {
+        updatedPath[level] = updatedFolder;
+        currentFolder = updatedFolder.children;
+      }
+    }
+
+    return updatedPath;
+  };
+
+  useEffect(() => {
+    if (filesList?.length > 0) {
+      setPath((prevPath) => updatePath(prevPath, filesList));
+      setFilteredFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+    }
+  }, [filesList]);
+
+  useEffect(() => {
+    // if (!searchQuery) {
+    setFilteredFilesList(
+      path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+    );
+    setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+    // }
+  }, [path]);
+
+  useEffect(() => {
+    const userData = getUserData();
+    if (!userData) {
+      router.push("login");
+      return;
+    }
+
+    setUser(userData);
+    refreshFiles();
+    // fetchConfig();
+  }, [router]);
 
   const NavBarItem = ({ title }) => (
     <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
@@ -67,7 +191,7 @@ export default function HomePage() {
                   </span>
                 </button>
 
-                {/* <div className="absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8]">
+                <div className="absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8]">
                   <ul>
                     <li>
                       <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">
@@ -80,7 +204,7 @@ export default function HomePage() {
                       </button>
                     </li>
                   </ul>
-                </div> */}
+                </div>
               </div>
 
               {/* Edit button */}
@@ -147,7 +271,7 @@ export default function HomePage() {
                 <div className="px-5 border-b">
                   <div className="py-3 flex items-center justify-between">
                     <div>
-                      <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
+                      {/* <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
                         <button className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato">
                           emailID
                         </button>
@@ -158,23 +282,65 @@ export default function HomePage() {
                             Folder name
                           </button>
                         </div>
-                      </nav>
+                      </nav>  */}
+                      <Breadcrumbs
+                        path={path}
+                        setPath={setPath}
+                        setSearchQuery={setSearchQuery}
+                        user={user}
+                      />
                     </div>
                     <div>
                       <div className="flex items-center gap-3">
                         {/* Grid range */}
-                        <div className="flex items-center justify=-center gap-2">
-                          <button className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200">
-                            <Minus className="h-5 w-5" />
-                          </button>
-                          <input type="range" />
-                          <button className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200">
-                            <Plus className="h-5 w-5" />
-                          </button>
-                        </div>
+                        {view === "grid" && (
+                          <div className="flex items-center justify=-center gap-2">
+                            <button
+                              className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
+                              onClick={() =>
+                                setCols((prev) => Math.max(prev - 1, 1))
+                              }
+                            >
+                              <Minus className="h-5 w-5" />
+                            </button>
+                            <input
+                              type="range"
+                              min="1" // Set the minimum value for the range
+                              max="3" // Set the maximum value for the range
+                              value={cols} // Bind the current value of `cols` to the input
+                              onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
+                              className="w-32 range-slider" // Optional styling for the slider width
+                            />
+                             <input
+                              type="range"
+                              min="1" // Set the minimum value for the range
+                              max="5" // Set the maximum value for the range
+                              value={cols} // Bind the current value of `cols` to the input
+                              onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
+                              className="w-32 range-slider lg:hidden" // Optional styling for the slider width
+                            />
+
+                            <button
+                              className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
+                              onClick={() =>
+                                setCols((prev) => Math.min(prev + 1, 5))
+                              }
+                            >
+                              <Plus className="h-5 w-5" />
+                            </button>
+                          </div>
+                        )}
 
                         {/* Card view button */}
-                        <button className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200">
+                        <button
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
+                            view === "grid" ? "hidden" : "visible"
+                          }`}
+                          onClick={() => {
+                            setView("grid");
+                            // setIsOpenOptionDrawer(false);
+                          }}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -187,30 +353,57 @@ export default function HomePage() {
                         </button>
 
                         {/* List view button */}
-                        <button className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200">
+                        <button
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
+                            view === "list" ? "hidden" : "visible"
+                          }`}
+                          onClick={() => {
+                            setView("list");
+                            // setIsOpenOptionDrawer(false);
+                          }}
+                        >
                           <AlignJustify />
                         </button>
 
                         {/* Upload items */}
                         <div className="relative">
-                          <button className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200">
+                          <button
+                            className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
+                            onClick={() =>
+                              setIsOpenNewFolderDrawer((prev) => !prev)
+                            }
+                          >
                             <Plus />
                           </button>
 
-                          <div className="absolute top-[50px] right-0 w-48 bg-white shadow-md p-3 rounded-md">
-                            <ul>
-                              <li>
-                                <button className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                  Upload
-                                </button>
-                              </li>
-                              <li>
-                                <button className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                  New Folder
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
+                          {isOpenNewFolderDrawer && (
+                            <div className="absolute top-[50px] right-0 w-48 bg-white shadow-md p-3 rounded-md">
+                              <ul>
+                                <li>
+                                  <button
+                                    className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
+                                    onClick={() =>
+                                      setIsOpenUploadArea((prev) => !prev)
+                                    }
+                                  >
+                                    Upload
+                                  </button>
+                                </li>
+                                <li>
+                                  <button
+                                    className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
+                                    onClick={() =>
+                                      setIsOpenCreateFolderModal(
+                                        (prev) => !prev
+                                      )
+                                    }
+                                  >
+                                    New Folder
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -219,110 +412,94 @@ export default function HomePage() {
 
                 {/* Table in list view */}
 
-                <div className="min-h-[450px]">
-                  <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                    <thead className="custom-box-shadow">
-                      <tr>
-                        <th></th>
-                        <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                          <div className="flex items-center justify-start gap-2  mx-4">
-                            <span className="block">Name</span>
-                            <button className="flex items-center justify-center">
-                              <ChevronUp className="h-4 w-4" />
-                            </button>
-                            <button className="flex items-center justify-center">
-                              <ChevronDown className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </th>
-                        <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                          <span className="block mx-4">Modified</span>
-                        </th>
-                        <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                          <span className="block mx-4">Size</span>
-                        </th>
-                      </tr>
-                    </thead>
+                <FolderExplorer
+                  fileList={filesList}
+                  setPath={setPath}
+                  path={path}
+                  currentFilesList={filteredFilesList}
+                  setCurrentFilesList={setFilteredFilesList}
+                  setSelectedItem={setSelectedItem}
+                  selectedItem={selectedItem}
+                  handleShareLink={() => {}}
+                  onFileChanges={refreshFiles}
+                  listType={"my"}
+                  setSearchQuery={setSearchQuery}
+                  view={view}
+                  cols={cols}
+                />
 
-                    <tbody className="w-full divide-y divide-y-gray-200">
-                      <tr className="group hover:bg-[#e4f4ff66] border-l-2 border-l-white hover:border-l-cyan-700 active:bg-[#e4f4ff]">
-                        <td className="py-1 pl-4">
-                          <Folder className="text-[#767676] mx-4" />
-                        </td>
-                        <td className="py-1">
-                          <button className="text-sm text-black font-lato group-hover:text-[#1a5976] max-w-64 w-full text-start mx-4">
-                            Loans
-                          </button>
-                        </td>
-                        <td className="py-1">
-                          <p className="text-sm text-[#767676] font-lato group-hover:text-[#1a5976] mx-4">
-                            today by Wealthportal Service Account
-                          </p>
-                        </td>
-                        <td className="py-1 pr-4">
-                          <div className="flex items-center gap-10 mx-4">
-                            <p className="text-sm text-[#767676] font-lato group-hover:text-[#1a5976]">
-                              100.7 KB
-                            </p>
+                {/* {view === "abc" && (
+                  <div className="min-h-[450px]">
+                    <table className="min-w-full divide-y divide-gray-200 overflow-auto">
+                      {!filteredFilesList || filteredFilesList?.length === 0 ? (
+                        <thead>
+                          <tr>
+                            <th>
+                              <EmptyState />
+                            </th>
+                          </tr>
+                        </thead>
+                      ) : (
+                        <>
+                          <thead className="custom-box-shadow">
+                            <tr>
+                              <th></th>
+                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                                <div className="flex items-center justify-start gap-2  mx-4">
+                                  <span className="block">Name</span>
+                                  <button className="flex items-center justify-center">
+                                    <ChevronUp className="h-4 w-4" />
+                                  </button>
+                                  <button className="flex items-center justify-center">
+                                    <ChevronDown className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </th>
+                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                                <span className="block mx-4">Modified</span>
+                              </th>
+                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                                <span className="block mx-4">Size</span>
+                              </th>
+                            </tr>
+                          </thead>
 
-                            <div className="relative">
-                              <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:bg-gray-100 rounded-md py-2 px-3">
-                                <Ellipsis />
-                              </button>
-
-                              <div className="absolute top-11 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                <ul>
-                                  <li>
-                                    <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                      Delete
-                                    </button>
-                                  </li>
-                                  <li>
-                                    <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                      Rename
-                                    </button>
-                                  </li>
-                                  <li>
-                                    <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                      Share
-                                    </button>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                            <button className="text-base font-medium font-lato text-[#212529] opacity-0 group-hover:opacity-100">
-                              Share
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                          <tbody className="w-full divide-y divide-y-gray-200">
+                           
+                          </tbody>
+                        </>
+                      )}
+                    </table>
+                  </div>
+                )} */}
 
                 {/* Table in card view */}
-
-                <div>
-                  <div className="grid grid-cols-3">
-                    <div className="p-2 max-w-[356px]">
+                {/* {view === "abc" && (
+                  <div>
+                    <div className={`grid grid-cols-${6 - cols} gap-5`}>
+                      <div className="p-2 max-w-[356px]">
                       <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                        <div>
-                          <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                            <div className="max-h-24 max-w-[80px] h-full w-full">
-                              <Folder className="flex-auto h-full w-full text-blue-500" />
-                            </div>
+                        <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
+                          <div className="max-h-24 max-w-[80px] h-full w-full">
+                            <Folder className="flex-auto h-full w-full text-blue-500" />
                           </div>
-                          <div className="py-2 px-2.5">
-                            <div className="flex items-center justify-between">
-                              <h6 className="text-sm font-medium text-black font-lato">
-                                Loans
-                              </h6>
-                              Dropdown
-                              <div className="relative">
-                                <button className="text-gray-600 hover:bg-gray-100 rounded-md px-3">
-                                  <Ellipsis />
-                                </button>
+                        </div>
+                        <div className="py-2 px-2.5">
+                          <div className="flex items-center justify-between">
+                            <h6 className="text-sm font-medium text-black font-lato">
+                              Loans
+                            </h6>
 
+                            <div className="relative">
+                              <button
+                                className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
+                                onClick={() =>
+                                  setIsOpenOptionDrawer((prev) => !prev)
+                                }
+                              >
+                                <Ellipsis />
+                              </button>
+                              {isOpenOptionDrawer && (
                                 <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
                                   <ul>
                                     <li>
@@ -342,44 +519,100 @@ export default function HomePage() {
                                     </li>
                                   </ul>
                                 </div>
-                              </div>
+                              )}
                             </div>
-                            <p className="text-xs text-gray-500 font-lato">
-                              Modified today by Wealthportal Service Account
-                            </p>
-                            <p className="text-xs text-gray-500 font-lato ">
-                              100.7 KB
-                            </p>
+                          </div>
+                          <p className="text-xs text-gray-500 font-lato">
+                            Modified today by Wealthportal Service Account
+                          </p>
+                          <p className="text-xs text-gray-500 font-lato ">
+                            100.7 KB
+                          </p>
+                        </div>
+                      </div>
+                      <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
+                        <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
+                          <div className="max-h-24 max-w-[80px] h-full w-full">
+                            <Folder className="flex-auto h-full w-full text-blue-500" />
                           </div>
                         </div>
+                        <div className="py-2 px-2.5">
+                          <div className="flex items-center justify-between">
+                            <h6 className="text-sm font-medium text-black font-lato">
+                              Loans
+                            </h6>
+
+                            <div className="relative">
+                              <button
+                                className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
+                                onClick={() =>
+                                  setIsOpenOptionDrawer((prev) => !prev)
+                                }
+                              >
+                                <Ellipsis />
+                              </button>
+                              {isOpenOptionDrawer && (
+                                <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
+                                  <ul>
+                                    <li>
+                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
+                                        Delete
+                                      </button>
+                                    </li>
+                                    <li>
+                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
+                                        Rename
+                                      </button>
+                                    </li>
+                                    <li>
+                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
+                                        Share
+                                      </button>
+                                    </li>
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500 font-lato">
+                            Modified today by Wealthportal Service Account
+                          </p>
+                          <p className="text-xs text-gray-500 font-lato ">
+                            100.7 KB
+                          </p>
+                        </div>
+                      </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )} */}
 
                 {/* Create folder */}
-
-                <div className="p-6 bg-white rounded-sm max-w-[400px] w-full mx-auto">
-                  <label className="text-sm text-black font-medium font-lato block mb-1">
-                    Please enter a name.
-                  </label>
-                  <input
-                    type="text"
-                    className="py-2 w-56 border border-[#d3d3d3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061d5] hover:border-[#0061d5]"
-                  />
-                  <div className="flex items-center justify-center pt-4">
-                    <button className="flex items-center justify-center py-3 px-4 rounded-md bg-[#007bff] text-white font-lato font-medium mr-4">
-                      Create
-                    </button>
-                    <button className="py-3 px-4 rounded-md text-[#222] font-lato font-medium hover:bg-gray-100">
-                      Cancel
-                    </button>
+                {isOpenCreateFolderModal && (
+                  <div className="p-6 bg-white rounded-sm max-w-[400px] w-full mx-auto">
+                    <label className="text-sm text-black font-medium font-lato block mb-1">
+                      Please enter a name.
+                    </label>
+                    <input
+                      type="text"
+                      className="py-2 w-56 border border-[#d3d3d3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061d5] hover:border-[#0061d5]"
+                    />
+                    <div className="flex items-center justify-center pt-4">
+                      <button className="flex items-center justify-center py-3 px-4 rounded-md bg-[#007bff] text-white font-lato font-medium mr-4">
+                        Create
+                      </button>
+                      <button
+                        className="py-3 px-4 rounded-md text-[#222] font-lato font-medium hover:bg-gray-100"
+                        onClick={() => setIsOpenCreateFolderModal(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Upload files */}
-
-                <div>
+                {isOpenUploadArea && (
                   <div className="p-7 flex items-center justify-center flex-col gap-1">
                     <div className="h-11 w-11 text-[#0060d6] mb-2">
                       <FileUp className="h-full w-full" />
@@ -394,7 +627,7 @@ export default function HomePage() {
                       </a>
                     </label>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
