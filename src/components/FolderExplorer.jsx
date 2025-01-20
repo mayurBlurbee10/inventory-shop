@@ -1,11 +1,8 @@
 "use client";
 
 import {
-  ChevronDown,
-  ChevronUp,
   Copy,
   Download,
-  Ellipsis,
   EllipsisVertical,
   Eye,
   File,
@@ -25,7 +22,6 @@ import { useParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { toast } from "react-toastify";
-import EmptyState from "./FileExplorer/EmptyState";
 
 const ShareModal = ({
   isOpen,
@@ -409,8 +405,6 @@ function FolderExplorer({
   onFileChanges,
   listType,
   setSearchQuery,
-  view,
-  cols,
 }) {
   const params = useParams();
   const pathName = usePathname();
@@ -422,11 +416,10 @@ function FolderExplorer({
   const [usersList, setUsersList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteDropdown, setDeleteDropdown] = useState(null);
-  const [isOpenOptionDrawer, setIsOpenOptionDrawer] = useState(false);
 
-  // useEffect(() => {
-  //   fetchUser();
-  // }, []);
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const handleFolderClick = (folder) => {
     setSearchQuery("");
@@ -492,9 +485,9 @@ function FolderExplorer({
       link.click();
 
       window.URL.revokeObjectURL(url);
-      toast.success("File dowloaded successfully");
+      toast.success("File dowloaded successfully")
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message)
       console.error("Download error:", error);
     }
   };
@@ -505,19 +498,19 @@ function FolderExplorer({
     }
   };
 
-  // const fetchUser = async () => {
-  //   try {
-  //     const url = params.portalid
-  //       ? `/api/users?portalid=${params.portalid}`
-  //       : "/api/users";
-  //     const response = await fetchWrapper(url, {}, "fetchUserList");
-  //     if (!response.ok) throw new Error("Download failed");
-  //     const data = await response.json();
-  //     setUsersList(data);
-  //   } catch (error) {
-  //     console.error("Download error:", error);
-  //   }
-  // };
+  const fetchUser = async () => {
+    try {
+      const url = params.portalid
+        ? `/api/users?portalid=${params.portalid}`
+        : "/api/users";
+      const response = await fetchWrapper(url, {}, "fetchUserList");
+      if (!response.ok) throw new Error("Download failed");
+      const data = await response.json();
+      setUsersList(data);
+    } catch (error) {
+      console.error("Download error:", error);
+    }
+  };
 
   const handleDeleteFile = async (fileId) => {
     // setCurrentFilesList((prev) => prev.filter((item) => item.id !== fileId));
@@ -568,8 +561,7 @@ function FolderExplorer({
 
       const data = await response.json();
 
-      if (!response.ok)
-        throw new Error(data.error || "Failed to delete folder");
+      if (!response.ok) throw new Error(data.error || "Failed to delete folder");
       setIsLoading(false);
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       setIsDeleteModalOpen(false);
@@ -609,201 +601,270 @@ function FolderExplorer({
     }).format(date);
   };
 
-  function formatSize(bytes) {
-    if (bytes === 0) return "0 Bytes";
-
-    const units = ["Bytes", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    const size = (bytes / Math.pow(1024, i)).toFixed(1);
-
-    return `${size} ${units[i]}`;
-  }
-
   return (
-    <div>
-      {view === "list" && (
-        <div className="min-h-[450px]">
-          <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-            {!currentFilesList || currentFilesList?.length === 0 ? (
-              <thead>
-                <tr>
-                  <th>
-                    <EmptyState />
-                  </th>
-                </tr>
-              </thead>
-            ) : (
-              <>
-                <thead className="custom-box-shadow">
-                  <tr>
-                    <th></th>
-                    <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                      <div className="flex items-center justify-start gap-2  mx-4">
-                        <span className="block">Name</span>
-                        <button className="flex items-center justify-center">
-                          <ChevronUp className="h-4 w-4" />
-                        </button>
-                        <button className="flex items-center justify-center">
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </th>
-                    <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                      <span className="block mx-4">Modified</span>
-                    </th>
-                    <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                      <span className="block mx-4">Size</span>
-                    </th>
-                  </tr>
-                </thead>
+    <>
+      {currentFilesList &&
+        currentFilesList.length > 0 &&
+        currentFilesList.map((file, index) => {
+          return (
+            <React.Fragment key={index}>
+              <tr className="px-3 hover:bg-gray-50 hidden md:table-row divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800 relative z-[20]">
+                <td
+                  className="py-3 pl-4"
+                  onClick={() =>
+                    file.type === "folder" && handleFolderClick(file)
+                  }
+                >
+                  <div className="flex items-center justify-start gap-3">
+                    {file.type === "folder" ? (
+                      <Folder className="h-5 w-5 text-[#3c4043]" />
+                    ) : (
+                      <File className="h-5 w-5 text-[#3c4043]" />
+                    )}
+                    <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
+                      {file?.name}
+                    </p>
+                  </div>
+                </td>
 
-                <tbody className="w-full divide-y divide-y-gray-200">
-                  {currentFilesList &&
-                    currentFilesList.length > 0 &&
-                    currentFilesList.map((file, index) => (
-                      <tr
-                        key={index}
-                        className="group hover:bg-[#e4f4ff66] border-l-2 border-l-white hover:border-l-cyan-700 active:bg-[#e4f4ff]"
+                {/* <td className="py-3">
+                <div className="flex items-center justify-start gap-2">
+                  <span className="text-gray-600 text-sm">You opened</span>
+                  <span className="rounded-full bg-gray-600 h-1 w-1 block"></span>
+                  <span className="text-gray-600 text-sm">9:30 AM</span>
+                </div>
+              </td> */}
+
+                <td className="py-3">
+                  <div className="flex items-center">
+                    <div>
+                      <img
+                        src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?uid=R149831676&ga=GA1.1.983684055.1709024503&semt=ais_hybrid"
+                        className="h-8 w-8 object-contain rounded-full mr-3"
+                      />
+                    </div>
+                    <p className="text-gray-600 text-sm truncate max-w-40 w-full">
+                      {listType == "shared" ? getUserName(file) : "me"}
+                    </p>
+                  </div>
+                </td>
+
+                <td className="py-3">
+                  <div className="flex items-center gap-3">
+                    <UsersRound className="h-5 w-5 text-gray-600" />
+                    <p className="text-gray-600 text-sm truncate max-w-40">
+                      {pathName.includes("/home")
+                        ? "My Folders"
+                        : "Shared with me"}
+                    </p>
+                  </div>
+                </td>
+
+                <td className="py-3">
+                  <p className="text-gray-600 text-sm truncate max-w-40">
+                    {formatDate(file.modified_at)}
+                  </p>
+                </td>
+
+                <td className="py-3 pr-3">
+                  <div className="flex items-center justify-end">
+                    <div className="opacity-0 flex items-center justify-start gap-2 group-hover:opacity-100">
+                      {/* FOR ONLY FILES */}
+                      {file.type === "file" && (
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePreview(file?.id);
+                            setDeleteDropdown(null);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
+                      {pathName.includes("/home") && (
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleShare(file);
+                            setDeleteDropdown(null);
+                          }}
+                          title="Share"
+                        >
+                          <Share2 className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
+                      {file.type === "file" && (
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownload(file.id, file.name);
+                            setDeleteDropdown(null);
+                          }}
+                          title="Download"
+                        >
+                          <Download className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+                      <button
+                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                        onClick={() => handleDelete(file)}
                       >
-                        <td className="py-1 pl-4">
-                          <Folder className="text-[#767676] mx-4" />
-                        </td>
-                        <td className="py-1">
+                        <EllipsisVertical className="h-4 w-4 text-gray-600" />
+                      </button>
+
+                      {/* DELETE DROPDOWN DONE*/}
+                      {deleteDropdown === file?.id && (
+                        <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
                           <button
-                            className="text-sm text-black font-lato group-hover:text-[#1a5976] max-w-64 w-full text-start mx-4"
+                            className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                            // onClick={() => {
+                            //   if (file.type === "folder") {
+                            //     handleDeleteFolder(file?.id);
+                            //   } else {
+                            //     handleDeleteFile(file?.id);
+                            //   }
+                            // }}
                             onClick={() =>
-                              file?.type === "folder" && handleFolderClick(file)
+                              setIsDeleteModalOpen((prev) => !prev)
                             }
                           >
-                            {/* Loans */}
-                            {file?.name}
+                            <Trash2 className="h-4 w-4 text-gray-600" /> Delete
                           </button>
-                        </td>
-                        <td className="py-1">
-                          <p className="text-sm text-[#767676] font-lato group-hover:text-[#1a5976] mx-4">
-                            today by Wealthportal Service Account
-                          </p>
-                        </td>
-
-                        <td className="py-1 pr-4">
-                          <div className="flex items-center gap-10 mx-4">
-                            <p className="text-sm text-[#767676] font-lato group-hover:text-[#1a5976]">
-                              {/* 100.7 KB */}
-                              {formatSize(file?.size)}
-                            </p>
-
-                            <div className="relative">
-                              <button
-                                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:bg-gray-100 rounded-md py-2 px-3"
-                                onClick={() =>
-                                  setIsOpenOptionDrawer((prev) => !prev)
-                                }
-                              >
-                                <Ellipsis />
-                              </button>
-
-                              {isOpenOptionDrawer && (
-                                <div className="absolute top-11 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                  <ul>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Delete
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Rename
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Share
-                                      </button>
-                                    </li>
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                            <button className="text-base font-medium font-lato text-[#212529] opacity-0 group-hover:opacity-100">
-                              Share
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </>
-            )}
-          </table>
-        </div>
-      )}
-
-      {view === "grid" && (
-        <div className={`grid grid-cols-${6 - cols} gap-5 p-5`}>
-          {currentFilesList &&
-            currentFilesList.length > 0 &&
-            currentFilesList.map((file, index) => (
-              // <div className={`grid grid-cols-${6 - cols} gap-5`} key={index}>
-              <div key={index}>
-                <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                  <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                    <div className="max-h-24 max-w-[80px] h-full w-full">
-                      <Folder className="flex-auto h-full w-full text-blue-500" />
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="py-2 px-2.5 cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <h6
-                        className="text-sm font-medium text-black font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full"
-                        onClick={() =>
-                          file?.type === "folder" && handleFolderClick(file)
-                        }
-                      >
-                        {file?.name}
-                      </h6>
+                </td>
+              </tr>
 
-                      <div className="relative">
-                        <button
-                          className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
-                          onClick={() => setIsOpenOptionDrawer((prev) => !prev)}
-                        >
-                          <Ellipsis />
-                        </button>
-                        {isOpenOptionDrawer && (
-                          <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                            <ul>
-                              <li>
-                                <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                  Delete
-                                </button>
-                              </li>
-                              <li>
-                                <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                  Rename
-                                </button>
-                              </li>
-                              <li>
-                                <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                  Share
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
+              {/* MOBILE SCREEN */}
+
+              <tr className="hover:bg-gray-50 overflow-x-hidden flex md:hidden shadow-md rounded-xl mt-2 divide-gray-200 active:bg-sky-200 active:text-sky-800">
+                <td className="py-3 px-4 col-span-2 w-full bg-white rounded-lg">
+                  <div className="flex flex-col gap-3 space-y-2 w-full">
+                    <div
+                      onClick={() =>
+                        file.type === "folder" && handleFolderClick(file)
+                      }
+                      className="cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        {file.type === "folder" ? (
+                          <Folder className="h-5 w-5 text-[#3c4043]" />
+                        ) : (
+                          <File className="h-5 w-5 text-[#3c4043]" />
+                        )}
+                        <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
+                          {file?.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-center bg-gray-50 py-8">
+                        {file.type === "folder" ? (
+                          <Folder className="h-10 w-10 text-[#3c4043]" />
+                        ) : (
+                          <File className="h-10 w-10 text-[#3c4043]" />
                         )}
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full">
-                      Modified today by Wealthportal Service Account
-                    </p>
-                    <p className="text-xs text-gray-500 font-lato ">
-                      {formatSize(file?.size)}
-                    </p>
+                    <div className="flex items-center justify-between w-full flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          <img
+                            src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?uid=R149831676&ga=GA1.1.983684055.1709024503&semt=ais_hybrid"
+                            className="size-6 object-cover rounded-full mr-1"
+                            alt="User Avatar"
+                          />
+                          <p className="text-gray-600 text-xs truncate max-w-40">
+                            me
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <UsersRound className="size-4 text-gray-600" />
+                          <p className="text-gray-600 text-xs truncate max-w-40">
+                            {pathName.includes("/home")
+                              ? "My Folders"
+                              : "Shared with me"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        {file.type === "file" && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreview(file?.id);
+                              setDeleteDropdown(null);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
+                        {pathName.includes("/home") && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(file);
+                              setDeleteDropdown(null);
+                            }}
+                            title="Share"
+                          >
+                            <Share2 className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
+                        {file.type === "file" && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(file.id, file.name);
+                              setDeleteDropdown(null);
+                            }}
+                            title="Download"
+                          >
+                            <Download className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                          onClick={() => {
+                            if (
+                              listType == "shared" &&
+                              file.currentUserRole == "viewer"
+                            ) {
+                              return;
+                            } else {
+                              setIsDeleteModalOpen((prev) => !prev);
+                              setDeleteDropdown(file?.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-gray-600" />
+                        </button>
+                        <DeleteConfirmDialog
+                          isModalOpen={isDeleteModalOpen}
+                          setIsModalOpen={setIsDeleteModalOpen}
+                          handleDelete={
+                            file?.type === "file"
+                              ? () => handleDeleteFile(deleteDropdown)
+                              : () => handleDeleteFolder(deleteDropdown)
+                          }
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
+                </td>
+              </tr>
+            </React.Fragment>
+          );
+        })}
 
       {/* {currentFilesList && currentFilesList?.length === 0 && (
         <tr className="px-3">
@@ -812,7 +873,7 @@ function FolderExplorer({
           </td>
         </tr>
       )} */}
-      {/* <tr>
+      <tr>
         <td>
           <PreviewModal
             isOpen={isPreviewModalOpen}
@@ -829,8 +890,8 @@ function FolderExplorer({
             usersList={usersList}
           />
         </td>
-      </tr> */}
-    </div>
+      </tr>
+    </>
   );
 }
 export default FolderExplorer;

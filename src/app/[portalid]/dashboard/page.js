@@ -43,6 +43,8 @@ export default function DashboardPage() {
     </button>
   );
 
+ 
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
@@ -85,7 +87,7 @@ export default function DashboardPage() {
                   </span>
                 </button>
 
-                <div className="absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8]">
+                <div className="absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8] ">
                   <ul>
                     <li>
                       <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">

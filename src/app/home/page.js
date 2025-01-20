@@ -1,53 +1,343 @@
 "use client";
-import Dashboard from "@/components/Dashboard";
-import Footer from "@/components/Footer";
-import {
-  AlignJustify,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  Ellipsis,
-  FileUp,
-  Folder,
-  FolderRoot,
-  Minus,
-  Pencil,
-  Plus,
-  SquarePen,
-} from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { getUserData } from "@/lib/auth";
+import {
+  Settings,
+  LogOut,
+  Plus,
+  FilePlus,
+  FolderPlus,
+  House,
+  UsersRound,
+  CircleUserRound,
+  Search,
+  File,
+  Eye,
+  Download,
+  Share2,
+  EllipsisVertical,
+  Trash2,
+  ChevronRight,
+  Upload,
+  FileIcon,
+} from "lucide-react";
+import FileExplorer from "@/components/FileExplorer";
+import ActionButtons from "@/components/ActionButtons";
+import UploadArea from "@/components/UploadArea";
+import Footer from "@/components/Footer";
+import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
+import DialogBox from "@/components/DialogBox";
 import { fetchWrapper } from "../lib/fetchWrapper";
-import EmptyState from "@/components/FileExplorer/EmptyState";
 import FolderExplorer from "@/components/FolderExplorer";
-import Breadcrumbs from "@/components/Breadcrumbs";
+
+const processBoxFiles = (files) => {
+  const itemsMap = new Map();
+  const rootItems = [];
+
+  files.forEach((file) => {
+    const item = {
+      id: file.id,
+      name: file.name,
+      type: file.type || "file",
+      size: file.size,
+      created_at: file.created_at,
+      modified_at: file.modified_at,
+      children: [],
+    };
+    itemsMap.set(file.id, item);
+
+    if (!file.parent || !itemsMap.has(file.parent?.id)) {
+      rootItems.push(item);
+    } else {
+      const parent = itemsMap.get(file.parent.id);
+      parent?.children.push(item);
+    }
+  });
+
+  return rootItems;
+};
+
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+const EmptyState = () => (
+  <div className="flex flex-col w-full items-center justify-center py-12 text-gray-500">
+    <FileIcon size={48} className="mb-4 opacity-50" />
+    <p>No files or folders found</p>
+  </div>
+);
+
+const Header = ({
+  user,
+  userIsAdmin,
+  router,
+  handleLogout,
+  accountDropdown,
+  setAccountDropdown,
+}) => (
+  <header className=" border-gray-100 py-2">
+    <div className="px-8 flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <img src="/logo.png" alt="Wealthportal" className="h-12 w-auto" />
+      </div>
+
+      <div className="flex items-center space-x-8">
+        <div
+          className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
+          onClick={() => setAccountDropdown((prev) => !prev)}
+        >
+          {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+              userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+            }`}
+          >
+            {user?.name?.charAt(0) || "U"}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-gray-900 font-medium">{user?.name}</span>
+            {userIsAdmin && (
+              <span className="text-blue-600 text-sm font-medium">
+                Administrator
+              </span>
+            )}
+          </div>
+
+          {/* DROPDOWN SECTION DONE*/}
+          {accountDropdown && (
+            <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+              <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
+                <CircleUserRound className="h-5 w-5" /> Account Info
+              </button>
+              <button
+                onClick={() => router.push("/settings")}
+                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+              >
+                <Settings className="h-5 w-5" />
+                Setting
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+              >
+                <LogOut className="h-5 w-5" />
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </header>
+);
+
+const AccountInfo = ({ user, userIsAdmin }) => (
+  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
+    <h3 className="text-[22px] font-medium text-gray-900 mb-5">Account Info</h3>
+    <div className="space-y-3">
+      <p className="text-gray-600 flex justify-between items-center">
+        <span className="text-gray-500">Email</span>
+        <span className="font-medium">{user?.email}</span>
+      </p>
+      {user?.boxUserId && (
+        <p className="text-gray-600 flex justify-between items-center">
+          <span className="text-gray-500">Box ID</span>
+          <span className="font-medium">{user.boxUserId}</span>
+        </p>
+      )}
+      {user?.role && (
+        <p className="text-gray-600 flex justify-between items-center">
+          <span className="text-gray-500">Role</span>
+          <span className={`font-medium ${userIsAdmin ? "text-blue-600" : ""}`}>
+            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+          </span>
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
+  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
+    <h3 className="text-[22px] font-medium text-gray-900 mb-5">
+      Quick Actions
+    </h3>
+    <div className="space-y-2">
+      {userIsAdmin && (
+        <button
+          onClick={() => router.push("/settings")}
+          className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
+        >
+          <Settings className="w-5 h-5" />
+          <span className="font-medium">Settings</span>
+        </button>
+      )}
+      <button
+        onClick={handleLogout}
+        className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
+      >
+        <LogOut className="w-5 h-5" />
+        <span className="font-medium">Sign Out</span>
+      </button>
+    </div>
+  </div>
+);
+
+const Sidepanel = ({
+  sidepanelDropdown,
+  setSidepanelDropdown,
+  setIsNewFolderModalOpen,
+  setShowUploadArea,
+  router,
+}) => (
+  <div className="max-w-[260px] w-full">
+    <div className="p-4">
+      <div className="relative">
+        {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+        <button
+          className="flex items-center gap-2 py-3 px-5 mb-4 bg-white rounded-lg custom-shadow text-gray-800 group hover:bg-blue-100 transition-all ease-in-out duration-100 relative"
+          onClick={() => setSidepanelDropdown((prev) => !prev)}
+        >
+          <Plus /> New
+        </button>
+
+        {/* DROPDOWN SECTION Done*/}
+        {sidepanelDropdown && (
+          <div className="absolute top-16 overflow-hidden left-0 max-w-52 w-full bg-white shadow py-2">
+            {/* <div className="pb-2 border-b-gray-300  border-b"> */}
+            {/* <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
+                <FilePlus className="h-5 w-5" />
+                New document
+              </button> */}
+
+            <button
+              className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
+              onClick={() => setIsNewFolderModalOpen((prev) => !prev)}
+            >
+              <FolderPlus className="h-5 w-5" />
+              New folder
+            </button>
+            <button
+              className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
+              onClick={() => setShowUploadArea((prev) => !prev)}
+            >
+              <Upload className="h-5 w-5" />
+              Upload
+            </button>
+            {/* </div> */}
+            {/* <div className="pt-2">
+              <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
+                <Upload className="h-5 w-5" />
+                Upload
+              </button>
+            </div> */}
+          </div>
+        )}
+
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1 active:bg-sky-200 active:text-sky-800"
+          onClick={() => router.push("/home")}
+        >
+          <House className="h-5 w-5" /> Home
+        </button>
+
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+          onClick={() => router.push("/sharewithme")}
+        >
+          <UsersRound className="h-5 w-5" /> Shared with me
+        </button>
+
+        <button
+          className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
+          onClick={() => router.push("/settings")}
+        >
+          <Settings className="h-5 w-5" /> Settings
+        </button>
+      </div>
+    </div>
+  </div>
+);
 
 export default function HomePage() {
-  // return <Dashboard fileType={'my'}/>;
-  const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
-  const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
-  const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
-  const [filesList, setFilesList] = useState(null);
-  const [filteredFilesList, setFilteredFilesList] = useState(filesList);
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [path, setPath] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [cols, setCols] = useState(1);
-  const [view, setView] = useState("list");
   const router = useRouter();
+  const fileInputRef = useRef(null);
+  const [user, setUser] = useState(null);
+  const [filesList, setFilesList] = useState([]);
+  const [currentFilesList, setCurrentFilesList] = useState(filesList);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showUploadArea, setShowUploadArea] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [uploadedfilePath, setUpladedFilePath] = useState("");
+  const [accountDropdown, setAccountDropdown] = useState(false);
+  const [deleteDropdown, setDeleteDropdown] = useState(null);
+  const [sidepanelDropdown, setSidepanelDropdown] = useState(false);
+  const [path, setPath] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSliderChange = (e) => {
-    const value = Number(e.target.value);
-    setCols(value);
-
-    // Calculate percentage for the custom CSS variable
-    const percentage = ((5 - value) / 4) * 100; // 5 should be 0%, 1 should be 100%
-    e.target.style.setProperty("--value-percent", percentage);
+  const handleBrowse = (event) => {
+    if (event.type === "click") {
+      fileInputRef.current?.click();
+    } else {
+      handleFileSelect(event);
+    }
   };
+  const handleFileSelect = async (event) => {
+    const files = event.target.files;
+    if (files.length > 0) {
+      try {
+        setIsLoading(true);
+        const uploadData = new FormData();
+        uploadData.append("file", files[0]);
+        if (!!selectedItem && selectedItem.type == "folder") {
+          uploadData.append("boxFolderId", selectedItem.id);
+        } else {
+          const userData = getUserData();
+          uploadData.append("boxFolderId", userData.boxFolderId);
+        }
 
+        const requestOptions = {
+          method: "POST",
+          body: uploadData,
+        };
+
+        const response = await fetchWrapper(
+          "/api/box/files",
+          requestOptions,
+          "uploadFile"
+        );
+        if (!response.ok) throw new Error("Failed to upload files");
+        setIsModalOpen(true);
+        setShowUploadArea(false);
+        await refreshFiles();
+        const path = getFolderPath(
+          filesList,
+          selectedItem.id || userData.boxFolderId
+        );
+        const location = `
+        <div>
+          <div>
+            Location: Home${path}
+          </div>
+          <div>
+            Name: ${files[0].name}
+          </div>
+        </div>
+        `;
+        setUpladedFilePath(location);
+      } catch (error) {
+        console.error("Error uploading files:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
   const refreshFiles = async () => {
     try {
       setIsLoading(true);
@@ -55,27 +345,6 @@ export default function HomePage() {
       const requestOptions = {
         method: "GET",
       };
-      // if (fileType === "shared") {
-      //   if (
-      //     userData?.collaborationIds &&
-      //     userData.collaborationIds.length > 0
-      //   ) {
-      //     const requestOptions = {
-      //       method: "POST",
-      //       body: JSON.stringify({ collaborated: userData.collaborationIds }),
-      //     };
-      //     const response = await fetchWrapper(
-      //       `/api/box/collaborations`,
-      //       requestOptions,
-      //       "fetchCollaboratedFolder"
-      //     );
-      //     if (!response.ok)
-      //       throw new Error("Failed to get collaborated folder");
-      //     const data = await response.json();
-      //     const newFilesList = data?.items;
-      //     setFilesList(newFilesList);
-      //   }
-      // } else {
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData.boxFolderId}`,
         requestOptions,
@@ -84,745 +353,377 @@ export default function HomePage() {
       if (!response.ok) throw new Error("Failed to fetch files");
       const data = await response.json();
       const newFilesList = data?.items || [];
+
       setFilesList(newFilesList);
-      // }
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
       setIsLoading(false);
     }
   };
+  console.log(path);
 
   const updatePath = (prevPath, filesList) => {
-    let updatedPath = [...prevPath];
-    let currentFolder = filesList;
+    let updatedPath = [...prevPath]; 
+    let currentFolder = updatedPath[updatedPath.length - 1];
 
     // Update the path incrementally
     for (let level = 0; level < updatedPath.length; level++) {
       const folderAtLevel = updatedPath[level];
       // Find the folder in the filesList
-      const updatedFolder = currentFolder.find(
+      const updatedFolder = filesList.find(
         (item) => item.id === folderAtLevel.id
       );
       if (updatedFolder) {
         updatedPath[level] = updatedFolder;
-        currentFolder = updatedFolder.children;
       }
     }
 
     return updatedPath;
   };
 
+  console.log(path);
+
   useEffect(() => {
-    if (filesList?.length > 0) {
+    if (filesList.length > 0) {
       setPath((prevPath) => updatePath(prevPath, filesList));
-      setFilteredFilesList(
+      setCurrentFilesList(
         path?.length === 0 ? filesList : path[path.length - 1]?.children || []
       );
     }
   }, [filesList]);
 
   useEffect(() => {
-    // if (!searchQuery) {
-    setFilteredFilesList(
+    setCurrentFilesList(
       path?.length === 0 ? filesList : path[path.length - 1]?.children || []
     );
-    setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
-    // }
   }, [path]);
+
+  const handleLogout = () => {
+    clearUserData();
+    router.push("/login");
+  };
+
+  const getFolderPath = (data, folderId, currentPath = "") => {
+    for (const item of data) {
+      if (item.id === folderId) {
+        return currentPath + "/" + item.name;
+      }
+
+      if (item.type === "folder" && item.children && item.children.length > 0) {
+        const path = getFolderPath(
+          item.children,
+          folderId,
+          currentPath + "/" + item.name
+        );
+        if (path) {
+          return path;
+        }
+      }
+    }
+    return "";
+  };
+
+  const Breadcrumbs = () => {
+    const handleBreadcrumbClick = (index) => {
+      setPath((prev) => prev.slice(0, index + 1));
+    };
+
+    return (
+      <nav className="flex items-center text-gray-500 text-base space-x-1 py-1.5">
+        <button
+          onClick={() => setPath([])}
+          className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
+        >
+          My Files
+        </button>
+        {path &&
+          path.length > 0 &&
+          path.map((p, index) => (
+            <div key={p.id} className="flex items-center">
+              <ChevronRight className="h-5 w-5" />
+              <button
+                onClick={() => handleBreadcrumbClick(index)}
+                className="text-gray-700 transition-colors font-semibold hover:text-gray-950"
+              >
+                {p.name}
+              </button>
+            </div>
+          ))}
+
+        {/* {path.map((folder, index) => (
+          <React.Fragment key={index}>
+            <span>/</span>
+            <button
+              onClick={() => onNavigate(path.slice(0, index + 1))}
+              className="text-gray-700 transition-colors"
+            >
+              {folder}
+            </button>       
+          </React.Fragment>
+        ))} */}
+      </nav>
+    );
+  };
+
+  const handleShareLink = (itemId, newSharedLink) => {
+    const updateSharedLink = (items) =>
+      items.map((item) => {
+        if (item.id === itemId) {
+          return { ...item, shared_link: newSharedLink };
+        }
+        if (item.children) {
+          return { ...item, children: updateSharedLink(item.children) };
+        }
+        return item;
+      });
+
+    const updatedData = updateSharedLink(currentFilesList);
+    setCurrentFilesList(updatedData);
+  };
 
   useEffect(() => {
     const userData = getUserData();
     if (!userData) {
-      router.push("login");
+      router.push("/login");
       return;
     }
 
     setUser(userData);
+    // if (userData.boxFiles) {
+    //   setFiles(processBoxFiles(userData.boxFiles));
+    // }
     refreshFiles();
-    // fetchConfig();
   }, [router]);
 
-  const NavBarItem = ({ title }) => (
-    <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
-      {title}
-    </button>
-  );
+  useEffect(() => {
+    setSearchQuery("");
+    setCurrentFilesList(
+      path.length === 0 ? filesList : path[path.length - 1].children
+    );
+  }, [path]);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setCurrentFilesList(
+        path.length === 0 ? filesList : path[path.length - 1].children
+      );
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const timer = setTimeout(() => {
+      const source =
+        path.length === 0 ? filesList : path[path.length - 1].children;
+      const results = source.filter((item) =>
+        item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setCurrentFilesList(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer); // Cleanup on query or component unmount
+  }, [searchQuery, selectedItem]);
+
+  if (isLoading) return <LoadingSpinner />;
+
+  const userIsAdmin = isAdmin();
 
   return (
-    <div className="bg-white min-h-screen">
-      {/* Header */}
-      <div className="border-b border-[#0000001a]">
-        <div className="max-w-[1140px] mx-auto px-3">
-          <nav className="flex justify-between items-center bg-secondary py-2">
-            <a className="flex items-center py-1 gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              <img
-                src="/default_logo_purple.png"
-                alt="Wealthportal"
-                className="h-[50px] mr-2"
-              />
-              <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-                Wealthportal
-              </span>
-            </a>
-            <div className="hidden md:flex space-x-4 items-center">
-              <NavBarItem title="Dashboard" />
-              <NavBarItem title="Shared Document" />
-              <NavBarItem title="Loans" />
+    <div className="flex flex-col min-h-screen">
+      <div className="bg-gray-50 flex-1">
+        <Header
+          user={user}
+          userIsAdmin={userIsAdmin}
+          router={router}
+          accountDropdown={accountDropdown}
+          setAccountDropdown={setAccountDropdown}
+          handleLogout={handleLogout}
+        />
 
-              {/* Profile dropdown */}
-              <div className="relative">
-                <button className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-200">
-                  <img
-                    src="default_logo_purple.png"
-                    className="h-9 w-9 rounded-full mr-3"
-                  />
-                  <span>User name</span>
-                  <span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="18"
-                      height="18"
-                      fill="currentColor"
-                    >
-                      <path d="M12 16L6 10H18L12 16Z"></path>
-                    </svg>
-                  </span>
-                </button>
-
-                <div className="absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8]">
-                  <ul>
-                    <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">
-                        Advisor view
-                      </button>
-                    </li>
-                    <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Edit button */}
-              <button className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="12"
-                  height="12"
-                  fill="currentColor"
-                >
-                  <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-                </svg>
-              </button>
-            </div>
-            <button className="md:hidden text-text">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-          </nav>
-        </div>
-      </div>
-
-      {/* Shared documents */}
-      <div className="max-w-[1820px] mx-auto pt-12 mt-12">
-        <div>
-          <div className="grid grid-cols-5 px-4 gap-7">
-            <div className="col-span-5 lg:col-span-3">
-              <div className="flex items-center gap-10">
-                <span className="text-xl font-light text-[#212529] font-lato">
-                  Shared Documents
-                </span>
-                <span className="text-black font-lato font-normal text-sm">
-                  Securely share content with your advisor and trusted
-                  collaborators
-                </span>
-              </div>
-              <hr className="my-4" />
-              <div className="border border-solid border-[#0000001a] rounded-sm">
-                <div className="border-b border-solid border-[#0000001a] ">
-                  <div className="py-[18px] bg-[#fcfcfc] flex items-center w-full px-5">
-                    <img src="/default_logo_purple.png" className="h-8 w-8" />
-
-                    <input
-                      type="search"
-                      className="w-full py-1.5 px-3 rounded-lg text-sm border border-solid border-[#0000001a] ml-5 outline-none focus:ring-1 focus:ring-[#0000001a]"
-                      placeholder="Search file and folders"
-                    />
-                  </div>
-                </div>
-
-                {/* breadcrumbs */}
-                <div className="px-5 border-b">
-                  <div className="py-3 flex items-center justify-between">
-                    <div>
-                      {/* <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
-                        <button className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato">
-                          emailID
-                        </button>
-
-                        <div className="flex items-center">
-                          <ChevronRight className="h-5 w-5" />
-                          <button className="text-gray-500 transition-colors text-sm font-normal hover:text-gray-950 font-lato">
-                            Folder name
-                          </button>
-                        </div>
-                      </nav>  */}
-                      <Breadcrumbs
-                        path={path}
-                        setPath={setPath}
-                        setSearchQuery={setSearchQuery}
-                        user={user}
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3">
-                        {/* Grid range */}
-                        {view === "grid" && (
-                          <div className="flex items-center justify=-center gap-2">
-                            <button
-                              className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                              onClick={() =>
-                                setCols((prev) => Math.max(prev - 1, 1))
-                              }
-                            >
-                              <Minus className="h-5 w-5" />
-                            </button>
-                            <input
-                              type="range"
-                              min="1" // Set the minimum value for the range
-                              max="3" // Set the maximum value for the range
-                              value={cols} // Bind the current value of `cols` to the input
-                              onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
-                              className="w-32 range-slider" // Optional styling for the slider width
-                            />
-                             <input
-                              type="range"
-                              min="1" // Set the minimum value for the range
-                              max="5" // Set the maximum value for the range
-                              value={cols} // Bind the current value of `cols` to the input
-                              onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
-                              className="w-32 range-slider lg:hidden" // Optional styling for the slider width
-                            />
-
-                            <button
-                              className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                              onClick={() =>
-                                setCols((prev) => Math.min(prev + 1, 5))
-                              }
-                            >
-                              <Plus className="h-5 w-5" />
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Card view button */}
-                        <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
-                            view === "grid" ? "hidden" : "visible"
-                          }`}
-                          onClick={() => {
-                            setView("grid");
-                            // setIsOpenOptionDrawer(false);
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            height="24"
-                            fill="currentColor"
-                          >
-                            <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
-                          </svg>
-                        </button>
-
-                        {/* List view button */}
-                        <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
-                            view === "list" ? "hidden" : "visible"
-                          }`}
-                          onClick={() => {
-                            setView("list");
-                            // setIsOpenOptionDrawer(false);
-                          }}
-                        >
-                          <AlignJustify />
-                        </button>
-
-                        {/* Upload items */}
-                        <div className="relative">
-                          <button
-                            className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                            onClick={() =>
-                              setIsOpenNewFolderDrawer((prev) => !prev)
-                            }
-                          >
-                            <Plus />
-                          </button>
-
-                          {isOpenNewFolderDrawer && (
-                            <div className="absolute top-[50px] right-0 w-48 bg-white shadow-md p-3 rounded-md">
-                              <ul>
-                                <li>
-                                  <button
-                                    className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                    onClick={() =>
-                                      setIsOpenUploadArea((prev) => !prev)
-                                    }
-                                  >
-                                    Upload
-                                  </button>
-                                </li>
-                                <li>
-                                  <button
-                                    className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                    onClick={() =>
-                                      setIsOpenCreateFolderModal(
-                                        (prev) => !prev
-                                      )
-                                    }
-                                  >
-                                    New Folder
-                                  </button>
-                                </li>
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Table in list view */}
-
-                <FolderExplorer
-                  fileList={filesList}
-                  setPath={setPath}
-                  path={path}
-                  currentFilesList={filteredFilesList}
-                  setCurrentFilesList={setFilteredFilesList}
-                  setSelectedItem={setSelectedItem}
-                  selectedItem={selectedItem}
-                  handleShareLink={() => {}}
-                  onFileChanges={refreshFiles}
-                  listType={"my"}
-                  setSearchQuery={setSearchQuery}
-                  view={view}
-                  cols={cols}
-                />
-
-                {/* {view === "abc" && (
-                  <div className="min-h-[450px]">
-                    <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                      {!filteredFilesList || filteredFilesList?.length === 0 ? (
-                        <thead>
-                          <tr>
-                            <th>
-                              <EmptyState />
-                            </th>
-                          </tr>
-                        </thead>
-                      ) : (
-                        <>
-                          <thead className="custom-box-shadow">
-                            <tr>
-                              <th></th>
-                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                <div className="flex items-center justify-start gap-2  mx-4">
-                                  <span className="block">Name</span>
-                                  <button className="flex items-center justify-center">
-                                    <ChevronUp className="h-4 w-4" />
-                                  </button>
-                                  <button className="flex items-center justify-center">
-                                    <ChevronDown className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </th>
-                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                <span className="block mx-4">Modified</span>
-                              </th>
-                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                <span className="block mx-4">Size</span>
-                              </th>
-                            </tr>
-                          </thead>
-
-                          <tbody className="w-full divide-y divide-y-gray-200">
-                           
-                          </tbody>
-                        </>
-                      )}
-                    </table>
-                  </div>
-                )} */}
-
-                {/* Table in card view */}
-                {/* {view === "abc" && (
-                  <div>
-                    <div className={`grid grid-cols-${6 - cols} gap-5`}>
-                      <div className="p-2 max-w-[356px]">
-                      <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                        <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                          <div className="max-h-24 max-w-[80px] h-full w-full">
-                            <Folder className="flex-auto h-full w-full text-blue-500" />
-                          </div>
-                        </div>
-                        <div className="py-2 px-2.5">
-                          <div className="flex items-center justify-between">
-                            <h6 className="text-sm font-medium text-black font-lato">
-                              Loans
-                            </h6>
-
-                            <div className="relative">
-                              <button
-                                className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
-                                onClick={() =>
-                                  setIsOpenOptionDrawer((prev) => !prev)
-                                }
-                              >
-                                <Ellipsis />
-                              </button>
-                              {isOpenOptionDrawer && (
-                                <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                  <ul>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Delete
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Rename
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Share
-                                      </button>
-                                    </li>
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-500 font-lato">
-                            Modified today by Wealthportal Service Account
-                          </p>
-                          <p className="text-xs text-gray-500 font-lato ">
-                            100.7 KB
-                          </p>
-                        </div>
-                      </div>
-                      <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                        <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                          <div className="max-h-24 max-w-[80px] h-full w-full">
-                            <Folder className="flex-auto h-full w-full text-blue-500" />
-                          </div>
-                        </div>
-                        <div className="py-2 px-2.5">
-                          <div className="flex items-center justify-between">
-                            <h6 className="text-sm font-medium text-black font-lato">
-                              Loans
-                            </h6>
-
-                            <div className="relative">
-                              <button
-                                className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
-                                onClick={() =>
-                                  setIsOpenOptionDrawer((prev) => !prev)
-                                }
-                              >
-                                <Ellipsis />
-                              </button>
-                              {isOpenOptionDrawer && (
-                                <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                  <ul>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Delete
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Rename
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Share
-                                      </button>
-                                    </li>
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-500 font-lato">
-                            Modified today by Wealthportal Service Account
-                          </p>
-                          <p className="text-xs text-gray-500 font-lato ">
-                            100.7 KB
-                          </p>
-                        </div>
-                      </div>
-                      </div>
-                    </div>
-                  </div>
-                )} */}
-
-                {/* Create folder */}
-                {isOpenCreateFolderModal && (
-                  <div className="p-6 bg-white rounded-sm max-w-[400px] w-full mx-auto">
-                    <label className="text-sm text-black font-medium font-lato block mb-1">
-                      Please enter a name.
-                    </label>
-                    <input
-                      type="text"
-                      className="py-2 w-56 border border-[#d3d3d3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061d5] hover:border-[#0061d5]"
-                    />
-                    <div className="flex items-center justify-center pt-4">
-                      <button className="flex items-center justify-center py-3 px-4 rounded-md bg-[#007bff] text-white font-lato font-medium mr-4">
-                        Create
-                      </button>
-                      <button
-                        className="py-3 px-4 rounded-md text-[#222] font-lato font-medium hover:bg-gray-100"
-                        onClick={() => setIsOpenCreateFolderModal(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Upload files */}
-                {isOpenUploadArea && (
-                  <div className="p-7 flex items-center justify-center flex-col gap-1">
-                    <div className="h-11 w-11 text-[#0060d6] mb-2">
-                      <FileUp className="h-full w-full" />
-                    </div>
-                    <p className="text-xs font-semibold text-gray-500 font-lato">
-                      Drag and drop files
-                    </p>
-                    <label className="flex items-center">
-                      <input type="file" hidden />
-                      <a className="text-xs font-semibold text-sky-500 font-lato hover:underline hover:underline-offset-2 cursor-pointer">
-                        Browse your device
-                      </a>
-                    </label>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* right panel */}
-            <div className="col-span-5 lg:col-span-2">
-              <div>
-                <div className="grid grid-cols-3">
-                  <div></div>
-                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                    My Tasks
-                  </h3>
-                  <div className="flex items-center justify-end text-[#dc3545]">
-                    <RotateCw className="h-4 w-4" />
-                  </div>
-                </div>
-                {/* Tasks */}
-                <div className="mb-7">
-                  <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
-                    <tbody className="divide-y divide-gray-200 ">
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Upload identity information
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
-                            Upload
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Upload 2023 tax return
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
-                            Complete Forms
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Sign money transfer agreement
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
-                            Sign
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Auto Loan Forms
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
-                            Start Forms
-                          </p>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* My advisor */}
-                <div className="mb-7">
-                  <div>
-                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                      My Advisor
-                    </h3>
-                  </div>
-
-                  {/* Advisory card */}
-
-                  <div className="rounded-md border border-[#dee2e6]">
-                    <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
-                      <div className="max-w-[150px] w-full">
-                        <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
-                          <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
-                        </a>
-                      </div>
-
-                      <div>
-                        <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
-                          Erica Smith
-                        </h2>
-                        <p className="font-lato text-base text-[#6c757d]">
-                          Senior Financial Advisor
-                        </p>
-                      </div>
-                    </div>
-                    <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
-                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                        Meet
-                      </button>
-                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                        Call
-                      </button>
-                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                        Chat
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collaborators */}
-
+        <div className="flex flex-row">
+          <Sidepanel
+            sidepanelDropdown={sidepanelDropdown}
+            setSidepanelDropdown={setSidepanelDropdown}
+            setIsNewFolderModalOpen={setIsNewFolderModalOpen}
+            showUploadArea={showUploadArea}
+            setShowUploadArea={setShowUploadArea}
+            router={router}
+          />
+          {/* <div className="flex space-x-8">
+            <div className="flex-[7]">
+              <div className="flex justify-between items-center mb-6">
                 <div>
-                  <div>
-                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                      My Collaborators
-                    </h3>
-                  </div>
-                  <div className="p-4 border border-[#dee2e6]">
-                    <form className="mb-3.5">
-                      <input
-                        type="email"
-                        className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
-                      />
+                  <h2 className="text-2xl font-medium text-gray-900 mb-1">
+                    Shared Documents
+                  </h2>
+                  <p className="text-gray-500">
+                    Securely share content with your advisor and trusted
+                    collaborators
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <ActionButtons
+                    onFolderCreated={refreshFiles}
+                    onUploadClick={() => setShowUploadArea(true)}
+                    selectedItem={selectedItem}
+                  />
+                </div>
+              </div>
 
-                      <div className="flex items-center gap-6">
-                        <select className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato">
-                          <option>Co-Owner</option>
-                          <option>Editor</option>
-                          <option>Viewer</option>
-                          <option>Previewer</option>
-                          <option>Uploader</option>
-                          <option>Previewer Uploader</option>
-                          <option>Viewer Uploader</option>
-                        </select>
+              {showUploadArea && (
+                <div className="mb-6">
+                  <UploadArea
+                    isForImport = {false}
+                    onBrowse={handleBrowse}
+                    onClose={() => setShowUploadArea(false)}
+                  />
+                </div>
+              )}
 
-                        <button
-                          className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm"
-                          type="button"
-                        >
-                          Invite
-                        </button>
-                      </div>
-                    </form>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileSelect}
+                multiple
+              />
 
-                    {/* Table */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                <FileExplorer data={filesList} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+              </div>
+            </div>
 
-                    <div className="border overflow-auto">
-                      <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
-                        <thead>
-                          <tr>
-                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                              Name
-                            </th>
-                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                              Email
-                            </th>
-                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                              Role
-                            </th>
-                          </tr>
-                        </thead>
+            <div className="flex-[3]">
+              <div className="space-y-6">
+                <AccountInfo user={user} userIsAdmin={userIsAdmin} />
+                <QuickActions
+                  userIsAdmin={userIsAdmin}
+                  router={router}
+                  handleLogout={handleLogout}
+                />
+              </div>
+            </div>
+          </div> */}
 
-                        <tbody>
-                          <tr className="hover:bg-gray-300">
-                            <td className="p-3"><p className="font-semibold font-lato text-sm text-black">Erica Smith</p></td>
-                            <td className="p-3"><p className="font-normal font-lato text-sm text-black">advisor@wealthportal.com</p></td>
-                            <td className="p-3"><p className="font-normal font-lato text-sm text-black">Editor</p></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+          <div
+            className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
+            onClick={() => {
+              setSidepanelDropdown(false);
+              setAccountDropdown(false);
+            }}
+          >
+            <div className="mb-4">
+              <h3 className="text-2xl text-[#3c4043] font-medium text-center mb-5">
+                Welcome, {user.name}
+              </h3>
+              {/* NEW FOLDER MODEL */}
+              <div className="flex items-center gap-3">
+                <ActionButtons
+                  onFolderCreated={refreshFiles}
+                  onUploadClick={() => setShowUploadArea(true)}
+                  selectedItem={selectedItem}
+                  isModalOpen={isNewFolderModalOpen}
+                  setIsModalOpen={setIsNewFolderModalOpen}
+                />
+              </div>
+              {/* UPLOAD FILE */}
+              {showUploadArea && (
+                <div className="mb-6">
+                  <UploadArea
+                    isForImport={false}
+                    onBrowse={handleBrowse}
+                    onClose={() => setShowUploadArea(false)}
+                  />
+                </div>
+              )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileSelect}
+                multiple
+              />
+              {/* Search BoX */}
+              <div>
+                <div className="max-w-xl w-full mx-auto block relative">
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="relative py-3 pl-14 pr-4 w-full rounded-full text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]"
+                  />
+                  <div className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 left-2 h-9 w-9 rounded-full hover:bg-gray-200">
+                    <Search className="h-5 w-5 text-[#3c4043]" />
                   </div>
                 </div>
               </div>
             </div>
+            <div>
+              <Breadcrumbs />
+            </div>
+            {/* TABLE START */}
+            <div className="overflow-auto h-[calc(100vh-248px)] custom-scrollbar">
+              <div className="bg-white pr-1">
+                <table className="min-w-full divide-y divide-gray-200 overflow-auto">
+                  {currentFilesList && currentFilesList?.length === 0 ? (
+                    <EmptyState />
+                  ) : (
+                    <>
+                      <thead>
+                        <tr>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Name
+                          </th>
+                          {/* <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Reason suggested
+                          </th> */}
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Owner
+                          </th>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Location
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <>
+                          <FolderExplorer
+                            fileList={filesList}
+                            deleteDropdown={deleteDropdown}
+                            setDeleteDropdown={setDeleteDropdown}
+                            setPath={setPath}
+                            path={path}
+                            currentFilesList={currentFilesList}
+                            setCurrentFilesList={setCurrentFilesList}
+                            setSelectedItem={setSelectedItem}
+                            selectedItem={selectedItem}
+                            onFileChanges={refreshFiles}
+                          />
+                        </>
+                      </tbody>
+                    </>
+                  )}
+                </table>
+              </div>
+            </div>
+            {/* TABLE END */}
           </div>
         </div>
       </div>
-
-      <Footer />
+      {/* <div className="">
+        <Footer />
+      </div> */}
+      <DialogBox
+        title="File Uploaded"
+        message="File uploaded successfully!"
+        fileLocation={uploadedfilePath}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
     </div>
   );
 }

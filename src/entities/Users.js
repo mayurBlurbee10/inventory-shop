@@ -77,13 +77,13 @@ export @Entity("users")
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   folderId;
 
-  @ManyToOne(() => Users, { nullable: true })
-  @JoinColumn({ name: "createdBy" })
-  createdBy;
+  // @ManyToOne(() => Users, { nullable: true })
+  // @JoinColumn({ name: "createdBy" })
+  // createdBy;
 
-  @ManyToOne(() => Users, { nullable: true })
-  @JoinColumn({ name: "updatedBy" })
-  updatedBy;
+  // @ManyToOne(() => Users, { nullable: true })
+  // @JoinColumn({ name: "updatedBy" })
+  // updatedBy;
 
   @BeforeInsert()
   async hashPassword() {

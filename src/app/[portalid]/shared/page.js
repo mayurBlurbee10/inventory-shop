@@ -1,6 +1,10 @@
 "use client";
 import Dashboard from "@/components/Dashboard";
+import * as React from 'react';
 import Footer from "@/components/Footer";
+import LinearProgress from '@mui/material/LinearProgress';
+import ActionButtons from "@/components/ActionButtons";
+
 import {
   AlignJustify,
   ChevronDown,
@@ -9,20 +13,37 @@ import {
   Ellipsis,
   FileUp,
   Folder,
+  File,
   FolderRoot,
   Minus,
   Pencil,
   Plus,
   SquarePen,
-  RotateCw 
+  RotateCw,
+  Search,
+  X,
+  Loader2,
+  FolderPlus,
+  FolderInput,
+  Download,
+  Trash2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getUserData } from "@/lib/auth";
 import EmptyState from "@/components/FileExplorer/EmptyState";
 import FolderExplorer from "@/components/FolderExplorer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import SharedFolderExplorer from "@/components/SharedFolderExplorer";
+import UploadArea from "@/components/UploadArea";
+import CreateFolder from "../../../components/CreateFolder";
+import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
+import DialogBox from "@/components/DialogBox";
+import SettingsModal from "@/components/Settings";
+import MoveDialog from "@/components/MoveDialog";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function HomePage() {
   // return <Dashboard fileType={'my'}/>;
@@ -38,6 +59,31 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cols, setCols] = useState(1);
   const [view, setView] = useState("list");
+  const [suggestions, setSuggestions] = useState([]);
+  const [currentFilesList, setCurrentFilesList] = useState(filesList);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showUploadArea, setShowUploadArea] = useState(false);
+  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
+  const [folderName, setFolderName] = useState("");
+  const fileInputRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+  const [selectedBulkItems, setSelectedBulkItems] = useState([]);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [moveItem, setMoveItem] = useState(null);
+  const [uploadedfilePath, setUpladedFilePath] = useState("");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+
+  const handleBrowse = (event) => {
+    if (event.type === "click") {
+      fileInputRef.current?.click();
+    } else {
+      handleFileSelect(event);
+    }
+  };
+
   const router = useRouter();
 
   const handleSliderChange = (e) => {
@@ -48,6 +94,106 @@ export default function HomePage() {
     const percentage = ((5 - value) / 4) * 100; // 5 should be 0%, 1 should be 100%
     e.target.style.setProperty("--value-percent", percentage);
   };
+
+  const handleCreateFolder = async () => {
+    if (!folderName.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const userData = getUserData();
+      let obj = {
+        name: folderName,
+        boxFolderId: userData.boxFolderId,
+      };
+      console.log(selectedItem);
+      if (!!selectedItem && selectedItem.type == "folder") {
+        obj.boxFolderId = selectedItem.id;
+      }
+      const response = await fetchWrapper(
+        "/api/box/folders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(obj),
+        },
+        "create-folder"
+      );
+
+      const folderResponse = await response.json();
+
+      if (!response.ok)
+        throw new Error(folderResponse.error || "Failed to create folder");
+
+      setShowSuccess(true);
+      setFolderName("");
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setShowSuccess(false);
+        setIsModalOpen(false);
+        onFolderCreated();
+      }, 3000);
+      toast.success("Folder created successfully");
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Error creating folder:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileSelect = async (event) => {
+    const files = event.target.files;
+    if (files.length > 0) {
+      try {
+        setIsLoading(true);
+        const uploadData = new FormData();
+        uploadData.append("file", files[0]);
+        if (!!selectedItem && selectedItem.type == "folder") {
+          uploadData.append("boxFolderId", selectedItem.id);
+        } else {
+          const userData = getUserData();
+          uploadData.append("boxFolderId", userData.boxFolderId);
+        }
+
+        const requestOptions = {
+          method: "POST",
+          body: uploadData,
+        };
+
+        const response = await fetchWrapper(
+          "/api/box/files",
+          requestOptions,
+          "uploadFile"
+        );
+        if (!response.ok) throw new Error("Failed to upload files");
+        setIsModalOpen(true);
+        setShowUploadArea(false);
+        await refreshFiles();
+        const path = getFolderPath(
+          filesList,
+          selectedItem?.id || userData.boxFolderId
+        );
+        const location = `
+        <div>
+          <div>
+            Location: Home${path}
+          </div>
+          <div>
+            Name: ${files[0].name}
+          </div>
+        </div>
+        `;
+        setUpladedFilePath(location);
+      } catch (error) {
+        console.error("Error uploading files:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
 
   const refreshFiles = async () => {
     try {
@@ -150,6 +296,362 @@ export default function HomePage() {
     </button>
   );
 
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsOpen((prev) => !prev);
+  };
+
+  // const [inputText, setInputText] = useState("");
+  // const [searchItem, setSearchItem] = useState("");
+
+  // let inputHandler = (e) => {
+
+  //   var lowerCase = e.target.value.toLowerCase();
+
+  //   setInputText(lowerCase);
+  //   console.log(filesList)
+  //   console.log(inputText);
+
+  //     const filtered = filesList.filter(item =>
+  //       item.name.toLowerCase().includes(lowerCase) 
+  //     );
+
+  //     setSearchItem(filtered);
+
+  //     if(filtered!=''){
+  //       setFilesList(filtered);
+  //     }
+  //    else{
+
+  //      setFilesList(filesList)
+  //      console.log('filelist',filesList)
+  //    }
+
+
+  //     console.log('search:', filtered)
+  // };
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim() === "") {
+      setSuggestions([]);
+      return;
+    }
+
+    const results = searchWithPaths(filesList, value);
+    setSuggestions(results);
+  };
+
+  const searchWithPaths = (nodes, query, currentPath = []) => {
+    const results = [];
+
+    nodes.forEach((node) => {
+      const newPath = [...currentPath, node]; // Add the current node to the path
+
+      // Check if the node matches the query
+      if (node.name.toLowerCase().includes(query.toLowerCase())) {
+        results.push({
+          ...node,
+          path: newPath, // Store the full path to this node
+        });
+      }
+
+      // If the node has children, continue searching recursively
+      if (node.children && node.children.length > 0) {
+        results.push(...searchWithPaths(node.children, query, newPath));
+      }
+    });
+
+    return results;
+  };
+
+  useEffect(() => {
+    if (filesList?.length > 0) {
+      setPath((prevPath) => updatePath(prevPath, filesList));
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+    }
+  }, [filesList]);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+      setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+    }
+  }, [path]);
+
+  const handleSuggestionClick = (item) => {
+    setSearchQuery(item.name);
+    // if(item.type !== "folder" ){
+    item.path.pop();
+    // }
+    setPath(item.path);
+    setCurrentFilesList([item]);
+    setSuggestions([]);
+  };
+
+  const handelClearSearch = () => {
+    setSearchQuery("");
+    setSuggestions([]);
+    setCurrentFilesList(filesList);
+    setPath([]);
+  };
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setCurrentFilesList(
+        path.length === 0 ? filesList : path[path.length - 1].children
+      );
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const timer = setTimeout(() => {
+      const source =
+        path.length === 0 ? filesList : path[path.length - 1].children;
+      const results = source.filter((item) =>
+        item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setCurrentFilesList(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer); // Cleanup on query or component unmount
+  }, [searchQuery, selectedItem]);
+
+
+  const getFolderPath = (data, folderId, currentPath = "") => {
+
+    if (!Array.isArray(data)) {
+      console.error("Invalid data: Expected an array of folder items");
+      return "";
+    }
+
+    for (const item of data) {
+
+      if (item && item.id === folderId) {
+        return currentPath + "/" + (item.name || "Unnamed Folder");
+      }
+
+      if (item && item.type === "folder" && Array.isArray(item.children) && item.children.length > 0) {
+        const path = getFolderPath(item.children, folderId, currentPath + "/" + (item.name || "Unnamed Folder"));
+        if (path) {
+          return path;
+        }
+      }
+    }
+
+    return "";
+  };
+
+  const handleMove = async (folder) => {
+    if (selectedBulkItems.length > 0) {
+      handleBulkMove(folder);
+    } else {
+      const obj = {
+        itemId: moveItem.id,
+        destinationFolderId: folder.id,
+        type: moveItem.type,
+      };
+      try {
+        const requestOptions = {
+          method: "POST",
+          body: JSON.stringify(obj),
+        };
+        const response = await fetchWrapper(
+          `/api/box/move`,
+          requestOptions,
+          "moveFileOrFolder"
+        );
+        if (!response.ok) throw new Error("Failed to move file or folder");
+        toast.success(
+          `${moveItem.type === "file" ? "File" : "Folder"} moved successfully.`
+        );
+        setIsMoveModalOpen(false);
+        refreshFiles();
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    setIsToolbarVisible(selectedBulkItems.length > 0);
+  }, [selectedBulkItems]);
+
+  const handleBulkDelete = async () => {
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type }));
+    try {
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify({ items: selectedItemsDetails }),
+      };
+      const response = await fetchWrapper(
+        `/api/box/bulk/delete`,
+        requestOptions,
+        "bulk-delete"
+      );
+      if (!response.ok) throw new Error("Error bulk deleting files or folders");
+      toast.success(`Bulk delete operation completed successfully.`);
+      refreshFiles();
+      setSelectedBulkItems([]);
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleBulkMove = async (destinationFolder) => {
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type }));
+    let obj = {
+      items: selectedItemsDetails,
+      destinationFolderId: destinationFolder.id,
+    };
+    try {
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify(obj),
+      };
+      const response = await fetchWrapper(
+        `/api/box/bulk/move`,
+        requestOptions,
+        "bulk-move"
+      );
+      if (!response.ok) throw new Error("Error bulk move files or folders");
+      toast.success(`Bulk move operation completed successfully.`);
+      refreshFiles();
+      setSelectedBulkItems([]);
+      setIsMoveModalOpen(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handelToolbarMoveClick = () => {
+    const selectedItemsDetails = currentFilesList.filter(
+      (item) => selectedBulkItems[0] === item.id
+    );
+    setMoveItem(selectedItemsDetails[0]);
+    setIsMoveModalOpen(true);
+  };
+
+  const handleDownload = async (fileId = "", fileName = "") => {
+    if (selectedBulkItems.length > 0) {
+      handleBulkDownload();
+    } else {
+      try {
+        const response = await fetchWrapper(
+          `/api/box/download?fileId=${fileId}`,
+          {},
+          "download"
+        );
+        if (!response.ok) throw new Error("Download failed");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+
+        window.URL.revokeObjectURL(url);
+        toast.success("File dowloaded successfully");
+      } catch (error) {
+        toast.error(error.message);
+        console.error("Download error:", error);
+      }
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    console.log("currentFileList", currentFilesList);
+    console.log("selectedFileList", selectedBulkItems);
+
+    const unMatchedType = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .filter((item) => item.type === 'folder');
+
+    if (unMatchedType && unMatchedType.length > 0) {
+      toast.error("Selected Item is Folder")
+      return;
+    }
+
+
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type, name: item.name }));
+
+    try {
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ items: selectedItemsDetails }),
+      };
+
+      const response = await fetch(
+        `/api/box/bulk/download`,
+        requestOptions,
+        "download"
+      );
+
+      if (!response.ok) throw new Error("Download failed");
+
+      const data = await response.json();
+
+      for (const item of data.downloadItems) {
+        const { content, name, contentType } = item;
+
+        // Decode Base64 content into a Blob
+        const byteCharacters = atob(content);
+        const byteArrays = [];
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          byteArrays.push(new Uint8Array(byteNumbers));
+        }
+        const blob = new Blob(byteArrays, { type: contentType });
+
+        // Trigger the download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
+
+      toast.success("Files downloaded successfully");
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Download error:", error);
+    }
+  };
+
+
+  const clearBulkItem = () => {
+    setSelectedBulkItems([]);
+  };
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
@@ -173,10 +675,14 @@ export default function HomePage() {
 
               {/* Profile dropdown */}
               <div className="relative">
-                <button className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-200">
+                <button
+                  onClick={toggleDropdown}
+                  className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-300"
+                >
                   <img
                     src="default_logo_purple.png"
                     className="h-9 w-9 rounded-full mr-3"
+                    alt="User"
                   />
                   <span>User name</span>
                   <span>
@@ -192,15 +698,18 @@ export default function HomePage() {
                   </span>
                 </button>
 
-                <div className="absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8]">
+                {/* Dropdown Menu */}
+                <div
+                  className={`absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8] ${isOpen ? 'block' : 'invisible'}`}
+                >
                   <ul>
                     <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">
+                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100">
                         Advisor view
                       </button>
                     </li>
                     <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">
+                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100">
                         Logout
                       </button>
                     </li>
@@ -256,17 +765,107 @@ export default function HomePage() {
               </div>
               <hr className="my-4" />
               <div className="border border-solid border-[#0000001a] rounded-sm">
-                <div className="border-b border-solid border-[#0000001a] ">
-                  <div className="py-[18px] bg-[#fcfcfc] flex items-center w-full px-5">
+                <div className="border-b border-solid border-[#0000001a]">
+                  <div className="py-[18px] flex items-center w-full px-5">
                     <img src="/default_logo_purple.png" className="h-8 w-8" />
 
+                    {/* Search Input */}
                     <input
                       type="search"
-                      className="w-full py-1.5 px-3 rounded-lg text-sm border border-solid border-[#0000001a] ml-5 outline-none focus:ring-1 focus:ring-[#0000001a]"
                       placeholder="Search file and folders"
+                      value={searchQuery}
+                      onChange={handleSearch}
+                      className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
+                         ${suggestions.length === 0
+                          ? "rounded-bl-[30px] rounded-br-[30px]"
+                          : "border-t-gray-200 border-s-gray-200 border-e-gray-200"
+                        }`}
                     />
+
+                    {/* Clear Search Icon */}
+                    {searchQuery.length > 0 && (
+                      <div
+                        onClick={handelClearSearch}
+                        className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer"
+                      >
+                        <X className="h-5 w-5 text-[#3c4043]" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Suggestions */}
+                  {suggestions.length > 0 && (
+                    <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
+                      {suggestions.map((item, index) => (
+                        <li
+                          onClick={() => {
+                            handleSuggestionClick(item);
+                          }}
+                          key={item.id}
+                          className={`flex items-center px-4 py-2 hover:bg-gray-100 transition relative cursor-pointer`}
+                        >
+                          <span className="mr-2">
+                            {item.type === "folder" ? (
+                              <Folder className="h-5 w-5 text-[#3c4043]" />
+                            ) : (
+                              <File className="h-5 w-5 text-[#3c4043]" />
+                            )}
+                          </span>
+                          <span className="text-gray-700 font-medium">
+                            {item.name}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div>
+                  <div
+                    className={`bg-indigo-50 rounded-[50px] mb-4 text-gray-600 py-1 
+                ${isToolbarVisible ? "opacity-1" : "opacity-0"}
+                `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
+                        onClick={clearBulkItem}
+                      >
+                        <X className="size-5" />
+                      </button>
+                      <p className="text-sm font-medium mr-4 text-[#444746]">
+                        {selectedBulkItems.length} item(s) selected
+                      </p>
+                      <button
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                        onClick={() =>
+                          selectedBulkItems.length > 0 && handelToolbarMoveClick()
+                        }
+                      >
+                        <FolderInput className="size-5" />
+                      </button>
+                      <button
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                        onClick={() =>
+                          selectedBulkItems.length > 0 && handleBulkDownload()
+                          // console.log("selectedBulkItems", selectedBulkItems)
+
+                        }
+                      >
+                        <Download className="size-5" />
+                      </button>
+                      <button
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                        onClick={() =>
+                          selectedBulkItems.length > 0 && setIsDeleteModalOpen(true)
+                        }
+                      >
+                        <Trash2 className="size-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
+
 
                 {/* breadcrumbs */}
                 <div className="px-5 border-b">
@@ -289,6 +888,7 @@ export default function HomePage() {
                         setPath={setPath}
                         setSearchQuery={setSearchQuery}
                         user={user}
+                        setSelectedBulkItems={setSelectedBulkItems}
                       />
                     </div>
                     <div>
@@ -307,19 +907,12 @@ export default function HomePage() {
                             <input
                               type="range"
                               min="1" // Set the minimum value for the range
-                              max="3" // Set the maximum value for the range
+                              max="5" // Set the maximum value for the range
                               value={cols} // Bind the current value of `cols` to the input
                               onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
                               className="w-32 range-slider" // Optional styling for the slider width
                             />
-                             <input
-                              type="range"
-                              min="1" // Set the minimum value for the range
-                              max="5" // Set the maximum value for the range
-                              value={cols} // Bind the current value of `cols` to the input
-                              onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
-                              className="w-32 range-slider lg:hidden" // Optional styling for the slider width
-                            />
+
 
                             <button
                               className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
@@ -334,9 +927,8 @@ export default function HomePage() {
 
                         {/* Card view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
-                            view === "grid" ? "hidden" : "visible"
-                          }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
+                            }`}
                           onClick={() => {
                             setView("grid");
                             // setIsOpenOptionDrawer(false);
@@ -355,9 +947,8 @@ export default function HomePage() {
 
                         {/* List view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
-                            view === "list" ? "hidden" : "visible"
-                          }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
+                            }`}
                           onClick={() => {
                             setView("list");
                             // setIsOpenOptionDrawer(false);
@@ -394,7 +985,7 @@ export default function HomePage() {
                                   <button
                                     className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
                                     onClick={() =>
-                                      setIsOpenCreateFolderModal(
+                                      setIsNewFolderModalOpen(
                                         (prev) => !prev
                                       )
                                     }
@@ -411,22 +1002,58 @@ export default function HomePage() {
                   </div>
                 </div>
 
+                <div className={` ${isLoading == true ? "visible" : "hidden"}`}>
+
+                  <LinearProgress />
+
+                </div>
+
+
                 {/* Table in list view */}
 
-                <FolderExplorer
+                <SharedFolderExplorer
                   fileList={filesList}
                   setPath={setPath}
                   path={path}
-                  currentFilesList={filteredFilesList}
-                  setCurrentFilesList={setFilteredFilesList}
+                  currentFilesList={currentFilesList}
+                  setCurrentFilesList={setCurrentFilesList}
                   setSelectedItem={setSelectedItem}
                   selectedItem={selectedItem}
-                  handleShareLink={() => {}}
+                  handleShareLink={() => { }}
                   onFileChanges={refreshFiles}
                   listType={"my"}
                   setSearchQuery={setSearchQuery}
                   view={view}
                   cols={cols}
+                  setSelectedBulkItems={setSelectedBulkItems}
+                  selectedBulkItems={selectedBulkItems}
+                  setIsMoveModalOpen={setIsMoveModalOpen}
+                  setMoveItem={setMoveItem}
+
+                />
+
+                <DeleteConfirmDialog
+                  isModalOpen={isDeleteModalOpen}
+                  setIsModalOpen={setIsDeleteModalOpen}
+                  handleDelete={handleBulkDelete}
+                />
+                <MoveDialog
+                  item={moveItem}
+                  isModalOpen={isMoveModalOpen}
+                  setIsModalOpen={setIsMoveModalOpen}
+                  fileList={filesList}
+                  handleMove={handleMove}
+                />
+                <DialogBox
+                  title="File Uploaded"
+                  message="File uploaded successfully!"
+                  fileLocation={uploadedfilePath}
+                  isModalOpen={isModalOpen}
+                  setIsModalOpen={setIsModalOpen}
+                />
+                <SettingsModal
+                  isOpen={isSettingsOpen}
+                  onClose={() => setIsSettingsOpen(false)}
                 />
 
                 {/* {view === "abc" && (
@@ -589,48 +1216,39 @@ export default function HomePage() {
                 )} */}
 
                 {/* Create folder */}
-                {isOpenCreateFolderModal && (
-                  <div className="p-6 bg-white rounded-sm max-w-[400px] w-full mx-auto">
-                    <label className="text-sm text-black font-medium font-lato block mb-1">
-                      Please enter a name.
-                    </label>
-                    <input
-                      type="text"
-                      className="py-2 w-56 border border-[#d3d3d3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061d5] hover:border-[#0061d5]"
+
+                {isNewFolderModalOpen && (
+                  <div className="p-7 flex items-center justify-center flex-col gap-1">
+                    <CreateFolder
+                      onFolderCreated={refreshFiles}
+                      onUploadClick={() => setShowUploadArea(true)}
+                      selectedItem={selectedItem}
+                      isModalOpen={isNewFolderModalOpen}
+                      setIsModalOpen={setIsNewFolderModalOpen}
                     />
-                    <div className="flex items-center justify-center pt-4">
-                      <button className="flex items-center justify-center py-3 px-4 rounded-md bg-[#007bff] text-white font-lato font-medium mr-4">
-                        Create
-                      </button>
-                      <button
-                        className="py-3 px-4 rounded-md text-[#222] font-lato font-medium hover:bg-gray-100"
-                        onClick={() => setIsOpenCreateFolderModal(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
                   </div>
                 )}
 
-                {/* Upload files */}
                 {isOpenUploadArea && (
-                  <div className="p-7 flex items-center justify-center flex-col gap-1">
-                    <div className="h-11 w-11 text-[#0060d6] mb-2">
-                      <FileUp className="h-full w-full" />
-                    </div>
-                    <p className="text-xs font-semibold text-gray-500 font-lato">
-                      Drag and drop files
-                    </p>
-                    <label className="flex items-center">
-                      <input type="file" hidden />
-                      <a className="text-xs font-semibold text-sky-500 font-lato hover:underline hover:underline-offset-2 cursor-pointer">
-                        Browse your device
-                      </a>
-                    </label>
+                  <div className="mb-6">
+                    <UploadArea
+                      isForImport={false}
+                      onBrowse={handleBrowse}
+                      onClose={() => setIsOpenUploadArea(false)}
+                    />
                   </div>
                 )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  multiple
+                />
               </div>
             </div>
+
+
 
             {/* right panel */}
             <div className="col-span-5 lg:col-span-2">
@@ -827,3 +1445,4 @@ export default function HomePage() {
     </div>
   );
 }
+

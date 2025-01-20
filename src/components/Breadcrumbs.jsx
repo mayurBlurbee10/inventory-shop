@@ -16,7 +16,7 @@ const Breadcrumbs = ({ path, setPath, setSearchQuery, user }) => {
         onClick={() => handleBreadcrumbClick(-1)}
         className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato"
       >
-        {user?.email}
+        {user?.email || "My Folder"}
       </button>
       {path &&
         path.length > 0 &&
