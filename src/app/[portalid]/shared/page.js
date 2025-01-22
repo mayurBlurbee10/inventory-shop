@@ -769,20 +769,18 @@ export default function HomePage() {
                   <div className="py-[18px] flex items-center w-full px-5">
                     <img src="/default_logo_purple.png" className="h-8 w-8" />
 
-                    {/* Search Input */}
                     <input
                       type="search"
                       placeholder="Search file and folders"
                       value={searchQuery}
-                      onChange={handleSearch}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
-                         ${suggestions.length === 0
+                        ${suggestions.length === 0
                           ? "rounded-bl-[30px] rounded-br-[30px]"
                           : "border-t-gray-200 border-s-gray-200 border-e-gray-200"
                         }`}
                     />
 
-                    {/* Clear Search Icon */}
                     {searchQuery.length > 0 && (
                       <div
                         onClick={handelClearSearch}
@@ -791,10 +789,9 @@ export default function HomePage() {
                         <X className="h-5 w-5 text-[#3c4043]" />
                       </div>
                     )}
-                  </div>
 
                   {/* Suggestions */}
-                  {suggestions.length > 0 && (
+                  {/* {suggestions.length > 0 && (
                     <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
                       {suggestions.map((item, index) => (
                         <li
@@ -802,7 +799,10 @@ export default function HomePage() {
                             handleSuggestionClick(item);
                           }}
                           key={item.id}
-                          className={`flex items-center px-4 py-2 hover:bg-gray-100 transition relative cursor-pointer`}
+                          className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${suggestions.length - 1 === index
+                            ? "rounded-bl-[30px] rounded-br-[30px]"
+                            : ""
+                            }`}
                         >
                           <span className="mr-2">
                             {item.type === "folder" ? (
@@ -817,8 +817,35 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                  )}
+                  )} */}
+
+                  {suggestions.length > 0 && (
+                      <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
+                        {suggestions.map((item, index) => (
+                          <li
+                            onClick={() => {
+                              handleSuggestionClick(item);
+                            }}
+                            key={item.id}
+                            className={`flex items-center px-4 py-2 hover:bg-gray-100 transition relative cursor-pointer`}
+                          >
+                            <span className="mr-2">
+                              {item.type === "folder" ? (
+                                <Folder className="h-5 w-5 text-[#3c4043]" />
+                              ) : (
+                                <File className="h-5 w-5 text-[#3c4043]" />
+                              )}
+                            </span>
+                            <span className="text-gray-700 font-medium">
+                              {item.name}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                 </div>
+                </div>
+
 
                 <div>
                   <div

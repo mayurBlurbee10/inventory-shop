@@ -129,7 +129,11 @@ function MoveDialog({
             <button
               onClick={() => {
                 handleMove(selectedFolder);
-                setIsLoading(false);
+                setIsLoading(true);
+                setTimeout(() => {
+                  setIsLoading(false);
+              }, 2000); 
+              
               }}
               disabled={
                 isLoading ||
