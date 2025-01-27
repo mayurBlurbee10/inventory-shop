@@ -120,7 +120,7 @@ export default function CreateFolder({
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
+          <Dialog.Panel className="mx-auto max-w-[400px] w-full rounded-lg bg-white p-6 shadow-xl">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg text-gray-600 font-medium">
                 Create New Folder
@@ -154,7 +154,7 @@ export default function CreateFolder({
               </div>
             ) : (
 
-              <div className="p-6 bg-white rounded-sm max-w-[400px] w-full mx-auto">
+              <div className=" bg-white rounded-sm w-full mx-auto">
                 <label className="text-sm text-black font-medium font-lato block mb-1">
                   Please enter a name.
                 </label>
@@ -162,16 +162,17 @@ export default function CreateFolder({
                   type="text"
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
-                  className="py-2 w-56 border border-[#D3D3D3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061D5] focus:ring-blue-500 hover:border-[#0061D5]"
+                  className="py-2 px-2 text-black w-56 border border-[#D3D3D3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061D5] focus:ring-blue-500 hover:border-[#0061D5]"
                   disabled={isLoading}
                 />
                 <div
                   className="flex items-center justify-center pt-4"
-                  onClick={handleCreateFolder}
+
                 >
-                  <button 
-                  disabled={isLoading || !folderName.trim()}
-                  className="flex items-center justify-center py-3 px-4 rounded-md bg-[#007BFF] text-white font-lato font-medium mr-4 disabled:cursor-not-allowed"
+                  <button
+                    disabled={isLoading || !folderName.trim()}
+                    className="flex items-center justify-center py-2 px-4 rounded-md bg-[#007BFF] text-white font-lato font-medium mr-4 disabled:cursor-not-allowed"
+                    onClick={handleCreateFolder}
                   >
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -181,11 +182,12 @@ export default function CreateFolder({
                     Create
                   </button>
                   <button
-                    className="py-3 px-4 rounded-md text-[#222] font-lato font-medium hover:bg-gray-100"
+                    className="py-2 px-4 rounded-md text-[#222] font-lato font-medium hover:bg-gray-100"
                     onClick={() => {
                       setIsModalOpen(false);
                       setFolderName("");
                     }}
+                    disabled={isLoading}
                   >
                     Cancel
                   </button>

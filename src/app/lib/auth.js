@@ -67,7 +67,8 @@ export const isAdmin = () => {
       return false;
     }
 
-    const isUserAdmin = userData.role === UserRole.ADMIN || userData.role === UserRole.SUPER_ADMIN;
+    const isUserAdmin = userData.role !== UserRole.USER;
+    // const isUserAdmin = userData.role === UserRole.ADMIN || userData.role === UserRole.SUPER_ADMIN;
     return isUserAdmin;
   } catch (error) {
     console.error('Error checking admin status:', error);

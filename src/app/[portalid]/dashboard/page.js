@@ -2,6 +2,8 @@
 
 import Dashboard from "@/components/Dashboard";
 import Footer from "@/components/Footer";
+import Image from "next/image";
+
 import {
   AlignJustify,
   ChevronDown,
@@ -16,9 +18,24 @@ import {
   Plus,
   RotateCw,
   SquarePen,
+  CircleUserRound,
+  Settings,
+  Headset,
+  LogOut
 } from "lucide-react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut, Pie } from "react-chartjs-2";
+import Link from 'next/link';
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { isAdmin, getUserData, clearUserData, } from "@/lib/auth";
+import { getSession, signOut } from "next-auth/react";
+import SettingsModal from "@/components/Settings";
+import TechSupport from "@/components/TechSupport";
+
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -34,72 +51,247 @@ export const data = {
   ],
 };
 
+
 export default function DashboardPage() {
   // return <Dashboard fileType={'my'}/>;
 
-  const NavBarItem = ({ title }) => (
-    <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
-      {title}
-    </button>
-  );
+  const NavBarItem = ({ title, href }) => {
+    if (!href) {
+      console.error('href prop is required for NavBarItem.');
+      return null;
+    }
 
- 
+    return (
+      <Link href={href} passHref>
+        <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
+          {title}
+        </button>
+      </Link>
+    );
+  };
+
+  const [config, setConfig] = useState(null);
+  const [content, setContent] = useState(null);
+  const params = useParams();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+  const [session, setSession] = useState(null);
+  const [accountDropdown, setAccountDropdown] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
+
+
+  const toggleDropdown = () => {
+    setIsOpen((prev) => !prev);
+  };
+
+
+
+  const fetchConfig = async () => {
+    try {
+      if (!params?.portalid) return;
+      const response = await fetchWrapper(
+        `/api/portal?portalid=${params.portalid}`,
+        {},
+        "portal-login"
+      );
+      const data = await response.json();
+      if (!data.data && response.status === 404) {
+        router.push(`/${params.portalid}/not-found`);
+        return;
+      }
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+
+      setConfig(data.data);
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const sessionData = await getSession();
+      setSession(sessionData);
+      if (sessionData) {
+        await getUserDetailsByEmail(sessionData.user.email);
+      }
+    };
+    fetchSession().then(() => {
+      const userData = getUserData();
+      if (!userData) {
+        router.push("login");
+        return;
+      }
+
+      setUser(userData);
+
+      fetchConfig();
+    });
+  }, [router]);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetchWrapper(
+          `/api/portal?portalid=${params.portalid}`,
+          {},
+          "portal-login"
+        );
+        const data = await response.json();
+        if (!data.data && response.status === 404) {
+          router.push(`/${params.portalid}/not-found`);
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch portal config");
+        }
+        setConfig(data.data);
+      } catch (error) {
+        console.log("error: ", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchConfig();
+    fetchContent();
+  }, []);
+
+  const filterValue = (title) => {
+    if (!content) return null;
+    console.log('content:' ,content)
+
+    const contentItem = content.portalContent.find(
+      (item) => item.title === title
+    );
+    const value = contentItem ? contentItem.value : null;
+
+    if (!value) {
+      const defaultItem = content.defaultContent.find(
+        (item) => item.title === title
+      );
+      return defaultItem ? defaultItem.value : null;
+    }
+    return value;
+  };
+
+  useEffect(() => {
+    fetchContent();
+  }, []);
+
+  const fetchContent = async () => {
+    const response = await fetchWrapper(
+      `/api/contentManagement?portalId=${params.portalid}`,
+      { method: "GET" },
+      "fetchContentManagement"
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to fetch Content Management");
+    }
+    setContent(data);
+  };
+
+
+
+  const handleLogout = async () => {
+    clearUserData();
+    await signOut();
+    toast.success("User signout successfully");
+    router.push("login");
+  };
+  const userIsAdmin = isAdmin();
+
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen" suppressHydrationWarning={true}>
       {/* Header */}
       <div className="border-b border-[#0000001a]">
         <div className="max-w-[1140px] mx-auto px-3">
           <nav className="flex justify-between items-center bg-secondary py-2">
-            <a className="flex items-center py-1 gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+            <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               <img
                 src="/default_logo_purple.png"
+                // src={config?.logo }
                 alt="Wealthportal"
-                className="h-[50px] mr-2"
+                className="h-[52px] mr-2"
               />
               <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+                {/* {filterValue("Header Text")} */}
                 Wealthportal
               </span>
             </a>
             <div className="hidden md:flex space-x-4 items-center">
-              <NavBarItem title="Dashboard" />
-              <NavBarItem title="Shared Document" />
-              <NavBarItem title="Loans" />
+              <NavBarItem title="Dashboard" href='/demo/dashboard' />
+              <NavBarItem title="Shared Document" href='/demo/shared' />
+              {userIsAdmin && (
+                // <NavBarItem title="Settings" href='/demo/settings' />
+                <button
+                  className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
+                  onClick={() => setIsSettingsOpen(true)}
+                >
+                  Settings
+                </button>
+              )}
 
               {/* Profile dropdown */}
-              <div className="relative">
-                <button className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-200">
-                  <img
-                    src="default_logo_purple.png"
-                    className="h-9 w-9 rounded-full mr-3"
-                  />
-                  <span>User name</span>
-                  <span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="18"
-                      height="18"
-                      fill="currentColor"
-                    >
-                      <path d="M12 16L6 10H18L12 16Z"></path>
-                    </svg>
-                  </span>
-                </button>
+              <div className="flex items-center space-x-8 cursor-pointer">
+                <div
+                  className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
+                  onClick={() => setAccountDropdown((prev) => !prev)}
+                >
+                  {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+                  <div
+                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
+                  >
+                    {user?.name?.charAt(0) || "U"}
+                  </div>
+                  <div className="flex flex-col text-sm xl:text-base">
+                    <span className="text-gray-900 font-medium">{user?.name}</span>
+                    {userIsAdmin && (
+                      <span className="text-blue-600 text-sm font-medium">
+                        Administrator
+                      </span>
+                    )}
+                  </div>
 
-                <div className="absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8] ">
-                  <ul>
-                    <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">
-                        Advisor view
+                  {/* DROPDOWN SECTION DONE*/}
+                  {accountDropdown && (
+                    <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                      <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
+                        <CircleUserRound className="h-5 w-5" /> Account Info
                       </button>
-                    </li>
-                    <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-300">
-                        Logout
+                      {userIsAdmin && (
+                        <button
+                          onClick={() => setIsSettingsOpen(true)}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <Settings className="h-5 w-5" />
+                          Settings
+                        </button>
+                      )}
+                      {userIsAdmin && (
+                        <button
+                          onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <Headset className="h-5 w-5" />
+                          Tech Support
+                        </button>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                      >
+                        <LogOut className="h-5 w-5" />
+                        Sign out
                       </button>
-                    </li>
-                  </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -298,16 +490,17 @@ export default function DashboardPage() {
             </div>
             <div>
               {/* Shared document cards */}
-              <div className="p-4 border rounded-md mb-4">
-                <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                  Shared Documents
-                </h3>
-
-                <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                  Securely share content with your advisor
-                </p>
-              </div>
-              <div className="p-4 border rounded-md">
+              <Link href="/demo/shared">
+                <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
+                  <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
+                    Shared Documents
+                  </h3>
+                  <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
+                    Securely share content with your advisor
+                  </p>
+                </div>
+              </Link>
+              {/* <div className="p-4 border rounded-md transform hover:scale-105 transition duration-300  ease-in-out">
                 <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
                   Loan Origination
                 </h3>
@@ -315,12 +508,20 @@ export default function DashboardPage() {
                 <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
                   Apply and submit documents for a loan
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
       </div>
-      <Footer />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+      <TechSupport
+        isOpen={isTechSupportModalOpen}
+        onClose={() => setIsTechSupportModalOpen(false)}
+      />
+      <Footer config={config} filterValue={filterValue} />
     </div>
   );
 }

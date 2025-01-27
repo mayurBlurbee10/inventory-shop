@@ -1,21 +1,24 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import SettingsModal from "@/components/Settings";
 
 export default function SettingsPage() {
-  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(true); // State to control the modal's visibility
 
   const handleClose = () => {
-    router.push("/home");
+    setIsOpen(false);
+    router.push(`/demo/dashboard`);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SettingsModal 
-        isOpen={true} 
-        onClose={handleClose}
-      />
+      {isOpen && ( // Conditionally render the modal based on `isOpen`
+        <SettingsModal 
+          isOpen={isOpen} 
+          onClose={handleClose}
+        />
+      )}
     </div>
   );
 }

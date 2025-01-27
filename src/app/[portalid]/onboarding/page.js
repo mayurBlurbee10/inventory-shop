@@ -2,11 +2,14 @@
 "use client";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import Footer from "@/components/Footer";
+import PortalFooter from "@/components/PortalFooter";
 import ContentManagementContent from "@/components/Settings/ContentManagementContent";
 import UsersContent from "@/components/Settings/UsersContent";
-import { ChevronRight, Check } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ChevronRight, Check, IdCard, LockKeyhole } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -17,10 +20,9 @@ const WizardStep = ({ step, currentStep }) => {
       <div
         className={`
           w-8 h-8 rounded-full flex items-center justify-center border
-          ${
-            isCompleted
-              ? "bg-gray-900 border-gray-900"
-              : isActive
+          ${isCompleted
+            ? "bg-gray-900 border-gray-900"
+            : isActive
               ? "bg-white border-gray-900"
               : "bg-white border-gray-300"
           }
@@ -44,65 +46,158 @@ const WizardStep = ({ step, currentStep }) => {
 
 export default function OnBoardingPage() {
   const router = useRouter();
+  const params = useParams();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contentLength, setContentLength] = useState(0);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [config, setConfig] = useState([]);
+  const [content, setContent] = useState([]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoadingLogin, setIsLoadingLogin] = useState(false);
+  const [isLoadingOkta, setIsLoadingOkta] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const steps = [{ component: ContentManagementContent }, { component: UsersContent }];
+  const steps = [
+    { component: ContentManagementContent },
+    { component: UsersContent },
+  ];
   const CurrentStepComponent = steps[currentStep].component;
 
   useEffect(() => {
     const userData = getUserData();
-    if(!userData?.isOnboardingRequired) {
+    if (!userData?.isOnboardingRequired) {
       router.push("login");
     }
   }, [router]);
+  const login = async () => {
+    try {
+      await signIn("okta");
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+
+  const fetchContent = async () => {
+    const response = await fetchWrapper(
+      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+      { method: "GET" },
+      "fetchContentManagement"
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to fetch Content Management");
+    }
+    setContent(data);
+  };
+
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetchWrapper(
+          `/api/portal?portalid=${params.portalid || "default"}`,
+          {},
+          "portal-login"
+        );
+        const data = await response.json();
+        if (!data.data && response.status === 404) {
+          router.push(`/${params.portalid}/not-found`);
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch portal config");
+        }
+        setConfig(data.data);
+      } catch (error) {
+        console.log("error: ", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchConfig();
+    fetchContent();
+  }, []);
+
 
   const handleBack = () => {
     setCurrentStep(currentStep - 1);
   };
 
   const handleNext = async () => {
-    if(validateStep()){
+    if (validateStep()) {
       if (currentStep === 1) {
         setIsSubmitting(true);
         const userData = getUserData();
-        completeOnboarding(userData.id)
+        completeOnboarding(userData.id);
       } else {
         setCurrentStep(currentStep + 1);
       }
     }
-    setTimeout(()=>{
+    setTimeout(() => {
       setErrors({});
-    },3000)
+    }, 3000);
   };
 
-  const completeOnboarding = async(id) => {
+  const completeOnboarding = async (id) => {
     const requestOptions = {
-      method:  "PUT",
-      body: JSON.stringify({id}),
+      method: "PUT",
+      body: JSON.stringify({ id }),
     };
     const response = await fetchWrapper(
-        `/api/users`,
-        requestOptions,
-        'changeOnboarding'
+      `/api/users`,
+      requestOptions,
+      "changeOnboarding"
     );
 
     if (!response.ok) throw new Error(response.error);
     router.push(`home`);
-  }
+  };
 
-  const handleContentLengthChange = (event) =>{
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchWrapper(
+        `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+        { method: "GET" },
+        "fetchContentManagement"
+      );
+      if (!response.ok) throw new Error("Failed to fetch Content Management");
+      const data = await response.json();
+      setContent(data.portalContent);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterContent = (title) => {
+    const contentItem = content.find((item) => item.title === title);
+    const value = contentItem ? contentItem.value : title;
+    return value;
+  };
+
+  const handleContentLengthChange = (event) => {
     setContentLength(event);
   };
+
+  const LoadingSpinner = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   const validateStep = () => {
     const errors = {};
 
     switch (currentStep) {
       case 0:
-        if (contentLength<11) errors.contentLength = 'Please add all content items.';
+        if (contentLength < 11)
+          errors.contentLength = "Please add all content items.";
         break;
       case 2:
         break;
@@ -111,75 +206,403 @@ export default function OnBoardingPage() {
     return Object.keys(errors).length === 0;
   };
 
+  // const filterValue = (title) => {
+  //   if (!content) return null;
+  //   const contentItem = content.portalContent.find(
+  //     (item) => item.title === title
+  //   );
+  //   const value = contentItem ? contentItem.value : null;
+
+  //   if (!value) {
+  //     const defaultItem = content.defaultContent.find(
+  //       (item) => item.title === title
+  //     );
+  //     return defaultItem ? defaultItem.value : null;
+  //   }
+  //   return value;
+  // };
+
+  const filterValue = (title) => {
+    // Check if content is defined
+    if (!content) return null;
+
+    // Ensure portalContent is an array
+    const portalContentArray = Array.isArray(content.portalContent)
+      ? content.portalContent
+      : [];
+
+    // Find in portalContent
+    const contentItem = portalContentArray.find((item) => item.title === title);
+    const value = contentItem ? contentItem.value : null;
+
+    if (!value) {
+      // Ensure defaultContent is an array
+      const defaultContentArray = Array.isArray(content.defaultContent)
+        ? content.defaultContent
+        : [];
+
+      // Find in defaultContent
+      const defaultItem = defaultContentArray.find((item) => item.title === title);
+      return defaultItem ? defaultItem.value : null;
+    }
+
+    return value;
+  };
+
+
+  const NavBarItem = ({ title }) => (
+    <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
+  );
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    // Identify which button was clicked
+    const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
+
+    if (buttonType === "log in") {
+      setIsLoadingLogin(true);
+    } else if (buttonType === "login with okta") {
+      setIsLoadingOkta(true);
+    }
+
+    setError("");
+
+    console.log("Login attempt for:", email);
+
+    try {
+      const response = await fetchWrapper(
+        "/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            portalid: params.portalid || "default",
+          }),
+        },
+        "default-login"
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Login failed");
+      }
+
+      const data = await response.json();
+      // Store user data using auth utility
+      const userData = data.user;
+      console.log("Storing user data:", userData);
+      setUserData(userData);
+      localStorage.setItem("portal", "defaultPortal");
+      localStorage.setItem("accessToken", data.accessToken);
+      console.log("Redirecting to dashboard");
+      toast.success("Redirecting to dashboard");
+      if (userData.isOnboardingRequired) {
+        router.push(`onboarding`);
+      } else {
+        router.push(`/demo/dashboard`);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      toast.error(err.message);
+      setError(err.message);
+    } finally {
+      // Reset loading states
+      if (buttonType === "log in") {
+        setIsLoadingLogin(false);
+      } else if (buttonType === "login with okta") {
+        setIsLoadingOkta(false);
+      }
+    }
+  };
+
+  if (!config || !content) return <LoadingSpinner />;
+
+
   return (
-    <div className="fixed inset-0 min-h-screen bg-gray-50 bg-opacity-80 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
-        {/* Loading Overlay */}
-        {isSubmitting && (
-          <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
-            <div className="text-center space-y-3">
-              <div className="mx-auto h-8 w-8 animate-spin">
-                <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
+    <div className="grid grid-cols-12 w-screen">
+      <div className="min-h-screen col-span-4 bg-gray-50 bg-opacity-80 flex items-center justify-center">
+        <div className="bg-white rounded-lg w-[80%] h-[calc(100vh-120px)] flex flex-col relative">
+          {/* Loading Overlay */}
+          {isSubmitting && (
+            <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
+              <div className="text-center space-y-3">
+                <div className="mx-auto h-8 w-8 animate-spin">
+                  <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
+                </div>
+                <p className="text-sm text-gray-500">
+                  {" "}
+                  Onboarding completed successfully...
+                </p>
               </div>
-              <p className="text-sm text-gray-500"> Onboarding completed successfully...</p>
+            </div>
+          )}
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center space-x-8">
+              {[0, 1].map((step) => (
+                <div key={step} className="flex items-center">
+                  <WizardStep step={step} currentStep={currentStep} />
+                  {step < 1 && (
+                    <ChevronRight size={16} className="mx-2 text-gray-300" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-        )}
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center space-x-8">
-            {[0, 1].map((step) => (
-              <div key={step} className="flex items-center">
-                <WizardStep step={step} currentStep={currentStep} />
-                {step < 1 && (
-                  <ChevronRight size={16} className="mx-2 text-gray-300" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <CurrentStepComponent  isAddRequired='true' onContentLengthChange={handleContentLengthChange}  />
-        </div>
-        {errors.contentLength && (
-          <div className="flex items-center p-4 m-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50" role="alert">
-            <div>
-              {errors.contentLength}
-            </div>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <CurrentStepComponent
+              isAddRequired="true"
+              onContentLengthChange={handleContentLengthChange}
+              setContentOnboard={setContent}
+            />
           </div>
-        )}
-
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
-          {currentStep === 0 ? (
-            <div></div>
-          ) : (
-            <button
-              onClick={currentStep === 0 ? onClose : handleBack}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
-              disabled={isSubmitting}
+          {errors.contentLength && (
+            <div
+              className="flex items-center p-4 m-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50"
+              role="alert"
             >
-              {currentStep === 0 ? "Cancel" : "Back"}
-            </button>
+              <div>{errors.contentLength}</div>
+            </div>
           )}
 
-          <button
-            onClick={handleNext}
-            disabled={isSubmitting}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-              isSubmitting
+          {/* Footer */}
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
+            {currentStep === 0 ? (
+              <div></div>
+            ) : (
+              <button
+                onClick={currentStep === 0 ? onClose : handleBack}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
+                disabled={isSubmitting}
+              >
+                {currentStep === 0 ? "Cancel" : "Back"}
+              </button>
+            )}
+
+            <button
+              onClick={handleNext}
+              disabled={isSubmitting}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gray-900 hover:bg-gray-800"
-            }`}
-          >
-            {currentStep === steps.length - 1
-              ? "Complete Onboarding"
-              : "Continue"}
-          </button>
+                }`}
+            >
+              {currentStep === steps.length - 1
+                ? "Complete Onboarding"
+                : "Continue"}
+            </button>
+          </div>
         </div>
       </div>
+
+      <div className="h-full col-span-8 relative overflow-hidden">
+        <div className="max-w-[1140px] w-full py-[70px] mx-auto">
+          <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
+            <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+              <img
+                // src="/default_logo_purple.png"
+                src={config?.logo || "/logo.png"}
+                alt="Wealthportal"
+                className="h-[52px] mr-2"
+              />
+              <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+                {filterValue("Header Text")}
+              </span>
+            </a>
+            <div className="hidden md:flex space-x-4">
+              <NavBarItem title="Individual" />
+              <NavBarItem title="Business" />
+              <NavBarItem title="About Us" />
+              <NavBarItem title="Contact" />
+              {/* Edit button */}
+              <button className="h-5 w-5 mt-2 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="12"
+                  height="12"
+                  fill="currentColor"
+                >
+                  <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
+                </svg>
+              </button>
+            </div>
+
+            <button className="md:hidden text-text">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </nav>
+
+          <div className="flex-1 flex flex-col md:flex-row pt-12">
+            <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
+              <div>
+                <div className="px-[15px]">
+                  <h2 className="text-[56px] font-light leading-tight text-text font-lato">
+                    {filterValue("Title")}
+                  </h2>
+                  <div
+                    style={{ backgroundColor: config?.primaryColor }}
+                    className="p-[1px] w-full"
+                  ></div>
+
+                  <p className="font-light text-xl text-black leading-7 font-lato mb-3">
+                    {filterValue("Paragraph")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Panel - Login Form */}
+            <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
+              <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
+                {/* <div className="text-center mb-8">
+                <img
+                  src="/logo2.png"
+                  alt="Wealthportal"
+                  className="h-12 w-auto mx-auto"
+                />
+                <p className="text-text/60 mt-2">
+                  Log in here to access your account
+                </p>
+              </div> */}
+
+                <form onSubmit={handleLogin}>
+                  <div className="">
+                    <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
+                      <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                        <IdCard className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-5 mx-5">
+                      <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                        <LockKeyhole className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group "
+                      disabled={isLoadingLogin || isLoadingOkta}
+                      style={{ backgroundColor: config?.secondaryColor }}
+                    >
+                      {isLoadingLogin ? (
+                        <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
+                      ) : (
+                        <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
+                          Log In
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
+                      onClick={login}
+                      disabled={isLoadingLogin || isLoadingOkta}
+                    // style={{ backgroundColor: config?.secondaryColor }}
+                    >
+                      {isLoadingOkta ? (
+                        <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
+                      ) : (
+                        <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
+                          Login with Okta
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+
+                {error && (
+                  <div className="mt-4 text-red-500 text-sm text-center">
+                    {error}
+                  </div>
+                )}
+
+                {/* <div className="text-center mt-4">
+              <button className="text-text/40 hover:text-text/60">
+                Forgot password?
+              </button>
+            </div> */}
+              </div>
+            </div>
+          </div>
+
+          {/* cards */}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-10 mt-10">
+            {/* Adjusted to stretch and take full height */}
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+              <div className="px-5 py-4">
+                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
+                  <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
+                  </div>
+                  {filterValue("Card 1 Title")}</h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6">{filterValue("Card 1 Content")}</p>
+              </div>
+            </div>
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+              <div className="px-5 py-4">
+                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
+                  <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
+                  </div>
+                  {filterValue("Card 2 Title")}</h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6">{filterValue("Card 2 Content")}</p>
+              </div>
+            </div>
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+              <div className="px-5 py-4">
+                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
+                  <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path></svg>
+                  </div>
+                  {filterValue("Card 3 Title")}</h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 font-lato">{filterValue("Card 3 Content")}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <div className="w-full ">
+          <Footer config={config} filterValue={filterValue} />
+        </div>
+      </div>
+
     </div>
   );
 }

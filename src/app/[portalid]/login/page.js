@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
-import PortalFooter from "@/components/PortalFooter";
-import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { signIn, signOut } from "next-auth/react";
+import Footer from "@/components/Footer";
 import { toast } from "react-toastify";
+
+import { IdCard, LockKeyhole, UserRound, SquarePen } from "lucide-react";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { signIn } from "next-auth/react";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -18,70 +20,18 @@ const LoadingSpinner = () => (
   </div>
 );
 
-export default function SubsidiariesLoginPage() {
+export default function LoginPage() {
   const router = useRouter();
   const params = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
+  const [config, setConfig] = useState(null);
+  const [isLoadingLogin, setIsLoadingLogin] = useState(false);
+  const [isLoadingOkta, setIsLoadingOkta] = useState(false);
 
-  // const handleCreate = async () => {
-  //   setIsLoading(true);
-
-  //   try {
-  //     // const boxResponse = await fetchWrapper(
-  //     //   "/api/box/create-user",
-  //     //   {
-  //     //     method: "POST",
-  //     //     headers: {
-  //     //       "Content-Type": "application/json",
-  //     //     },
-  //     //     body: JSON.stringify({
-  //     //       userName: "admin@demo.com",
-  //     //       externalId: `user_${Date.now()}`,
-  //     //     }),
-  //     //   },
-  //     //   "create-user-box"
-  //     // );
-
-  //     // const boxData = await boxResponse.json();
-
-  //     // if (!boxResponse.ok) {
-  //     //   throw new Error(boxData.error || "Failed to create Box user");
-  //     // }
-
-  //     // Save user data
-  //     const saveResponse = await fetchWrapper(
-  //       "/api/users",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         // body: json.stringify({
-  //         //   boxUserId: boxData.user.userId,
-  //         //   folderId: boxData.user.folderId,
-  //         // }),
-  //       },
-  //       "save-user"
-  //     );
-
-  //     if (!saveResponse.ok) {
-  //       throw new Error("Failed to save user data");
-  //     }
-
-  //     const savedData = await saveResponse.json();
-  //     console.log(savedData);
-  //   } catch (error) {
-  //     console.error("Error creating user:", error);
-  //     setError(error.message || "An unexpected error occurred");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -92,6 +42,10 @@ export default function SubsidiariesLoginPage() {
           "portal-login"
         );
         const data = await response.json();
+        if (!data.data && response.status === 404) {
+          router.push(`/${params.portalid}/not-found`);
+          return;
+        }
         if (!response.ok) {
           throw new Error(data.error || "Failed to fetch portal config");
         }
@@ -106,21 +60,39 @@ export default function SubsidiariesLoginPage() {
     fetchContent();
   }, []);
 
+  useEffect(() => {
+    fetchContent();
+  }, []);
+
   const fetchContent = async () => {
     const response = await fetchWrapper(
       `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
       { method: "GET" },
       "fetchContentManagement"
     );
-    if (!response.ok) throw new Error("Failed to fetch Content Management");
     const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to fetch Content Management");
+    }
     setContent(data);
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    // Identify which button was clicked
+    const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
+
+    if (buttonType === "log in") {
+      setIsLoadingLogin(true);
+    } else if (buttonType === "login with okta") {
+      setIsLoadingOkta(true);
+    }
+
     setError("");
+
+    console.log("Login attempt for:", email);
+
     try {
       const response = await fetchWrapper(
         "/api/auth/login",
@@ -146,27 +118,33 @@ export default function SubsidiariesLoginPage() {
       const data = await response.json();
       // Store user data using auth utility
       const userData = data.user;
+      console.log("Storing user data:", userData);
       setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      localStorage.setItem("portal", "defaultPortal");
       localStorage.setItem("accessToken", data.accessToken);
-
-      console.log("Redirecting to home");
-      toast.success("Redirecting to home");
+      console.log("Redirecting to dashboard");
+      toast.success("Redirecting to dashboard");
       if (userData.isOnboardingRequired) {
         router.push(`onboarding`);
       } else {
-        router.push(`home`);
+        router.push(`/demo/dashboard`);
       }
     } catch (err) {
-      console.error("Login error:", err.message);
+      console.error("Login error:", err);
       toast.error(err.message);
       setError(err.message);
     } finally {
-      setIsLoading(false);
+      // Reset loading states
+      if (buttonType === "log in") {
+        setIsLoadingLogin(false);
+      } else if (buttonType === "login with okta") {
+        setIsLoadingOkta(false);
+      }
     }
   };
 
   const filterValue = (title) => {
+    if (!content) return null;
     const contentItem = content.portalContent.find(
       (item) => item.title === title
     );
@@ -189,29 +167,45 @@ export default function SubsidiariesLoginPage() {
     }
   };
 
+
+
   if (!config || !content) return <LoadingSpinner />;
 
+
   return (
-    <div className="flex items-start xl:items-center justify-center relative overflow-x-hidden">
-      <div className="bg-white relative z-10 w-full h-full flex flex-col">
-        <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center">
-          <div className="h-12 md:h-16 lg:h-20">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-[1140px] w-full py-[70px] mx-auto">
+        <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
+          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
+              // src="/default_logo_purple.png"
               src={config?.logo || "/logo.png"}
-              alt="Premierportal"
-              className="h-full hidden md:block"
+              alt="Wealthportal"
+              className="h-[52px] mr-2"
             />
-            <img
-              src={config?.logo || "/logo.png"}
-              alt="Premierportal"
-              className="h-full w-full block md:hidden"
-            />
-          </div>
+            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+              {filterValue("Header Text")}
+            </span>
+          </a>
           <div className="hidden md:flex space-x-4">
-            <h3 className="md:text-lg lg:text-3xl font-normal leading-tight text-[#545454] italic xl:mr-20">
-              Premier Customer Portal
-            </h3>
+            <NavBarItem title="Individual" />
+            <NavBarItem title="Business" />
+            <NavBarItem title="About Us" />
+            <NavBarItem title="Contact" />
+            {/* Edit button */}
+            <button className="h-5 w-5 mt-2 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="12"
+                height="12"
+                fill="currentColor"
+              >
+                <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
+              </svg>
+            </button>
           </div>
+
           <button className="md:hidden text-text">
             <svg
               className="w-6 h-6"
@@ -229,79 +223,146 @@ export default function SubsidiariesLoginPage() {
           </button>
         </nav>
 
-        {/* GREEN LINE */}
-        <div
-          style={{ backgroundColor: config?.primaryColor }}
-          className="p-3 w-full"
-        ></div>
-
-        <div className="flex flex-col lg:flex-row w-full">
-          <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary">
+        <div className="flex-1 flex flex-col md:flex-row pt-12">
+          <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
-              <h2 className="text-3xl font-normal leading-tight text-[#545454]">
-                {filterValue("Title")}
-              </h2>
-              <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed">
-                {filterValue("Paragraph")}
-              </p>
+              <div className="px-[15px]">
+                <h2 className="text-[56px] font-light leading-tight text-text font-lato">
+                  {/* Ethree - Deep energy expertise */}
+                  {filterValue("Title")}
+                  {/* Wealth Management */}
+                </h2>
+                {/* <p className="text-2xl text-[#808080] leading-tight mb-2 font-lato">
+                  {filterValue("Paragraph")}
+                </p> */}
+                {/* GREEN LINE */}
+                <div
+                  style={{ backgroundColor: config?.primaryColor }}
+                  className="p-[1px] w-full"
+                ></div>
+
+                <p className="font-light text-xl text-black leading-7 font-lato mb-3">
+                  {/* Financial decisions are complicated. But they don't have to
+                  be. Whether you're planning for retirement or growing your
+                  business, let us help you reach your financial goals. */}
+                  {filterValue("Paragraph")}
+                </p>
+              </div>
 
               {/* Feature Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-10 mt-10">
-                {/* Adjusted to stretch and take full height */}
-                <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-72 max-h-80 flex flex-col">
-                  <h3 className="text-lg font-bold text-text">
-                    {filterValue("Card 1 Title")}
-                  </h3>
-                  <p className="text-text/60 mt-2 flex-grow">
-                    {filterValue("Card 1 Content")}
-                  </p>
+              {/* <div className="grid md:grid-cols-3 gap-6 mt-20">
+                <div className="bg-background-gray p-6 rounded-lg shadow-sm">
+                  <svg
+                    className="w-8 h-8 text-text"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"
+                    />
+                  </svg> */}
+              {/* <h3 className="text-lg font-bold mt-4 text-text"> */}
+              {/* Enterprise Data Center */}
+              {/* {filterValue("Card1 Title")} */}
+              {/* </h3> */}
+              {/* <p className="text-text/60 mt-2"> */}
+              {/* Your data warehouse for portfolio analytics and risk
+                  management. */}
+              {/* {filterValue("Card1 Content")} */}
+              {/* </p>
                 </div>
-                <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-72 max-h-80 flex flex-col">
-                  <h3 className="text-lg font-bold text-text">
-                    {filterValue("Card 2 Title")}
-                  </h3>
-                  <p className="text-text/60 mt-2 flex-grow">
-                    {filterValue("Card 2 Content")}
-                  </p>
+                <div className="bg-background-gray p-6 rounded-lg shadow-sm">
+                  <svg
+                    className="w-8 h-8 text-text"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-bold mt-4 text-text"> */}
+              {/* Experience Enhancement */}
+              {/* {filterValue("Card2 Title")} */}
+              {/* </h3>
+                  <p className="text-text/60 mt-2"> */}
+              {/* Elevate your business experience with our innovative
+                  solutions. */}
+              {/* {filterValue("Card2 Content")} */}
+              {/* </p>
                 </div>
-                <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-72 max-h-80 flex flex-col">
-                  <h3 className="text-lg font-bold text-text">
-                    {filterValue("Card 3 Title")}
-                  </h3>
-                  <p className="text-text/60 mt-2 flex-grow">
-                    {filterValue("Card 3 Content")}
-                  </p>
-                </div>
-              </div>
+                <div className="bg-background-gray p-6 rounded-lg shadow-sm">
+                  <svg
+                    className="w-8 h-8 text-text"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-bold mt-4 text-text"> */}
+              {/* Enterprise Execution */}
+              {/* {filterValue("Card3 Title")}
+                  </h3> */}
+              {/* <p className="text-text/60 mt-2"> */}
+              {/* Execute your strategies with precision and scale. */}
+              {/* {filterValue("Card3 Content")} */}
+              {/* </p>
+                </div> */}
+              {/* </div> */}
             </div>
           </div>
 
           {/* Right Panel - Login Form */}
-          <div className="w-full xl:w-2/5 bg-background-gray p-4 md:p-10 xl:p-12 flex items-center justify-center">
-            <div className="w-full max-w-md bg-secondary rounded-lg shadow-lg p-3 md:p-8">
-              <div className="text-center mb-8">
+          <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
+            <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
+              {/* <div className="text-center mb-8">
+                <img
+                  src="/logo2.png"
+                  alt="Wealthportal"
+                  className="h-12 w-auto mx-auto"
+                />
                 <p className="text-text/60 mt-2">
                   Log in here to access your account
                 </p>
-              </div>
+              </div> */}
 
               <form onSubmit={handleLogin}>
-                <div className="space-y-4">
-                  <div>
+                <div className="">
+                  <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
+                    <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                      <IdCard className="h-4 w-4" />
+                    </div>
                     <input
                       type="email"
                       placeholder="Email"
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
+                      className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                  <div>
+                  <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-5 mx-5">
+                    <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                      <LockKeyhole className="h-4 w-4" />
+                    </div>
                     <input
                       type="password"
                       placeholder="Password"
-                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
+                      className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -309,26 +370,33 @@ export default function SubsidiariesLoginPage() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full text-secondary py-3 rounded hover:bg-[#1A4C8A]/80 transition-colors"
-                    disabled={isLoading}
+                    className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group "
+                    disabled={isLoadingLogin || isLoadingOkta}
                     style={{ backgroundColor: config?.secondaryColor }}
                   >
-                    {isLoading ? (
-                      <div className="w-6 h-6 border-2 border-secondary border-t-transparent rounded-full animate-spin mx-auto" />
+                    {isLoadingLogin ? (
+                      <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
                     ) : (
-                      "Log In"
+                      <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
+                        Log In
+                      </span>
                     )}
                   </button>
-                  <div className="text-center mt-4">
-                    <button
-                      type="button"
-                      className="text-white uppercase font-semibold bg-[#3475ba] py-3 px-4 w-full rounded flex items-center justify-center gap-4"
-                      onClick={login}
-                    >
-                      <div className="h-6 w-6 border-[5px] border-solid border-white rounded-full"></div>
-                      Login with Okta
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
+                    onClick={login}
+                    disabled={isLoadingLogin || isLoadingOkta}
+                  // style={{ backgroundColor: config?.secondaryColor }}
+                  >
+                    {isLoadingOkta ? (
+                      <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
+                    ) : (
+                      <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
+                        Login with Okta
+                      </span>
+                    )}
+                  </button>
                 </div>
               </form>
 
@@ -337,15 +405,53 @@ export default function SubsidiariesLoginPage() {
                   {error}
                 </div>
               )}
+
+              {/* <div className="text-center mt-4">
+              <button className="text-text/40 hover:text-text/60">
+                Forgot password?
+              </button>
+            </div> */}
             </div>
           </div>
         </div>
 
-        <PortalFooter config={config} filterValue={filterValue} />
+        {/* cards */}
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 py-12">
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+              <div className="px-5 py-4">
+                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
+                  <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
+                  </div>
+                  {filterValue("Card 1 Title")}</h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6">{filterValue("Card 1 Content")}</p>
+              </div>
+            </div>
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+              <div className="px-5 py-4">
+                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
+                  <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
+                  </div>
+                  {filterValue("Card 2 Title")}</h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6">{filterValue("Card 2 Content")}</p>
+              </div>
+            </div>
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+              <div className="px-5 py-4">
+                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
+                  <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path></svg>
+                  </div>
+                  {filterValue("Card 3 Title")}</h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 font-lato">{filterValue("Card 3 Content")}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="absolute bottom-1 xl:bottom-5 left-3 2xl:left-10 max-w-20 xl:max-w-36 w-full opacity-20 z-0">
-        <img src="/logo_new.png" alt="Wealthportal" className="h-full w-full" />
-      </div>
+      <Footer config={config} filterValue={filterValue} />
     </div>
   );
 }

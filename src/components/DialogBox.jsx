@@ -3,35 +3,38 @@ import { useEffect, useState } from "react";
 import { Share2, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
-const DialogBox = ({title, message, fileLocation, isModalOpen, setIsModalOpen}) => {
+const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen }) => {
   const [config, setConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-      const fetchConfig = async () => {
-        try {
-          setIsLoading(true);
-          const portalId = localStorage.getItem('portal');
-          
-          const response = await fetchWrapper(
-            `/api/portal?portalid=${portalId || "default"}`,
-            {},
-            "portal-config"
-          );
-          if (!response.ok) {
-            throw new Error("Failed to fetch users");
-          }
-          const data = await response.json();
-          setConfig(data.data);
-        } catch (error) {
-          console.log("error: ", error);
-          setIsLoading(false);
-        } finally {
-          setIsLoading(false);
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        setIsLoading(true);
+        const portalId = localStorage.getItem('portal');
+        // console.log('portalId:', portalId);
+        
+
+        const response = await fetchWrapper(
+          `/api/portal?portalid=${portalId || "default"}`,
+          {},
+          "portal-config"
+        );
+        // console.log('response:', response);
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
         }
-      };
-      fetchConfig();
-    }, []);
+        const data = await response.json();
+        setConfig(data.data);
+      } catch (error) {
+        console.log("error: ", error);
+        setIsLoading(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchConfig();
+  }, []);
 
   return (
     <Dialog
@@ -66,7 +69,7 @@ const DialogBox = ({title, message, fileLocation, isModalOpen, setIsModalOpen}) 
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200"
+                className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200 bg-blue-500"
                 style={{ backgroundColor: config?.secondaryColor }}
               >
                 {isLoading ? (

@@ -1,10 +1,37 @@
 import { CodeXml } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
-const Footer = ({ filterValue }) => {
-  // const contactInfo = filterValue("Footer Content").split("\n");
-  // const links = JSON.parse(filterValue("Footer Links") || "null") || [];
+const Footer = ({ config, filterValue }) => {
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (config && typeof filterValue === "function") {
+      setIsLoading(false);
+    }
+  }, [config, filterValue]);
+
+  if (isLoading) {
+    return (
+      <footer className="pt-12 mt-auto">
+        <div className="container mx-auto px-4">
+          <div className="max-w-[1140px] mx-auto md:px-[15px]">
+            <div className="animate-pulse">
+              <div className="bg-gray-200 h-8 w-32 mb-4"></div>
+              <div className="bg-gray-200 h-4 w-64 mb-2"></div>
+              <div className="bg-gray-200 h-4 w-48 mb-2"></div>
+              <div className="bg-gray-200 h-4 w-56"></div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  const contactInfo = filterValue("Footer Content")?.split("\n") || [];
+  const links = JSON.parse(filterValue("Footer Links") || "null") || [];
   return (
     <footer className=" pt-12 mt-auto">
       <div className="container mx-auto px-4">
@@ -56,43 +83,75 @@ const Footer = ({ filterValue }) => {
             </div>
           </div> */}
 
+          <div className="mb-1" 
+            style={{
+            maxWidth: "100px",
+            maxHeight: "100px",
+            overflow: "hidden", 
+          }}>
+            <Image
+              src={config?.logo ?? "/logo.png"}
+              alt={config?.legalName || "Default Company Name"}
+              width={75}
+              height={75}
+              style={{ width: "100%", height: "auto" }}
+            />
+            {/* <img src={config?.logo} alt={config?.legalName} width="auto" height="auto" className='w-auto h-12'/> */}
+          </div>
+
+
           <div>
             <div>
-              <p className="text-sm text-[#6c757d] font-medium font-lato mb-1">
+              {/* <p className="text-sm text-[#6c757d] font-medium font-lato mb-1">
                 Careers | Legal | Help Center | Blog
-              </p>
-              <div className="flex items-center justify-between flex-col md:flex-row">
-                <div className="max-w-[670px] w-full">
-                  <p className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
-                    Wealthportal is not an SEC-registered investment adviser. No
-                    need to read our Full Disclosure for important details since
-                    it doesn't exist. <span>©2017 Wealthportal, Inc.</span>
+              </p> */}
+              <div className="text-sm text-[#6c757d] font-medium font-lato mb-1">
+                <div>
+                  <ul className="space-y-2">
+                    {links.length > 0 && links.slice(0, 5).map((item, index) => (
+                      <li key={index}>
+                        <Link href={item.link} className="hover:underline">
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+            <div className="flex items-center justify-between flex-col md:flex-row">
+              <div className="max-w-[670px] w-full">
+                <ul className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
+                  {contactInfo &&
+                    contactInfo.map((item, index) => <li key={index}>{item}</li>)}
+                  <span>©2017 Wealthportal, Inc.</span>
+                </ul>
+
+              </div>
+              <div className="flex items-end text-end mb-2 md:mb-0">
+                <div className="flex items-end gap-1">
+                  <div className="text-[#6c757d]">
+                    <CodeXml className="h-7 w-7" />
+                  </div>
+                  <p className="text-xs text-[#6c757d] font-medium font-lato">
+                    by DemoEng
                   </p>
                 </div>
-                <div className="flex items-end text-end mb-2 md:mb-0">
-                  <div className="flex items-end gap-1">
-                    <div className="text-[#6c757d]">
-                      <CodeXml className="h-7 w-7" />
-                    </div>
-                    <p className="text-xs text-[#6c757d] font-medium font-lato">
-                      by DemoEng
-                    </p>
-                  </div>
-                  <span className="block ml-10 md:ml-12 text-xs text-[#6c757d] font-medium font-lato">
-                    Add a customization to edit text
-                  </span>
-                </div>
+                <span className="block ml-10 md:ml-12 text-xs text-[#6c757d] font-medium font-lato">
+                  Add a customization to edit text
+                </span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* <div className="mt-8 pt-4 border-t border-white/20 text-sm">
+        {/* <div className="mt-8 pt-4 border-t border-white/20 text-sm">
             <div className="text-center"></div>
             <div className="text-center mt-2">© 2024 MStrategy Portal</div>
           </div> */}
-        </div>
       </div>
-    </footer>
+    </footer >
   );
 };
 

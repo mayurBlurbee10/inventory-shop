@@ -3,6 +3,8 @@ import { connectDatabase, getConnection } from "@/config/db";
 import { Users } from "@/entities/Users";
 import * as bcrypt from "bcrypt";
 import { validateOrReject } from "class-validator";
+import { In } from "typeorm";
+
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -62,14 +64,37 @@ const getUserByEmail = async (email, portalId) => {
 
 const getUserByRole = async (role, userId) => {
   const userRepository = await getRepository(Users);
+
+  if (!role && !userId) {
+    throw new Error("Either role or userId must be provided.");
+  }
+
   try {
-    let where = {role};
-    if(userId){
-      condition['createdBy'] = userId;
+    if (userId) {
+      const user = await getUserById(userId);
+      if (!user) {
+        throw new Error(`User with ID ${userId} not found.`);
+      }
+      if (
+        !Array.isArray(user.groupMembersIds) ||
+        user.groupMembersIds.length === 0
+      ) {
+        return [];
+      }
+      const users = await userRepository.findBy({
+        id: In(user.groupMembersIds),
+      });
+
+      return users;
+    } else {
+      const users = await userRepository.find({
+        where: { role },
+      });
+      return users;
     }
-    return await userRepository.find({ where });
   } catch (error) {
-    throw new Error("Failed to get users.");
+    console.error("Error in getUserByRole:", error.message);
+    throw new Error("Failed to get users. Please try again.");
   }
 };
 
@@ -115,7 +140,7 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
       throw new Error("Invalid or expired reset token");
     }
   
-    if(newPassword!='') {
+    if(newPassword!="") {
       // Hash and set the new password
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt);

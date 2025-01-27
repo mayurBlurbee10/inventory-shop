@@ -51,7 +51,7 @@ export default function UploadArea({ isForImport, onBrowse, onClose }) {
   };
 
   return (
-    <div className="w-full mb-6 mt-4">
+    <div className="w-full mb-6 mt-4 z-20">
       <div
         className={`relative border-2 border-dashed rounded-lg p-8 transition-all duration-200 ${
           isDragging 

@@ -26,9 +26,13 @@ import {
   FolderPlus,
   FolderInput,
   Download,
-  Trash2
+  Trash2,
+  CircleUserRound,
+  Settings,
+  Headset,
+  LogOut
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams, } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { getUserData } from "@/lib/auth";
 import EmptyState from "@/components/FileExplorer/EmptyState";
@@ -44,6 +48,14 @@ import SettingsModal from "@/components/Settings";
 import MoveDialog from "@/components/MoveDialog";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { clearUserData } from "@/app/lib/auth";
+import { signOut } from "next-auth/react";
+import Link from 'next/link';
+import { isAdmin } from "@/lib/auth";
+import TechSupport from "@/components/TechSupport";
+
+
+
 
 export default function HomePage() {
   // return <Dashboard fileType={'my'}/>;
@@ -74,6 +86,13 @@ export default function HomePage() {
   const [moveItem, setMoveItem] = useState(null);
   const [uploadedfilePath, setUpladedFilePath] = useState("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [config, setConfig] = useState(null);
+  const [content, setContent] = useState(null);
+  const params = useParams();
+  const [footerLoading, setFooterLoading] = useState(false);
+  const [accountDropdown, setAccountDropdown] = useState(false);
+  const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
+
 
 
   const handleBrowse = (event) => {
@@ -144,18 +163,22 @@ export default function HomePage() {
   };
 
   const handleFileSelect = async (event) => {
-    const files = event.target.files;
+    const files = Array.from(event.target.files);
     if (files.length > 0) {
       try {
         setIsLoading(true);
         const uploadData = new FormData();
-        uploadData.append("file", files[0]);
+        const userData = getUserData();
+        files.forEach((file) => {
+          uploadData.append("file", file);
+        });
         if (!!selectedItem && selectedItem.type == "folder") {
           uploadData.append("boxFolderId", selectedItem.id);
         } else {
-          const userData = getUserData();
           uploadData.append("boxFolderId", userData.boxFolderId);
         }
+
+        uploadData.append("email", userData.email);
 
         const requestOptions = {
           method: "POST",
@@ -173,7 +196,7 @@ export default function HomePage() {
         await refreshFiles();
         const path = getFolderPath(
           filesList,
-          selectedItem?.id || userData.boxFolderId
+          selectedItem?.id || userData?.boxFolderId
         );
         const location = `
         <div>
@@ -181,12 +204,15 @@ export default function HomePage() {
             Location: Home${path}
           </div>
           <div>
-            Name: ${files[0].name}
+            Name: 
+            ${files.map((file) => file.name)}
           </div>
         </div>
         `;
         setUpladedFilePath(location);
+        toast.success("File uploaded successfully");
       } catch (error) {
+        toast.error(error.message);
         console.error("Error uploading files:", error);
       } finally {
         setIsLoading(false);
@@ -194,7 +220,7 @@ export default function HomePage() {
     }
   };
 
-
+  const fileType = "my";
   const refreshFiles = async () => {
     try {
       setIsLoading(true);
@@ -202,27 +228,27 @@ export default function HomePage() {
       const requestOptions = {
         method: "GET",
       };
-      // if (fileType === "shared") {
-      //   if (
-      //     userData?.collaborationIds &&
-      //     userData.collaborationIds.length > 0
-      //   ) {
-      //     const requestOptions = {
-      //       method: "POST",
-      //       body: JSON.stringify({ collaborated: userData.collaborationIds }),
-      //     };
-      //     const response = await fetchWrapper(
-      //       `/api/box/collaborations`,
-      //       requestOptions,
-      //       "fetchCollaboratedFolder"
-      //     );
-      //     if (!response.ok)
-      //       throw new Error("Failed to get collaborated folder");
-      //     const data = await response.json();
-      //     const newFilesList = data?.items;
-      //     setFilesList(newFilesList);
-      //   }
-      // } else {
+      if (fileType === "shared") {
+        if (
+          userData?.collaborationIds &&
+          userData.collaborationIds.length > 0
+        ) {
+          const requestOptions = {
+            method: "POST",
+            body: JSON.stringify({ collaborated: userData.collaborationIds }),
+          };
+          const response = await fetchWrapper(
+            `/api/box/collaborations`,
+            requestOptions,
+            "fetchCollaboratedFolder"
+          );
+          if (!response.ok)
+            throw new Error("Failed to get collaborated folder");
+          const data = await response.json();
+          const newFilesList = data?.items;
+          setFilesList(newFilesList);
+        }
+      } else {
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData.boxFolderId}`,
         requestOptions,
@@ -232,7 +258,7 @@ export default function HomePage() {
       const data = await response.json();
       const newFilesList = data?.items || [];
       setFilesList(newFilesList);
-      // }
+      }
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
@@ -290,11 +316,28 @@ export default function HomePage() {
     // fetchConfig();
   }, [router]);
 
-  const NavBarItem = ({ title }) => (
-    <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
-      {title}
-    </button>
-  );
+
+  const NavBarItem = ({ title, href }) => {
+    if (!href) {
+      console.error('href prop is required for NavBarItem.');
+      return null;
+    }
+
+    return (
+      <Link href={href} passHref>
+        <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
+          {title}
+        </button>
+      </Link>
+    );
+  };
+  // const NavBarItem = ({ title, href }) => (
+  //   <Link href={href} >
+  //     <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
+  //       {title}
+  //     </button>
+  //   </Link>
+  // );
 
 
   const [isOpen, setIsOpen] = useState(false);
@@ -405,6 +448,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    // If no searchQuery, reset the currentFilesList to either filesList or path's last child
     if (!searchQuery) {
       setCurrentFilesList(
         path.length === 0 ? filesList : path[path.length - 1].children
@@ -415,18 +459,60 @@ export default function HomePage() {
 
     setIsSearching(true);
 
+    // Recursive function to search the entire file structure
+    const recursiveSearch = (files) => {
+      let results = [];
+      files.forEach((file) => {
+        // If file name starts with the search query (case-insensitive), add it to results
+        if (file?.name?.toLowerCase().startsWith(searchQuery.toLowerCase())) {
+          results.push(file);
+        }
+
+        // If the file has children, recursively search through them
+        if (file?.children && file.children.length > 0) {
+          results = [...results, ...recursiveSearch(file.children)];
+        }
+      });
+      return results;
+    };
+
+    // Debounce logic: wait for 300ms after user stops typing
     const timer = setTimeout(() => {
-      const source =
-        path.length === 0 ? filesList : path[path.length - 1].children;
-      const results = source.filter((item) =>
-        item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setCurrentFilesList(results);
+      const source = path.length === 0 ? filesList : path[path.length - 1].children;
+      const results = recursiveSearch(source); // Perform the recursive search
+      setCurrentFilesList(results); // Set the filtered results
       setIsSearching(false);
     }, 300);
 
-    return () => clearTimeout(timer); // Cleanup on query or component unmount
-  }, [searchQuery, selectedItem]);
+    // Cleanup function to clear the timer
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedItem, filesList, path]); // Include necessary dependencies
+
+
+  // This is Old Code and Above UseEffect is Updated
+  // useEffect(() => {
+  //   if (!searchQuery) {
+  //     setCurrentFilesList(
+  //       path.length === 0 ? filesList : path[path.length - 1].children
+  //     );
+  //     setIsSearching(false);
+  //     return;
+  //   }
+
+  //   setIsSearching(true);
+
+  //   const timer = setTimeout(() => {
+  //     const source =
+  //       path.length === 0 ? filesList : path[path.length - 1].children;
+  //     const results = source.filter((item) =>
+  //       item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  //     );
+  //     setCurrentFilesList(results);
+  //     setIsSearching(false);
+  //   }, 300);
+
+  //   return () => clearTimeout(timer);
+  // }, [searchQuery, selectedItem]);
 
 
   const getFolderPath = (data, folderId, currentPath = "") => {
@@ -652,39 +738,190 @@ export default function HomePage() {
     setSelectedBulkItems([]);
   };
 
+  const handleLogout = async () => {
+    clearUserData();
+    await signOut();
+    toast.success("User signout successfully");
+    router.push("login");
+  };
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetchWrapper(
+          `/api/portal?portalid=${params.portalid || "default"}`,
+          {},
+          "portal-login"
+        );
+        const data = await response.json();
+        if (!data.data && response.status === 404) {
+          router.push(`/${params.portalid}/not-found`);
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch portal config");
+        }
+        setConfig(data.data);
+      } catch (error) {
+        console.log("error: ", error);
+      } finally {
+        setFooterLoading(false);
+      }
+    };
+    fetchConfig();
+    fetchContent();
+  }, []);
+
+  const filterValue = (title) => {
+    if (!content) return null;
+    const contentItem = content.portalContent.find(
+      (item) => item.title === title
+    );
+    const value = contentItem ? contentItem.value : null;
+
+    if (!value) {
+      const defaultItem = content.defaultContent.find(
+        (item) => item.title === title
+      );
+      return defaultItem ? defaultItem.value : null;
+    }
+    return value;
+  };
+
+  useEffect(() => {
+    fetchContent();
+  }, []);
+
+  const fetchContent = async () => {
+    const response = await fetchWrapper(
+      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+      { method: "GET" },
+      "fetchContentManagement"
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to fetch Content Management");
+    }
+    setContent(data);
+  };
+
+  const LoadingSpinner = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  // if (!config || !content) return <LoadingSpinner />;
+  const userIsAdmin = isAdmin();
+
+ 
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
       <div className="border-b border-[#0000001a]">
         <div className="max-w-[1140px] mx-auto px-3">
           <nav className="flex justify-between items-center bg-secondary py-2">
-            <a className="flex items-center py-1 gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              <img
-                src="/default_logo_purple.png"
-                alt="Wealthportal"
-                className="h-[50px] mr-2"
-              />
-              <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-                Wealthportal
-              </span>
-            </a>
+          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300" >
+            <img
+              src="/default_logo_purple.png"
+              // src={config?.logo }
+              alt="Wealthportal"
+              className="h-[52px] mr-2"
+            />
+            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+            {/* {filterValue("Header Text")} */}
+            Wealthportal
+            </span>
+          </a>
             <div className="hidden md:flex space-x-4 items-center">
-              <NavBarItem title="Dashboard" />
-              <NavBarItem title="Shared Document" />
-              <NavBarItem title="Loans" />
+              <NavBarItem title="Dashboard" href='/demo/dashboard' />
+              <NavBarItem title="Shared Document" href='/demo/shared' />
+              {userIsAdmin && (
+                // <NavBarItem title="Settings" href='/demo/settings' />
+                <button
+                  className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
+                  onClick={() => setIsSettingsOpen(true)}
+                >
+                  Settings
+                </button>
+              )}
 
               {/* Profile dropdown */}
-              <div className="relative">
-                <button
-                  onClick={toggleDropdown}
-                  className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-300"
+
+              <div className="flex items-center space-x-8 cursor-pointer">
+                <div
+                  className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
+                  onClick={() => setAccountDropdown((prev) => !prev)}
                 >
-                  <img
-                    src="default_logo_purple.png"
-                    className="h-9 w-9 rounded-full mr-3"
-                    alt="User"
-                  />
-                  <span>User name</span>
+                  {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+                  <div
+                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
+                  >
+                    {user?.name?.charAt(0) || "U"}
+                  </div>
+                  <div className="flex flex-col text-sm xl:text-base">
+                    <span className="text-gray-900 font-medium">{user?.name}</span>
+                    {userIsAdmin && (
+                      <span className="text-blue-600 text-sm font-medium">
+                        Administrator
+                      </span>
+                    )}
+                  </div>
+
+                  {/* DROPDOWN SECTION DONE*/}
+                  {accountDropdown && (
+                    <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                      <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
+                        <CircleUserRound className="h-5 w-5" /> Account Info
+                      </button>
+                      {userIsAdmin && (
+                        <button
+                          onClick={() => setIsSettingsOpen(true)}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <Settings className="h-5 w-5" />
+                          Settings
+                        </button>
+                      )}
+                      {userIsAdmin && (
+                        <button
+                          onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <Headset className="h-5 w-5" />
+                          Tech Support
+                        </button>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                      >
+                        <LogOut className="h-5 w-5" />
+                        Sign out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* <div className="relative">
+                <button className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-200" onClick={toggleDropdown}>
+                  <div
+                    className={`w-8 h-8 xl:w-10 xl:h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
+                  >
+                    {user?.name?.charAt(0) || "U"}
+                  </div>
+                  <div className="flex flex-col text-sm xl:text-base">
+                    <span className="text-gray-900 font-medium">{user?.name}</span>
+                    {userIsAdmin && (
+                      <span className="text-blue-600 text-sm font-medium">
+                        Administrator
+                      </span>
+                    )}
+                  </div>
                   <span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -698,7 +935,7 @@ export default function HomePage() {
                   </span>
                 </button>
 
-                {/* Dropdown Menu */}
+                
                 <div
                   className={`absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8] ${isOpen ? 'block' : 'invisible'}`}
                 >
@@ -709,13 +946,16 @@ export default function HomePage() {
                       </button>
                     </li>
                     <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100">
+                      <button
+                        className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100"
+                        onClick={handleLogout}
+                      >
                         Logout
                       </button>
                     </li>
                   </ul>
                 </div>
-              </div>
+              </div> */}
 
               {/* Edit button */}
               <button className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
@@ -764,9 +1004,9 @@ export default function HomePage() {
                 </span>
               </div>
               <hr className="my-4" />
-              <div className="border border-solid border-[#0000001a] rounded-sm">
+              <div className="border border-solid border-[#0000001a] rounded-sm relative">
                 <div className="border-b border-solid border-[#0000001a]">
-                  <div className="py-[18px] flex items-center w-full px-5">
+                  <div className="py-[18px] flex items-center w-full px-5 bg-gray-50">
                     <img src="/default_logo_purple.png" className="h-8 w-8" />
 
                     <input
@@ -774,24 +1014,21 @@ export default function HomePage() {
                       placeholder="Search file and folders"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
-                        ${suggestions.length === 0
-                          ? "rounded-bl-[30px] rounded-br-[30px]"
-                          : "border-t-gray-200 border-s-gray-200 border-e-gray-200"
-                        }`}
+                      className={'relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4'}
+
                     />
 
-                    {searchQuery.length > 0 && (
+                    {/* {searchQuery.length > 0 && (
                       <div
                         onClick={handelClearSearch}
                         className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer"
                       >
                         <X className="h-5 w-5 text-[#3c4043]" />
                       </div>
-                    )}
+                    )} */}
 
-                  {/* Suggestions */}
-                  {/* {suggestions.length > 0 && (
+                    {/* Suggestions */}
+                    {/* {suggestions.length > 0 && (
                     <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
                       {suggestions.map((item, index) => (
                         <li
@@ -819,7 +1056,7 @@ export default function HomePage() {
                     </ul>
                   )} */}
 
-                  {suggestions.length > 0 && (
+                    {suggestions.length > 0 && (
                       <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
                         {suggestions.map((item, index) => (
                           <li
@@ -843,15 +1080,15 @@ export default function HomePage() {
                         ))}
                       </ul>
                     )}
-                </div>
+                  </div>
                 </div>
 
 
                 <div>
                   <div
-                    className={`bg-indigo-50 rounded-[50px] mb-4 text-gray-600 py-1 
-                ${isToolbarVisible ? "opacity-1" : "opacity-0"}
-                `}
+                    className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
+                     ${isToolbarVisible ? "opacity-1" : "hidden"}
+                    `}
                   >
                     <div className="flex items-center gap-3">
                       <button
@@ -996,14 +1233,15 @@ export default function HomePage() {
                           </button>
 
                           {isOpenNewFolderDrawer && (
-                            <div className="absolute top-[50px] right-0 w-48 bg-white shadow-md p-3 rounded-md">
+                            <div className="absolute top-[50px] z-20 right-0 w-48 bg-white shadow-md p-3 rounded-md">
                               <ul>
                                 <li>
                                   <button
                                     className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                    onClick={() =>
-                                      setIsOpenUploadArea((prev) => !prev)
-                                    }
+                                    onClick={() => {
+                                      setIsOpenNewFolderDrawer(false); // Close the drawer
+                                      setIsOpenUploadArea((prev) => !prev); // Toggle upload area
+                                    }}
                                   >
                                     Upload
                                   </button>
@@ -1011,11 +1249,12 @@ export default function HomePage() {
                                 <li>
                                   <button
                                     className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                    onClick={() =>
+                                    onClick={() => {
+                                      setIsOpenNewFolderDrawer(false); // Close the drawer
                                       setIsNewFolderModalOpen(
                                         (prev) => !prev
                                       )
-                                    }
+                                    }}
                                   >
                                     New Folder
                                   </button>
@@ -1028,6 +1267,36 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
+
+                {isNewFolderModalOpen && (
+                  <div className="absolute top-[50%] left-[50%]">
+                    <CreateFolder
+                      onFolderCreated={refreshFiles}
+                      onUploadClick={() => setShowUploadArea(true)}
+                      selectedItem={selectedItem}
+                      isModalOpen={isNewFolderModalOpen}
+                      setIsModalOpen={setIsNewFolderModalOpen}
+                    />
+                  </div>
+                )}
+
+
+                {isOpenUploadArea && (
+                  <div className="mb-6">
+                    <UploadArea
+                      isForImport={false}
+                      onBrowse={handleBrowse}
+                      onClose={() => setIsOpenUploadArea(false)}
+                    />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  multiple
+                />
 
                 <div className={` ${isLoading == true ? "visible" : "hidden"}`}>
 
@@ -1056,6 +1325,7 @@ export default function HomePage() {
                   selectedBulkItems={selectedBulkItems}
                   setIsMoveModalOpen={setIsMoveModalOpen}
                   setMoveItem={setMoveItem}
+                  setIsNewFolderModalOpen={setIsNewFolderModalOpen}
 
                 />
 
@@ -1081,6 +1351,10 @@ export default function HomePage() {
                 <SettingsModal
                   isOpen={isSettingsOpen}
                   onClose={() => setIsSettingsOpen(false)}
+                />
+                <TechSupport
+                  isOpen={isTechSupportModalOpen}
+                  onClose={() => setIsTechSupportModalOpen(false)}
                 />
 
                 {/* {view === "abc" && (
@@ -1244,34 +1518,7 @@ export default function HomePage() {
 
                 {/* Create folder */}
 
-                {isNewFolderModalOpen && (
-                  <div className="p-7 flex items-center justify-center flex-col gap-1">
-                    <CreateFolder
-                      onFolderCreated={refreshFiles}
-                      onUploadClick={() => setShowUploadArea(true)}
-                      selectedItem={selectedItem}
-                      isModalOpen={isNewFolderModalOpen}
-                      setIsModalOpen={setIsNewFolderModalOpen}
-                    />
-                  </div>
-                )}
 
-                {isOpenUploadArea && (
-                  <div className="mb-6">
-                    <UploadArea
-                      isForImport={false}
-                      onBrowse={handleBrowse}
-                      onClose={() => setIsOpenUploadArea(false)}
-                    />
-                  </div>
-                )}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  multiple
-                />
               </div>
             </div>
 
@@ -1468,7 +1715,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <Footer />
+      <Footer config={config} filterValue={filterValue} />
     </div>
   );
 }

@@ -83,8 +83,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     await logApiCall(request);
-
-    const { itemId, userID, role, updateRole } = await request.json();
+    const { itemId, userID, role, updateRole, type = 'folder' } = await request.json();
 
     if (!itemId || !userID || !role) {
       return NextResponse.json(
@@ -104,9 +103,9 @@ export async function POST(request) {
       }
       response = await updateCollaboratorRole(collaborationId, role);
     } else {
-      response = await addCollaborator(itemId, userID, role);
+      response = await addCollaborator(itemId, userID, role, type);
     }
-    await addCollaboratorId(response.item.id, userID, role);
+    await addCollaboratorId(response.item.id, userID, role, type);
 
     return NextResponse.json({
       success: true,
@@ -162,11 +161,12 @@ export async function DELETE(request) {
  * @param role // 'viewer', 'editor', 'uploader', 'co-owner'
  *
  */
-async function addCollaborator(itemId, userID, role) {
+async function addCollaborator(itemId, userID, role, type) {
   const collaboration = await client.collaborations.create(
     { id: userID, type: "user" },
     itemId,
-    role
+    role,
+    {type}
   );
   return collaboration;
 }
@@ -206,7 +206,7 @@ async function pendingCollaboration() {
   return await client.collaborations.getPending();
 }
 
-async function addCollaboratorId(folderId, userId, role) {
+async function addCollaboratorId(folderId, userId, role, type) {
   // const dataFilePath = path.join(process.cwd(), 'data', 'users.json');
   // const users = await readJsonFile(dataFilePath);
   // const index = users.findIndex(element => element.boxUserId == userId);
@@ -247,8 +247,9 @@ async function addCollaboratorId(folderId, userId, role) {
     if (role) {
       if (collabIndex > -1) {
         collaborationIds[collabIndex].role = role;
+        collaborationIds[collabIndex].type = type;
       } else {
-        collaborationIds.push({ folderId, role });
+        collaborationIds.push({ folderId, role, type });
       }
     } else {
       if (collabIndex > -1) {
