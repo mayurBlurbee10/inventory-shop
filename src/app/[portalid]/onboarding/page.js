@@ -110,6 +110,33 @@ export default function OnBoardingPage() {
   }, []);
 
 
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetchWrapper(
+          `/api/portal?portalid=${params.portalid || "default"}`,
+          {},
+          "portal-login"
+        );
+        const data = await response.json();
+        if (!data.data && response.status === 404) {
+          router.push(`/${params.portalid}/not-found`);
+          return;
+        }
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch portal config");
+        }
+        setConfig(data.data);
+      } catch (error) {
+        console.log("error: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchConfig();
+    // fetchData();
+  }, []);
+
   const handleBack = () => {
     setCurrentStep(currentStep - 1);
   };
@@ -297,6 +324,170 @@ export default function OnBoardingPage() {
                 : "Continue"}
             </button>
           </div>
+        </div>
+      </div>
+      <div className="h-screen col-span-8 flex xl:items-center justify-center relative overflow-hidden">
+        <div className="bg-white relative z-10 w-full h-full flex flex-col">
+          <nav className="px-3 md:px-6 lg:px-12 py-4 flex justify-between items-center">
+            <div className="h-12 md:h-16 lg:h-20">
+              <img
+                src={config?.logo || "/logo.png"}
+                alt="Premierportal"
+                className="h-full hidden md:block"
+              />
+              <img
+                src={config?.logo || "/logo.png"}
+                alt="Premierportal"
+                className="h-full w-full block md:hidden"
+              />
+            </div>
+            <div className="hidden md:flex space-x-4">
+              <h3 className="md:text-lg lg:text-3xl font-normal leading-tight text-[#545454] italic xl:mr-20">
+                {/* Premier Customer Portal */}
+                {filterContent("Header Text")}
+              </h3>
+            </div>
+            <button className="md:hidden text-text">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </nav>
+
+          {/* GREEN LINE */}
+          <div
+            style={{ backgroundColor: config?.primaryColor }}
+            className="p-3 w-full"
+          ></div>
+
+          <div className="flex-1 flex flex-col lg:flex-row w-full h-full">
+            <div className="w-full xl:w-3/5 p-6 lg:p-10 xl:p-16 flex flex-col justify-between bg-secondary h-full">
+              <div>
+                <h2 className="text-3xl font-normal leading-tight text-[#545454] line-clamp-1">
+                  {filterContent("Title")}
+                </h2>
+                <p className="text-lg text-text/70 mt-4 leading-tight md:leading-relaxed line-clamp-3">
+                  {filterContent("Paragraph")}
+                </p>
+
+                {/* Feature Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-10 mt-10">
+                  {/* Adjusted to stretch and take full height */}
+                  <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-56 max-h-80 flex flex-col">
+                    <h3 className="text-lg font-bold text-text">
+                      {filterContent("Card 1 Title")}
+                    </h3>
+                    <p className="text-text/60 mt-2 overflow-hidden line-clamp-[8]">
+                      {filterContent("Card 1 Content")}
+                    </p>
+                  </div>
+                  <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-56 max-h-80 flex flex-col">
+                    <h3 className="text-lg font-bold text-text">
+                      {filterContent("Card 2 Title")}
+                    </h3>
+                    <p className="text-text/60 mt-2 overflow-hidden line-clamp-[8]">
+                      {filterContent("Card 2 Content")}
+                    </p>
+                  </div>
+                  <div className="bg-background-gray p-6 rounded-lg shadow-sm min-h-56 max-h-80 flex flex-col">
+                    <h3 className="text-lg font-bold text-text">
+                      {filterContent("Card 3 Title")}
+                    </h3>
+                    <p className="text-text/60 mt-2 overflow-hidden line-clamp-[8]">
+                      {filterContent("Card 3 Content")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Panel - Login Form */}
+            <div className="w-full xl:w-2/5 bg-background-gray p-4 md:p-10 xl:p-12 flex items-center justify-center h-full">
+              <div className="w-full max-w-md bg-secondary rounded-lg shadow-lg p-3 md:p-8">
+                <div className="text-center mb-8">
+                  <p className="text-text/60 mt-2">
+                    Log in here to access your account
+                  </p>
+                </div>
+
+                {/* <form onSubmit={handleLogin}> */}
+                <form>
+                  <div className="space-y-4">
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
+                        disabled={true}
+                        // value={email}
+                        // onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
+                        // value={password}
+                        // onChange={(e) => setPassword(e.target.value)}
+                        disabled={true}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full text-secondary py-3 rounded hover:bg-[#1A4C8A]/80 transition-colors"
+                      disabled={true}
+                      style={{ backgroundColor: config?.secondaryColor }}
+                    >
+                      {/* {isLoading ? (
+                        <div className="w-6 h-6 border-2 border-secondary border-t-transparent rounded-full animate-spin mx-auto" />
+                      ) : ( */}
+                      Log In
+                      {/* )} */}
+                    </button>
+                    <div className="text-center mt-4">
+                      <button
+                        type="button"
+                        className="text-white uppercase font-semibold bg-[#3475ba] py-3 px-4 w-full rounded flex items-center justify-center gap-4"
+                        disabled={true}
+                        // onClick={login}
+                      >
+                        <div className="h-6 w-6 border-[5px] border-solid border-white rounded-full"></div>
+                        Login with Okta
+                      </button>
+                    </div>
+                  </div>
+                </form>
+
+                {/* {error && (
+                  <div className="mt-4 text-red-500 text-sm text-center">
+                    {error}
+                  </div>
+                )} */}
+              </div>
+            </div>
+          </div>
+
+          <PortalFooter config={config} filterValue={filterContent} />
+        </div>
+        <div className="absolute bottom-1 xl:bottom-5 left-3 2xl:left-10 max-w-20 xl:max-w-36 w-full opacity-20 z-0">
+          <img
+            src="/logo_new.png"
+            alt="Wealthportal"
+            className="h-full w-full"
+          />
         </div>
       </div>
 

@@ -104,6 +104,7 @@ export async function POST(request) {
         { status: 409 }
       );
     }
+    const mainUser = await userService.getUserById(userData.createdBy);
 
     const token = await generateNanoToken();
     // Add new user with password
@@ -115,11 +116,15 @@ export async function POST(request) {
       extra: process.env.NODE_ENV === "development" ? userData.password : null, // Default password as requested
       company: {},
       collaborationIds: [],
+      groupMembersIds: [],
       // createdAt: new Date().toISOString(),
       role: userData.role,
     };
 
-    if (userData.role !== UserRole.SUPER_ADMIN && userData.role !== UserRole.MASTER) {
+    if (
+      userData.role !== UserRole.SUPER_ADMIN &&
+      userData.role !== UserRole.MASTER
+    ) {
       newUser.resetPasswordToken = token;
       newUser.isOnboardingRequired = userData.isOnboardingRequired;
       newUser.portalId = userData.portal;
@@ -130,7 +135,7 @@ export async function POST(request) {
         name: userData.companyName,
         logo: userData.logo,
       };
-    } else if(userData.role === UserRole.SUPER_ADMIN) {
+    } else if (userData.role === UserRole.SUPER_ADMIN) {
       newUser.isOnboardingRequired = userData.isOnboardingRequired;
       newUser.boxUserId = userData.boxUserId;
       newUser.folderId = userData.folderId;
@@ -138,6 +143,12 @@ export async function POST(request) {
         name: userData.companyName,
         logo: userData.logo,
       };
+      if (mainUser?.role === UserRole.SUPER_ADMIN) {
+        if (!mainUser?.groupMembersIds) {
+          mainUser.groupMembersIds = [];
+        }
+        newUser.groupMembersIds = [...mainUser?.groupMembersIds, mainUser.id];
+      }
     }
 
     // console.log("Created new user object:", newUser);
@@ -145,8 +156,40 @@ export async function POST(request) {
 
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
-    if (userData.role !== UserRole.SUPER_ADMIN && userData.role !== UserRole.MASTER){
+    if (
+      userData.role !== UserRole.SUPER_ADMIN &&
+      userData.role !== UserRole.MASTER
+    ) {
       sendSetPasswordEmail(newUser.email, newUser.name, token, userData.portal);
+    }
+    if (mainUser.role === UserRole.SUPER_ADMIN) {
+      try {
+        if (!mainUser.groupMembersIds) {
+          mainUser.groupMembersIds = [];
+        }
+
+        if (mainUser.groupMembersIds.length > 0) {
+          for (const id of mainUser.groupMembersIds) {
+            const groupUser = await userService.getUserById(id);
+
+            if (!groupUser) {
+              continue;
+            }
+
+            if (!groupUser.groupMembersIds) {
+              groupUser.groupMembersIds = [];
+            }
+
+            groupUser.groupMembersIds.push(user.id);
+            await userService.updateUser(groupUser.id, groupUser);
+          }
+        }
+
+        mainUser.groupMembersIds.push(user.id);
+        await userService.updateUser(mainUser.id, mainUser);
+      } catch (error) {
+        throw new Error("Failed to update group member relationships.");
+      }
     }
     console.log("Successfully saved new user");
 

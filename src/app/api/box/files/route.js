@@ -16,8 +16,6 @@ const sdk = new BoxSDK({
   }
 });
 const client = sdk.getAppAuthClient('enterprise', process.env.BOX_ENTERPRISE_ID);
-const accessToken = await client._session.getAccessToken();
-const newClient = sdk.getBasicClient(accessToken);
 
 
 export async function GET(request) {
@@ -42,36 +40,47 @@ export async function GET(request) {
 
 export async function POST(req) {
   try {
-    await logApiCall(req, ()=>{});
+    await logApiCall(req, () => {});
+    const accessToken = await client._session.getAccessToken();
+    const newClient = sdk.getBasicClient(accessToken);
     // Process the multipart request
     const formData = await req.formData();
-    const file = formData.get('file');
+    const files = formData.getAll('file');
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
     }
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
 
-    const fileName = file.name;
-    const fileBuffer = buffer;
-    const boxFolderId = formData.get('boxFolderId') || '0';
-    const email = formData.get('email') || '';
+    const boxFolderId = formData.get("boxFolderId") || "0";
+    const email = formData.get("email") || "";
 
-    // Convert the buffer into a readable stream
-    const fileStream = new Readable();
-    fileStream.push(fileBuffer);
-    fileStream.push(null);
+    // Process files
+    const uploadedFiles = [];
 
-    // Upload the file to Box
-    const uploadedFile = await newClient.files.uploadFile(boxFolderId, fileName, fileStream, {description:email});
+    for (const file of files) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const fileStream = new Readable();
+      fileStream.push(buffer);
+      fileStream.push(null);
+
+      const uploadedFile = await newClient.files.uploadFile(
+        boxFolderId,
+        file.name,
+        fileStream,
+        { description: email }
+      );
+
+      uploadedFiles.push(uploadedFile.entries[0]);
+    }
 
     return NextResponse.json({
-      message: 'File uploaded successfully',
-      file: uploadedFile.entries[0],
+      message: "Files uploaded successfully",
+      files: uploadedFiles,
     });
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error("Error uploading files:", error);
     return NextResponse.json(
       { error: error.message },
       { status: error.response?.statusCode || 500 }
@@ -82,6 +91,8 @@ export async function POST(req) {
 export async function DELETE(req) {
   try{
     await logApiCall(req, ()=>{});
+    const accessToken = await client._session.getAccessToken();
+    const newClient = sdk.getBasicClient(accessToken);
     const { searchParams } = new URL(req.url);
     const fileId = searchParams.get('fileId');
 

@@ -1,8 +1,9 @@
 import { ChevronRight } from "lucide-react";
 
-const Breadcrumbs = ({ path, setPath, setSearchQuery, user }) => {
+const Breadcrumbs = ({ path, setPath, setSearchQuery, user, setSelectedBulkItems }) => {
   const handleBreadcrumbClick = (index) => {
     setSearchQuery("");
+    setSelectedBulkItems([])
     if (index === -1) {
       setPath([]);
     } else {

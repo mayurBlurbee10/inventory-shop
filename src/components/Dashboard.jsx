@@ -1,7 +1,17 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Settings, LogOut, Search, Folder, File, X } from "lucide-react";
+import {
+  Settings,
+  LogOut,
+  Search,
+  Folder,
+  File,
+  X,
+  FolderInput,
+  Trash2,
+  Download,
+} from "lucide-react";
 
 import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -18,6 +28,8 @@ import ActionButtons from "./ActionButtons";
 import { getSession, signOut } from "next-auth/react";
 import { setUserData } from "@/lib/auth";
 import { toast } from "react-toastify";
+import MoveDialog from "./MoveDialog";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -126,6 +138,11 @@ function Dashboard({ fileType }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [moveItem, setMoveItem] = useState(null);
+  const [selectedBulkItems, setSelectedBulkItems] = useState([]);
+  const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -162,13 +179,15 @@ function Dashboard({ fileType }) {
   };
 
   const handleFileSelect = async (event) => {
-    const files = event.target.files;
+    const files = Array.from(event.target.files);
     if (files.length > 0) {
       try {
         setIsLoading(true);
         const uploadData = new FormData();
         const userData = getUserData();
-        uploadData.append("file", files[0]);
+        files.forEach((file) => {
+          uploadData.append("file", file);
+        });
         if (!!selectedItem && selectedItem.type == "folder") {
           uploadData.append("boxFolderId", selectedItem.id);
         } else {
@@ -201,14 +220,15 @@ function Dashboard({ fileType }) {
             Location: Home${path}
           </div>
           <div>
-            Name: ${files[0].name}
+            Name: 
+            ${files.map((file) => file.name)}
           </div>
         </div>
         `;
         setUpladedFilePath(location);
-        toast.success("File uploaded successfully")
+        toast.success("File uploaded successfully");
       } catch (error) {
-        toast.error(error.message)
+        toast.error(error.message);
         console.error("Error uploading files:", error);
       } finally {
         setIsLoading(false);
@@ -245,7 +265,7 @@ function Dashboard({ fileType }) {
         }
       } else {
         const response = await fetchWrapper(
-          `/api/box/folders?folderId=${userData.boxFolderId}`,
+          `/api/box/folders?folderId=${userData?.boxFolderId}`,
           requestOptions,
           "fetchFile"
         );
@@ -282,7 +302,7 @@ function Dashboard({ fileType }) {
   };
 
   useEffect(() => {
-    if (filesList.length > 0) {
+    if (filesList?.length > 0) {
       setPath((prevPath) => updatePath(prevPath, filesList));
       setCurrentFilesList(
         path?.length === 0 ? filesList : path[path.length - 1]?.children || []
@@ -350,10 +370,15 @@ function Dashboard({ fileType }) {
         {},
         "portal-login"
       );
+      const data = await response.json();
+      if (!data.data && response.status === 404) {
+        router.push(`/${params.portalid}/not-found`);
+        return;
+      }
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
-      const data = await response.json();
+
       setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
@@ -433,6 +458,37 @@ function Dashboard({ fileType }) {
     setPath([]);
   };
 
+  const handleMove = async (folder) => {
+    if (selectedBulkItems.length > 0) {
+      handleBulkMove(folder);
+    } else {
+      const obj = {
+        itemId: moveItem.id,
+        destinationFolderId: folder.id,
+        type: moveItem.type,
+      };
+      try {
+        const requestOptions = {
+          method: "POST",
+          body: JSON.stringify(obj),
+        };
+        const response = await fetchWrapper(
+          `/api/box/move`,
+          requestOptions,
+          "moveFileOrFolder"
+        );
+        if (!response.ok) throw new Error("Failed to move file or folder");
+        toast.success(
+          `${moveItem.type === "file" ? "File" : "Folder"} moved successfully.`
+        );
+        setIsMoveModalOpen(false);
+        refreshFiles();
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
   useEffect(() => {
     if (!searchQuery) {
       setCurrentFilesList(
@@ -447,8 +503,8 @@ function Dashboard({ fileType }) {
     const timer = setTimeout(() => {
       const source =
         path.length === 0 ? filesList : path[path.length - 1].children;
-      const results = source.filter((item) =>
-        item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      const results = source?.filter((item) =>
+        item?.name?.toLowerCase().includes(searchQuery?.toLowerCase())
       );
       setCurrentFilesList(results);
       setIsSearching(false);
@@ -477,6 +533,211 @@ function Dashboard({ fileType }) {
       fetchConfig();
     });
   }, [router]);
+
+  useEffect(() => {
+    setIsToolbarVisible(selectedBulkItems.length > 0);
+  }, [selectedBulkItems]);
+
+  const handleBulkDelete = async () => {
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type }));
+    try {
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify({ items: selectedItemsDetails }),
+      };
+      const response = await fetchWrapper(
+        `/api/box/bulk/delete`,
+        requestOptions,
+        "bulk-delete"
+      );
+      if (!response.ok) throw new Error("Error bulk deleting files or folders");
+      toast.success(`Bulk delete operation completed successfully.`);
+      refreshFiles();
+      setSelectedBulkItems([]);
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleBulkMove = async (destinationFolder) => {
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type }));
+    let obj = {
+      items: selectedItemsDetails,
+      destinationFolderId: destinationFolder.id,
+    };
+    try {
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify(obj),
+      };
+      const response = await fetchWrapper(
+        `/api/box/bulk/move`,
+        requestOptions,
+        "bulk-move"
+      );
+      if (!response.ok) throw new Error("Error bulk move files or folders");
+      toast.success(`Bulk move operation completed successfully.`);
+      refreshFiles();
+      setSelectedBulkItems([]);
+      setIsMoveModalOpen(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handelToolbarMoveClick = () => {
+    const selectedItemsDetails = currentFilesList.filter(
+      (item) => selectedBulkItems[0] === item.id
+    );
+    setMoveItem(selectedItemsDetails[0]);
+    setIsMoveModalOpen(true);
+  };
+
+  const handleDownload = async (fileId = "", fileName = "") => {
+    if (selectedBulkItems.length > 0) {
+      handleBulkDownload();
+    } else {
+      try {
+        const response = await fetchWrapper(
+          `/api/box/download?fileId=${fileId}`,
+          {},
+          "download"
+        );
+        if (!response.ok) throw new Error("Download failed");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+
+        window.URL.revokeObjectURL(url);
+        toast.success("File dowloaded successfully");
+      } catch (error) {
+        toast.error(error.message);
+        console.error("Download error:", error);
+      }
+    }
+  };
+
+  // const handleBulkDownload = async () => {
+  //   const selectedItemsDetails = currentFilesList
+  //     .filter((item) => selectedBulkItems.includes(item.id))
+  //     .map((item) => ({ id: item.id, type: item.type, fileName: item.name }));
+  //   try {
+  //     const requestOptions = {
+  //       method: "POST",
+  //       body: JSON.stringify({ items: selectedItemsDetails }),
+  //     };
+  //     const responses = await fetchWrapper(
+  //       `/api/box/bulk/download`,
+  //       requestOptions,
+  //       "bulk-download"
+  //     );
+  //     if (!responses.ok) throw new Error("Download failed");
+  //     const data = await responses.json();
+  //     for (const response of data.downloadItems) {
+  //       const headers = response.headers;
+  //       const contentDisposition = headers.get("Content-Disposition");
+  //       if (contentDisposition) {
+  //         const match = contentDisposition.match(/filename="(.+?)"/);
+  //         if (match && match[1]) {
+  //           const fileName = match[1];
+  //           const blob = await response.blob();
+  //           const url = window.URL.createObjectURL(blob);
+  //           const link = document.createElement("a");
+  //           link.href = url;
+  //           link.download = fileName;
+  //           link.click();
+
+  //           window.URL.revokeObjectURL(url);
+  //         }
+  //       }
+  //     }
+  //     toast.success("Files dowloaded successfully");
+  //   } catch (error) {
+  //     toast.error(error.message);
+  //     console.error("Download error:", error);
+  //   }
+  // };
+
+  const handleBulkDownload = async () => {
+    const unMatchedType = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .filter((item) => item.type === 'folder');
+
+      if(unMatchedType && unMatchedType.length>0){
+        toast.error("Selected Item is Folder")
+        return;
+      }
+
+
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type, name: item.name }));
+
+    try {
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ items: selectedItemsDetails }),
+      };
+
+      const response = await fetch(
+        `/api/box/bulk/download`,
+        requestOptions,
+        "download"
+      );
+
+      if (!response.ok) throw new Error("Download failed");
+
+      const data = await response.json();
+
+      for (const item of data.downloadItems) {
+        const { content, name, contentType } = item;
+
+        // Decode Base64 content into a Blob
+        const byteCharacters = atob(content);
+        const byteArrays = [];
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          byteArrays.push(new Uint8Array(byteNumbers));
+        }
+        const blob = new Blob(byteArrays, { type: contentType });
+
+        // Trigger the download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
+
+      toast.success("Files downloaded successfully");
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Download error:", error);
+    }
+  };
+
+  const clearBulkItem = () => {
+    setSelectedBulkItems([]);
+  };
 
   if (isLoading) return <LoadingSpinner />;
   const userIsAdmin = isAdmin();
@@ -607,14 +868,63 @@ function Dashboard({ fileType }) {
               </div>
             </div>
             <div>
+              <div
+                className={`bg-indigo-50 rounded-[50px] mb-4 text-gray-600 py-1 
+                ${isToolbarVisible ? "opacity-1" : "opacity-0"}
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
+                    onClick={clearBulkItem}
+                  >
+                    <X className="size-5" />
+                  </button>
+                  <p className="text-sm font-medium mr-4 text-[#444746]">
+                    {selectedBulkItems.length} item(s) selected
+                  </p>
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                    onClick={() =>
+                      selectedBulkItems.length > 0 && handelToolbarMoveClick()
+                    }
+                  >
+                    <FolderInput className="size-5" />
+                  </button>
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                    onClick={() =>
+                      selectedBulkItems.length > 0 && handleBulkDownload()
+                    }
+                  >
+                    <Download className="size-5" />
+                  </button>
+                  {/* <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                  >
+                    <Download className="size-5"/>
+                  </button> */}
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                    onClick={() =>
+                      selectedBulkItems.length > 0 && setIsDeleteModalOpen(true)
+                    }
+                  >
+                    <Trash2 className="size-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div>
               <Breadcrumbs
                 path={path}
                 setPath={setPath}
                 setSearchQuery={setSearchQuery}
+                setSelectedBulkItems={setSelectedBulkItems}
               />
             </div>
             {/* TABLE START */}
-            <div className="overflow-auto h-[calc(100vh-314px)] custom-scrollbar flex-grow">
+            <div className="overflow-auto h-[calc(100vh-370px)] custom-scrollbar flex-grow">
               <div className="bg-white xl:pr-1">
                 <table className="min-w-full divide-y divide-gray-200 overflow-auto">
                   {!currentFilesList || currentFilesList?.length === 0 ? (
@@ -629,6 +939,7 @@ function Dashboard({ fileType }) {
                     <>
                       <thead className="hidden md:table-header-group">
                         <tr>
+                          <th className="text-start text-[#3c4043] py-2 text-sm"></th>
                           <th className="text-start text-[#3c4043] py-2 text-sm">
                             Name
                           </th>
@@ -660,6 +971,10 @@ function Dashboard({ fileType }) {
                             onFileChanges={refreshFiles}
                             listType={fileType}
                             setSearchQuery={setSearchQuery}
+                            setIsMoveModalOpen={setIsMoveModalOpen}
+                            setMoveItem={setMoveItem}
+                            setSelectedBulkItems={setSelectedBulkItems}
+                            selectedBulkItems={selectedBulkItems}
                           />
                         </>
                       </tbody>
@@ -672,6 +987,18 @@ function Dashboard({ fileType }) {
           </div>
         </div>
       </div>
+      <DeleteConfirmDialog
+        isModalOpen={isDeleteModalOpen}
+        setIsModalOpen={setIsDeleteModalOpen}
+        handleDelete={handleBulkDelete}
+      />
+      <MoveDialog
+        item={moveItem}
+        isModalOpen={isMoveModalOpen}
+        setIsModalOpen={setIsMoveModalOpen}
+        fileList={filesList}
+        handleMove={handleMove}
+      />
       <DialogBox
         title="File Uploaded"
         message="File uploaded successfully!"

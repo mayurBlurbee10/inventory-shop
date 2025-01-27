@@ -20,7 +20,6 @@ const createPortal = async (data) => {
 };
 
 const getPortalsByUser = async (user) => {
-  console.log("getPortalsByUser: ", user);
   const portalRepository = await getRepository(Portals);
   try {
     const userId = String(user).toLowerCase();
@@ -32,7 +31,6 @@ const getPortalsByUser = async (user) => {
       },
       relations: ["createdBy"],
     });
-    console.log("portals", portals);
     return portals;
   } catch (error) {
     throw new Error("Failed to get portals.");
@@ -62,7 +60,7 @@ const getPortalByLegalName = async (legalName) => {
 const updatePortalThemes = async (portalData) => {
   const portalRepository = await getRepository(Portals);
   try {
-    console.log(portalData.id)
+    console.log(portalData.id);
     const portalExist = await portalRepository.findOneBy({ id: portalData.id });
     if (!portalExist) {
       throw new Error("portal doesn't exist");
@@ -80,10 +78,39 @@ const updatePortalThemes = async (portalData) => {
   }
 };
 
+const getPortalById = async (portalId) => {
+  const portalRepository = await getRepository(Portals);
+  try {
+    const portal = await portalRepository.findOneBy({ id: portalId });
+    if (!portal) {
+      throw new Error("portal doesn't exist");
+    }
+    return portal;
+  } catch (error) {
+    throw new Error("Failed to get portal.");
+  }
+};
+
+const deletePortal = async (portalId) => {
+  const portalRepository = await getRepository(Portals);
+  try {
+    const portalExist = await portalRepository.findOneBy({ id: portalId });
+    if (!portalExist) {
+      throw new Error("portal not exist");
+    }
+    await portalRepository.delete({ id: portalId });
+    return "Portal deleted successfully.";
+  } catch (error) {
+    throw new Error(`Failed to delete portal. ${error.message}`);
+  }
+};
+
 export default {
   createPortal,
   getPortalsByUser,
   getPortals,
   getPortalByLegalName,
   updatePortalThemes,
+  getPortalById,
+  deletePortal
 };

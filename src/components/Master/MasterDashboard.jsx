@@ -30,7 +30,7 @@ const SidePanel = ({ setCurrentPage }) => {
         </button>
         <button
           className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
-          onClick={() => handelItemClick("Super Users")}
+          onClick={() => handelItemClick("Super User")}
         >
           <Users className="w-5 h-5 mr-3" />
           User Management
@@ -110,7 +110,7 @@ export default function MasterDashboard() {
   const [user, setUser] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [currentPageCount, setCurrentPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState("Super Users");
+  const [currentPage, setCurrentPage] = useState("Super User");
 
   const handleLogout = () => {
     setAccountDropdown(false);
@@ -150,7 +150,7 @@ export default function MasterDashboard() {
             setAccountDropdown={setAccountDropdown}
             handleLogout={handleLogout}
           />
-          {currentPage === "Super Users" && (
+          {currentPage === "Super User" && (
             <MasterUsersContent setCurrentPageCount={setCurrentPageCount} />
           )}
         </div>

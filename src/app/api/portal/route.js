@@ -3,6 +3,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import portalService from "@/services/portalService";
+import userService from "@/services/userService";
+import { UserRole } from "@/config/constants";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -47,14 +49,14 @@ export async function POST(req) {
   const data = await req.json();
   console.log("data: ", data);
   let { legalName } = data;
-  console.log('legalName: ', legalName)
+  console.log("legalName: ", legalName);
   if (!legalName) {
     return NextResponse.json({ error: "Name are required" }, { status: 400 });
   }
 
   try {
     const portalExist = await portalService.getPortalByLegalName(legalName);
-    console.log('portalExist: ', portalExist)
+    console.log("portalExist: ", portalExist);
     if (portalExist) {
       return NextResponse.json(
         { error: `${legalName} already exists.` },
@@ -62,7 +64,7 @@ export async function POST(req) {
       );
     }
     const portal = await portalService.createPortal(data);
-    console.log('portal post: ', portal)
+    console.log("portal post: ", portal);
     if (!portal) {
       return NextResponse.json(
         { error: `portal ${legalName} not found.` },
@@ -89,7 +91,7 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const portalId = searchParams.get("portalid");
     const userId = searchParams.get("userId");
-    console.log('portalId get: ', portalId)
+    console.log("portalId get: ", portalId);
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
       const portal = await portalService.getPortalByLegalName(portalLegalName);
@@ -104,20 +106,31 @@ export async function GET(req) {
         data: portal,
       });
     } else if (!!userId) {
-      console.log('userd: ', userId)
-      const portals = await portalService.getPortalsByUser(String(userId).toLowerCase());
-      console.log('else users portals: ', JSON.stringify(portals))
+      let allPortals = [];
+      const User = await userService.getUserById(userId);
+      if (User?.groupMembersIds && User.groupMembersIds?.length > 0) {
+        for (const id of User.groupMembersIds) {
+          const groupportals = await portalService.getPortalsByUser(
+            String(id).toLowerCase()
+          );
+          allPortals = [...allPortals, ...groupportals];
+        }
+      }
+      const portals = await portalService.getPortalsByUser(
+        String(userId).toLowerCase()
+      );
+      allPortals = [...allPortals, ...portals];
       return NextResponse.json({
         message: `portals retrieved successfully.`,
-        data: portals
-      })
+        data: allPortals,
+      });
     } else {
       const portals = await portalService.getPortals();
-      console.log('else portals: ', JSON.stringify(portals))
+      console.log("else portals: ", JSON.stringify(portals));
       return NextResponse.json({
         message: `portals retrieved successfully.`,
-        data: portals
-      })
+        data: portals,
+      });
     }
   } catch (error) {
     console.error("Error fetching portal files:", error.message);
@@ -145,3 +158,65 @@ export async function PUT(req) {
     );
   }
 }
+
+export async function DELETE(req) {
+  try {
+    // Log the API call
+    await logApiCall(req);
+
+    // Parse request body
+    const { id } = await req.json();
+
+    // Retrieve portal by ID
+    const portal = await portalService.getPortalById(id);
+    if (!portal) {
+      return NextResponse.json({ error: "Portal not found." }, { status: 404 });
+    }
+
+    // Retrieve users associated with the portal
+    const portalUsers = await userService.getUsersByPortal(
+      sanitizeName(portal.legalName)
+    );
+
+    // Validate portal users and delete non-SUPER_ADMIN users
+    const deletionPromises = portalUsers
+      .filter((user) => user?.role !== UserRole.SUPER_ADMIN && user?.id)
+      .map((user) => {
+        if (!user.id) {
+          console.warn(`Skipping user with invalid ID: ${JSON.stringify(user)}`);
+          return Promise.resolve();
+        }
+        return userService.deleteUser(user.id).catch((error) => {
+          console.error(
+            `Failed to delete user with ID ${user.id}:`,
+            error.message
+          );
+          throw new Error(`Failed to delete user: ${user.id}`);
+        });
+      });
+
+    await Promise.all(deletionPromises);
+
+    // Fetch users after deletion for validation/debugging
+    const portalUsersAfterDelete = await userService.getUsersByPortal(
+      sanitizeName(portal.legalName)
+    );
+
+    // Delete the portal
+    await portalService.deletePortal(portal.id);
+
+    // Return success response
+    return NextResponse.json({
+      message: "Portal deleted successfully.",
+      data: portalUsers,
+      dataAfterDelete: portalUsersAfterDelete,
+    });
+  } catch (error) {
+    console.error("Error deleting portal:", error);
+    return NextResponse.json(
+      { error: "Failed to delete portal.", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+

@@ -3,7 +3,36 @@ import Link from "next/link";
 
 const PortalFooter = ({ config, filterValue }) => {
   const contactInfo = filterValue("Footer Content").split("\n");
-  const links = JSON.parse(filterValue("Footer Links") || 'null') || [];
+  const isValidJSON = (str) => {
+    try {
+      JSON.parse(str);
+      return true; // It's valid JSON
+    } catch (error) {
+      return false; // It's not valid JSON
+    }
+  };
+  const links = (() => {
+    try {
+      const filteredValue = filterValue("Footer Links");
+      if(isValidJSON(filteredValue)){
+        const parsedLinks = filteredValue ? JSON.parse(filteredValue) : null;
+        return Array.isArray(parsedLinks) ? parsedLinks : filteredValue;
+      }
+    } catch (error) {
+      console.error("Error parsing Footer Links:", error);
+      return [];
+    }
+  })();
+
+  const LoadingSpinner = () => (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if(!config || !config.logo) {
+    return <LoadingSpinner/>
+  }
   return (
     <footer className="bg-[#929493] text-white py-8 mt-auto">
       <div className="container mx-auto px-4">
@@ -30,17 +59,22 @@ const PortalFooter = ({ config, filterValue }) => {
             {/* <p>info@ethree.com</p> */}
           </div>
 
+          {!links&& (
+            <div>Footer Links</div>
+          )}
+
           {/* Navigation Links 1 */}
           <div className="flex justify-start md:justify-center">
             <div>
               <ul className="space-y-2">
-                {links.length > 0 && links.slice(0, 5).map((item, index)=>(
-                  <li key={index}>
-                   <Link href={item.link} className="hover:underline">
-                      {item.label}
-                   </Link>
-                 </li>
-                ))}
+                {links && links.length > 0 &&
+                  links.slice(0, 5).map((item, index) => (
+                    <li key={index}>
+                      <Link href={item.link} className="hover:underline">
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
               </ul>
             </div>
           </div>
@@ -49,13 +83,14 @@ const PortalFooter = ({ config, filterValue }) => {
           <div className="flex justify-start md:justify-center">
             <div>
               <ul className="space-y-2">
-                {links.length > 5 && links.slice(5).map((item,index)=>(
-                  <li key={index}>
-                   <Link href={item.link} className="hover:underline">
-                      {item.label}
-                   </Link>
-                 </li>
-                ))}
+                {links && links.length > 5 &&
+                  links.slice(5).map((item, index) => (
+                    <li key={index}>
+                      <Link href={item.link} className="hover:underline">
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
               </ul>
             </div>
           </div>

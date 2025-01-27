@@ -7,6 +7,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import UploadArea from "../UploadArea";
 import { useParams } from "next/navigation";
 import ViewProfileModal from "./ViewProfileModal";
+import { toast } from "react-toastify";
 
 const UsersContent = () => {
   const [users, setUsers] = useState([]);
@@ -43,9 +44,9 @@ const UsersContent = () => {
     fetchUsers();
   }, []);
   useEffect(() => {
-    if(onDeleteUser){
+    if (onDeleteUser) {
       fetchUsers();
-      setOnDeleteUser(false)
+      setOnDeleteUser(false);
     }
   }, [onDeleteUser]);
 
@@ -63,6 +64,29 @@ const UsersContent = () => {
       fileInputRef.current?.click();
     } else {
       handleFileSelect(event);
+    }
+  };
+
+  const handleReInviteUser = async (user) => {
+    try {
+      const response = await fetchWrapper(
+        "/api/users/resendInviteLink",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email, portalid: user.portalId }),
+        },
+        "resend-invite"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to Resend invite link");
+      }
+      toast.success("Invite sent successfully");
+    } catch (error) {
+      toast.error(error.message);
     }
   };
 
@@ -105,10 +129,14 @@ const UsersContent = () => {
       <div className="flex justify-between items-center space-x-4 pr-4">
         <div className="flex justify-between items-center w-full">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">User Management</h3>
-            <p className='text-gray-600 text-sm'>Manage user accounts, roles, and permissions efficiently</p>
+            <h3 className="text-lg font-medium text-gray-900">
+              User Management
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Manage user accounts, roles, and permissions efficiently
+            </p>
           </div>
-          <button 
+          <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB] inline-flex items-center"
           >
@@ -195,9 +223,9 @@ const UsersContent = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user.email}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap space-x-3 text-right text-sm font-medium">
                     <button
-                      className="text-[#1A4C8A] hover:text-[#15407A] mr-4"
+                      className="text-[#1A4C8A] hover:text-[#15407A]"
                       onClick={() => handleViewFiles(user)}
                     >
                       View Files
@@ -210,6 +238,12 @@ const UsersContent = () => {
                       }}
                     >
                       View Profile
+                    </button>
+                    <button
+                      className="text-[#1A4C8A] hover:text-[#15407A]"
+                      onClick={() => handleReInviteUser(user)}
+                    >
+                      Re-invite
                     </button>
                   </td>
                 </tr>

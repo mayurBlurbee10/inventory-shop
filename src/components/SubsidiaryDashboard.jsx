@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   LineChart,
   Line,
@@ -10,69 +10,90 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
-} from 'recharts';
-import { ArrowLeft, Users, Activity } from 'lucide-react';
+  ResponsiveContainer,
+} from "recharts";
+import { ArrowLeft, Users, Activity } from "lucide-react";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 // Mock data - in real app, this would come from an API
 const subsidiariesData = [
   {
     id: 1,
-    name: 'Ethree',
-    domain: 'ethree.com',
-    description: 'Enterprise solution for document management and collaboration.',
+    name: "Ethree",
+    domain: "ethree.com",
+    description:
+      "Enterprise solution for document management and collaboration.",
     activeUsers: {
       current: 850,
       total: 1000,
-      percentage: 85
+      percentage: 85,
     },
     apiCalls: {
       current: 8500,
       total: 10000,
-      percentage: 85
-    }
+      percentage: 85,
+    },
   },
   {
     id: 2,
-    name: 'European Division',
-    domain: 'eu.company.com',
-    description: 'European branch operations and document management system.',
+    name: "European Division",
+    domain: "eu.company.com",
+    description: "European branch operations and document management system.",
     activeUsers: {
       current: 380,
       total: 500,
-      percentage: 76
+      percentage: 76,
     },
     apiCalls: {
       current: 7700,
       total: 10000,
-      percentage: 77
-    }
+      percentage: 77,
+    },
   },
   {
     id: 3,
-    name: 'Asia Pacific',
-    domain: 'apac.company.com',
-    description: 'Asia Pacific region document and collaboration platform.',
+    name: "Asia Pacific",
+    domain: "apac.company.com",
+    description: "Asia Pacific region document and collaboration platform.",
     activeUsers: {
       current: 200,
       total: 350,
-      percentage: 57
+      percentage: 57,
     },
     apiCalls: {
       current: 5700,
       total: 10000,
-      percentage: 57
-    }
-  }
+      percentage: 57,
+    },
+  },
 ];
 
-const generateMockData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return months.map(month => ({
-    name: month,
-    apiCalls: Math.floor(Math.random() * 1000) + 500,
-    activeUsers: Math.floor(Math.random() * 100) + 50
-  }));
+const generateMockData = async (year, portalId) => {
+  // const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // return months.map(month => ({
+  //   name: month,
+  //   apiCalls: Math.floor(Math.random() * 1000) + 500,
+  //   activeUsers: Math.floor(Math.random() * 100) + 50
+  // }));
+  try {
+    const response = await fetchWrapper(
+      `/api/chart?portalId=${portalId}&year=${year}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      "get-api-logs"
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Error while getting apiLogs");
+    }
+    return data;
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 const KPICard = ({ title, value, total, percentage }) => (
@@ -91,13 +112,20 @@ const KPICard = ({ title, value, total, percentage }) => (
   </div>
 );
 
-const ActionButton = ({ icon: Icon, children, onClick, variant = 'primary' }) => (
+const ActionButton = ({
+  icon: Icon,
+  children,
+  onClick,
+  variant = "primary",
+}) => (
   <button
     onClick={onClick}
     className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full mb-2
-      ${variant === 'primary' 
-        ? 'bg-blue-700 text-white hover:bg-blue-800' 
-        : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+      ${
+        variant === "primary"
+          ? "bg-blue-700 text-white hover:bg-blue-800"
+          : "bg-blue-600 text-white hover:bg-blue-700"
+      }`}
   >
     {Icon && <Icon className="w-4 h-4 mr-2" />}
     {children}
@@ -106,16 +134,39 @@ const ActionButton = ({ icon: Icon, children, onClick, variant = 'primary' }) =>
 
 export default function SubsidiaryDashboard({ subsidiaryId }) {
   const router = useRouter();
-  const data = generateMockData();
-  
+  const [data, setData] = useState(null);
+
+  const getChartData = async (year, portalId) => {
+    try {
+      const response = await fetchWrapper(
+        `/api/chart?portalId=${portalId}&year=${year}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        "get-api-logs"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Error while getting apiLogs");
+      }
+      return data;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+  useEffect(() => {
+    getChartData(2025, subsidiaryId).then((data) => setData(data));
+  }, []);
   const subsidiaryData = useMemo(() => {
     const id = parseInt(subsidiaryId);
-    return subsidiariesData.find(s => s.id === id) || subsidiariesData[0];
+    return subsidiariesData.find((s) => s.id === id) || subsidiariesData[0];
   }, [subsidiaryId]);
 
   return (
     <div className="flex min-h-screen">
-
       <div className="w-64 bg-[#0161D5] p-6 flex flex-col">
         <button
           onClick={() => router.back()}
@@ -126,15 +177,15 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
         </button>
 
         <div className="space-y-4">
-          <ActionButton 
+          <ActionButton
             icon={Users}
-            onClick={() => console.log('Buy more users')}
+            onClick={() => console.log("Buy more users")}
           >
             Buy More User Licenses
           </ActionButton>
-          <ActionButton 
+          <ActionButton
             icon={Activity}
-            onClick={() => console.log('Buy more API calls')}
+            onClick={() => console.log("Buy more API calls")}
           >
             Increase API Call Limit
           </ActionButton>
@@ -148,9 +199,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Statistics Report for {subsidiaryData.name}
           </h1>
-          <p className="text-gray-500 mb-6">
-            {subsidiaryData.description}
-          </p>
+          <p className="text-gray-500 mb-6">{subsidiaryData.description}</p>
         </div>
 
         {/* KPIs in single row */}
@@ -175,7 +224,9 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
 
         {/* Graph */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900 mb-6">Usage Analytics</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-6">
+            Usage Analytics
+          </h2>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart

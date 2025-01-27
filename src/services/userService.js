@@ -5,7 +5,6 @@ import * as bcrypt from "bcrypt";
 import { validateOrReject } from "class-validator";
 import { In } from "typeorm";
 
-
 const getRepository = async (entity) => {
   await connectDatabase();
   const connection = getConnection();
@@ -147,7 +146,7 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
     } else {
       user.password = null;
     }
-  
+
     // Invalidate token after reset
     user.resetPasswordToken = null;
 
@@ -168,7 +167,7 @@ const setUserAccessToken = async (email, token, authStrategy) => {
       },
     });
     user.accessToken = token;
-    if(!!authStrategy){
+    if (!!authStrategy) {
       user.authStrategy = authStrategy;
     }
     await userRepository.save(user);
@@ -200,6 +199,23 @@ const deleteUser = async (userId) => {
     return "User deleted successfully.";
   } catch (error) {
     throw new Error(`Failed to delete user. ${error.message}`);
+  }
+};
+const setResetPasswordToken = async (email, token) => {
+  const userRepository = await getRepository(Users);
+  try {
+    const user = await userRepository.findOneBy({ email });
+
+    if (!user) {
+      throw new Error("Invalid or expired reset token");
+    }
+    user.resetPasswordToken = token;
+
+    await userRepository.save(user);
+    return "ResetPasswordToken successfully set";
+  } catch (error) {
+    console.log("error ==> ", error);
+    throw new Error("Failed to set ResetPasswordToken.");
   }
 };
 
@@ -238,6 +254,7 @@ export default {
   setUserOnboarding,
   deleteUser,
   getUserByRole,
+  setResetPasswordToken,
   getUserById,
   updateUser,
 };

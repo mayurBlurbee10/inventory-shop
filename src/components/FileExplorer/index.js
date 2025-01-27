@@ -171,7 +171,7 @@ const Breadcrumbs = ({ path, onNavigate }) => {
   );
 };
 
-const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {} }) => {
+const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {}, isInDialog=false }) => {
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -351,7 +351,9 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {} }) => {
           style={{ paddingLeft }}
           onClick={() => {
             if (typeof setSelectedItem === "function") {
-              setSelectedItem(file);
+              if(file.type === 'folder') {
+                setSelectedItem(file);
+              }
             }
             if (isFolder) navigateToPath(currentPath);
           }}
@@ -482,16 +484,18 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {} }) => {
 
   return (
     <div className="border border-gray-200 rounded-lg bg-white">
-      <div className="p-4 border-b border-gray-200 space-y-4">
-        <Breadcrumbs path={currentPath} onNavigate={navigateToPath} />
-        <h3 className="font-medium text-gray-900">Files & Folders</h3>
-        <SearchBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          isSearching={isSearching}
-        />
-        <SearchResults />
-      </div>
+      {!isInDialog && (
+        <div className="p-4 border-b border-gray-200 space-y-4">
+          <Breadcrumbs path={currentPath} onNavigate={navigateToPath} />
+          <h3 className="font-medium text-gray-900">Files & Folders</h3>
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isSearching={isSearching}
+          />
+          <SearchResults />
+        </div>
+      )}
       <div className="p-2">
         {data && data.length > 0 ? (
           data.map((item) => <FileItem key={item.id} file={item} />)

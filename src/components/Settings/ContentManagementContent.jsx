@@ -4,7 +4,11 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
+const ContentManagementContent = ({
+  isAddRequired,
+  onContentLengthChange,
+  setContentOnboard,
+}) => {
   const params = useParams();
   const [content, setContent] = useState([]);
   const [contentTypes, setContentTypes] = useState([]);
@@ -26,7 +30,6 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   const [newType, setNewType] = useState("");
   const [loading, setLoading] = useState(false);
   const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
-
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -73,8 +76,8 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
       );
       if (!response.ok) throw new Error("Failed to fetch Content Management");
       const data = await response.json();
-      // const content = data.filter((item) => item.value !== null);
       setContent(data.portalContent);
+      setContentOnboard && setContentOnboard(data.portalContent)
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -114,15 +117,19 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
 
       console.log("newContent : ", newContent);
 
-      const obj = imageUrl 
+      const obj = imageUrl
         ? {
             ...newContent,
-           
+
             portalId: params.portalid ?? "default",
           }
         : newContent.type === "Links"
-          ? { ...newContent, value: JSON.stringify(linkFields), portalId: params.portalid ?? "default" }
-          : { ...newContent, portalId: params.portalid ?? "default" }
+        ? {
+            ...newContent,
+            value: JSON.stringify(linkFields),
+            portalId: params.portalid ?? "default",
+          }
+        : { ...newContent, portalId: params.portalid ?? "default" };
 
       const requestOptions = {
         method: isEditMode ? "PUT" : "POST",
@@ -140,14 +147,20 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
       );
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error);
+        throw new Error("Content length is too long");
       }
 
       fetchData();
       handleModalClose();
-      toast.success(`${apiType === 'updateContentManagement' ? "Content updated successfully" : "Content added successfully"}`)
+      toast.success(
+        `${
+          apiType === "updateContentManagement"
+            ? "Content updated successfully"
+            : "Content added successfully"
+        }`
+      );
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
       console.error("Error adding content:", error);
       setError(error.message || "An unexpected error occurred");
     } finally {
@@ -164,8 +177,10 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
     if (contentToEdit.type == "Image") {
       setPreviewUrl(contentToEdit.value || "");
     }
-    if(contentToEdit.type === "Links"){
-      setLinkFields(JSON.parse(contentToEdit.value)|| [{ label: "", link: "" }]);
+    if (contentToEdit.type === "Links") {
+      setLinkFields(
+        JSON.parse(contentToEdit.value) || [{ label: "", link: "" }]
+      );
     }
   };
 
@@ -236,9 +251,9 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
       setNewTitle("");
       setNewType("");
       setIsNewTitleDialogOpen(false);
-      toast.success(newData.message)
+      toast.success(newData.message);
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
       console.error("Error adding content:", error);
       setTitleError(error.message || "An unexpected error occurred");
     }
@@ -275,31 +290,37 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
   };
 
   const handleAddLinkField = () => {
-    if (linkFields.length < 10 && linkFields[linkFields.length-1].label != '' && linkFields[linkFields.length-1].link != '') {
+    if (
+      linkFields.length < 10 &&
+      linkFields[linkFields.length - 1].label != "" &&
+      linkFields[linkFields.length - 1].link != ""
+    ) {
       setLinkFields([...linkFields, { label: "", link: "" }]);
     }
   };
 
   const addContent = () => {
-    const filterTypes = originalContentTypes.filter(ct => 
-      !content.some(c => c.title === ct.title)
+    const filterTypes = originalContentTypes.filter(
+      (ct) => !content.some((c) => c.title === ct.title)
     );
     setContentTypes(filterTypes);
     setIsDialogOpen(true);
   };
 
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900">
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">
             Content Management
-        </h3>
-        <p className="text-gray-600 text-sm">Organize and edit the information displayed across your platform.</p>
-      </div>
-        { isAddRequired && (<button
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Organize and edit the information displayed across your platform.
+          </p>
+        </div>
+        {isAddRequired && (
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             onClick={addContent}
           >
             Add Content
@@ -337,7 +358,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
       )}
       {/* Dialog Box */}
       {isDialogOpen && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50" style={{margin : 0}}>
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl text-gray-800 font-semibold">
@@ -415,7 +436,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                     value={newContent.value}
                     onChange={handleValueChange}
                     required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                    className="mt-1 block w-full min-h-[150px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
                   />
                 </div>
               )}
@@ -453,7 +474,7 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                 <div className="space-y-4">
                   {linkFields.map((item, index) => (
                     <div key={index} className="flex space-x-2 items-center">
-                       <input
+                      <input
                         type="text"
                         placeholder="Label"
                         value={item.label}
@@ -471,12 +492,15 @@ const ContentManagementContent = ({isAddRequired, onContentLengthChange}) => {
                         }
                         className="p-2 border rounded-md text-gray-700"
                       />
-                      <button type="button" onClick={() => handleRemoveLinkField(index)}>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLinkField(index)}
+                      >
                         <X className="text-red-500 h-5 w-5" />
                       </button>
                     </div>
                   ))}
-                   {linkFields.length < 10 && (
+                  {linkFields.length < 10 && (
                     <button
                       type="button"
                       onClick={handleAddLinkField}

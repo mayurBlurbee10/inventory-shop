@@ -1,12 +1,16 @@
-"use client"
-import { useRouter } from "next/navigation";
+"use client";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 export default function Custom404() {
   const router = useRouter();
+  const params = useParams();
+  const pathname = usePathname();
 
-    const handleGoBack = () => {
-      router.back()
-    }
+  const handleGoBack = () => {
+    router.back();
+  };
+
+  const portalId = pathname.split('/')[2]==='not-found' && pathname.split('/')[1]
 
   return (
     <div className="flex items-center justify-center flex-col min-h-screen bg-white">
@@ -15,12 +19,22 @@ export default function Custom404() {
           <p className="text-[4rem] sm:text-[5rem] md:text-[8rem] text-blue-600 leading-none font-semibold">
             404
           </p>
-          <p className="text-sm text-black max-w-lg mb-6 leading-5">
-            Oops! The page you are looking for doesn't exist.It might have been
-            moved, deleted, or the URL might be incorrect.
-          </p>
+          {portalId ? (
+            <p className="text-sm text-black max-w-lg mb-6 leading-5">
+              Oops! The portal you are looking for doesn't exist. It might have
+              been moved, deleted, or the URL might be incorrect. 
+            </p>
+          ) : (
+            <p className="text-sm text-black max-w-lg mb-6 leading-5">
+              Oops! The page you are looking for doesn't exist. It might have
+              been moved, deleted, or the URL might be incorrect.
+            </p>
+          )}
 
-          <button className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition-all ease-in-out duration-200" onClick={handleGoBack}>
+          <button
+            className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition-all ease-in-out duration-200"
+            onClick={handleGoBack}
+          >
             Go Back
           </button>
         </div>

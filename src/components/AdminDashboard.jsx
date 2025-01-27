@@ -11,6 +11,8 @@ import {
   FileText,
   HeadphonesIcon,
   LogOut,
+  X,
+  Trash2,
 } from "lucide-react";
 import CreationWizard from "./CreationWizard";
 import Image from "next/image";
@@ -19,6 +21,7 @@ import { UserRole } from "@/config/constants";
 import { clearUserData, getUserData } from "@/app/lib/auth";
 import MasterUsersContent from "./Master/MasterUsersContent";
 import { toast } from "react-toastify";
+import { Dialog, DialogBackdrop } from "@headlessui/react";
 
 const SidePanel = ({ setCurrentPage }) => (
   <div className="w-80 bg-[#0161D5] p-6 flex flex-col h-screen fixed left-0">
@@ -33,8 +36,10 @@ const SidePanel = ({ setCurrentPage }) => (
     </div>
 
     <nav className="space-y-4 flex-1">
-      <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
-        onClick={()=>setCurrentPage('Portals')}>
+      <button
+        className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
+        onClick={() => setCurrentPage("Portals")}
+      >
         <Layout className="w-5 h-5 mr-3" />
         Dashboard
       </button>
@@ -43,8 +48,10 @@ const SidePanel = ({ setCurrentPage }) => (
         Reports
       </button>
 
-      <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors">
-        {/* onClick={()=>setCurrentPage('Super User')} */}
+      <button
+        className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
+        onClick={() => setCurrentPage("Super User")}
+      >
         <Users className="w-5 h-5 mr-3" />
         User Management
       </button>
@@ -63,53 +70,180 @@ const SidePanel = ({ setCurrentPage }) => (
   </div>
 );
 
-const SubsidiaryCard = ({ subsidiary, onSelect }) => (
-  <div
-    onClick={() => onSelect(subsidiary)}
-    className="bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer"
-  >
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-[#0161D5] to-[#0161D5] rounded-lg flex items-center justify-center">
-          <span className="text-lg font-semibold text-white">
-            {(subsidiary.legalName || subsidiary.tradingName || "U")
-              .charAt(0)
-              .toUpperCase()}
-          </span>
+const DeletePortalModal = ({ isOpen, onClose, subsidiary, refreshPortals }) => {
+  const [enteredPortal, setEnteredPortal] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  function sanitizeName(name) {
+    let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+    return sanitizeName.endsWith(".")
+      ? sanitizeName.slice(0, -1)
+      : sanitizeName;
+  }
+
+  const handleDeleteSubsidiary = async () => {
+    if (subsidiary.legalName !== enteredPortal) {
+      setError("Entered portal doesn't match");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const requestOptions = {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: subsidiary.id }),
+      };
+
+      const response = await fetch(
+        `/api/portal`,
+        requestOptions,
+        "portal-delete"
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Portal deletion failed");
+      await refreshPortals();
+      toast.success(data.message || "Portal deleted successfully");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <DialogBackdrop className="fixed inset-0 bg-black/50 " />
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-md">
+          <div className="flex justify-between items-center mb-4">
+            <Dialog.Title className="text-xl text-gray-600 font-medium">
+              Delete Portal
+            </Dialog.Title>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="text-center text-gray-700 py-4">
+            <p className="font-bold">{subsidiary.legalName}</p>
+            <div className="text-gray-700 p-5 space-y-2 border-t ">
+              <p className="text-sm">
+                This action CANNOT be undone. This will delete the portal
+                permanently
+              </p>
+              <p className="text-sm font-semibold tracking-tight">
+                Please type in the portal name to confirm
+              </p>
+              <input
+                type="text"
+                id="email"
+                value={enteredPortal}
+                onChange={(e) => setEnteredPortal(e.target.value)}
+                placeholder="Enter Portal"
+                className="w-full px-3 py-2 text-gray-700 border border-red-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+              />
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+            </div>
+
+            <div className="flex justify-center space-x-3">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors"
+                onClick={handleDeleteSubsidiary}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="spinner"></div> Deleting This Portal
+                  </div>
+                ) : (
+                  "Delete This Portal"
+                )}
+              </button>
+            </div>
+          </div>
+        </Dialog.Panel>
+      </div>
+    </Dialog>
+  );
+};
+
+const SubsidiaryCard = ({ subsidiary, onSelect, user, refreshPortals }) => {
+  const [portalToDelete, setPortalToDelete] = useState(null);
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#0161D5] to-[#0161D5] rounded-lg flex items-center justify-center">
+            <span className="text-lg font-semibold text-white">
+              {(subsidiary.legalName || subsidiary.tradingName || "U")
+                .charAt(0)
+                .toUpperCase()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                subsidiary.status === "active"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-yellow-100 text-yellow-800"
+              }`}
+            >
+              {subsidiary.status}
+            </div>
+            {user?.id === subsidiary.createdBy.id && (
+              <div
+                className={`px-2 py-1`}
+                onClick={() => setPortalToDelete(subsidiary)}
+              >
+                <Trash2 className="size-4 text-red-700"/>
+              </div>
+            )}
+          </div>
         </div>
-        <div
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            subsidiary.status === "active"
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {subsidiary.status}
+        <div onClick={() => onSelect(subsidiary)}>
+          <h3 className="text-lg font-medium text-gray-900 mb-1">
+            {subsidiary.legalName}
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            {subsidiary.domain
+              ? `${subsidiary.domain}.company.com`
+              : "Domain not configured"}
+          </p>
+
+          <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <div className="flex items-center">
+              <Users size={16} className="mr-1" />
+              <span>{subsidiary.userCount || 0} users</span>
+            </div>
+            <div className="flex items-center">
+              <Folder size={16} className="mr-1" />
+              <span>{subsidiary.storageUsed || "0 GB"}</span>
+            </div>
+          </div>
         </div>
       </div>
-
-      <h3 className="text-lg font-medium text-gray-900 mb-1">
-        {subsidiary.legalName || subsidiary.tradingName}
-      </h3>
-      <p className="text-sm text-gray-500 mb-4">
-        {subsidiary.domain
-          ? `${subsidiary.domain}.company.com`
-          : "Domain not configured"}
-      </p>
-
-      <div className="flex items-center space-x-4 text-sm text-gray-500">
-        <div className="flex items-center">
-          <Users size={16} className="mr-1" />
-          <span>{subsidiary.userCount || 0} users</span>
-        </div>
-        <div className="flex items-center">
-          <Folder size={16} className="mr-1" />
-          <span>{subsidiary.storageUsed || "0 GB"}</span>
-        </div>
-      </div>
+      <DeletePortalModal
+        isOpen={portalToDelete?.id === subsidiary?.id}
+        onClose={() => setPortalToDelete(null)}
+        subsidiary={subsidiary}
+        refreshPortals={refreshPortals}
+      />
     </div>
-  </div>
-);
+  );
+};
 
 const CreateSubsidiaryButton = ({ onClick }) => (
   <button
@@ -132,7 +266,9 @@ const DashboardHeader = ({
   <>
     <div className="flex justify-between items-start">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-1">{currentPage}</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+          {currentPage}
+        </h1>
         <p className="text-sm text-gray-500">
           Managing {currentPageCount}{" "}
           {currentPageCount > 1 ? `${currentPage}s` : `${currentPage}`}
@@ -211,6 +347,8 @@ const SubsidiaryGrid = ({
   subsidiaries,
   onSelectSubsidiary,
   onCreateNew,
+  user,
+  refreshPortals,
 }) => (
   <>
     {isLoading ? (
@@ -224,6 +362,8 @@ const SubsidiaryGrid = ({
                 key={subsidiary.id}
                 subsidiary={subsidiary}
                 onSelect={onSelectSubsidiary}
+                user={user}
+                refreshPortals={refreshPortals}
               />
             </React.Fragment>
           );
@@ -271,7 +411,7 @@ export default function AdminDashboard() {
         primaryColor: formData.primaryColor || "#000000",
         secondaryColor: formData.secondaryColor || "#4F46E5",
         accentColor: formData.accentColor || "#000000",
-        faviconUrl : formData.faviconUrl || "",
+        faviconUrl: formData.faviconUrl || "",
         security: {
           mfa: formData.security?.mfa || true,
           sso: formData.security?.sso || false,
@@ -304,9 +444,9 @@ export default function AdminDashboard() {
         },
         "create-user-box"
       );
-  
+
       const boxData = await boxResponse.json();
-  
+
       if (!boxResponse.ok) {
         throw new Error(boxData.error || "Failed to create Box user");
       }
@@ -348,7 +488,7 @@ export default function AdminDashboard() {
         folderId: boxData.user.folderId,
         portal: sanitizeName(formData.legalName) || "",
         isOnboardingRequired: true,
-        createdBy: user.id
+        createdBy: user.id,
       };
 
       const UserResponse = await fetchWrapper(
@@ -380,11 +520,11 @@ export default function AdminDashboard() {
         throw new Error(subsidiary.error || "Failed to save subsidiary data");
       }
 
-
       setSubsidiaries((prev) => [...prev, subsidiary.data]);
-      toast.success(subsidiary.message || "Subsidiary created successfully")
+      getPortal();
+      toast.success(subsidiary.message || "Subsidiary created successfully");
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
       console.error("Error creating subsidiary:", error);
     } finally {
       setIsLoading(false);
@@ -424,12 +564,12 @@ export default function AdminDashboard() {
     getPortal();
   }, [router]);
 
-  useEffect(()=>{
+  useEffect(() => {
     setCurrentPageCount(0);
-    if(currentPage==='Portals'){
+    if (currentPage === "Portals") {
       setCurrentPageCount(subsidiaries.length);
     }
-  },[currentPage])
+  }, [currentPage]);
 
   const handleLogout = () => {
     setAccountDropdown(false);
@@ -438,8 +578,13 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex" onClick={() => {setAccountDropdown(false)}}>
-      <SidePanel setCurrentPage={setCurrentPage}/>
+    <div
+      className="min-h-screen bg-gray-50 flex"
+      onClick={() => {
+        setAccountDropdown(false);
+      }}
+    >
+      <SidePanel setCurrentPage={setCurrentPage} />
       <div className="flex-1 ml-80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <DashboardHeader
@@ -450,7 +595,7 @@ export default function AdminDashboard() {
             setAccountDropdown={setAccountDropdown}
             handleLogout={handleLogout}
           />
-          {currentPage === 'Portals' && (
+          {currentPage === "Portals" && (
             <>
               <SubsidiaryMetrics />
               <SubsidiaryGrid
@@ -460,11 +605,15 @@ export default function AdminDashboard() {
                 onCreateNew={() => {
                   setShowCreationModal(true);
                 }}
+                user={user}
+                refreshPortals={getPortal}
               />
             </>
           )}
 
-          {currentPage === 'Super User' && <MasterUsersContent setCurrentPageCount={setCurrentPageCount} />}
+          {currentPage === "Super User" && (
+            <MasterUsersContent setCurrentPageCount={setCurrentPageCount} />
+          )}
         </div>
 
         <CreationWizard

@@ -13,6 +13,7 @@ import {
   Trash2,
   UsersRound,
   X,
+  FolderInput,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
@@ -85,6 +86,7 @@ const ShareModal = ({
           userID: userID.value,
           role: "viewer",
           itemId: item?.id,
+          type: item?.type
         }),
       };
       const response = await fetchWrapper(
@@ -189,12 +191,14 @@ const ShareModal = ({
           id: collab.id,
           role: collab.role,
           user: { name: user.name, id: user.boxUserId },
+          type: collab.type,
         };
       } else {
         collaborator.push({
           id: collab.id,
           role: "viewer",
           user: { name: user.name, id: user.boxUserId },
+          type: collab.type,
         });
       }
     } else {
@@ -305,7 +309,7 @@ const ShareModal = ({
             </div>
           )}
 
-          {item?.type === "folder" && (
+          {/* {item?.type === "folder" && ( */}
             <div className="space-y-2">
               <label className="text-gray-800 font-semibold">
                 Share with user
@@ -335,7 +339,7 @@ const ShareModal = ({
                 </button>
               </div>
             </div>
-          )}
+          {/* )} */}
           {collaborator.slice(1).length > 0 && (
             <div>
               <div className="text-gray-700 py-2 pr-2 grid grid-cols-2">
@@ -405,6 +409,10 @@ function FolderExplorer({
   onFileChanges,
   listType,
   setSearchQuery,
+  setIsMoveModalOpen,
+  setMoveItem,
+  setSelectedBulkItems,
+  selectedBulkItems,
 }) {
   const params = useParams();
   const pathName = usePathname();
@@ -422,6 +430,7 @@ function FolderExplorer({
   }, []);
 
   const handleFolderClick = (folder) => {
+    setSelectedBulkItems([]);
     setSearchQuery("");
     setSelectedItem(folder);
     setPath((prev) => [...prev, folder]);
@@ -432,7 +441,7 @@ function FolderExplorer({
     if (listType == "shared" && file.currentUserRole == "viewer") {
       return;
     }
-    setDeleteDropdown((prev) => (prev === file.id ? null : file.id));
+    setDeleteDropdown((prev) => (prev === file?.id ? null : file?.id));
   };
 
   const handlePreview = (fileId) => {
@@ -485,9 +494,9 @@ function FolderExplorer({
       link.click();
 
       window.URL.revokeObjectURL(url);
-      toast.success("File dowloaded successfully")
+      toast.success("File dowloaded successfully");
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
       console.error("Download error:", error);
     }
   };
@@ -561,7 +570,8 @@ function FolderExplorer({
 
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data.error || "Failed to delete folder");
+      if (!response.ok)
+        throw new Error(data.error || "Failed to delete folder");
       setIsLoading(false);
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       setIsDeleteModalOpen(false);
@@ -601,6 +611,14 @@ function FolderExplorer({
     }).format(date);
   };
 
+  const handleCheckboxChange = (id, isChecked) => {
+    setSelectedBulkItems((prevSelected) =>
+      isChecked
+        ? [...prevSelected, id]
+        : prevSelected.filter((itemId) => itemId !== id)
+    );
+  };
+
   return (
     <>
       {currentFilesList &&
@@ -608,9 +626,19 @@ function FolderExplorer({
         currentFilesList.map((file, index) => {
           return (
             <React.Fragment key={index}>
-              <tr className="px-3 hover:bg-gray-50 hidden md:table-row divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800 relative z-[20]">
+              <tr className="px-3 hover:bg-gray-50 hidden md:table-row divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800 relative">
+                <td className="py-3 pl-4">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-4 w-4 text-blue-600 cursor-pointer"
+                    checked={selectedBulkItems.includes(file?.id)}
+                    onChange={(e) =>
+                      handleCheckboxChange(file?.id, e.target.checked)
+                    }
+                  />
+                </td>
                 <td
-                  className="py-3 pl-4"
+                  className="py-3"
                   onClick={() =>
                     file.type === "folder" && handleFolderClick(file)
                   }
@@ -628,12 +656,12 @@ function FolderExplorer({
                 </td>
 
                 {/* <td className="py-3">
-                <div className="flex items-center justify-start gap-2">
-                  <span className="text-gray-600 text-sm">You opened</span>
-                  <span className="rounded-full bg-gray-600 h-1 w-1 block"></span>
-                  <span className="text-gray-600 text-sm">9:30 AM</span>
-                </div>
-              </td> */}
+                  <div className="flex items-center justify-start gap-2">
+                    <span className="text-gray-600 text-sm">You opened</span>
+                    <span className="rounded-full bg-gray-600 h-1 w-1 block"></span>
+                    <span className="text-gray-600 text-sm">9:30 AM</span>
+                  </div>
+                </td> */}
 
                 <td className="py-3">
                   <div className="flex items-center">
@@ -721,6 +749,19 @@ function FolderExplorer({
                       {/* DELETE DROPDOWN DONE*/}
                       {deleteDropdown === file?.id && (
                         <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
+                          {listType !== "shared" && (
+                            <button
+                              className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                              onClick={() => {
+                                setIsMoveModalOpen((prev) => !prev);
+                                setMoveItem(file);
+                                setSelectedBulkItems([]);
+                              }}
+                            >
+                              <FolderInput className="h-4 w-4 text-gray-600" />{" "}
+                              Move
+                            </button>
+                          )}
                           <button
                             className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
                             // onClick={() => {
@@ -848,6 +889,17 @@ function FolderExplorer({
                         >
                           <Trash2 className="h-4 w-4 text-gray-600" />
                         </button>
+                        {listType !== "shared" && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                            onClick={() => {
+                              setIsMoveModalOpen((prev) => !prev);
+                              setMoveItem(file);
+                            }}
+                          >
+                            <FolderInput className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
                         <DeleteConfirmDialog
                           isModalOpen={isDeleteModalOpen}
                           setIsModalOpen={setIsDeleteModalOpen}
