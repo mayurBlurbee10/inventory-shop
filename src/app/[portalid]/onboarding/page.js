@@ -3,13 +3,13 @@
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Footer from "@/components/Footer";
-import PortalFooter from "@/components/PortalFooter";
 import ContentManagementContent from "@/components/Settings/ContentManagementContent";
 import UsersContent from "@/components/Settings/UsersContent";
 import { ChevronRight, Check, IdCard, LockKeyhole } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -51,14 +51,8 @@ export default function OnBoardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contentLength, setContentLength] = useState(0);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState([]);
   const [content, setContent] = useState([]);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoadingLogin, setIsLoadingLogin] = useState(false);
-  const [isLoadingOkta, setIsLoadingOkta] = useState(false);
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const steps = [
@@ -73,13 +67,6 @@ export default function OnBoardingPage() {
       router.push("login");
     }
   }, [router]);
-  const login = async () => {
-    try {
-      await signIn("okta");
-    } catch (error) {
-      console.log("error: ", error);
-    }
-  };
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
@@ -157,29 +144,6 @@ export default function OnBoardingPage() {
     router.push(`home`);
   };
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchWrapper(
-        `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
-        { method: "GET" },
-        "fetchContentManagement"
-      );
-      if (!response.ok) throw new Error("Failed to fetch Content Management");
-      const data = await response.json();
-      setContent(data.portalContent);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterContent = (title) => {
-    const contentItem = content.find((item) => item.title === title);
-    const value = contentItem ? contentItem.value : title;
-    return value;
-  };
 
   const handleContentLengthChange = (event) => {
     setContentLength(event);
@@ -253,74 +217,9 @@ export default function OnBoardingPage() {
   const NavBarItem = ({ title }) => (
     <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
   );
-  const handleLogin = async (e) => {
-    e.preventDefault();
 
-    // Identify which button was clicked
-    const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
-
-    if (buttonType === "log in") {
-      setIsLoadingLogin(true);
-    } else if (buttonType === "login with okta") {
-      setIsLoadingOkta(true);
-    }
-
-    setError("");
-
-    console.log("Login attempt for:", email);
-
-    try {
-      const response = await fetchWrapper(
-        "/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            portalid: params.portalid || "default",
-          }),
-        },
-        "default-login"
-      );
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Login failed");
-      }
-
-      const data = await response.json();
-      // Store user data using auth utility
-      const userData = data.user;
-      console.log("Storing user data:", userData);
-      setUserData(userData);
-      localStorage.setItem("portal", "defaultPortal");
-      localStorage.setItem("accessToken", data.accessToken);
-      console.log("Redirecting to dashboard");
-      toast.success("Redirecting to dashboard");
-      if (userData.isOnboardingRequired) {
-        router.push(`onboarding`);
-      } else {
-        router.push(`/demo/dashboard`);
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      toast.error(err.message);
-      setError(err.message);
-    } finally {
-      // Reset loading states
-      if (buttonType === "log in") {
-        setIsLoadingLogin(false);
-      } else if (buttonType === "login with okta") {
-        setIsLoadingOkta(false);
-      }
-    }
-  };
 
   if (!config || !content) return <LoadingSpinner />;
-
 
   return (
     <div className="grid grid-cols-12 w-screen">
@@ -402,13 +301,13 @@ export default function OnBoardingPage() {
       </div>
 
       <div className="h-full col-span-8 relative overflow-hidden">
-        <div className="max-w-[1140px] w-full py-[70px] mx-auto">
+        <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
           <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               <img
                 // src="/default_logo_purple.png"
                 src={config?.logo || "/logo.png"}
-                alt="Wealthportal"
+                alt={config.legalName || "Default"}
                 className="h-[52px] mr-2"
               />
               <span className="text-3xl text-[#000000e6] mb-1 font-lato">
@@ -463,7 +362,7 @@ export default function OnBoardingPage() {
                     className="p-[1px] w-full"
                   ></div>
 
-                  <p className="font-light text-xl text-black leading-7 font-lato mb-3">
+                  <p className="font-light text-xl text-black leading-7 font-lato mb-3 line-clamp-5">
                     {filterValue("Paragraph")}
                   </p>
                 </div>
@@ -473,18 +372,7 @@ export default function OnBoardingPage() {
             {/* Right Panel - Login Form */}
             <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
               <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
-                {/* <div className="text-center mb-8">
-                <img
-                  src="/logo2.png"
-                  alt="Wealthportal"
-                  className="h-12 w-auto mx-auto"
-                />
-                <p className="text-text/60 mt-2">
-                  Log in here to access your account
-                </p>
-              </div> */}
-
-                <form onSubmit={handleLogin}>
+                <form>
                   <div className="">
                     <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
                       <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
@@ -494,8 +382,6 @@ export default function OnBoardingPage() {
                         type="email"
                         placeholder="Email"
                         className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
                         required
                       />
                     </div>
@@ -507,48 +393,23 @@ export default function OnBoardingPage() {
                         type="password"
                         placeholder="Password"
                         className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
                       />
                     </div>
                     <button
-                      type="submit"
+                      type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group "
-                      disabled={isLoadingLogin || isLoadingOkta}
                       style={{ backgroundColor: config?.secondaryColor }}
                     >
-                      {isLoadingLogin ? (
-                        <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
-                      ) : (
-                        <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
-                          Log In
-                        </span>
-                      )}
+                      Log In
                     </button>
                     <button
                       type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
-                      onClick={login}
-                      disabled={isLoadingLogin || isLoadingOkta}
-                    // style={{ backgroundColor: config?.secondaryColor }}
                     >
-                      {isLoadingOkta ? (
-                        <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
-                      ) : (
-                        <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
-                          Login with Okta
-                        </span>
-                      )}
+                      Login with Okta
                     </button>
                   </div>
                 </form>
-
-                {error && (
-                  <div className="mt-4 text-red-500 text-sm text-center">
-                    {error}
-                  </div>
-                )}
 
                 {/* <div className="text-center mt-4">
               <button className="text-text/40 hover:text-text/60">
@@ -561,36 +422,38 @@ export default function OnBoardingPage() {
 
           {/* cards */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-10 mt-10">
-            {/* Adjusted to stretch and take full height */}
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-10">
+
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
                   </div>
                   {filterValue("Card 1 Title")}</h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6">{filterValue("Card 1 Content")}</p>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">{filterValue("Card 1 Content")}</p>
               </div>
             </div>
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
                   </div>
                   {filterValue("Card 2 Title")}</h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6">{filterValue("Card 2 Content")}</p>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">{filterValue("Card 2 Content")}</p>
               </div>
             </div>
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path></svg>
                   </div>
                   {filterValue("Card 3 Title")}</h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 font-lato">{filterValue("Card 3 Content")}</p>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">{filterValue("Card 3 Content")}</p>
               </div>
             </div>
           </div>
@@ -599,7 +462,7 @@ export default function OnBoardingPage() {
 
 
         <div className="w-full ">
-          <Footer config={config} filterValue={filterValue} />
+          <Footer config={config} filterValue={filterValue} from={"onboarding"} />
         </div>
       </div>
 

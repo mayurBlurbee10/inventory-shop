@@ -162,7 +162,7 @@ export default function DashboardPage() {
 
   const filterValue = (title) => {
     if (!content) return null;
-    console.log('content:' ,content)
+    console.log('content:', content)
 
     const contentItem = content.portalContent.find(
       (item) => item.title === title
@@ -213,15 +213,28 @@ export default function DashboardPage() {
         <div className="max-w-[1140px] mx-auto px-3">
           <nav className="flex justify-between items-center bg-secondary py-2">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              <img
-                src="/default_logo_purple.png"
-                // src={config?.logo }
-                alt="Wealthportal"
-                className="h-[52px] mr-2"
-              />
+              {user?.company?.logo || config?.logo ? (
+                <img
+                  src={
+                    user?.company?.logo
+                      ? user.company.logo.replace("/api/upload", "/uploads")
+                      : config?.logo || "/default_logo_purple.png"
+                  }
+                  alt={params.portalid}
+                  className="h-[52px] mr-2"
+                />
+              ) : (
+                // Skeleton for logo
+                <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
+              )}
+
               <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-                {/* {filterValue("Header Text")} */}
-                Wealthportal
+                {filterValue("Header Text") || params.portalId ? (
+                  filterValue("Header Text") || params.portalId
+                ) : (
+                  // Skeleton for header text
+                  <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
+                )}
               </span>
             </a>
             <div className="hidden md:flex space-x-4 items-center">
@@ -521,7 +534,7 @@ export default function DashboardPage() {
         isOpen={isTechSupportModalOpen}
         onClose={() => setIsTechSupportModalOpen(false)}
       />
-      <Footer config={config} filterValue={filterValue} />
+      <Footer config={config} filterValue={filterValue} user={user} />
     </div>
   );
 }

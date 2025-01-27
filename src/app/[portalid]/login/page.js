@@ -8,7 +8,8 @@ import { toast } from "react-toastify";
 
 import { IdCard, LockKeyhole, UserRound, SquarePen } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
+import { getUserData } from "@/lib/auth";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -31,6 +32,8 @@ export default function LoginPage() {
   const [config, setConfig] = useState(null);
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isLoadingOkta, setIsLoadingOkta] = useState(false);
+  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null);
 
 
   useEffect(() => {
@@ -166,6 +169,44 @@ export default function LoginPage() {
       console.log("error: ", error);
     }
   };
+  const getUserDetailsByEmail = async (email) => {
+    try {
+      let url = `/api/users/loginByProvider`;
+      const body = {
+        method: "POST",
+        body: JSON.stringify({ email, portalid: params.portalid }),
+      };
+      const response = await fetchWrapper(url, body, "fetchUserByEmail");
+      if (!response.ok) throw new Error("Failed to get user from email");
+      const data = await response.json();
+      const userData = data.user;
+      setUserData(userData);
+      localStorage.setItem("portal", params.portalid);
+      localStorage.setItem("accessToken", data.accessToken);
+    } catch (error) {
+      console.error("Failed to get user from email:", error);
+      router.push("login");
+    }
+  };
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const sessionData = await getSession();
+      setSession(sessionData);
+      if (sessionData) {
+        await getUserDetailsByEmail(sessionData.user.email);
+      }
+    };
+    fetchSession().then(() => {
+      const userData = getUserData();
+      if (!userData) {
+        router.push("login");
+        return;
+      }
+
+      setUser(userData);
+    });
+  }, [router]);
 
 
 
@@ -176,7 +217,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-[1140px] w-full py-[70px] mx-auto">
         <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
-          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+          {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
               // src="/default_logo_purple.png"
               src={config?.logo || "/logo.png"}
@@ -186,7 +227,29 @@ export default function LoginPage() {
             <span className="text-3xl text-[#000000e6] mb-1 font-lato">
               {filterValue("Header Text")}
             </span>
+          </a> */}
+          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+            {user?.company?.logo || config?.logo ? (
+              <img
+              src={config?.logo || "/logo.png"}
+                alt={params.portalid}
+                className="h-[52px] mr-2"
+              />
+            ) : (
+              // Skeleton for logo
+              <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
+            )}
+
+            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+              {filterValue("Header Text") || params.portalId ? (
+                filterValue("Header Text") || params.portalId
+              ) : (
+                // Skeleton for header text
+                <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
+              )}
+            </span>
           </a>
+          
           <div className="hidden md:flex space-x-4">
             <NavBarItem title="Individual" />
             <NavBarItem title="Business" />

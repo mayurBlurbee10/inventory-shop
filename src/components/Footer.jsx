@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-const Footer = ({ config, filterValue }) => {
+const Footer = ({ config, filterValue, user, from }) => {
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,8 +32,10 @@ const Footer = ({ config, filterValue }) => {
 
   const contactInfo = filterValue("Footer Content")?.split("\n") || [];
   const links = JSON.parse(filterValue("Footer Links") || "null") || [];
+  const isFromAvailable = from;
+
   return (
-    <footer className=" pt-12 mt-auto">
+    <footer className=" mt-auto">
       <div className="container mx-auto px-4">
         <div className="max-w-[1140px] mx-auto md:px-[15px]">
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -83,14 +85,18 @@ const Footer = ({ config, filterValue }) => {
             </div>
           </div> */}
 
-          <div className="mb-1" 
+          <div className="mb-1"
             style={{
-            maxWidth: "100px",
-            maxHeight: "100px",
-            overflow: "hidden", 
-          }}>
+              maxWidth: "100px",
+              maxHeight: "100px",
+              overflow: "hidden",
+            }}>
             <Image
-              src={config?.logo ?? "/logo.png"}
+              src={
+                user?.company?.logo
+                  ? user.company.logo.replace("/api/upload", "/uploads")
+                  : config?.logo || "/logo.png"
+              }
               alt={config?.legalName || "Default Company Name"}
               width={75}
               height={75}
@@ -102,24 +108,24 @@ const Footer = ({ config, filterValue }) => {
 
           <div>
             <div>
-              {/* <p className="text-sm text-[#6c757d] font-medium font-lato mb-1">
-                Careers | Legal | Help Center | Blog
-              </p> */}
               <div className="text-sm text-[#6c757d] font-medium font-lato mb-1">
                 <div>
-                  <ul className="space-y-2">
+                  <p>
                     {links.length > 0 && links.slice(0, 5).map((item, index) => (
-                      <li key={index}>
-                        <Link href={item.link} className="hover:underline">
+                      <span key={index}>
+                        <Link href={item.link} className={`hover:underline px-[5px] ${isFromAvailable ? 'pointer-events-none text-gray-400' : ''}`}                        >
                           {item.label}
                         </Link>
-                      </li>
+                        {index < links.length - 1 && ' | '}
+                      </span>
                     ))}
-                  </ul>
+                  </p>
                 </div>
               </div>
-
             </div>
+
+
+
             <div className="flex items-center justify-between flex-col md:flex-row">
               <div className="max-w-[670px] w-full">
                 <ul className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">

@@ -249,15 +249,15 @@ export default function HomePage() {
           setFilesList(newFilesList);
         }
       } else {
-      const response = await fetchWrapper(
-        `/api/box/folders?folderId=${userData.boxFolderId}`,
-        requestOptions,
-        "fetchFile"
-      );
-      if (!response.ok) throw new Error("Failed to fetch files");
-      const data = await response.json();
-      const newFilesList = data?.items || [];
-      setFilesList(newFilesList);
+        const response = await fetchWrapper(
+          `/api/box/folders?folderId=${userData.boxFolderId}`,
+          requestOptions,
+          "fetchFile"
+        );
+        if (!response.ok) throw new Error("Failed to fetch files");
+        const data = await response.json();
+        const newFilesList = data?.items || [];
+        setFilesList(newFilesList);
       }
     } catch (error) {
       console.error("Error refreshing files:", error);
@@ -814,7 +814,7 @@ export default function HomePage() {
   // if (!config || !content) return <LoadingSpinner />;
   const userIsAdmin = isAdmin();
 
- 
+
 
   return (
     <div className="bg-white min-h-screen">
@@ -822,18 +822,32 @@ export default function HomePage() {
       <div className="border-b border-[#0000001a]">
         <div className="max-w-[1140px] mx-auto px-3">
           <nav className="flex justify-between items-center bg-secondary py-2">
-          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300" >
-            <img
-              src="/default_logo_purple.png"
-              // src={config?.logo }
-              alt="Wealthportal"
-              className="h-[52px] mr-2"
-            />
-            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-            {/* {filterValue("Header Text")} */}
-            Wealthportal
-            </span>
-          </a>
+            <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+              {user?.company?.logo || config?.logo ? (
+                <img
+                  src={
+                    user?.company?.logo
+                      ? user.company.logo.replace("/api/upload", "/uploads")
+                      : config?.logo || "/default_logo_purple.png"
+                  }
+                  alt={params.portalid}
+                  className="h-[52px] mr-2"
+                />
+              ) : (
+                // Skeleton for logo
+                <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
+              )}
+
+              <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+                {filterValue("Header Text") || params.portalId ? (
+                  filterValue("Header Text") || params.portalId
+                ) : (
+                  // Skeleton for header text
+                  <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
+                )}
+              </span>
+            </a>
+
             <div className="hidden md:flex space-x-4 items-center">
               <NavBarItem title="Dashboard" href='/demo/dashboard' />
               <NavBarItem title="Shared Document" href='/demo/shared' />
@@ -1007,7 +1021,28 @@ export default function HomePage() {
               <div className="border border-solid border-[#0000001a] rounded-sm relative">
                 <div className="border-b border-solid border-[#0000001a]">
                   <div className="py-[18px] flex items-center w-full px-5 bg-gray-50">
-                    <img src="/default_logo_purple.png" className="h-8 w-8" />
+                    {/* <img src={
+                      user?.company?.logo
+                        ? user.company.logo.replace("/api/upload", "/uploads")
+                        : config?.logo || "/default_logo_purple.png"
+                    }
+                      alt={config?.legalName}
+                      className="h-8 w-8" /> */}
+
+                    {user?.company?.logo || config?.logo ? (
+                      <img
+                        src={
+                          user?.company?.logo
+                            ? user.company.logo.replace("/api/upload", "/uploads")
+                            : config?.logo || "/default_logo_purple.png"
+                        }
+                        alt={params.portalid}
+                       className="h-8 w-8"
+                      />
+                    ) : (
+                      // Skeleton for logo
+                      <div className="h-8 w-8 mr-2 bg-gray-300 animate-pulse rounded" />
+                    )}
 
                     <input
                       type="search"
@@ -1715,7 +1750,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <Footer config={config} filterValue={filterValue} />
+      <Footer config={config} filterValue={filterValue} user={user} />
     </div>
   );
 }
