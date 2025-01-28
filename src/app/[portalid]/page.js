@@ -21,20 +21,23 @@ function reverseSanitizeName(sanitizedName) {
 }
 
 export default async function PortalPage({ params }) {
-  const { portalid } = await params;
+  const { portalid } = params;
 
-    const reversedPortalName = reverseSanitizeName(portalid);
+  const excludeRoues = ["login", "dashboard", "my-docs", "shared-docs"];
 
-    // Check if portal exists
-    const portalExists = await portalService.getPortalByLegalName(
-      reversedPortalName
-    );
+  if (excludeRoues.includes(portalid)) {
+    return redirect(`/${portalid}`); 
+  }
 
-    if (!portalExists) {
-      // return notFound(); // Triggers the 404 page
-      redirect(`/${portalid}/not-found`)
-    }
+  const reversedPortalName = reverseSanitizeName(portalid || "default");
 
-    // Redirect to login page
-    redirect(`/${portalid}/login`);
+  const portalExists = await portalService.getPortalByLegalName(
+    reversedPortalName
+  );
+
+  if (!portalExists) {
+    return redirect(`/${portalid}/not-found`); 
+  }
+
+  return redirect(`/${portalid}/login`);
 }

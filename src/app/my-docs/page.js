@@ -1,16 +1,8 @@
-// import Dashboard from "@/components/Dashboard";
-
-// function SharewithMe() {
-//   return <Dashboard fileType={"shared"} />;
-// }
-
-// export default SharewithMe;
-
 "use client";
 import Dashboard from "@/components/Dashboard";
-import * as React from 'react';
+import * as React from "react";
 import Footer from "@/components/Footer";
-import LinearProgress from '@mui/material/LinearProgress';
+import LinearProgress from "@mui/material/LinearProgress";
 import ActionButtons from "@/components/ActionButtons";
 
 import {
@@ -38,9 +30,9 @@ import {
   CircleUserRound,
   Settings,
   Headset,
-  LogOut
+  LogOut,
 } from "lucide-react";
-import { useRouter, useParams, } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { getUserData } from "@/lib/auth";
 import EmptyState from "@/components/FileExplorer/EmptyState";
@@ -49,22 +41,22 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import SharedFolderExplorer from "@/components/MyDocumentsExplorer";
 import UploadArea from "@/components/UploadArea";
-import CreateFolder from "../../../components/CreateFolder";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
 import DialogBox from "@/components/DialogBox";
 import SettingsModal from "@/components/Settings";
 import MoveDialog from "@/components/MoveDialog";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { clearUserData } from "@/app/lib/auth";
 import { signOut } from "next-auth/react";
-import Link from 'next/link';
+import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
 import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 
 
 
+import CreateFolder from "@/components/CreateFolder";
 
 export default function HomePage() {
   // return <Dashboard fileType={'my'}/>;
@@ -105,6 +97,7 @@ export default function HomePage() {
   const [myTaskPopupBoxContent , setMyTaskPopupBoxContent ] = useState('');
 
 
+  const pathname = usePathname();
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -231,8 +224,7 @@ export default function HomePage() {
     }
   };
 
-  const fileType = "shared";
-
+  const fileType = "my";
   const refreshFiles = async () => {
     try {
       setIsLoading(true);
@@ -328,16 +320,19 @@ export default function HomePage() {
     // fetchConfig();
   }, [router]);
 
-
   const NavBarItem = ({ title, href }) => {
     if (!href) {
-      console.error('href prop is required for NavBarItem.');
+      console.error("href prop is required for NavBarItem.");
       return null;
     }
 
     return (
       <Link href={href} passHref>
-        <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
+        <button
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-500" : ""
+          }`}
+        >
           {title}
         </button>
       </Link>
@@ -350,7 +345,6 @@ export default function HomePage() {
   //     </button>
   //   </Link>
   // );
-
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -370,7 +364,7 @@ export default function HomePage() {
   //   console.log(inputText);
 
   //     const filtered = filesList.filter(item =>
-  //       item.name.toLowerCase().includes(lowerCase) 
+  //       item.name.toLowerCase().includes(lowerCase)
   //     );
 
   //     setSearchItem(filtered);
@@ -383,7 +377,6 @@ export default function HomePage() {
   //      setFilesList(filesList)
   //      console.log('filelist',filesList)
   //    }
-
 
   //     console.log('search:', filtered)
   // };
@@ -490,7 +483,8 @@ export default function HomePage() {
 
     // Debounce logic: wait for 300ms after user stops typing
     const timer = setTimeout(() => {
-      const source = path.length === 0 ? filesList : path[path.length - 1].children;
+      const source =
+        path.length === 0 ? filesList : path[path.length - 1].children;
       const results = recursiveSearch(source); // Perform the recursive search
       setCurrentFilesList(results); // Set the filtered results
       setIsSearching(false);
@@ -499,7 +493,6 @@ export default function HomePage() {
     // Cleanup function to clear the timer
     return () => clearTimeout(timer);
   }, [searchQuery, selectedItem, filesList, path]); // Include necessary dependencies
-
 
   // This is Old Code and Above UseEffect is Updated
   // useEffect(() => {
@@ -526,22 +519,28 @@ export default function HomePage() {
   //   return () => clearTimeout(timer);
   // }, [searchQuery, selectedItem]);
 
-
   const getFolderPath = (data, folderId, currentPath = "") => {
-
     if (!Array.isArray(data)) {
       console.error("Invalid data: Expected an array of folder items");
       return "";
     }
 
     for (const item of data) {
-
       if (item && item.id === folderId) {
         return currentPath + "/" + (item.name || "Unnamed Folder");
       }
 
-      if (item && item.type === "folder" && Array.isArray(item.children) && item.children.length > 0) {
-        const path = getFolderPath(item.children, folderId, currentPath + "/" + (item.name || "Unnamed Folder"));
+      if (
+        item &&
+        item.type === "folder" &&
+        Array.isArray(item.children) &&
+        item.children.length > 0
+      ) {
+        const path = getFolderPath(
+          item.children,
+          folderId,
+          currentPath + "/" + (item.name || "Unnamed Folder")
+        );
         if (path) {
           return path;
         }
@@ -680,13 +679,12 @@ export default function HomePage() {
 
     const unMatchedType = currentFilesList
       .filter((item) => selectedBulkItems.includes(item.id))
-      .filter((item) => item.type === 'folder');
+      .filter((item) => item.type === "folder");
 
     if (unMatchedType && unMatchedType.length > 0) {
-      toast.error("Selected Item is Folder")
+      toast.error("Selected Item is Folder");
       return;
     }
-
 
     const selectedItemsDetails = currentFilesList
       .filter((item) => selectedBulkItems.includes(item.id))
@@ -744,7 +742,6 @@ export default function HomePage() {
       console.error("Download error:", error);
     }
   };
-
 
   const clearBulkItem = () => {
     setSelectedBulkItems([]);
@@ -824,9 +821,7 @@ export default function HomePage() {
   );
 
   // if (!config || !content) return <LoadingSpinner />;
-  const userIsAdmin = isAdmin();
-
-
+ const userIsAdmin = window &&  isAdmin();
 
   return (
     <div className="bg-white min-h-screen">
@@ -861,9 +856,9 @@ export default function HomePage() {
             </a>
 
             <div className="hidden md:flex space-x-4 items-center">
-              <NavBarItem title="Dashboard" href='/demo/dashboard' />
-              <NavBarItem title="My Documents" href='/demo/my-documents' />
-              <NavBarItem title="Shared Documents" href='/demo/sharewithme' />
+              <NavBarItem title="Dashboard" href="dashboard" />
+              <NavBarItem title="My Documents" href="my-docs" />
+              <NavBarItem title="Shared Documents" href="shared-docs" />
 
               {userIsAdmin && (
                 // <NavBarItem title="Settings" href='/demo/settings' />
@@ -884,13 +879,16 @@ export default function HomePage() {
                 >
                   {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                   <div
-                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                      }`}
+                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                      userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                    }`}
                   >
                     {user?.name?.charAt(0) || "U"}
                   </div>
                   <div className="flex flex-col text-sm xl:text-base">
-                    <span className="text-gray-900 font-medium">{user?.name}</span>
+                    <span className="text-gray-900 font-medium">
+                      {user?.name}
+                    </span>
                     {userIsAdmin && (
                       <span className="text-blue-600 text-sm font-medium">
                         Administrator
@@ -915,7 +913,9 @@ export default function HomePage() {
                       )}
                       {userIsAdmin && (
                         <button
-                          onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
+                          onClick={() =>
+                            setIsTechSupportModalOpen((prev) => !prev)
+                          }
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                         >
                           <Headset className="h-5 w-5" />
@@ -1024,7 +1024,7 @@ export default function HomePage() {
             <div className="col-span-5 lg:col-span-3">
               <div className="flex items-center gap-10">
                 <span className="text-xl font-light text-[#212529] font-lato">
-                  Shared Documents
+                  My Documents
                 </span>
                 <span className="text-black font-lato font-normal text-sm">
                   Securely share content with your advisor and trusted
@@ -1047,7 +1047,10 @@ export default function HomePage() {
                       <img
                         src={
                           user?.company?.logo
-                            ? user.company.logo.replace("/api/upload", "/uploads")
+                            ? user.company.logo.replace(
+                                "/api/upload",
+                                "/uploads"
+                              )
                             : config?.logo || "/default_logo_purple.png"
                         }
                         alt={params.portalid}
@@ -1063,8 +1066,9 @@ export default function HomePage() {
                       placeholder="Search file and folders"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className={'relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4'}
-
+                      className={
+                        "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4"
+                      }
                     />
 
                     {/* {searchQuery.length > 0 && (
@@ -1132,7 +1136,6 @@ export default function HomePage() {
                   </div>
                 </div>
 
-
                 <div>
                   <div
                     className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
@@ -1152,17 +1155,18 @@ export default function HomePage() {
                       <button
                         className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
                         onClick={() =>
-                          selectedBulkItems.length > 0 && handelToolbarMoveClick()
+                          selectedBulkItems.length > 0 &&
+                          handelToolbarMoveClick()
                         }
                       >
                         <FolderInput className="size-5" />
                       </button>
                       <button
                         className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
-                        onClick={() =>
-                          selectedBulkItems.length > 0 && handleBulkDownload()
+                        onClick={
+                          () =>
+                            selectedBulkItems.length > 0 && handleBulkDownload()
                           // console.log("selectedBulkItems", selectedBulkItems)
-
                         }
                       >
                         <Download className="size-5" />
@@ -1170,7 +1174,8 @@ export default function HomePage() {
                       <button
                         className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
                         onClick={() =>
-                          selectedBulkItems.length > 0 && setIsDeleteModalOpen(true)
+                          selectedBulkItems.length > 0 &&
+                          setIsDeleteModalOpen(true)
                         }
                       >
                         <Trash2 className="size-5" />
@@ -1178,7 +1183,6 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
-
 
                 {/* breadcrumbs */}
                 <div className="px-5 border-b">
@@ -1226,7 +1230,6 @@ export default function HomePage() {
                               className="w-32 range-slider" // Optional styling for the slider width
                             />
 
-
                             <button
                               className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
                               onClick={() =>
@@ -1240,8 +1243,9 @@ export default function HomePage() {
 
                         {/* Card view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
-                            }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
+                            view === "grid" ? "hidden" : "visible"
+                          }`}
                           onClick={() => {
                             setView("grid");
                             // setIsOpenOptionDrawer(false);
@@ -1260,8 +1264,9 @@ export default function HomePage() {
 
                         {/* List view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
-                            }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
+                            view === "list" ? "hidden" : "visible"
+                          }`}
                           onClick={() => {
                             setView("list");
                             // setIsOpenOptionDrawer(false);
@@ -1300,9 +1305,7 @@ export default function HomePage() {
                                     className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
                                     onClick={() => {
                                       setIsOpenNewFolderDrawer(false); // Close the drawer
-                                      setIsNewFolderModalOpen(
-                                        (prev) => !prev
-                                      )
+                                      setIsNewFolderModalOpen((prev) => !prev);
                                     }}
                                   >
                                     New Folder
@@ -1329,7 +1332,6 @@ export default function HomePage() {
                   </div>
                 )}
 
-
                 {isOpenUploadArea && (
                   <div className="mb-6">
                     <UploadArea
@@ -1348,11 +1350,8 @@ export default function HomePage() {
                 />
 
                 <div className={` ${isLoading == true ? "visible" : "hidden"}`}>
-
                   <LinearProgress />
-
                 </div>
-
 
                 {/* Table in list view */}
 
@@ -1364,9 +1363,9 @@ export default function HomePage() {
                   setCurrentFilesList={setCurrentFilesList}
                   setSelectedItem={setSelectedItem}
                   selectedItem={selectedItem}
-                  handleShareLink={() => { }}
+                  handleShareLink={() => {}}
                   onFileChanges={refreshFiles}
-                  listType={"shared"}
+                  listType={"my"}
                   setSearchQuery={setSearchQuery}
                   view={view}
                   cols={cols}
@@ -1375,7 +1374,6 @@ export default function HomePage() {
                   setIsMoveModalOpen={setIsMoveModalOpen}
                   setMoveItem={setMoveItem}
                   setIsNewFolderModalOpen={setIsNewFolderModalOpen}
-
                 />
 
                 <DeleteConfirmDialog
@@ -1566,12 +1564,8 @@ export default function HomePage() {
                 )} */}
 
                 {/* Create folder */}
-
-
               </div>
             </div>
-
-
 
             {/* right panel */}
             <div className="col-span-5 lg:col-span-2">
@@ -1789,9 +1783,21 @@ export default function HomePage() {
 
                         <tbody>
                           <tr className="hover:bg-gray-300">
-                            <td className="p-3"><p className="font-semibold font-lato text-sm text-black">Erica Smith</p></td>
-                            <td className="p-3"><p className="font-normal font-lato text-sm text-black">advisor@wealthportal.com</p></td>
-                            <td className="p-3"><p className="font-normal font-lato text-sm text-black">Editor</p></td>
+                            <td className="p-3">
+                              <p className="font-semibold font-lato text-sm text-black">
+                                Erica Smith
+                              </p>
+                            </td>
+                            <td className="p-3">
+                              <p className="font-normal font-lato text-sm text-black">
+                                advisor@wealthportal.com
+                              </p>
+                            </td>
+                            <td className="p-3">
+                              <p className="font-normal font-lato text-sm text-black">
+                                Editor
+                              </p>
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -1808,5 +1814,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-

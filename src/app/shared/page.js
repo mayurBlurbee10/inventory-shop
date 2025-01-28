@@ -32,7 +32,7 @@ import {
   Headset,
   LogOut
 } from "lucide-react";
-import { useRouter, useParams, } from "next/navigation";
+import { useRouter, useParams, usePathname, } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { getUserData } from "@/lib/auth";
 import EmptyState from "@/components/FileExplorer/EmptyState";
@@ -92,7 +92,7 @@ export default function HomePage() {
   const [footerLoading, setFooterLoading] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
-
+  const pathname = usePathname();
 
 
   const handleBrowse = (event) => {
@@ -325,10 +325,14 @@ export default function HomePage() {
 
     return (
       <Link href={href} passHref>
-        <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
-          {title}
-        </button>
-      </Link>
+      <button
+        className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+          pathname.includes(href) ? "text-blue-500" : ""
+        }`}
+      >
+        {title}
+      </button>
+    </Link>
     );
   };
   // const NavBarItem = ({ title, href }) => (
@@ -812,7 +816,7 @@ export default function HomePage() {
   );
 
   // if (!config || !content) return <LoadingSpinner />;
-  const userIsAdmin = isAdmin();
+  const userIsAdmin = window &&  isAdmin();
 
 
   return (

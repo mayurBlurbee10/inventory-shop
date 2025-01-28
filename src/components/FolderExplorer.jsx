@@ -631,7 +631,7 @@ function FolderExplorer({
                   <input
                     type="checkbox"
                     className="form-checkbox h-4 w-4 text-blue-600 cursor-pointer"
-                    checked={selectedBulkItems.includes(file?.id)}
+                    checked={selectedBulkItems?.includes(file?.id)}
                     onChange={(e) =>
                       handleCheckboxChange(file?.id, e.target.checked)
                     }

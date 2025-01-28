@@ -4,7 +4,7 @@ export const fetchWrapper = async (url, options = {}, type) => {
   const user = JSON.parse(localStorage.getItem("user")) || {
     id: "defaultUser",
   };
-  const portal = localStorage.getItem("portal") || "defaultPortal";
+  const portal = localStorage.getItem("portal");
 
   // Default headers
   const defaultHeaders = {

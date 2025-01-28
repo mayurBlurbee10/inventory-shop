@@ -47,7 +47,7 @@ export function middleware(request) {
     const loggedInUserNotAccessPaths = request.nextUrl.pathname.includes("/login");
     if (loggedInUserNotAccessPaths) {
       if (authToken) {
-        return NextResponse.redirect(new URL("/home", request.url));
+        return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     } else {
       if (!authToken) {

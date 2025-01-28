@@ -123,7 +123,7 @@ export default function LoginPage() {
       const userData = data.user;
       console.log("Storing user data:", userData);
       setUserData(userData);
-      localStorage.setItem("portal", "defaultPortal");
+      localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
       console.log("Redirecting to dashboard");
       toast.success("Redirecting to dashboard");
@@ -174,7 +174,7 @@ export default function LoginPage() {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
-        body: JSON.stringify({ email, portalid: params.portalid }),
+        body: JSON.stringify({ email, portalid: params?.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetchUserByEmail");
       if (!response.ok) throw new Error("Failed to get user from email");
