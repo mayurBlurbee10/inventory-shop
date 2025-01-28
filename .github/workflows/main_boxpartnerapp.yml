@@ -6,26 +6,34 @@ name: Build and deploy container app to Azure Web App - boxpartnerapp
 on:
   push:
     branches:
-      - main
+      - wealth-portal
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: 'ubuntu-latest'
     env:
-      BOX_CLIENT_ID: ${{ secrets.BOX_CLIENT_ID }}
-      BOX_CLIENT_SECRET: ${{ secrets.BOX_CLIENT_SECRET }}
-      BOX_ENTERPRISE_ID: ${{ secrets.BOX_ENTERPRISE_ID }}
-      BOX_PRIVATE_KEY: ${{ secrets.BOX_PRIVATE_KEY }}
-      BOX_PRIVATE_KEY_PASSWORD: ${{ secrets.BOX_PRIVATE_KEY_PASSWORD }}
-      BOX_PUBLIC_KEY_ID: ${{ secrets.BOX_PUBLIC_KEY_ID }}
-      BOX_DEVELOPER_TOKEN: ${{ secrets.BOX_DEVELOPER_TOKEN }}
-      BOX_PASSPHRASE: ${{ secrets.BOX_PASSPHRASE }}
+      BOX_CLIENT_ID: ${{ secrets.BOX_CLIENT_ID_MAIN }}
+      BOX_CLIENT_SECRET: ${{ secrets.BOX_CLIENT_SECRET_MAIN }}
+      BOX_ENTERPRISE_ID: ${{ secrets.BOX_ENTERPRISE_ID_MAIN }}
+      BOX_PRIVATE_KEY: ${{ secrets.BOX_PRIVATE_KEY_MAIN }}
+      BOX_PRIVATE_KEY_PASSWORD: ${{ secrets.BOX_PRIVATE_KEY_PASSWORD_MAIN }}
+      BOX_PUBLIC_KEY_ID: ${{ secrets.BOX_PUBLIC_KEY_ID_MAIN }}
+      BOX_DEVELOPER_TOKEN: ${{ secrets.BOX_DEVELOPER_TOKEN_MAIN }}
+      BOX_PASSPHRASE: ${{ secrets.BOX_PASSPHRASE_MAIN }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_SERVER: ${{ secrets.DB_SERVER }}
-      DB_DATABASE: ${{ secrets.DB_DATABASE }}
-      NEXT_PUBLIC_APP_BASE_URL: ${{ secrets.NEXT_PUBLIC_APP_BASE_URL }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE_MAIN }}
+      NEXT_PUBLIC_APP_BASE_URL: ${{ secrets.NEXT_PUBLIC_APP_BASE_URL_MAIN }}
+      NEXT_PUBLIC_JWT_SECRET_KEY: ${{ secrets.NEXT_PUBLIC_JWT_SECRET_KEY }}
+      AZURE_COMMUNICATION_CONNECTION_STRING: ${{ secrets.AZURE_COMMUNICATION_CONNECTION_STRING }}
+      AZURE_COMMUNICATION_SENDER_EMAIL: ${{ secrets.AZURE_COMMUNICATION_SENDER_EMAIL }} 
+      NEXT_PUBLIC_OKTA_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_OKTA_CLIENT_ID }} 
+      NEXT_PUBLIC_OKTA_ISSUER: ${{ secrets.NEXT_PUBLIC_OKTA_ISSUER }} 
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }} 
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }} 
+      AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} 
 
     steps:
     - uses: actions/checkout@v2
@@ -58,19 +66,27 @@ jobs:
         tags: universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_f337580b331c4ad485d1195662e19231 }}/sha256:${{ github.sha }}
         file: ./Dockerfile
         build-args: |
-          BOX_CLIENT_ID=${{ secrets.BOX_CLIENT_ID }}
-          BOX_CLIENT_SECRET=${{ secrets.BOX_CLIENT_SECRET }}
-          BOX_ENTERPRISE_ID=${{ secrets.BOX_ENTERPRISE_ID }}
-          BOX_PRIVATE_KEY=${{ secrets.BOX_PRIVATE_KEY }}
-          BOX_PRIVATE_KEY_PASSWORD=${{ secrets.BOX_PRIVATE_KEY_PASSWORD }}
-          BOX_PUBLIC_KEY_ID=${{ secrets.BOX_PUBLIC_KEY_ID }}
-          BOX_DEVELOPER_TOKEN=${{ secrets.BOX_DEVELOPER_TOKEN }}
-          BOX_PASSPHRASE=${{ secrets.BOX_PASSPHRASE }}
+          BOX_CLIENT_ID=${{ secrets.BOX_CLIENT_ID_MAIN }}
+          BOX_CLIENT_SECRET=${{ secrets.BOX_CLIENT_SECRET_MAIN }}
+          BOX_ENTERPRISE_ID=${{ secrets.BOX_ENTERPRISE_ID_MAIN }}
+          BOX_PRIVATE_KEY=${{ secrets.BOX_PRIVATE_KEY_MAIN }}
+          BOX_PRIVATE_KEY_PASSWORD=${{ secrets.BOX_PRIVATE_KEY_PASSWORD_MAIN }}
+          BOX_PUBLIC_KEY_ID=${{ secrets.BOX_PUBLIC_KEY_ID_MAIN }}
+          BOX_DEVELOPER_TOKEN=${{ secrets.BOX_DEVELOPER_TOKEN_MAIN }}
+          BOX_PASSPHRASE=${{ secrets.BOX_PASSPHRASE_MAIN }}
           DB_USER=${{ secrets.DB_USER }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           DB_SERVER=${{ secrets.DB_SERVER }}
-          DB_DATABASE=${{ secrets.DB_DATABASE }}
-          NEXT_PUBLIC_APP_BASE_URL=${{ secrets.NEXT_PUBLIC_APP_BASE_URL }}
+          DB_DATABASE=${{ secrets.DB_DATABASE_MAIN }}
+          NEXT_PUBLIC_APP_BASE_URL=${{ secrets.NEXT_PUBLIC_APP_BASE_URL_MAIN }}
+          NEXT_PUBLIC_JWT_SECRET_KEY=${{ secrets.NEXT_PUBLIC_JWT_SECRET_KEY }}
+          AZURE_COMMUNICATION_CONNECTION_STRING=${{ secrets.AZURE_COMMUNICATION_CONNECTION_STRING }}
+          AZURE_COMMUNICATION_SENDER_EMAIL=${{ secrets.AZURE_COMMUNICATION_SENDER_EMAIL }}
+          NEXT_PUBLIC_OKTA_CLIENT_ID=${{ secrets.NEXT_PUBLIC_OKTA_CLIENT_ID }} 
+          NEXT_PUBLIC_OKTA_ISSUER=${{ secrets.NEXT_PUBLIC_OKTA_ISSUER }} 
+          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }} 
+          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} 
+          AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
 
   deploy:
     runs-on: ubuntu-latest

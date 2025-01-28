@@ -69,7 +69,7 @@ RUN \
 
 
 # Expose the port the app will run on
-EXPOSE 3001
+EXPOSE 3000
 
 # Start the Next.js application
 CMD ["npm", "start"]

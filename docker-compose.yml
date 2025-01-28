@@ -1,10 +1,10 @@
 version: '3'
 services:
-  box-willdan-app:
+ box-react-app:
     build: .
-    container_name: box-willdan-app
+    container_name: box-react-app
     ports:
-      - "3001:3001"  # Host port 3000 mapped to container port 3000
-    command: ["next", "start", "-H", "0.0.0.0", "-p", "3001"]  # Ensure it binds to 0.0.0.0 and uses port 3000
+      - "3000:3000"  # Host port 3000 mapped to container port 3000
+    command: ["next", "start", "-H", "0.0.0.0", "-p", "3000"]  # Ensure it binds to 0.0.0.0 and uses port 3000
     environment:
       - NODE_ENV=production
