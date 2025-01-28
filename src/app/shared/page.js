@@ -39,7 +39,7 @@ import EmptyState from "@/components/FileExplorer/EmptyState";
 import FolderExplorer from "@/components/FolderExplorer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import SharedFolderExplorer from "@/components/SharedFolderExplorer";
+import SharedFolderExplorer from "@/components/MyDocumentsExplorer";
 import UploadArea from "@/components/UploadArea";
 import CreateFolder from "@/components/CreateFolder";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";

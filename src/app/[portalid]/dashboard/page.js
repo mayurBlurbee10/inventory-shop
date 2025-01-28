@@ -239,7 +239,8 @@ export default function DashboardPage() {
             </a>
             <div className="hidden md:flex space-x-4 items-center">
               <NavBarItem title="Dashboard" href='/demo/dashboard' />
-              <NavBarItem title="Shared Document" href='/demo/shared' />
+              <NavBarItem title="My Documents" href='/demo/my-documents' />
+              <NavBarItem title="Shared Documents" href='/demo/sharewithme' />
               {userIsAdmin && (
                 // <NavBarItem title="Settings" href='/demo/settings' />
                 <button

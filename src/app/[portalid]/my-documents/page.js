@@ -39,7 +39,7 @@ import EmptyState from "@/components/FileExplorer/EmptyState";
 import FolderExplorer from "@/components/FolderExplorer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import SharedFolderExplorer from "@/components/SharedFolderExplorer";
+import SharedFolderExplorer from "@/components/MyDocumentsExplorer";
 import UploadArea from "@/components/UploadArea";
 import CreateFolder from "../../../components/CreateFolder";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
@@ -850,7 +850,9 @@ export default function HomePage() {
 
             <div className="hidden md:flex space-x-4 items-center">
               <NavBarItem title="Dashboard" href='/demo/dashboard' />
-              <NavBarItem title="Shared Document" href='/demo/shared' />
+              <NavBarItem title="My Documents" href='/demo/my-documents' />
+              <NavBarItem title="Shared Documents" href='/demo/sharewithme' />
+
               {userIsAdmin && (
                 // <NavBarItem title="Settings" href='/demo/settings' />
                 <button

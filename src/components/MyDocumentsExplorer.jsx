@@ -66,22 +66,22 @@ const ShareModal = ({
 
     useEffect(() => {
         const users = usersList.map((user) => ({
-          value: user.boxUserId,
-          label: `${user.name} (${user.email})`,
+            value: user.boxUserId,
+            label: `${user.name} (${user.email})`,
         }));
-      
-        const loggedInUser = JSON.parse(localStorage.getItem('user')); 
-        const loggedInUserId = loggedInUser?.boxUserId; 
-        
+
+        const loggedInUser = JSON.parse(localStorage.getItem('user'));
+        const loggedInUserId = loggedInUser?.boxUserId;
+
         const filteredUsers = users.filter(user => user.value !== loggedInUserId);
-      
+
         setUserList(filteredUsers);
         console.log('Filtered userList:', filteredUsers);
         console.log('loggedInUser:', loggedInUser);
-      }, [usersList]);
+    }, [usersList]);
 
 
-      
+
 
     if (!isOpen) return null;
 
@@ -468,6 +468,9 @@ function SharedFolderExplorer({
     };
 
     const handleShare = (file) => {
+        if (listType == "shared" && file.currentUserRole == "viewer") {
+            return;
+        }
         setShareFile(file);
         setIsShareModalOpen(true);
     };
@@ -771,7 +774,7 @@ function SharedFolderExplorer({
                                                                 )}
 
                                                                 <button
-                                                                    className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                                                                    className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center `}
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         handleShare(file);
@@ -943,8 +946,9 @@ function SharedFolderExplorer({
                                                                         <Download className="h-4 w-4 text-gray-600" />Download
                                                                     </button>
                                                                 )}
+
                                                                 <button
-                                                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                                                                    className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center`}
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         handleShare(file);
@@ -952,8 +956,10 @@ function SharedFolderExplorer({
                                                                     }}
                                                                     title="Share"
                                                                 >
-                                                                    <Share2 className="h-4 w-4 text-gray-600" /> Share
+                                                                    <Share2 className="h-4 w-4 text-gray-600" />
                                                                 </button>
+
+
                                                                 {listType !== "shared" && (
                                                                     <button
                                                                         className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
