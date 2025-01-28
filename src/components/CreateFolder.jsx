@@ -5,6 +5,7 @@ import { FolderPlus, Upload, Share2, X, Loader2 } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
+import { useParams } from "next/navigation";
 
 export default function CreateFolder({
   onFolderCreated,
@@ -17,30 +18,32 @@ export default function CreateFolder({
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [config, setConfig] = useState(null);
+  const params = useParams();
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        setIsLoading(true);
-        const portalId = localStorage.getItem("portal");
-
+        if (!params?.portalid) return;
         const response = await fetchWrapper(
-          `/api/portal?portalid=${portalId || "default"}`,
+          `/api/portal?portalid=${params.portalid}`,
           {},
-          "portal-config"
+          "portal-login"
         );
+        const data = await response.json();
+        if (!data.data && response.status === 404) {
+          router.push(`/${params.portalid}/not-found`);
+          return;
+        }
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }
-        const data = await response.json();
+
         setConfig(data.data);
       } catch (error) {
         console.log("error: ", error);
-        setIsLoading(false);
-      } finally {
-        setIsLoading(false);
       }
     };
+
     fetchConfig();
   }, []);
 
@@ -137,11 +140,12 @@ export default function CreateFolder({
               <div className="text-center py-4">
                 <div className="text-green-600 mb-4">
                   Folder successfully created!
+                  {console.log(config)}
                 </div>
                 <div className="flex justify-center space-x-3">
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200"
+                    className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md bg-blue-500 hover:bg-blue-400"
                     style={{ backgroundColor: config?.secondaryColor }}
                   >
                     {isLoading ? (
@@ -171,8 +175,10 @@ export default function CreateFolder({
                 >
                   <button
                     disabled={isLoading || !folderName.trim()}
-                    className="flex items-center justify-center py-2 px-4 rounded-md bg-[#007BFF] text-white font-lato font-medium mr-4 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center py-2 px-4 rounded-md text-white font-lato font-medium mr-4 disabled:cursor-not-allowed"
                     onClick={handleCreateFolder}
+                    style={{ backgroundColor: config?.secondaryColor }}
+
                   >
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />

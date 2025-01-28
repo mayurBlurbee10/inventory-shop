@@ -2,37 +2,38 @@ import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { Share2, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { useParams } from "next/navigation";
+
 
 const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen }) => {
   const [config, setConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const params = useParams();
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        setIsLoading(true);
-        const portalId = localStorage.getItem('portal');
-        // console.log('portalId:', portalId);
-
-
+        if (!params?.portalid) return;
         const response = await fetchWrapper(
-          `/api/portal?portalid=${portalId || "default"}`,
+          `/api/portal?portalid=${params.portalid}`,
           {},
-          "portal-config"
+          "portal-login"
         );
-        // console.log('response:', response);
+        const data = await response.json();
+        if (!data.data && response.status === 404) {
+          router.push(`/${params.portalid}/not-found`);
+          return;
+        }
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }
-        const data = await response.json();
+
         setConfig(data.data);
       } catch (error) {
         console.log("error: ", error);
-        setIsLoading(false);
-      } finally {
-        setIsLoading(false);
       }
     };
+
     fetchConfig();
   }, []);
 
@@ -69,7 +70,7 @@ const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen }
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className={`px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-blue-400 bg-blue-500   ${isLoading
+                className={`px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md  ${isLoading
                     ? "text-gray-400 cursor-not-allowed"
                     : "text-white cursor-pointer"
                   }`}

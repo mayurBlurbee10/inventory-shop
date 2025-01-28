@@ -2,12 +2,45 @@
 import { X, UploadCloud } from "lucide-react";
 import { useState } from "react";
 import DialogBox from "./DialogBox";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
+
 
 export default function MyTaskPopupBox({ onClose, content }) {
     const [confirmPopup, setConfirmPopup] = useState(false);
+    const [config, setConfig] = useState(null);
+    const params = useParams();
+
+    useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                if (!params?.portalid) return;
+                const response = await fetchWrapper(
+                    `/api/portal?portalid=${params.portalid}`,
+                    {},
+                    "portal-login"
+                );
+                const data = await response.json();
+                if (!data.data && response.status === 404) {
+                    router.push(`/${params.portalid}/not-found`);
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error("Failed to fetch users");
+                }
+
+                setConfig(data.data);
+            } catch (error) {
+                console.log("error: ", error);
+            }
+        };
+
+        fetchConfig();
+    }, []);
 
     return (
-        
+
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg w-full max-w-2xl shadow-lg border border-gray-300 p-10">
                 <div className="pb-5">
@@ -47,12 +80,13 @@ export default function MyTaskPopupBox({ onClose, content }) {
                                 Cancel
                             </button>
                             <button
-                                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-400"
+                                className=" text-white px-4 py-2 rounded-lg"
                                 onClick={() => {
                                     setConfirmPopup(
                                         (prev) => !prev
                                     )
                                 }}
+                                style={{ backgroundColor: config?.secondaryColor }}
                             >
                                 Upload
                             </button>
