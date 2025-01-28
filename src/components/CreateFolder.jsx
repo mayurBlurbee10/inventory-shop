@@ -162,7 +162,7 @@ export default function CreateFolder({
                   type="text"
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
-                  className="py-2 px-2 text-black w-56 border border-[#D3D3D3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061D5] focus:ring-blue-500 hover:border-[#0061D5]"
+                  className="py-2 px-2 w-full text-black w-56 border border-[#D3D3D3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061D5] focus:ring-blue-500 hover:border-[#0061D5]"
                   disabled={isLoading}
                 />
                 <div

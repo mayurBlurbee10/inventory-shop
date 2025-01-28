@@ -133,10 +133,10 @@ function ViewProfileModal({
           setError("");
           handleClose();
         }}
-        className="relative z-50"
+        className="relative z-50 "
       >
         <DialogBackdrop className="fixed inset-0 bg-black/30 " />
-        <div className="fixed inset-0 flex items-center justify-center p-4 ">
+         <div className="fixed inset-0 flex items-center justify-center p-4 " >
           <Dialog.Panel className="mx-auto max-w-md rounded-xl bg-white py-4 shadow-xl">
             <div className="flex justify-between items-center mb-4 border-b px-8 py-2 min-w-[400px]">
               <Dialog.Title className="text-xl text-gray-600 font-medium">
