@@ -13,7 +13,7 @@ const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen }
         setIsLoading(true);
         const portalId = localStorage.getItem('portal');
         // console.log('portalId:', portalId);
-        
+
 
         const response = await fetchWrapper(
           `/api/portal?portalid=${portalId || "default"}`,
@@ -69,7 +69,10 @@ const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen }
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200 bg-blue-500"
+                className={`px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-blue-400 bg-blue-500   ${isLoading
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-white cursor-pointer"
+                  }`}
                 style={{ backgroundColor: config?.secondaryColor }}
               >
                 {isLoading ? (

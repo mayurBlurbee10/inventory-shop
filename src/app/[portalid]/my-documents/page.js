@@ -53,6 +53,7 @@ import { signOut } from "next-auth/react";
 import Link from 'next/link';
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
+import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 
 
 
@@ -92,6 +93,8 @@ export default function HomePage() {
   const [footerLoading, setFooterLoading] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
+  const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
+  const [myTaskPopupBoxContent , setMyTaskPopupBoxContent ] = useState('');
 
 
 
@@ -1039,7 +1042,7 @@ export default function HomePage() {
                             : config?.logo || "/default_logo_purple.png"
                         }
                         alt={params.portalid}
-                       className="h-8 w-8"
+                        className="h-8 w-8"
                       />
                     ) : (
                       // Skeleton for logo
@@ -1587,7 +1590,15 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer "
+                            onClick={() => {
+                              setMyTaskPopupBoxContent("Upload identity information")
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Upload
                           </p>
                         </td>
@@ -1602,7 +1613,15 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent("Upload 2023 tax return")
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Complete Forms
                           </p>
                         </td>
@@ -1617,7 +1636,15 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent("Sign money transfer agreement")
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Sign
                           </p>
                         </td>
@@ -1632,7 +1659,14 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end"
+                            onClick={() => {
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Start Forms
                           </p>
                         </td>
@@ -1640,6 +1674,15 @@ export default function HomePage() {
                     </tbody>
                   </table>
                 </div>
+
+                {
+                  isMyTaskPopupOpen && (
+                    <MyTaskPopupBox
+                      onClose={() => setIsMyTaskPopupOpen(false)}
+                      content={myTaskPopupBoxContent}
+                    />
+                  )
+                }
 
                 {/* My advisor */}
                 <div className="mb-7">
