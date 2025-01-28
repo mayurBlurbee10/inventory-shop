@@ -863,7 +863,7 @@ export default function HomePage() {
   );
 
   // if (!config || !content) return <LoadingSpinner />;
-  const userIsAdmin = window &&  isAdmin();
+  const userIsAdmin = isAdmin();
 
   return (
     <div className="bg-white min-h-screen">

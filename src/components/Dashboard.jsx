@@ -234,7 +234,7 @@ export default function DashboardPage() {
     setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
   }, []);
 
-  const userIsAdmin = window && isAdmin();
+  const userIsAdmin = isAdmin();
 
   return (
     <div

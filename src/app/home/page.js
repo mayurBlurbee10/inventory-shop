@@ -529,7 +529,7 @@ export default function HomePage() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  const userIsAdmin = window &&  isAdmin();
+  const userIsAdmin = isAdmin();
 
   return (
     <div className="flex flex-col min-h-screen">
