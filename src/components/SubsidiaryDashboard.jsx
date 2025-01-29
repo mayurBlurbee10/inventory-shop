@@ -12,8 +12,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { ArrowLeft, Users, Activity } from "lucide-react";
+import { ArrowLeft, Users, Activity, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { getUserData } from "@/app/lib/auth";
+import { Dialog, DialogBackdrop } from "@headlessui/react";
+import { toast } from "react-toastify";
 
 // Mock data - in real app, this would come from an API
 const subsidiariesData = [
@@ -132,9 +135,156 @@ const ActionButton = ({
   </button>
 );
 
+function sanitizeName(name) {
+  let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+  return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
+}
+
+const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
+  const router = useRouter();
+  const [enteredPortal, setEnteredPortal] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  function sanitizeName(name) {
+    let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+    return sanitizeName.endsWith(".")
+      ? sanitizeName.slice(0, -1)
+      : sanitizeName;
+  }
+
+  const handleDeleteSubsidiary = async () => {
+    if (subsidiary.legalName !== enteredPortal) {
+      setError("Entered portal doesn't match");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const requestOptions = {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: subsidiary.id }),
+      };
+
+      const response = await fetch(
+        `/api/portal`,
+        requestOptions,
+        "portal-delete"
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Portal deletion failed");
+      router.back();
+      toast.success(data.message || "Portal deleted successfully");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <DialogBackdrop className="fixed inset-0 bg-black/50 " />
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-md">
+          <div className="flex justify-between items-center mb-4">
+            <Dialog.Title className="text-xl text-gray-600 font-medium">
+              Delete Portal
+            </Dialog.Title>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="text-center text-gray-700 py-4">
+            <p className="font-bold">{subsidiary?.legalName}</p>
+            <div className="text-gray-700 p-5 space-y-2 border-t ">
+              <p className="text-sm">
+                This action CANNOT be undone. This will delete the portal
+                permanently
+              </p>
+              <p className="text-sm font-semibold tracking-tight">
+                Please type in the portal name to confirm
+              </p>
+              <input
+                type="text"
+                id="email"
+                value={enteredPortal}
+                onChange={(e) => setEnteredPortal(e.target.value)}
+                placeholder="Enter Portal"
+                className="w-full px-3 py-2 text-gray-700 border border-red-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+              />
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+            </div>
+
+            <div className="flex justify-center space-x-3">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors"
+                onClick={handleDeleteSubsidiary}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="spinner"></div> Deleting This Portal
+                  </div>
+                ) : (
+                  "Delete This Portal"
+                )}
+              </button>
+            </div>
+          </div>
+        </Dialog.Panel>
+      </div>
+    </Dialog>
+  );
+};
+
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
 export default function SubsidiaryDashboard({ subsidiaryId }) {
   const router = useRouter();
   const [data, setData] = useState(null);
+  const [apiCalls, setApiCalls] = useState(0);
+  const [config, setConfig] = useState(null);
+  const [activeUsers, setActiveUsers] = useState(0);
+  const [user, setUser] = useState(null);
+  const [portalToDelete, setPortalToDelete] = useState(null);
+
+  const apiCallThisMonth = () => {
+    const currentMonth = new Date().getMonth();
+    const month = new Date(0, currentMonth).toLocaleString("en-US", {
+      month: "short",
+    });
+    const res = data?.find((item) => item.name === month);
+    if (res) {
+      setApiCalls(res?.apiCalls);
+      setActiveUsers(res?.activeUsers);
+    }
+    return;
+  };
+
+  const calculatePercentage = (value, totalValue) => {
+    if (totalValue === 0) {
+      return 0;
+    }
+    return (value / totalValue) * 100;
+  };
 
   const getChartData = async (year, portalId) => {
     try {
@@ -157,13 +307,70 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
       throw new Error(error.message);
     }
   };
+
+  // const fetchUsers = async () => {
+  //   try {
+  //     if (!config) return;
+  //     const response = await fetchWrapper(
+  //       `/api/users?portalid=${sanitizeName(config?.legalName)}`,
+  //       {},
+  //       "fetch-users"
+  //     );
+  //     const data = await response.json();
+  //     if (!response.ok) {
+  //       throw new Error(data.error || "Failed to fetch users");
+  //     }
+
+  //     setActiveUsers(data?.length);
+  //   } catch (error) {
+  //     console.log("error: ", error);
+  //   }
+  // };
+
+  const fetchConfig = async () => {
+    try {
+      const response = await fetchWrapper(
+        `/api/portal?id=${subsidiaryId}`,
+        {},
+        "fetch-portal"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch subsidiary");
+      }
+      setConfig(data?.data);
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
+  useEffect(() => {
+    apiCallThisMonth();
+  }, [data]);
+
+  useEffect(() => {
+    const userData = getUserData();
+    if (!userData) {
+      router.push("login");
+      return;
+    }
+
+    setUser(userData);
+  }, [router]);
+
   useEffect(() => {
     getChartData(2025, subsidiaryId).then((data) => setData(data));
+    apiCallThisMonth();
+    fetchConfig();
   }, []);
+
   const subsidiaryData = useMemo(() => {
     const id = parseInt(subsidiaryId);
     return subsidiariesData.find((s) => s.id === id) || subsidiariesData[0];
   }, [subsidiaryId]);
+
+  if (!config) {
+    <LoadingSpinner />;
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -197,7 +404,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
         {/* Header Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Statistics Report for {subsidiaryData.name}
+            Statistics Report for {config?.legalName}
           </h1>
           <p className="text-gray-500 mb-6">{subsidiaryData.description}</p>
         </div>
@@ -207,17 +414,17 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
           <div className="flex-1">
             <KPICard
               title="Monthly Active Users"
-              value={subsidiaryData.activeUsers.current}
-              total={subsidiaryData.activeUsers.total}
-              percentage={subsidiaryData.activeUsers.percentage}
+              value={activeUsers}
+              total={1000}
+              percentage={calculatePercentage(activeUsers, 1000)}
             />
           </div>
           <div className="flex-1">
             <KPICard
               title="API Calls This Month"
-              value={subsidiaryData.apiCalls.current}
-              total={subsidiaryData.apiCalls.total}
-              percentage={subsidiaryData.apiCalls.percentage}
+              value={apiCalls}
+              total={10000}
+              percentage={calculatePercentage(apiCalls, 10000)}
             />
           </div>
         </div>
@@ -262,7 +469,21 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
             </ResponsiveContainer>
           </div>
         </div>
+        {user?.id === config?.createdBy?.id && (
+        <button
+          className="inline-flex items-center mt-5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={() => setPortalToDelete(config)}
+        >
+          Delete
+        </button>
+      )}
       </div>
+      
+      <DeletePortalModal
+        isOpen={portalToDelete?.id === subsidiaryId}
+        onClose={() => setPortalToDelete(null)}
+        subsidiary={config}
+      />
     </div>
   );
 }

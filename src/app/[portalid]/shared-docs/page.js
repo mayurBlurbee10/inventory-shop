@@ -61,6 +61,7 @@ import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
+import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 
 export default function HomePage() {
   // return <Dashboard fileType={'my'}/>;
@@ -98,6 +99,8 @@ export default function HomePage() {
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const pathname = usePathname();
+  const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
+  const [myTaskPopupBoxContent , setMyTaskPopupBoxContent ] = useState('');
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -371,9 +374,8 @@ export default function HomePage() {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-            pathname.includes(href) ? "text-blue-500" : ""
-          }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+            }`}
         >
           {title}
         </button>
@@ -898,9 +900,9 @@ export default function HomePage() {
             </div>
 
             <div className="hidden md:flex space-x-4 items-center">
-              <NavBarItem title="Dashboard" href="/demo/dashboard" />
-              <NavBarItem title="My Documents" href="/demo/my-docs" />
-              <NavBarItem title="Shared Documents" href="/demo/shared-docs" />
+              <NavBarItem title="Dashboard" href="dashboard" />
+              <NavBarItem title="My Documents" href="my-docs" />
+              <NavBarItem title="Shared Documents" href="shared-docs" />
 
               {userIsAdmin && (
                 // <NavBarItem title="Settings" href='/demo/settings' />
@@ -921,9 +923,8 @@ export default function HomePage() {
                 >
                   {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                   <div
-                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                      userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                    }`}
+                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
                   >
                     {user?.name?.charAt(0) || "U"}
                   </div>
@@ -1090,9 +1091,9 @@ export default function HomePage() {
                         src={
                           user?.company?.logo
                             ? user.company.logo.replace(
-                                "/api/upload",
-                                "/uploads"
-                              )
+                              "/api/upload",
+                              "/uploads"
+                            )
                             : config?.logo || "/default_logo_purple.png"
                         }
                         alt={params.portalid}
@@ -1285,9 +1286,8 @@ export default function HomePage() {
 
                         {/* Card view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
-                            view === "grid" ? "hidden" : "visible"
-                          }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
+                            }`}
                           onClick={() => {
                             setView("grid");
                             // setIsOpenOptionDrawer(false);
@@ -1306,9 +1306,8 @@ export default function HomePage() {
 
                         {/* List view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
-                            view === "list" ? "hidden" : "visible"
-                          }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
+                            }`}
                           onClick={() => {
                             setView("list");
                             // setIsOpenOptionDrawer(false);
@@ -1405,7 +1404,7 @@ export default function HomePage() {
                   setCurrentFilesList={setCurrentFilesList}
                   setSelectedItem={setSelectedItem}
                   selectedItem={selectedItem}
-                  handleShareLink={() => {}}
+                  handleShareLink={() => { }}
                   onFileChanges={refreshFiles}
                   listType={"shared"}
                   setSearchQuery={setSearchQuery}
@@ -1635,7 +1634,15 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer "
+                            onClick={() => {
+                              setMyTaskPopupBoxContent("Upload identity information")
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Upload
                           </p>
                         </td>
@@ -1650,7 +1657,15 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent("Upload 2023 tax return")
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Complete Forms
                           </p>
                         </td>
@@ -1665,7 +1680,15 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent("Sign money transfer agreement")
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Sign
                           </p>
                         </td>
@@ -1680,7 +1703,14 @@ export default function HomePage() {
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setIsMyTaskPopupOpen(
+                                (prev) => !prev
+                              )
+                            }}
+                          >
                             Start Forms
                           </p>
                         </td>
@@ -1688,6 +1718,14 @@ export default function HomePage() {
                     </tbody>
                   </table>
                 </div>
+                {
+                  isMyTaskPopupOpen && (
+                    <MyTaskPopupBox
+                      onClose={() => setIsMyTaskPopupOpen(false)}
+                      content={myTaskPopupBoxContent}
+                    />
+                  )
+                }
 
                 {/* My advisor */}
                 <div className="mb-7">

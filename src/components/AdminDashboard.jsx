@@ -70,118 +70,55 @@ const SidePanel = ({ setCurrentPage }) => (
   </div>
 );
 
-const DeletePortalModal = ({ isOpen, onClose, subsidiary, refreshPortals }) => {
-  const [enteredPortal, setEnteredPortal] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+function sanitizeName(name) {
+  let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+  return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
+}
 
-  function sanitizeName(name) {
-    let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
-    return sanitizeName.endsWith(".")
-      ? sanitizeName.slice(0, -1)
-      : sanitizeName;
-  }
+const SubsidiaryCard = ({
+  subsidiary,
+  onSelect,
+  user,
+  refreshPortals,
+  setActiveUsers,
+  activeUsers,
+}) => {
+  console.log("activeUsers", activeUsers);
+  const [portalToDelete, setPortalToDelete] = useState(null);
+  const [usersCount, setUsersCount] = useState(0);
 
-  const handleDeleteSubsidiary = async () => {
-    if (subsidiary.legalName !== enteredPortal) {
-      setError("Entered portal doesn't match");
-      return;
-    }
+  const fetchUsers = async () => {
     try {
-      setIsLoading(true);
-      const requestOptions = {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: subsidiary.id }),
-      };
-
-      const response = await fetch(
-        `/api/portal`,
-        requestOptions,
-        "portal-delete"
+      if (!subsidiary) return;
+      const response = await fetchWrapper(
+        `/api/users?portalid=${sanitizeName(subsidiary?.legalName)}`,
+        {},
+        "fetch-users"
       );
-
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Portal deletion failed");
-      await refreshPortals();
-      toast.success(data.message || "Portal deleted successfully");
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch users");
+      }
+
+      setUsersCount(data?.length);
+      console.log("active", activeUsers);
+      setActiveUsers((prev) => {
+        const updatedArray = [...prev];
+        const firstNullIndex = updatedArray.indexOf(null);
+        if (firstNullIndex !== -1) {
+          updatedArray[firstNullIndex] = data?.length;
+        }
+        return updatedArray;
+      });
     } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
+      console.log("error: ", error);
     }
   };
 
-  return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <DialogBackdrop className="fixed inset-0 bg-black/50 " />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title className="text-xl text-gray-600 font-medium">
-              Delete Portal
-            </Dialog.Title>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="text-center text-gray-700 py-4">
-            <p className="font-bold">{subsidiary.legalName}</p>
-            <div className="text-gray-700 p-5 space-y-2 border-t ">
-              <p className="text-sm">
-                This action CANNOT be undone. This will delete the portal
-                permanently
-              </p>
-              <p className="text-sm font-semibold tracking-tight">
-                Please type in the portal name to confirm
-              </p>
-              <input
-                type="text"
-                id="email"
-                value={enteredPortal}
-                onChange={(e) => setEnteredPortal(e.target.value)}
-                placeholder="Enter Portal"
-                className="w-full px-3 py-2 text-gray-700 border border-red-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
-              />
-              {error && <p className="text-red-600 text-sm">{error}</p>}
-            </div>
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-            <div className="flex justify-center space-x-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors"
-                onClick={handleDeleteSubsidiary}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="spinner"></div> Deleting This Portal
-                  </div>
-                ) : (
-                  "Delete This Portal"
-                )}
-              </button>
-            </div>
-          </div>
-        </Dialog.Panel>
-      </div>
-    </Dialog>
-  );
-};
-
-const SubsidiaryCard = ({ subsidiary, onSelect, user, refreshPortals }) => {
-  const [portalToDelete, setPortalToDelete] = useState(null);
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
       <div className="p-6">
@@ -203,14 +140,14 @@ const SubsidiaryCard = ({ subsidiary, onSelect, user, refreshPortals }) => {
             >
               {subsidiary.status}
             </div>
-            {user?.id === subsidiary.createdBy.id && (
+            {/* {user?.id === subsidiary.createdBy.id && (
               <div
                 className={`px-2 py-1`}
                 onClick={() => setPortalToDelete(subsidiary)}
               >
-                <Trash2 className="size-4 text-red-700"/>
+                <Trash2 className="size-4 text-red-700" />
               </div>
-            )}
+            )} */}
           </div>
         </div>
         <div onClick={() => onSelect(subsidiary)}>
@@ -226,7 +163,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, user, refreshPortals }) => {
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <div className="flex items-center">
               <Users size={16} className="mr-1" />
-              <span>{subsidiary.userCount || 0} users</span>
+              <span>{usersCount} users</span>
             </div>
             <div className="flex items-center">
               <Folder size={16} className="mr-1" />
@@ -235,12 +172,12 @@ const SubsidiaryCard = ({ subsidiary, onSelect, user, refreshPortals }) => {
           </div>
         </div>
       </div>
-      <DeletePortalModal
+      {/* <DeletePortalModal
         isOpen={portalToDelete?.id === subsidiary?.id}
         onClose={() => setPortalToDelete(null)}
         subsidiary={subsidiary}
         refreshPortals={refreshPortals}
-      />
+      /> */}
     </div>
   );
 };
@@ -270,8 +207,7 @@ const DashboardHeader = ({
           {currentPage}
         </h1>
         <p className="text-sm text-gray-500">
-          Managing {currentPageCount}{" "}
-          {currentPageCount > 1 ? `${currentPage}s` : `${currentPage}`}
+          Managing {currentPageCount} {currentPage}
         </p>
       </div>
       <div className="flex items-center space-x-8 cursor-pointer">
@@ -310,26 +246,42 @@ const DashboardHeader = ({
   </>
 );
 
-const SubsidiaryMetrics = () => (
-  <div className="grid grid-cols-3 gap-6 mb-8">
-    {[
-      { label: "Total Subsidiaries", value: "12", change: "+2 this month" },
-      { label: "Active Users", value: "1,234", change: "+57 this month" },
-      { label: "Storage Used", value: "1.2 TB", change: "+100 GB this month" },
-    ].map((metric, idx) => (
-      <div
-        key={idx}
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-      >
-        <p className="text-sm text-gray-500 mb-1">{metric.label}</p>
-        <p className="text-2xl font-semibold text-gray-900 mb-2">
-          {metric.value}
-        </p>
-        <p className="text-xs text-green-600">{metric.change}</p>
-      </div>
-    ))}
-  </div>
-);
+const SubsidiaryMetrics = ({ activeUsers, currentPageCount }) => {
+  console.log(activeUsers);
+  const [users, setUsers] = useState(0);
+  useEffect(() => {
+    // Ensure activeUsers is an array of numbers (filtering out null or undefined)
+    const totalActiveUsers = activeUsers.reduce(
+      (acc, item) => (typeof item === "number" ? acc + item : acc),
+      0
+    );
+    setUsers(totalActiveUsers);
+  }, [activeUsers]);
+  return (
+    <div className="grid grid-cols-3 gap-6 mb-8">
+      {[
+        {
+          label: "Total Subsidiaries",
+          value: currentPageCount,
+          change: "+2 this month",
+        },
+        { label: "Active Users", value: users, change: "+57 this month" },
+        { label: "Storage Used", value: "0 TB", change: "+100 GB this month" },
+      ].map((metric, idx) => (
+        <div
+          key={idx}
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+        >
+          <p className="text-sm text-gray-500 mb-1">{metric.label}</p>
+          <p className="text-2xl font-semibold text-gray-900 mb-2">
+            {metric.value}
+          </p>
+          <p className="text-xs text-green-600">{metric.change}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const LoadingSpinner = () => (
   <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
@@ -349,6 +301,8 @@ const SubsidiaryGrid = ({
   onCreateNew,
   user,
   refreshPortals,
+  setActiveUsers,
+  activeUsers,
 }) => (
   <>
     {isLoading ? (
@@ -364,6 +318,8 @@ const SubsidiaryGrid = ({
                 onSelect={onSelectSubsidiary}
                 user={user}
                 refreshPortals={refreshPortals}
+                setActiveUsers={setActiveUsers}
+                activeUsers={activeUsers}
               />
             </React.Fragment>
           );
@@ -385,6 +341,7 @@ export default function AdminDashboard() {
   const [showCreationModal, setShowCreationModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("Portals");
   const [currentPageCount, setCurrentPageCount] = useState(0);
+  const [activeUsers, setActiveUsers] = useState([]);
 
   const handleSelectSubsidiary = (subsidiary) => {
     router.push(`/admin/subsidiaries/${subsidiary.id}`);
@@ -489,6 +446,10 @@ export default function AdminDashboard() {
         portal: sanitizeName(formData.legalName) || "",
         isOnboardingRequired: true,
         createdBy: user.id,
+        permissions: {
+          portalId: sanitizeName(formData.legalName),
+          role: UserRole.ADMIN,
+        },
       };
 
       const UserResponse = await fetchWrapper(
@@ -500,9 +461,9 @@ export default function AdminDashboard() {
         },
         "save-user"
       );
-
+      const data = await UserResponse.json();
       if (!UserResponse.ok) {
-        throw new Error("Failed to create user data");
+        throw new Error(data.error || "Failed to create user data");
       }
 
       const saveResponse = await fetchWrapper(
@@ -566,10 +527,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     setCurrentPageCount(0);
+    setActiveUsers([]);
+
     if (currentPage === "Portals") {
       setCurrentPageCount(subsidiaries.length);
+      setActiveUsers(Array(subsidiaries.length).fill(null));
     }
-  }, [currentPage]);
+  }, [currentPage, subsidiaries.length]);
 
   const handleLogout = () => {
     setAccountDropdown(false);
@@ -597,7 +561,11 @@ export default function AdminDashboard() {
           />
           {currentPage === "Portals" && (
             <>
-              <SubsidiaryMetrics />
+              <SubsidiaryMetrics
+                activeUsers={activeUsers}
+                currentPage={currentPage}
+                currentPageCount={currentPageCount}
+              />
               <SubsidiaryGrid
                 isLoading={isPortalLoading}
                 subsidiaries={subsidiaries}
@@ -607,6 +575,8 @@ export default function AdminDashboard() {
                 }}
                 user={user}
                 refreshPortals={getPortal}
+                setActiveUsers={setActiveUsers}
+                activeUsers={activeUsers}
               />
             </>
           )}

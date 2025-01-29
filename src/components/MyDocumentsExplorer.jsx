@@ -465,7 +465,7 @@ function SharedFolderExplorer({
   };
 
   const handleDelete = (file) => {
-    if (listType == "shared" && file.currentUserRole == "viewer") {
+    if (listType == "shared" && file.currentUserRole == "viewer" && view == "list") {
       return;
     }
     setDeleteDropdown((prev) => (prev === file.id ? null : file.id));

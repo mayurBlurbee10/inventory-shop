@@ -1659,7 +1659,7 @@ export default function HomePage() {
                         </td>
                         <td className="px-3 py-4">
                           <p
-                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end"
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
                               setIsMyTaskPopupOpen(
                                 (prev) => !prev

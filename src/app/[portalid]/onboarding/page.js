@@ -54,7 +54,7 @@ export default function OnBoardingPage() {
   const [config, setConfig] = useState([]);
   const [content, setContent] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loading , setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const steps = [
     { component: ContentManagementContent },
@@ -82,35 +82,6 @@ export default function OnBoardingPage() {
     setContent(data);
   };
 
-
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch portal config");
-        }
-        setConfig(data.data);
-      } catch (error) {
-        console.log("error: ", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchConfig();
-    fetchContent();
-  }, []);
-
-
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -135,8 +106,13 @@ export default function OnBoardingPage() {
       }
     };
     fetchConfig();
+    // fetchContent();
     // fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchContent();
+  }, [content])
 
   const handleBack = () => {
     setCurrentStep(currentStep - 1);
@@ -147,7 +123,12 @@ export default function OnBoardingPage() {
       if (currentStep === 1) {
         setIsSubmitting(true);
         const userData = getUserData();
-        completeOnboarding(userData.id);
+        if (contentLength >= 11) {
+          completeOnboarding(userData.id);
+        } else {
+          router.push(`/${params.portalid}/dashboard`);
+
+        }
       } else {
         setCurrentStep(currentStep + 1);
       }
@@ -169,7 +150,7 @@ export default function OnBoardingPage() {
     );
 
     if (!response.ok) throw new Error(response.error);
-    router.push(`home`);
+    router.push(`/${params.portalid}/dashboard`);
   };
 
 
@@ -188,8 +169,8 @@ export default function OnBoardingPage() {
 
     switch (currentStep) {
       case 0:
-        if (contentLength < 11)
-          errors.contentLength = "Please add all content items.";
+        // if (contentLength < 11)
+        //   errors.contentLength = "Please add all content items.";
         break;
       case 2:
         break;
@@ -245,7 +226,7 @@ export default function OnBoardingPage() {
   const NavBarItem = ({ title }) => (
     <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
   );
-  
+
 
 
   if (!config || !content) return <LoadingSpinner />;
@@ -322,13 +303,13 @@ export default function OnBoardingPage() {
                 }`}
             >
               {currentStep === steps.length - 1
-                ? "Complete Onboarding"
+                ? "Save & Continue"
                 : "Continue"}
             </button>
           </div>
         </div>
       </div>
-      
+
       <div className="h-full col-span-8 relative overflow-hidden">
         <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
           <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">

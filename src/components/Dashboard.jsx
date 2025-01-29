@@ -14,6 +14,7 @@ import { isAdmin, getUserData, clearUserData, setUserData } from "@/lib/auth";
 import { getSession, signOut } from "next-auth/react";
 import SettingsModal from "@/components/Settings";
 import TechSupport from "@/components/TechSupport";
+import Image from "next/image";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -57,9 +58,8 @@ export default function DashboardPage() {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-            pathname.includes(href) ? "text-blue-500" : ""
-          }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+            }`}
         >
           {title}
         </button>
@@ -251,7 +251,7 @@ export default function DashboardPage() {
                   src={
                     user?.company?.logo
                       ? user.company.logo.replace("/api/upload", "/uploads")
-                      : config?.logo || "/default_logo_purple.png"
+                      : config?.logo || "/logo.png"
                   }
                   alt={params.portalid}
                   className="h-[52px] mr-2"
@@ -292,9 +292,8 @@ export default function DashboardPage() {
                 >
                   {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                   <div
-                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                      userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                    }`}
+                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
                   >
                     {user?.name?.charAt(0) || "U"}
                   </div>
@@ -386,11 +385,9 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-xl font-light text-black font-lato">
               {/* Hello, David West! Today is Wednesday, January 15th. */}
-              {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${
-                dayAndDate.month
-              } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${
-                dayAndDate.date === 2 ? "nd" : ""
-              }${dayAndDate.date === 3 ? "rd" : "th"}`}
+              {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${dayAndDate.month
+                } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
+                }${dayAndDate.date === 3 ? "rd" : "th"}`}
             </h2>
           </div>
           <div>

@@ -178,11 +178,23 @@ function ViewProfileModal({
                   </button>
                   <button
                     type="button"
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed w-[100px] flex justify-center`}
                     onClick={handleChangeRole}
-                    disabled={loggedInUser?.id === user?.id}
+                    disabled={loggedInUser?.id === user?.id || isLoadingRoleChange}
                   >
-                    {isLoadingRoleChange ? "Saving" : "Save"}
+                    {/* {isLoadingRoleChange ? "Saving" : "Save"} */}
+                    {isLoadingRoleChange ? (
+                      <div className="flex justify-center text-center gap-3 disabled:cursor-not-allowed">
+                        <div className="w-5 h-5 border-2 border- white border-t-transparent rounded-full animate-spin mx-auto" />
+                        <span className="group-hover:scale-105 transition-all ease-in-out duration-200 flex justify-center text-center">
+                          Saving
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
+                        Save
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
