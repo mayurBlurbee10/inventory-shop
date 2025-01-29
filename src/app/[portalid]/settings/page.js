@@ -8,7 +8,7 @@ export default function SettingsPage() {
 
   const handleClose = () => {
     setIsOpen(false);
-    router.push(`/demo/dashboard`);
+    // router.push(`dashboard`);
   };
 
   return (

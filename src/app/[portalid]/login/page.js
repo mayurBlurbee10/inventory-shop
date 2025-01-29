@@ -130,7 +130,7 @@ export default function LoginPage() {
       if (userData.isOnboardingRequired) {
         router.push(`onboarding`);
       } else {
-        router.push(`/demo/dashboard`);
+        router.push(`dashboard`);
       }
     } catch (err) {
       console.error("Login error:", err);

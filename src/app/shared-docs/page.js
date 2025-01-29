@@ -903,7 +903,6 @@ export default function HomePage() {
               <NavBarItem title="Shared Documents" href="shared-docs" />
 
               {userIsAdmin && (
-                // <NavBarItem title="Settings" href='/demo/settings' />
                 <button
                   className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
                   onClick={() => setIsSettingsOpen(true)}
