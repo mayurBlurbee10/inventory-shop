@@ -1,11 +1,3 @@
-// import Dashboard from "@/components/Dashboard";
-
-// function SharewithMe() {
-//   return <Dashboard fileType={"shared"} />;
-// }
-
-// export default SharewithMe;
-
 "use client";
 import Dashboard from "@/components/Dashboard";
 import * as React from "react";
@@ -42,14 +34,13 @@ import {
 } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { getUserData, setUserData } from "@/lib/auth";
+import { getUserData } from "@/lib/auth";
 import EmptyState from "@/components/FileExplorer/EmptyState";
 import FolderExplorer from "@/components/FolderExplorer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import SharedFolderExplorer from "@/components/MyDocumentsExplorer";
 import UploadArea from "@/components/UploadArea";
-import CreateFolder from "../../../components/CreateFolder";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
 import DialogBox from "@/components/DialogBox";
 import SettingsModal from "@/components/Settings";
@@ -57,14 +48,15 @@ import MoveDialog from "@/components/MoveDialog";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { clearUserData } from "@/app/lib/auth";
-import { getSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
 import MyTaskPopupBox from "@/components/MyTaskPopupBox";
+import Documents from "@/components/Documents";
 
-export default function HomePage() {
-  // return <Dashboard fileType={'my'}/>;
+export default function MyDocsPage() {
+  return <Documents fileType={'my'}/>;
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
@@ -98,9 +90,11 @@ export default function HomePage() {
   const [footerLoading, setFooterLoading] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
-  const pathname = usePathname();
   const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
   const [myTaskPopupBoxContent , setMyTaskPopupBoxContent ] = useState('');
+
+
+  const pathname = usePathname();
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -227,8 +221,7 @@ export default function HomePage() {
     }
   };
 
-  const fileType = "shared";
-
+  const fileType = "my";
   const refreshFiles = async () => {
     try {
       setIsLoading(true);
@@ -312,57 +305,16 @@ export default function HomePage() {
     // }
   }, [path]);
 
-  // useEffect(() => {
-  //   const userData = getUserData();
-  //   if (!userData) {
-  //     router.push("login");
-  //     return;
-  //   }
-
-  //   setUser(userData);
-  //   refreshFiles();
-  //   // fetchConfig();
-  // }, [router]);
-
-  const getUserDetailsByEmail = async (email) => {
-    try {
-      let url = `/api/users/loginByProvider`;
-      const body = {
-        method: "POST",
-        body: JSON.stringify({ email, portalid: params.portalid || null }),
-      };
-      const response = await fetchWrapper(url, body, "fetchUserByEmail");
-      if (!response.ok) throw new Error("Failed to get user from email");
-      const data = await response.json();
-      const userData = data.user;
-      setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
-    } catch (error) {
-      console.error("Failed to get user from email:", error);
-      router.push("login");
-    }
-  };
-
   useEffect(() => {
-    const fetchSession = async () => {
-      const userData = getUserData();
-      if (!userData) {
-        router.push("login");
-        return;
-      }
-      await getUserDetailsByEmail(userData?.email);
-    };
-    fetchSession().then(() => {
-      const userData = getUserData();
-      if (!userData) {
-        router.push("login");
-        return;
-      }
+    const userData = getUserData();
+    if (!userData) {
+      router.push("login");
+      return;
+    }
 
-      setUser(userData);
-      refreshFiles();
-    });
+    setUser(userData);
+    refreshFiles();
+    // fetchConfig();
   }, [router]);
 
   const NavBarItem = ({ title, href }) => {
@@ -374,8 +326,9 @@ export default function HomePage() {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
-            }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-500" : ""
+          }`}
         >
           {title}
         </button>
@@ -864,7 +817,6 @@ export default function HomePage() {
     </div>
   );
 
-  // if (!config || !content) return <LoadingSpinner />;
   const userIsAdmin = isAdmin();
 
   return (
@@ -874,7 +826,7 @@ export default function HomePage() {
         <div className="max-w-[1140px] mx-auto px-3">
           <nav className="flex justify-between items-center bg-secondary py-2">
             <div className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              {user && user?.company?.logo || config?.logo ? (
+              {user?.company?.logo || config?.logo ? (
                 <img
                   src={
                     user?.company?.logo
@@ -922,8 +874,9 @@ export default function HomePage() {
                 >
                   {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                   <div
-                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                      }`}
+                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                      userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                    }`}
                   >
                     {user?.name?.charAt(0) || "U"}
                   </div>
@@ -1066,7 +1019,7 @@ export default function HomePage() {
             <div className="col-span-5 lg:col-span-3">
               <div className="flex items-center gap-10">
                 <span className="text-xl font-light text-[#212529] font-lato">
-                  Shared Documents
+                  My Documents
                 </span>
                 <span className="text-black font-lato font-normal text-sm">
                   Securely share content with your advisor and trusted
@@ -1090,9 +1043,9 @@ export default function HomePage() {
                         src={
                           user?.company?.logo
                             ? user.company.logo.replace(
-                              "/api/upload",
-                              "/uploads"
-                            )
+                                "/api/upload",
+                                "/uploads"
+                              )
                             : config?.logo || "/default_logo_purple.png"
                         }
                         alt={params.portalid}
@@ -1285,8 +1238,9 @@ export default function HomePage() {
 
                         {/* Card view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
-                            }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
+                            view === "grid" ? "hidden" : "visible"
+                          }`}
                           onClick={() => {
                             setView("grid");
                             // setIsOpenOptionDrawer(false);
@@ -1305,8 +1259,9 @@ export default function HomePage() {
 
                         {/* List view button */}
                         <button
-                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
-                            }`}
+                          className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
+                            view === "list" ? "hidden" : "visible"
+                          }`}
                           onClick={() => {
                             setView("list");
                             // setIsOpenOptionDrawer(false);
@@ -1403,9 +1358,9 @@ export default function HomePage() {
                   setCurrentFilesList={setCurrentFilesList}
                   setSelectedItem={setSelectedItem}
                   selectedItem={selectedItem}
-                  handleShareLink={() => { }}
+                  handleShareLink={() => {}}
                   onFileChanges={refreshFiles}
-                  listType={"shared"}
+                  listType={"my"}
                   setSearchQuery={setSearchQuery}
                   view={view}
                   cols={cols}
@@ -1717,6 +1672,7 @@ export default function HomePage() {
                     </tbody>
                   </table>
                 </div>
+
                 {
                   isMyTaskPopupOpen && (
                     <MyTaskPopupBox

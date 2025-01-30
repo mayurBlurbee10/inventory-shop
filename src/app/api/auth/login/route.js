@@ -127,14 +127,43 @@ export async function POST(request) {
 
     console.log("DATA.PORTALID: ", data.portalid, user.portalId);
     // check if this is the same portal's user
-    if (data.portalid != user.portalId) {
-      console.log('user.role: ', user.role)
-      if (user.role === UserRole.SUPER_ADMIN) {
-        const portals = await portalService.getPortalsByUser(user.id);
-        const portalOwner = portals.some(
+    const userPermission =
+      Array.isArray(user.permissions) &&
+      user.permissions.find(
+        (permission) => permission.portalId === data?.portalid
+      );
+
+    let userRole = userPermission?.role;
+
+    if (!userPermission) {
+      const superUserPermission =
+        Array.isArray(user.permissions) &&
+        user.permissions.find((permission) => permission.portalId === null);
+
+      userRole = superUserPermission?.role;
+    }
+    if (data?.portalid && !userPermission) {
+      if (userRole === UserRole.SUPER_ADMIN) {
+        let allPortals = [];
+        const userData = await userService.getUserById(user.id);
+        if (userData?.groupMembersIds && userData.groupMembersIds?.length > 0) {
+          for (const id of userData.groupMembersIds) {
+            const groupPortals = await portalService.getPortalsByUser(
+              String(id).toLowerCase()
+            );
+            allPortals = [...allPortals, ...groupPortals];
+          }
+        }
+        const portals = await portalService.getPortalsByUser(
+          String(user.id).toLowerCase()
+        );
+        console.log("portals", portals);
+        allPortals = [...allPortals, ...portals];
+        // const portals = await portalService.getPortalsByUser(user.id);
+        const portalOwners = allPortals.some(
           (portal) => sanitizeName(portal.legalName) === data.portalid
         );
-        if (!portalOwner) {
+        if (!portalOwners) {
           return NextResponse.json(
             { error: "This user does not have access to this portal" },
             { status: 403 }
@@ -214,7 +243,7 @@ export async function POST(request) {
       isOnboardingRequired: user.isOnboardingRequired,
       boxUserId: user.boxUserId,
       boxFolderId: user.folderId,
-      collaborationIds: user.collaborationIds
+      collaborationIds: user.collaborationIds,
     };
 
     if (user.role != UserRole.SUPER_ADMIN) {

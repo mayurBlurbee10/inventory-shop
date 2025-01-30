@@ -80,6 +80,9 @@ export @Entity("users")
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   groupMembersIds;
 
+  @Column({ type: "simple-json", nullable: true, default: "[]" })
+  permissions;
+
   @BeforeInsert()
   async hashPassword() {
     if (this.password) {

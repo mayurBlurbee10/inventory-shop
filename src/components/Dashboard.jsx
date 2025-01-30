@@ -1,80 +1,372 @@
 "use client";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  Settings,
+  LogOut,
+  Search,
+  Folder,
+  File,
+  X,
+  FolderInput,
+  Trash2,
+  Download,
+} from "lucide-react";
 
-import Footer from "@/components/Footer";
-
-import { CircleUserRound, Settings, Headset, LogOut } from "lucide-react";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Pie } from "react-chartjs-2";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { isAdmin, getUserData, clearUserData, setUserData } from "@/lib/auth";
+
+import EmptyState from "./FileExplorer/EmptyState";
+import Header from "./Header";
+import Sidepanel from "./Sidepanel";
+import Breadcrumbs from "./Breadcrumbs";
+import SettingsModal from "./Settings";
+import DialogBox from "./DialogBox";
+import FolderExplorer from "./FolderExplorer";
+import UploadArea from "./UploadArea";
+import ActionButtons from "./ActionButtons";
 import { getSession, signOut } from "next-auth/react";
-import SettingsModal from "@/components/Settings";
-import TechSupport from "@/components/TechSupport";
-import Image from "next/image";
+import { setUserData } from "@/lib/auth";
+import { toast } from "react-toastify";
+import MoveDialog from "./MoveDialog";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+const processBoxFiles = (files) => {
+  const itemsMap = new Map();
+  const rootItems = [];
 
-export const data = {
-  labels: ["US Stocks", "Foreign Stocks", "Emerging Markets", "Bonds"],
-  datasets: [
-    {
-      label: "# of Votes",
-      data: [46, 12, 23, 3],
-      backgroundColor: ["#3d95cc", "#8f5fa3", "#3cba9f", "#e8c4ba"],
-      borderWidth: 1,
-    },
-  ],
+  files.forEach((file) => {
+    const item = {
+      id: file.id,
+      name: file.name,
+      type: file.type || "file",
+      size: file.size,
+      created_at: file.created_at,
+      modified_at: file.modified_at,
+      children: [],
+    };
+    itemsMap.set(file.id, item);
+
+    if (!file.parent || !itemsMap.has(file.parent?.id)) {
+      rootItems.push(item);
+    } else {
+      const parent = itemsMap.get(file.parent.id);
+      parent?.children.push(item);
+    }
+  });
+
+  return rootItems;
 };
 
-export default function DashboardPage() {
-  // return <Dashboard fileType={'my'}/>;
-  const [config, setConfig] = useState(null);
-  const [content, setContent] = useState(null);
-  const params = useParams();
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState(null);
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+const AccountInfo = ({ user, userIsAdmin }) => (
+  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
+    <h3 className="text-[22px] font-medium text-gray-900 mb-5">Account Info</h3>
+    <div className="space-y-3">
+      <p className="text-gray-600 flex justify-between items-center">
+        <span className="text-gray-500">Email</span>
+        <span className="font-medium">{user?.email}</span>
+      </p>
+      {user?.boxUserId && (
+        <p className="text-gray-600 flex justify-between items-center">
+          <span className="text-gray-500">Box ID</span>
+          <span className="font-medium">{user.boxUserId}</span>
+        </p>
+      )}
+      {user?.role && (
+        <p className="text-gray-600 flex justify-between items-center">
+          <span className="text-gray-500">Role</span>
+          <span className={`font-medium ${userIsAdmin ? "text-blue-600" : ""}`}>
+            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+          </span>
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
+  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
+    <h3 className="text-[22px] font-medium text-gray-900 mb-5">
+      Quick Actions
+    </h3>
+    <div className="space-y-2">
+      {userIsAdmin && (
+        <button
+          onClick={() => router.push("/settings")}
+          className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
+        >
+          <Settings className="w-5 h-5" />
+          <span className="font-medium">Settings</span>
+        </button>
+      )}
+      <button
+        onClick={handleLogout}
+        className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
+      >
+        <LogOut className="w-5 h-5" />
+        <span className="font-medium">Sign Out</span>
+      </button>
+    </div>
+  </div>
+);
+
+function Dashboard({ fileType }) {
   const router = useRouter();
-  const [session, setSession] = useState(null);
+  const params = useParams();
+  const [config, setConfig] = useState(null);
+  const fileInputRef = useRef(null);
+  const [user, setUser] = useState(null);
+  const [filesList, setFilesList] = useState([]);
+  const [currentFilesList, setCurrentFilesList] = useState(filesList);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showUploadArea, setShowUploadArea] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [uploadedfilePath, setUpladedFilePath] = useState("");
   const [accountDropdown, setAccountDropdown] = useState(false);
+  const [sidepanelDropdown, setSidepanelDropdown] = useState(false);
+  const [path, setPath] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
-  const [dayAndDate, setDayAndDate] = useState({
-    day: "",
-    date: "",
-    month: "",
-  });
-  const NavBarItem = ({ title, href }) => {
-    if (!href) {
-      console.error("href prop is required for NavBarItem.");
-      return null;
+  const [session, setSession] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [moveItem, setMoveItem] = useState(null);
+  const [selectedBulkItems, setSelectedBulkItems] = useState([]);
+  const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const handleBrowse = (event) => {
+    if (event.type === "click") {
+      fileInputRef.current?.click();
+    } else {
+      handleFileSelect(event);
+    }
+  };
+
+  const refreshSharedFiles = async (folderId) => {
+    try {
+      setIsLoading(true);
+      const userData = getUserData();
+      if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
+        const requestOptions = {
+          method: "POST",
+          body: JSON.stringify({ collaborated: userData.collaborationIds }),
+        };
+        const response = await fetchWrapper(
+          `/api/box/collaborations`,
+          requestOptions,
+          "fetchCollaboratedFolder"
+        );
+        if (!response.ok) throw new Error("Failed to get collaborated folder");
+        const data = await response.json();
+        const newFilesList = data?.items;
+        setFilesList(newFilesList);
+      }
+    } catch (error) {
+      console.error("Error get collaborated folder:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileSelect = async (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length > 0) {
+      try {
+        setIsLoading(true);
+        const uploadData = new FormData();
+        const userData = getUserData();
+        files.forEach((file) => {
+          uploadData.append("file", file);
+        });
+        if (!!selectedItem && selectedItem.type == "folder") {
+          uploadData.append("boxFolderId", selectedItem.id);
+        } else {
+          uploadData.append("boxFolderId", userData.boxFolderId);
+        }
+
+        uploadData.append("email", userData.email);
+
+        const requestOptions = {
+          method: "POST",
+          body: uploadData,
+        };
+
+        const response = await fetchWrapper(
+          "/api/box/files",
+          requestOptions,
+          "uploadFile"
+        );
+        if (!response.ok) throw new Error("Failed to upload files");
+        setIsModalOpen(true);
+        setShowUploadArea(false);
+        await refreshFiles();
+        const path = getFolderPath(
+          filesList,
+          selectedItem?.id || userData?.boxFolderId
+        );
+        const location = `
+        <div>
+          <div>
+            Location: Home${path}
+          </div>
+          <div>
+            Name: 
+            ${files.map((file) => file.name)}
+          </div>
+        </div>
+        `;
+        setUpladedFilePath(location);
+        toast.success("File uploaded successfully");
+      } catch (error) {
+        toast.error(error.message);
+        console.error("Error uploading files:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const refreshFiles = async () => {
+    try {
+      setIsLoading(true);
+      const userData = getUserData();
+      const requestOptions = {
+        method: "GET",
+      };
+      if (fileType === "shared") {
+        if (
+          userData?.collaborationIds &&
+          userData.collaborationIds.length > 0
+        ) {
+          const requestOptions = {
+            method: "POST",
+            body: JSON.stringify({ collaborated: userData.collaborationIds }),
+          };
+          const response = await fetchWrapper(
+            `/api/box/collaborations`,
+            requestOptions,
+            "fetchCollaboratedFolder"
+          );
+          if (!response.ok)
+            throw new Error("Failed to get collaborated folder");
+          const data = await response.json();
+          const newFilesList = data?.items;
+          setFilesList(newFilesList);
+        }
+      } else {
+        const response = await fetchWrapper(
+          `/api/box/folders?folderId=${userData?.boxFolderId}`,
+          requestOptions,
+          "fetchFile"
+        );
+        if (!response.ok) throw new Error("Failed to fetch files");
+        const data = await response.json();
+        const newFilesList = data?.items || [];
+        setFilesList(newFilesList);
+      }
+    } catch (error) {
+      console.error("Error refreshing files:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updatePath = (prevPath, filesList) => {
+    let updatedPath = [...prevPath];
+    let currentFolder = filesList;
+
+    // Update the path incrementally
+    for (let level = 0; level < updatedPath.length; level++) {
+      const folderAtLevel = updatedPath[level];
+      // Find the folder in the filesList
+      const updatedFolder = currentFolder.find(
+        (item) => item.id === folderAtLevel.id
+      );
+      if (updatedFolder) {
+        updatedPath[level] = updatedFolder;
+        currentFolder = updatedFolder.children;
+      }
     }
 
-    return (
-      <Link href={href} passHref>
-        <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
-            }`}
-        >
-          {title}
-        </button>
-      </Link>
-    );
+    return updatedPath;
   };
-  const toggleDropdown = () => {
-    setIsOpen((prev) => !prev);
+
+  useEffect(() => {
+    if (filesList?.length > 0) {
+      setPath((prevPath) => updatePath(prevPath, filesList));
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+    }
+  }, [filesList]);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setCurrentFilesList(
+        path?.length === 0 ? filesList : path[path.length - 1]?.children || []
+      );
+      setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
+    }
+  }, [path]);
+
+  const handleLogout = async () => {
+    clearUserData();
+    await signOut();
+    toast.success("User signout successfully");
+    router.push("login");
+  };
+
+  const getFolderPath = (data, folderId, currentPath = "") => {
+    for (const item of data) {
+      if (item.id === folderId) {
+        return currentPath + "/" + item.name;
+      }
+
+      if (item.type === "folder" && item.children && item.children.length > 0) {
+        const path = getFolderPath(
+          item.children,
+          folderId,
+          currentPath + "/" + item.name
+        );
+        if (path) {
+          return path;
+        }
+      }
+    }
+    return "";
+  };
+
+  const handleShareLink = (itemId, newSharedLink) => {
+    const updateSharedLink = (items) =>
+      items.map((item) => {
+        if (item.id === itemId) {
+          return { ...item, shared_link: newSharedLink };
+        }
+        if (item.children) {
+          return { ...item, children: updateSharedLink(item.children) };
+        }
+        return item;
+      });
+
+    const updatedData = updateSharedLink(currentFilesList);
+    setCurrentFilesList(updatedData);
   };
 
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
       const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid || "default"}`,
+        `/api/portal?portalid=${params.portalid}`,
         {},
         "portal-login"
       );
@@ -113,6 +405,114 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value.trim() === "") {
+      setSuggestions([]);
+      return;
+    }
+
+    const results = searchWithPaths(filesList, value);
+    setSuggestions(results);
+  };
+
+  const searchWithPaths = (nodes, query, currentPath = []) => {
+    const results = [];
+
+    nodes.forEach((node) => {
+      const newPath = [...currentPath, node]; // Add the current node to the path
+
+      // Check if the node matches the query
+      if (node.name.toLowerCase().includes(query.toLowerCase())) {
+        results.push({
+          ...node,
+          path: newPath, // Store the full path to this node
+        });
+      }
+
+      // If the node has children, continue searching recursively
+      if (node.children && node.children.length > 0) {
+        results.push(...searchWithPaths(node.children, query, newPath));
+      }
+    });
+
+    return results;
+  };
+
+  const handleSuggestionClick = (item) => {
+    setSearchQuery(item.name);
+    // if(item.type !== "folder" ){
+    item.path.pop();
+    // }
+    setPath(item.path);
+    setCurrentFilesList([item]);
+    setSuggestions([]);
+  };
+
+  const handelClearSearch = () => {
+    setSearchQuery("");
+    setSuggestions([]);
+    setCurrentFilesList(filesList);
+    setPath([]);
+  };
+
+  const handleMove = async (folder) => {
+    if (selectedBulkItems.length > 0) {
+      handleBulkMove(folder);
+    } else {
+      const obj = {
+        itemId: moveItem.id,
+        destinationFolderId: folder.id,
+        type: moveItem.type,
+      };
+      try {
+        const requestOptions = {
+          method: "POST",
+          body: JSON.stringify(obj),
+        };
+        const response = await fetchWrapper(
+          `/api/box/move`,
+          requestOptions,
+          "moveFileOrFolder"
+        );
+        if (!response.ok) throw new Error("Failed to move file or folder");
+        toast.success(
+          `${moveItem.type === "file" ? "File" : "Folder"} moved successfully.`
+        );
+        setIsMoveModalOpen(false);
+        refreshFiles();
+      } catch (error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setCurrentFilesList(
+        path.length === 0 ? filesList : path[path.length - 1].children
+      );
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const timer = setTimeout(() => {
+      const source =
+        path.length === 0 ? filesList : path[path.length - 1].children;
+      const results = source?.filter((item) =>
+        item?.name?.toLowerCase().includes(searchQuery?.toLowerCase())
+      );
+      setCurrentFilesList(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer); // Cleanup on query or component unmount
+  }, [searchQuery, selectedItem]);
+
   useEffect(() => {
     const fetchSession = async () => {
       const sessionData = await getSession();
@@ -129,462 +529,493 @@ export default function DashboardPage() {
       }
 
       setUser(userData);
-
+      refreshFiles();
       fetchConfig();
     });
   }, [router]);
 
   useEffect(() => {
-    const fetchConfig = async () => {
+    setIsToolbarVisible(selectedBulkItems.length > 0);
+  }, [selectedBulkItems]);
+
+  const handleBulkDelete = async () => {
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type }));
+    try {
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify({ items: selectedItemsDetails }),
+      };
+      const response = await fetchWrapper(
+        `/api/box/bulk/delete`,
+        requestOptions,
+        "bulk-delete"
+      );
+      if (!response.ok) throw new Error("Error bulk deleting files or folders");
+      toast.success(`Bulk delete operation completed successfully.`);
+      refreshFiles();
+      setSelectedBulkItems([]);
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleBulkMove = async (destinationFolder) => {
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type }));
+    let obj = {
+      items: selectedItemsDetails,
+      destinationFolderId: destinationFolder.id,
+    };
+    try {
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify(obj),
+      };
+      const response = await fetchWrapper(
+        `/api/box/bulk/move`,
+        requestOptions,
+        "bulk-move"
+      );
+      if (!response.ok) throw new Error("Error bulk move files or folders");
+      toast.success(`Bulk move operation completed successfully.`);
+      refreshFiles();
+      setSelectedBulkItems([]);
+      setIsMoveModalOpen(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handelToolbarMoveClick = () => {
+    const selectedItemsDetails = currentFilesList.filter(
+      (item) => selectedBulkItems[0] === item.id
+    );
+    setMoveItem(selectedItemsDetails[0]);
+    setIsMoveModalOpen(true);
+  };
+
+  const handleDownload = async (fileId = "", fileName = "") => {
+    if (selectedBulkItems.length > 0) {
+      handleBulkDownload();
+    } else {
       try {
         const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
+          `/api/box/download?fileId=${fileId}`,
           {},
-          "portal-login"
+          "download"
         );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch portal config");
-        }
-        setConfig(data.data);
+        if (!response.ok) throw new Error("Download failed");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+
+        window.URL.revokeObjectURL(url);
+        toast.success("File dowloaded successfully");
       } catch (error) {
-        console.log("error: ", error);
-      } finally {
-        setIsLoading(false);
+        toast.error(error.message);
+        console.error("Download error:", error);
       }
-    };
-    fetchConfig();
-    fetchContent();
-  }, []);
+    }
+  };
 
-  const filterValue = (title) => {
-    if (!content) return null;
-    console.log("content:", content);
+  // const handleBulkDownload = async () => {
+  //   const selectedItemsDetails = currentFilesList
+  //     .filter((item) => selectedBulkItems.includes(item.id))
+  //     .map((item) => ({ id: item.id, type: item.type, fileName: item.name }));
+  //   try {
+  //     const requestOptions = {
+  //       method: "POST",
+  //       body: JSON.stringify({ items: selectedItemsDetails }),
+  //     };
+  //     const responses = await fetchWrapper(
+  //       `/api/box/bulk/download`,
+  //       requestOptions,
+  //       "bulk-download"
+  //     );
+  //     if (!responses.ok) throw new Error("Download failed");
+  //     const data = await responses.json();
+  //     for (const response of data.downloadItems) {
+  //       const headers = response.headers;
+  //       const contentDisposition = headers.get("Content-Disposition");
+  //       if (contentDisposition) {
+  //         const match = contentDisposition.match(/filename="(.+?)"/);
+  //         if (match && match[1]) {
+  //           const fileName = match[1];
+  //           const blob = await response.blob();
+  //           const url = window.URL.createObjectURL(blob);
+  //           const link = document.createElement("a");
+  //           link.href = url;
+  //           link.download = fileName;
+  //           link.click();
 
-    const contentItem = content.portalContent.find(
-      (item) => item.title === title
-    );
-    const value = contentItem ? contentItem.value : null;
+  //           window.URL.revokeObjectURL(url);
+  //         }
+  //       }
+  //     }
+  //     toast.success("Files dowloaded successfully");
+  //   } catch (error) {
+  //     toast.error(error.message);
+  //     console.error("Download error:", error);
+  //   }
+  // };
 
-    if (!value) {
-      const defaultItem = content.defaultContent.find(
-        (item) => item.title === title
+  const handleBulkDownload = async () => {
+    const unMatchedType = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .filter((item) => item.type === 'folder');
+
+      if(unMatchedType && unMatchedType.length>0){
+        toast.error("Selected Item is Folder")
+        return;
+      }
+
+
+    const selectedItemsDetails = currentFilesList
+      .filter((item) => selectedBulkItems.includes(item.id))
+      .map((item) => ({ id: item.id, type: item.type, name: item.name }));
+
+    try {
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ items: selectedItemsDetails }),
+      };
+
+      const response = await fetch(
+        `/api/box/bulk/download`,
+        requestOptions,
+        "download"
       );
-      return defaultItem ? defaultItem.value : null;
+
+      if (!response.ok) throw new Error("Download failed");
+
+      const data = await response.json();
+
+      for (const item of data.downloadItems) {
+        const { content, name, contentType } = item;
+
+        // Decode Base64 content into a Blob
+        const byteCharacters = atob(content);
+        const byteArrays = [];
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          byteArrays.push(new Uint8Array(byteNumbers));
+        }
+        const blob = new Blob(byteArrays, { type: contentType });
+
+        // Trigger the download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
+
+      toast.success("Files downloaded successfully");
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Download error:", error);
     }
-    return value;
   };
 
-  useEffect(() => {
-    fetchContent();
-  }, []);
-
-  const fetchContent = async () => {
-    const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid}`,
-      { method: "GET" },
-      "fetchContentManagement"
-    );
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to fetch Content Management");
-    }
-    setContent(data);
+  const clearBulkItem = () => {
+    setSelectedBulkItems([]);
   };
 
-  const handleLogout = async () => {
-    clearUserData();
-    await signOut();
-    toast.success("User signout successfully");
-    router.push("login");
-  };
-
-  useEffect(() => {
-    const date = new Date();
-    const dayIndex = date.getDay();
-    const monthIndex = date.getMonth();
-    const days = [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    setDayAndDate((prev) => ({ ...prev, day: days[dayIndex] }));
-    setDayAndDate((prev) => ({ ...prev, month: months[monthIndex] }));
-    setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
-  }, []);
-
+  if (isLoading) return <LoadingSpinner />;
   const userIsAdmin = isAdmin();
 
   return (
-    <div
-      className="bg-white min-h-screen overflow-y-auto"
-      suppressHydrationWarning={true}
-    >
-      {/* Header */}
-      <div className="border-b border-[#0000001a]">
-        <div className="max-w-[1140px] mx-auto px-3">
-          <nav className="flex justify-between items-center bg-secondary py-2">
-            <div className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              {user?.company?.logo || config?.logo ? (
-                <img
-                  src={
-                    user?.company?.logo
-                      ? user.company.logo.replace("/api/upload", "/uploads")
-                      : config?.logo || "/logo.png"
-                  }
-                  alt={params.portalid}
-                  className="h-[52px] mr-2"
+    <div className="flex flex-col min-h-screen">
+      <div className="bg-gray-50 flex-1">
+        <Header
+          user={user}
+          config={config}
+          userIsAdmin={userIsAdmin}
+          router={router}
+          accountDropdown={accountDropdown}
+          setAccountDropdown={setAccountDropdown}
+          handleLogout={handleLogout}
+          handelSettings={() => setIsSettingsOpen(true)}
+          setIsNewFolderModalOpen={setIsNewFolderModalOpen}
+          setShowUploadArea={setShowUploadArea}
+        />
+
+        <div className="flex flex-row">
+          <Sidepanel
+            userIsAdmin={userIsAdmin}
+            sidepanelDropdown={sidepanelDropdown}
+            setSidepanelDropdown={setSidepanelDropdown}
+            setIsNewFolderModalOpen={setIsNewFolderModalOpen}
+            showUploadArea={showUploadArea}
+            setShowUploadArea={setShowUploadArea}
+            router={router}
+            isSettingsOpen={isSettingsOpen}
+            handelSettings={() => setIsSettingsOpen(true)}
+          />
+
+          <div
+            className="bg-white rounded-2xl w-full xl:mr-5 pt-5 pb-3 px-4"
+            onClick={() => {
+              setSidepanelDropdown(false);
+              setAccountDropdown(false);
+            }}
+          >
+            <div className="mb-4">
+              <h3 className="text-lg xl:text-2xl text-[#3c4043] font-medium text-center xl:mb-5">
+                Welcome, {user.name}
+              </h3>
+              {/* NEW FOLDER MODEL */}
+              <div className="flex items-center gap-3">
+                <ActionButtons
+                  onFolderCreated={refreshFiles}
+                  onUploadClick={() => setShowUploadArea(true)}
+                  selectedItem={selectedItem}
+                  isModalOpen={isNewFolderModalOpen}
+                  setIsModalOpen={setIsNewFolderModalOpen}
                 />
-              ) : (
-                // Skeleton for logo
-                <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
+              </div>
+              {/* UPLOAD FILE */}
+              {showUploadArea && (
+                <div className="mb-6">
+                  <UploadArea
+                    isForImport={false}
+                    onBrowse={handleBrowse}
+                    onClose={() => setShowUploadArea(false)}
+                  />
+                </div>
               )}
-
-              <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-                {filterValue("Header Text") || params.portalId ? (
-                  filterValue("Header Text") || params.portalId
-                ) : (
-                  // Skeleton for header text
-                  <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
-                )}
-              </span>
-            </div>
-            <div className="hidden md:flex space-x-4 items-center">
-              <NavBarItem title="Dashboard" href="dashboard" />
-              <NavBarItem title="My Documents" href="my-docs" />
-              <NavBarItem title="Shared Documents" href="shared-docs" />
-              {userIsAdmin && (
-                <button
-                  className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
-                  onClick={() => setIsSettingsOpen(true)}
-                >
-                  Settings
-                </button>
-              )}
-
-              {/* Profile dropdown */}
-              <div className="flex items-center space-x-8 cursor-pointer">
-                <div
-                  className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
-                  onClick={() => setAccountDropdown((prev) => !prev)}
-                >
-                  {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                  <div
-                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileSelect}
+                multiple
+              />
+              {/* Search BoX */}
+              <div className="relative">
+                <div className="max-w-xl w-full mx-auto block relative">
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
+                      ${
+                        suggestions.length === 0
+                          ? "rounded-bl-[30px] rounded-br-[30px]"
+                          : "border-t-gray-200 border-s-gray-200 border-e-gray-200"
                       }`}
-                  >
-                    {user?.name?.charAt(0) || "U"}
+                  />
+                  <div className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 left-2 h-9 w-9 rounded-full hover:bg-gray-200">
+                    <Search className="h-5 w-5 text-[#3c4043]" />
                   </div>
-                  <div className="flex flex-col text-sm xl:text-base">
-                    <span className="text-gray-900 font-medium">
-                      {user?.name}
-                    </span>
-                    {userIsAdmin && (
-                      <span className="text-blue-600 text-sm font-medium">
-                        Administrator
-                      </span>
-                    )}
-                  </div>
-
-                  {/* DROPDOWN SECTION DONE*/}
-                  {accountDropdown && (
-                    <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                      <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
-                        <CircleUserRound className="h-5 w-5" /> Account Info
-                      </button>
-                      {userIsAdmin && (
-                        <button
-                          onClick={() => setIsSettingsOpen(true)}
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        >
-                          <Settings className="h-5 w-5" />
-                          Settings
-                        </button>
-                      )}
-                      {userIsAdmin && (
-                        <button
-                          onClick={() =>
-                            setIsTechSupportModalOpen((prev) => !prev)
-                          }
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        >
-                          <Headset className="h-5 w-5" />
-                          Tech Support
-                        </button>
-                      )}
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      >
-                        <LogOut className="h-5 w-5" />
-                        Sign out
-                      </button>
+                  {searchQuery.length > 0 && (
+                    <div
+                      onClick={handelClearSearch}
+                      className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer"
+                    >
+                      <X className="h-5 w-5 text-[#3c4043]" />
                     </div>
                   )}
                 </div>
+                {/* Suggestions */}
+                {suggestions.length > 0 && (
+                  <ul className="bg-white rounded-md max-w-xl mx-auto border border-gray-200 absolute top-[46px] z-[99] left-1/2 -translate-x-1/2 w-full rounded-bl-[30px] rounded-br-[30px] rounded-tl-none rounded-tr-none">
+                    {suggestions.map((item, index) => (
+                      <li
+                        onClick={() => {
+                          handleSuggestionClick(item);
+                        }}
+                        key={item.id}
+                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${
+                          suggestions.length - 1 === index
+                            ? "rounded-bl-[30px] rounded-br-[30px]"
+                            : ""
+                        }`}
+                      >
+                        <span className="mr-2">
+                          {item.type === "folder" ? (
+                            <Folder className="h-5 w-5 text-[#3c4043]" />
+                          ) : (
+                            <File className="h-5 w-5 text-[#3c4043]" />
+                          )}
+                        </span>
+                        <span className="text-gray-700 font-medium">
+                          {item.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-
-              {/* Edit button */}
-              <button className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="12"
-                  height="12"
-                  fill="currentColor"
-                >
-                  <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-                </svg>
-              </button>
             </div>
-            <button className="md:hidden text-text">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-          </nav>
-        </div>
-      </div>
-
-      {/* Dashboard */}
-
-      <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 pt-12 pb-4 border-b">
-          <div>
-            <h2 className="text-xl font-light text-black font-lato">
-              {/* Hello, David West! Today is Wednesday, January 15th. */}
-              {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${dayAndDate.month
-                } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
-                }${dayAndDate.date === 3 ? "rd" : "th"}`}
-            </h2>
-          </div>
-          <div>
-            <p className="text-sm font-normal text-black font-lato">
-              Dow Jones <span className="text-red-500">-34.71 (-0.16%)</span>{" "}
-              S&P 500 <span className="text-red-500">-0.79 (-0.03%)</span>{" "}
-              Nasdaq <span className="text-green-500"> +0.04 (0.00%)</span>
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-7">
             <div>
-              <h3 className="text-xl font-light font-lato text-center text-black mb-4">
-                Your Investments At a Glance
-              </h3>
-
-              {/* Chart */}
-              <div className="max-w-[400px] mx-auto">
-                <Pie data={data} />
+              <div
+                className={`bg-indigo-50 rounded-[50px] mb-4 text-gray-600 py-1 
+                ${isToolbarVisible ? "opacity-1" : "opacity-0"}
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
+                    onClick={clearBulkItem}
+                  >
+                    <X className="size-5" />
+                  </button>
+                  <p className="text-sm font-medium mr-4 text-[#444746]">
+                    {selectedBulkItems.length} item(s) selected
+                  </p>
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                    onClick={() =>
+                      selectedBulkItems.length > 0 && handelToolbarMoveClick()
+                    }
+                  >
+                    <FolderInput className="size-5" />
+                  </button>
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                    onClick={() =>
+                      selectedBulkItems.length > 0 && handleBulkDownload()
+                    }
+                  >
+                    <Download className="size-5" />
+                  </button>
+                  {/* <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                  >
+                    <Download className="size-5"/>
+                  </button> */}
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
+                    onClick={() =>
+                      selectedBulkItems.length > 0 && setIsDeleteModalOpen(true)
+                    }
+                  >
+                    <Trash2 className="size-5" />
+                  </button>
+                </div>
               </div>
-
-              {/* Chart data table */}
-
-              <div className="border border-[#0000001a] mt-[70px]">
-                <table className="min-w-full divide-y-2 divide-[#0000001a]">
-                  <thead>
-                    <tr>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Asset class
-                      </th>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Investment
-                      </th>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Amount
-                      </th>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Return
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody className="divide-y divide-[#0000001a]">
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          US Stocks
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          Vanguard VTI ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $46,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-green-500">
-                          +11.7%
-                        </p>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Foreign Stocks
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          Vanguard VEA ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $12,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-green-500">
-                          +1.4%
-                        </p>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Emerging Markets
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          Vanguard VWO ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $23,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-red-500">
-                          -1.1%
-                        </p>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Bonds
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          iShares MUB ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $3,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-red-500">
-                          -2.0%
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-2 py-1.5 col-span-2">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Total
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5 table-column-group"></td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-semibold font-lato text-sm text-black">
-                          $84,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5 table-column-group"></td>
-                    </tr>
-                  </tbody>
+            </div>
+            <div>
+              <Breadcrumbs
+                path={path}
+                setPath={setPath}
+                setSearchQuery={setSearchQuery}
+                setSelectedBulkItems={setSelectedBulkItems}
+              />
+            </div>
+            {/* TABLE START */}
+            <div className="overflow-auto h-[calc(100vh-370px)] custom-scrollbar flex-grow">
+              <div className="bg-white xl:pr-1">
+                <table className="min-w-full divide-y divide-gray-200 overflow-auto">
+                  {!currentFilesList || currentFilesList?.length === 0 ? (
+                    <thead>
+                      <tr>
+                        <th>
+                          <EmptyState />
+                        </th>
+                      </tr>
+                    </thead>
+                  ) : (
+                    <>
+                      <thead className="hidden md:table-header-group">
+                        <tr>
+                          <th className="text-start text-[#3c4043] py-2 text-sm"></th>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Name
+                          </th>
+                          {/* <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Reason suggested
+                          </th> */}
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Owner
+                          </th>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Location
+                          </th>
+                          <th className="text-start text-[#3c4043] py-2 text-sm">
+                            Last Updated
+                          </th>
+                          <th className="py-2 text-sm"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <>
+                          <FolderExplorer
+                            fileList={filesList}
+                            setPath={setPath}
+                            path={path}
+                            currentFilesList={currentFilesList}
+                            setCurrentFilesList={setCurrentFilesList}
+                            setSelectedItem={setSelectedItem}
+                            selectedItem={selectedItem}
+                            onFileChanges={refreshFiles}
+                            listType={fileType}
+                            setSearchQuery={setSearchQuery}
+                            setIsMoveModalOpen={setIsMoveModalOpen}
+                            setMoveItem={setMoveItem}
+                            setSelectedBulkItems={setSelectedBulkItems}
+                            selectedBulkItems={selectedBulkItems}
+                          />
+                        </>
+                      </tbody>
+                    </>
+                  )}
                 </table>
               </div>
             </div>
-            <div>
-              {/* Shared document cards */}
-              <Link href="my-docs">
-                <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                  <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                    My Documents
-                  </h3>
-                  <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                    Securely share content with your advisor
-                  </p>
-                </div>
-              </Link>
-              <Link href="shared-docs">
-                <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                  <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                    Shared Documents
-                  </h3>
-                  <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                    Securely share content with your advisor
-                  </p>
-                </div>
-              </Link>
-              {/* <div className="p-4 border rounded-md transform hover:scale-105 transition duration-300  ease-in-out">
-                <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                  Loan Origination
-                </h3>
-
-                <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                  Apply and submit documents for a loan
-                </p>
-              </div> */}
-            </div>
+            {/* TABLE END */}
           </div>
         </div>
       </div>
+      <DeleteConfirmDialog
+        isModalOpen={isDeleteModalOpen}
+        setIsModalOpen={setIsDeleteModalOpen}
+        handleDelete={handleBulkDelete}
+      />
+      <MoveDialog
+        item={moveItem}
+        isModalOpen={isMoveModalOpen}
+        setIsModalOpen={setIsMoveModalOpen}
+        fileList={filesList}
+        handleMove={handleMove}
+      />
+      <DialogBox
+        title="File Uploaded"
+        message="File uploaded successfully!"
+        fileLocation={uploadedfilePath}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
-      <TechSupport
+      {/* <TechSupport
         isOpen={isTechSupportModalOpen}
         onClose={() => setIsTechSupportModalOpen(false)}
-      />
-      <Footer config={config} filterValue={filterValue} user={user} />
+      /> */}
     </div>
   );
 }
+
+export default Dashboard;

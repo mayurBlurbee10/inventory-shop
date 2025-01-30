@@ -26,13 +26,16 @@ export const sendSetPasswordEmail = async (
   userEmail,
   userName,
   resetToken,
-  portalName
+  portalName,
+  userExist = false
 ) => {
   try {
     const portal = portalName != '' ? reverseSanitizeName(portalName) : 'Mstrategy';
     const resetLink = portalName != '' 
       ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}`
       : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/setpassword/${resetToken}`;
+
+      const redirectLink = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/login`;
 
     const emailContent = {
       senderAddress: process.env.AZURE_COMMUNICATION_SENDER_EMAIL, // Sender email
@@ -119,10 +122,14 @@ export const sendSetPasswordEmail = async (
                           >
                             <font color="#333333">
                               <span style="font-size: 15px"
-                                >Reset your password using this link :<br /><a
-                                  href="${resetLink}"
+                                >  ${
+                                  userExist
+                                    ? "You can get started using this link"
+                                    : "Reset your password using this link"
+                                } :<br /><a
+                                  href="${userExist ? redirectLink : resetLink}"
                                   target="_blank"
-                                  >${resetLink}</a
+                                  >${userExist ? redirectLink : resetLink}</a
                                 ><br
                               /></span>
                             </font>

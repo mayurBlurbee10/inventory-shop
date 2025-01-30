@@ -62,10 +62,6 @@ function Login() {
     fetchContent();
   }, []);
 
-  useEffect(() => {
-    fetchContent();
-  }, []);
-
   const fetchContent = async () => {
     const response = await fetchWrapper(
       `/api/contentManagement?portalId=${params.portalid ?? "default"}`,

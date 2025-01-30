@@ -1,6 +1,27 @@
 import "reflect-metadata";
 import { connectDatabase, getConnection } from "@/config/db";
 import { Portals } from "@/entities/Portals";
+import userService from "./userService";
+
+function reverseSanitizeName(sanitizedName) {
+  let reversedName = sanitizedName.endsWith("-")
+    ? sanitizedName.slice(0, -1)
+    : sanitizedName;
+
+  reversedName = reversedName.replace(/-/g, " ");
+
+  reversedName = reversedName
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return reversedName;
+}
+
+function sanitizeName(name) {
+  let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+  return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
+}
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -31,7 +52,25 @@ const getPortalsByUser = async (user) => {
       },
       relations: ["createdBy"],
     });
-    return portals;
+
+    console.log("Portals", portals)
+
+    const allUsers = new Set();
+
+    const portalWithUserCounts = await Promise.all(
+      portals.map(async (portal) => {
+        const users = await userService.getUsersByPortal(
+          sanitizeName(portal.legalName)
+        );
+
+        // Add individual users to the Set for uniqueness
+        users.forEach((user) => allUsers.add(user.id)); // Assuming `user.id` is the unique identifier
+
+        return { ...portal, userCount: users.length };
+      })
+    );
+
+    return { portals: portalWithUserCounts, activeUsers: allUsers.size };
   } catch (error) {
     throw new Error("Failed to get portals.");
   }
@@ -78,10 +117,33 @@ const updatePortalThemes = async (portalData) => {
   }
 };
 
+const updatePortalStatus = async (portal, status) => {
+  const portalRepository = await getRepository(Portals);
+  try {
+    const portalLegalName = reverseSanitizeName(portal);
+    const portalExist = await portalRepository.findOneBy({
+      legalName: portalLegalName,
+    });
+    if (!portalExist) {
+      throw new Error("portal doesn't exist");
+    }
+
+    portalExist.status = status;
+
+    await portalRepository.save(portalExist);
+    return portalExist;
+  } catch (error) {
+    throw new Error("Failed to update portal.");
+  }
+};
+
 const getPortalById = async (portalId) => {
   const portalRepository = await getRepository(Portals);
   try {
-    const portal = await portalRepository.findOneBy({ id: portalId });
+    const portal = await portalRepository.findOne({
+      where: { id: portalId },
+      relations: ["createdBy"],
+    });
     if (!portal) {
       throw new Error("portal doesn't exist");
     }
@@ -112,5 +174,6 @@ export default {
   getPortalByLegalName,
   updatePortalThemes,
   getPortalById,
-  deletePortal
+  deletePortal,
+  updatePortalStatus,
 };

@@ -1,5 +1,6 @@
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import { UserRole } from "@/config/constants";
+import permissionService from "@/services/permissionService";
 import userService from "@/services/userService";
 import { NextResponse } from "next/server";
 const sanitizeData = (data) => {
@@ -25,16 +26,30 @@ export async function PUT(request) {
     const userData = await request.json();
     console.log("Received userData:", userData);
 
-    // Sanitize the input data
-    const sanitizedData = sanitizeData({
-      role: userData.role === "user" ? UserRole.USER : UserRole.ADMIN,
-    });
+    const role = userData.role === "user" ? UserRole.USER : UserRole.ADMIN;
 
-    console.log("Sanitized data:", sanitizedData);
+    const user = await userService.getUserById(userData.id);
 
-    // Update the user
-    await userService.updateUser(userData.id, sanitizedData);
-    return NextResponse.json("user Updated");
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const permission = user.permissions.find(
+      (item) => item.portalId === userData.portalId
+    );
+
+    if (permission) {
+      permission.role = role;
+    } else {
+      return NextResponse.json(
+        { error: "Permission not found for the provided portalId" },
+        { status: 404 }
+      );
+    }
+
+    await permissionService.updatePermission(userData.id, { permissions: permission });
+
+    return NextResponse.json("Permission updated");
   } catch (error) {
     console.error("Error in PUT /api/users:", error);
     return NextResponse.json(

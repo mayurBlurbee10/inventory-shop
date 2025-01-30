@@ -77,47 +77,42 @@ function sanitizeName(name) {
 
 const SubsidiaryCard = ({
   subsidiary,
-  onSelect,
-  user,
-  refreshPortals,
-  setActiveUsers,
-  activeUsers,
+  onSelect
 }) => {
-  console.log("activeUsers", activeUsers);
   const [portalToDelete, setPortalToDelete] = useState(null);
   const [usersCount, setUsersCount] = useState(0);
 
-  const fetchUsers = async () => {
-    try {
-      if (!subsidiary) return;
-      const response = await fetchWrapper(
-        `/api/users?portalid=${sanitizeName(subsidiary?.legalName)}`,
-        {},
-        "fetch-users"
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch users");
-      }
+  // const fetchUsers = async () => {
+  //   try {
+  //     if (!subsidiary) return;
+  //     const response = await fetchWrapper(
+  //       `/api/users?portalid=${sanitizeName(subsidiary?.legalName)}`,
+  //       {},
+  //       "fetch-users"
+  //     );
+  //     const data = await response.json();
+  //     if (!response.ok) {
+  //       throw new Error(data.error || "Failed to fetch users");
+  //     }
 
-      setUsersCount(data?.length);
-      console.log("active", activeUsers);
-      setActiveUsers((prev) => {
-        const updatedArray = [...prev];
-        const firstNullIndex = updatedArray.indexOf(null);
-        if (firstNullIndex !== -1) {
-          updatedArray[firstNullIndex] = data?.length;
-        }
-        return updatedArray;
-      });
-    } catch (error) {
-      console.log("error: ", error);
-    }
-  };
+  //     setUsersCount(data?.length);
+  //     console.log("active", activeUsers);
+  //     setActiveUsers((prev) => {
+  //       const updatedArray = [...prev];
+  //       const firstNullIndex = updatedArray.indexOf(null);
+  //       if (firstNullIndex !== -1) {
+  //         updatedArray[firstNullIndex] = data?.length;
+  //       }
+  //       return updatedArray;
+  //     });
+  //   } catch (error) {
+  //     console.log("error: ", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, []);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
@@ -163,7 +158,7 @@ const SubsidiaryCard = ({
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <div className="flex items-center">
               <Users size={16} className="mr-1" />
-              <span>{usersCount} users</span>
+              <span>{subsidiary.userCount} users</span>
             </div>
             <div className="flex items-center">
               <Folder size={16} className="mr-1" />
@@ -249,14 +244,14 @@ const DashboardHeader = ({
 const SubsidiaryMetrics = ({ activeUsers, currentPageCount }) => {
   console.log(activeUsers);
   const [users, setUsers] = useState(0);
-  useEffect(() => {
-    // Ensure activeUsers is an array of numbers (filtering out null or undefined)
-    const totalActiveUsers = activeUsers.reduce(
-      (acc, item) => (typeof item === "number" ? acc + item : acc),
-      0
-    );
-    setUsers(totalActiveUsers);
-  }, [activeUsers]);
+  // useEffect(() => {
+  //   // Ensure activeUsers is an array of numbers (filtering out null or undefined)
+  //   const totalActiveUsers = activeUsers.reduce(
+  //     (acc, item) => (typeof item === "number" ? acc + item : acc),
+  //     0
+  //   );
+  //   setUsers(totalActiveUsers);
+  // }, [activeUsers]);
   return (
     <div className="grid grid-cols-3 gap-6 mb-8">
       {[
@@ -265,7 +260,7 @@ const SubsidiaryMetrics = ({ activeUsers, currentPageCount }) => {
           value: currentPageCount,
           change: "+2 this month",
         },
-        { label: "Active Users", value: users, change: "+57 this month" },
+        { label: "Active Users", value: activeUsers, change: "+57 this month" },
         { label: "Storage Used", value: "0 TB", change: "+100 GB this month" },
       ].map((metric, idx) => (
         <div
@@ -299,27 +294,19 @@ const SubsidiaryGrid = ({
   subsidiaries,
   onSelectSubsidiary,
   onCreateNew,
-  user,
-  refreshPortals,
-  setActiveUsers,
-  activeUsers,
 }) => (
   <>
     {isLoading ? (
       <LoadingSpinner />
     ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {subsidiaries.map((subsidiary) => {
+        {subsidiaries?.map((subsidiary) => {
           return (
             <React.Fragment key={subsidiary.id}>
               <SubsidiaryCard
                 key={subsidiary.id}
                 subsidiary={subsidiary}
                 onSelect={onSelectSubsidiary}
-                user={user}
-                refreshPortals={refreshPortals}
-                setActiveUsers={setActiveUsers}
-                activeUsers={activeUsers}
               />
             </React.Fragment>
           );
@@ -341,7 +328,7 @@ export default function AdminDashboard() {
   const [showCreationModal, setShowCreationModal] = useState(false);
   const [currentPage, setCurrentPage] = useState("Portals");
   const [currentPageCount, setCurrentPageCount] = useState(0);
-  const [activeUsers, setActiveUsers] = useState([]);
+  const [activeUsers, setActiveUsers] = useState(0);
 
   const handleSelectSubsidiary = (subsidiary) => {
     router.push(`/admin/subsidiaries/${subsidiary.id}`);
@@ -504,9 +491,10 @@ export default function AdminDashboard() {
       );
       if (!response.ok) throw new Error("Failed to fetch files");
       const data = await response.json();
-      const subsidiaries = Object.values(data.data);
-      setSubsidiaries(subsidiaries);
-      setCurrentPageCount(subsidiaries.length);
+      const subsidiaries = data.data;
+      setSubsidiaries(subsidiaries.portals);
+      setCurrentPageCount(subsidiaries.portals.length);
+      setActiveUsers(subsidiaries.activeUsers);
     } catch (err) {
       console.error("Error while fetching portals");
     } finally {
@@ -527,13 +515,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     setCurrentPageCount(0);
-    setActiveUsers([]);
 
     if (currentPage === "Portals") {
       setCurrentPageCount(subsidiaries.length);
-      setActiveUsers(Array(subsidiaries.length).fill(null));
+
     }
-  }, [currentPage, subsidiaries.length]);
+  }, [currentPage, subsidiaries?.length]);
 
   const handleLogout = () => {
     setAccountDropdown(false);
@@ -575,8 +562,6 @@ export default function AdminDashboard() {
                 }}
                 user={user}
                 refreshPortals={getPortal}
-                setActiveUsers={setActiveUsers}
-                activeUsers={activeUsers}
               />
             </>
           )}

@@ -5,6 +5,7 @@ import { logApiCall } from "@/app/lib/api-log-middleware";
 import portalService from "@/services/portalService";
 import userService from "@/services/userService";
 import { UserRole } from "@/config/constants";
+import permissionService from "@/services/permissionService";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -91,6 +92,7 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const portalId = searchParams.get("portalid");
     const userId = searchParams.get("userId");
+    const id = searchParams.get("id");
     console.log("portalId get: ", portalId);
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
@@ -107,22 +109,31 @@ export async function GET(req) {
       });
     } else if (!!userId) {
       let allPortals = [];
+      let userCount = 0;
       const User = await userService.getUserById(userId);
       if (User?.groupMembersIds && User.groupMembersIds?.length > 0) {
         for (const id of User.groupMembersIds) {
           const groupportals = await portalService.getPortalsByUser(
             String(id).toLowerCase()
           );
-          allPortals = [...allPortals, ...groupportals];
+          allPortals = [...allPortals, ...groupportals.portals];
+          userCount = groupportals.activeUsers;
         }
       }
       const portals = await portalService.getPortalsByUser(
         String(userId).toLowerCase()
       );
-      allPortals = [...allPortals, ...portals];
+      allPortals = [...allPortals, ...portals.portals];
+      userCount = userCount + portals.activeUsers;
       return NextResponse.json({
         message: `portals retrieved successfully.`,
-        data: allPortals,
+        data: { portals: allPortals, activeUsers: userCount },
+      });
+    }else if (!!id) {
+      const portal = await portalService.getPortalById(id);
+      return NextResponse.json({
+        message: `portal retrieved successfully.`,
+        data: portal,
       });
     } else {
       const portals = await portalService.getPortals();
@@ -183,16 +194,20 @@ export async function DELETE(req) {
       .filter((user) => user?.role !== UserRole.SUPER_ADMIN && user?.id)
       .map((user) => {
         if (!user.id) {
-          console.warn(`Skipping user with invalid ID: ${JSON.stringify(user)}`);
+          console.warn(
+            `Skipping user with invalid ID: ${JSON.stringify(user)}`
+          );
           return Promise.resolve();
         }
-        return userService.deleteUser(user.id).catch((error) => {
-          console.error(
-            `Failed to delete user with ID ${user.id}:`,
-            error.message
-          );
-          throw new Error(`Failed to delete user: ${user.id}`);
-        });
+        return permissionService
+          .removePermission(user.id, sanitizeName(portal.legalName))
+          .catch((error) => {
+            console.error(
+              `Failed to delete user with ID ${user.id}:`,
+              error.message
+            );
+            throw new Error(`Failed to delete user: ${user.id}`);
+          });
       });
 
     await Promise.all(deletionPromises);
@@ -219,4 +234,3 @@ export async function DELETE(req) {
     );
   }
 }
-

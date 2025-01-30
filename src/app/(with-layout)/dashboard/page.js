@@ -1,6 +1,5 @@
 "use client";
 
-import Dashboard from "@/components/Dashboard";
 import Footer from "@/components/Footer";
 import {
   AlignJustify,
@@ -32,6 +31,7 @@ import { isAdmin, getUserData, clearUserData } from "@/lib/auth";
 import { getSession, signOut } from "next-auth/react";
 import SettingsModal from "@/components/Settings";
 import TechSupport from "@/components/TechSupport";
+import DocDashboard from "@/components/DocDashboard";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -48,7 +48,7 @@ export const data = {
 };
 
 export default function DashboardPage() {
-  return <Dashboard fileType={'my'}/>;
+  return <DocDashboard fileType={'my'}/>;
 
   // const NavBarItem = ({ title, href }) => {
   //   if (!href) {

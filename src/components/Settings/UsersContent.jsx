@@ -76,7 +76,7 @@ const UsersContent = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email: user.email, portalid: user.portalId }),
+          body: JSON.stringify({ email: user.email, portalid: params.portalid }),
         },
         "resend-invite"
       );

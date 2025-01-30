@@ -130,7 +130,11 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
         folderId: boxData.user.folderId,
         portal: params.portalid || "",
         isOnboardingRequired: false,
-        createdBy: user.id
+        createdBy: user.id,
+        permissions: {
+          portalId: params.portalid,
+          role: formData.role,
+        },
       };
 
       // Save user data

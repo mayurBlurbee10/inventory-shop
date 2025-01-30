@@ -87,7 +87,11 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId,
         isOnboardingRequired: false,
-        createdBy: user.id
+        createdBy: user.id,
+        permissions: {
+          portalId: null,
+          role: UserRole.SUPER_ADMIN,
+        },
       };
 
       // Save user data
@@ -103,10 +107,10 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
         "save-user"
       );
 
-      if (!saveResponse.ok) {
-        throw new Error("Failed to save user data");
-      }
       const savedData = await saveResponse.json();
+      if (!saveResponse.ok) {
+        throw new Error(savedData.error);
+      }
       onAdd(savedData);
       handleModalClose();
     } catch (error) {

@@ -7,6 +7,7 @@ import { generateNanoToken } from "@/app/lib/jwt";
 import { sendSetPasswordEmail } from "@/app/lib/email";
 import userService from "@/services/userService";
 import { UserRole } from "@/config/constants";
+import permissionService from "@/services/permissionService";
 
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
 
@@ -98,13 +99,86 @@ export async function POST(request) {
     //   );
     // }
     const userExist = await userService.getUserByEmail(userData.email);
-    if (userExist) {
-      return NextResponse.json(
-        { error: "User already exists" },
-        { status: 409 }
-      );
-    }
     const mainUser = await userService.getUserById(userData.createdBy);
+
+    if (userExist) {
+      console.log("userExist", userExist);
+      const token = await generateNanoToken();
+      let newUser = {
+        email: userData.email,
+        name: userData.name || userData.email.split("@")[0],
+        role: userData.role,
+        // permissions: userData.permissions, //updated Field
+      };
+
+      if (
+        userData.role !== UserRole.SUPER_ADMIN &&
+        userData.role !== UserRole.MASTER
+      ) {
+        newUser.resetPasswordToken = token;
+        newUser.isOnboardingRequired = userData.isOnboardingRequired;
+        // newUser.portalId = userData.portal;
+      } else if (userData.role === UserRole.SUPER_ADMIN) {
+        newUser.isOnboardingRequired = userData.isOnboardingRequired;
+        if (mainUser?.role === UserRole.SUPER_ADMIN) {
+          if (!mainUser?.groupMembersIds) {
+            mainUser.groupMembersIds = [];
+          }
+          newUser.groupMembersIds = [...mainUser?.groupMembersIds, mainUser.id];
+        }
+      }
+      // TODO:update User permission
+      await permissionService.updatePermission(userExist.id, {
+        permissions: userData.permissions,
+      });
+      const user = await userService.updateUser(userExist.id, newUser);
+      if (userData.role !== UserRole.MASTER) {
+        // TODO: send email as exisiting user like reset Password
+        sendSetPasswordEmail(
+          newUser.email,
+          newUser.name,
+          token,
+          userData.permissions.portalId,
+          true
+        );
+      }
+      if (mainUser.role === UserRole.SUPER_ADMIN) {
+        try {
+          if (!mainUser.groupMembersIds) {
+            mainUser.groupMembersIds = [];
+          }
+
+          if (mainUser.groupMembersIds.length > 0) {
+            for (const id of mainUser.groupMembersIds) {
+              const groupUser = await userService.getUserById(id);
+
+              if (!groupUser) {
+                continue;
+              }
+
+              if (!groupUser.groupMembersIds) {
+                groupUser.groupMembersIds = [];
+              }
+
+              groupUser.groupMembersIds.push(user.id);
+              await userService.updateUser(groupUser.id, {
+                groupMembersIds: groupUser.groupMembersIds,
+              });
+            }
+          }
+
+          mainUser.groupMembersIds.push(user.id);
+          await userService.updateUser(mainUser.id, {
+            groupMembersIds: mainUser.groupMembersIds,
+          });
+        } catch (error) {
+          throw new Error("Failed to update group member relationships.");
+        }
+      }
+      console.log("Successfully saved new user");
+
+      return NextResponse.json(user);
+    }
 
     const token = await generateNanoToken();
     // Add new user with password
@@ -119,6 +193,7 @@ export async function POST(request) {
       groupMembersIds: [],
       // createdAt: new Date().toISOString(),
       role: userData.role,
+      permissions: [userData.permissions],
     };
 
     if (
@@ -156,12 +231,13 @@ export async function POST(request) {
 
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
-    if (
-      userData.role !== UserRole.SUPER_ADMIN &&
-      userData.role !== UserRole.MASTER
-    ) {
-      sendSetPasswordEmail(newUser.email, newUser.name, token, userData.portal);
+    if (userData.role !== UserRole.MASTER) {
+      // because super_admin will be created from admin so it should go to admin for set password
+      const userPortal =
+        userData.role === UserRole.SUPER_ADMIN ? "admin" : userData.portal;
+      sendSetPasswordEmail(newUser.email, newUser.name, token, userPortal);
     }
+
     if (mainUser.role === UserRole.SUPER_ADMIN) {
       try {
         if (!mainUser.groupMembersIds) {
@@ -181,12 +257,16 @@ export async function POST(request) {
             }
 
             groupUser.groupMembersIds.push(user.id);
-            await userService.updateUser(groupUser.id, groupUser);
+            await userService.updateUser(groupUser.id, {
+              groupMembersIds: groupUser.groupMembersIds,
+            });
           }
         }
 
         mainUser.groupMembersIds.push(user.id);
-        await userService.updateUser(mainUser.id, mainUser);
+        await userService.updateUser(mainUser.id, {
+          groupMembersIds: mainUser.groupMembersIds,
+        });
       } catch (error) {
         throw new Error("Failed to update group member relationships.");
       }
@@ -208,6 +288,7 @@ export async function PUT(request) {
     await logApiCall(request);
     const userData = await request.json();
     const user = await userService.setUserOnboarding(userData.id);
+    await portalService.updatePortalStatus(user.portalId, "active");
     return NextResponse.json(user);
   } catch (error) {
     console.error("Error in PUT /api/users:", error);
@@ -221,8 +302,11 @@ export async function PUT(request) {
 export async function DELETE(request) {
   try {
     await logApiCall(request);
-    const userData = await request.json();
-    const res = await userService.deleteUser(userData.id);
+    const { id, portalId } = await request.json();
+    if (!id || !portalId) {
+      throw new Error("Invalid !! portalId is required field");
+    }
+    const res = await permissionService.removePermission(id, portalId);
     return NextResponse.json(res);
   } catch (error) {
     console.error("Error in DELETE /api/users:", error);

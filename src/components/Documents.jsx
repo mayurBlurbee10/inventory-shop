@@ -40,6 +40,8 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
 import CreateFolder from "./CreateFolder";
+import Navbar from "./Navbar";
+import Container from "./Container";
 
 function Documents({ fileType }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -658,29 +660,29 @@ function Documents({ fileType }) {
     router.push("login");
   };
 
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch portal config");
-        }
-        setConfig(data.data);
-      } catch (error) {
-        console.log("error: ", error);
-      } finally {
-        setFooterLoading(false);
+  const fetchConfig = async () => {
+    try {
+      const response = await fetchWrapper(
+        `/api/portal?portalid=${params.portalid || "default"}`,
+        {},
+        "portal-login"
+      );
+      const data = await response.json();
+      if (!data.data && response.status === 404) {
+        router.push(`/${params.portalid}/not-found`);
+        return;
       }
-    };
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch portal config");
+      }
+      setConfig(data.data);
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      setFooterLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchConfig();
     fetchContent();
   }, []);
@@ -700,10 +702,6 @@ function Documents({ fileType }) {
     }
     return value;
   };
-
-  useEffect(() => {
-    fetchContent();
-  }, []);
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
@@ -754,8 +752,7 @@ function Documents({ fileType }) {
       }
 
       setUser(userData);
-
-      //   fetchConfig();
+      refreshFiles();
     });
   }, [router]);
 
@@ -769,207 +766,15 @@ function Documents({ fileType }) {
   const userIsAdmin = isAdmin();
 
   return (
-    <div className="bg-white min-h-screen">
-      {/* Header */}
-      <div className="border-b border-[#0000001a]">
-        <div className="max-w-[1140px] mx-auto px-3">
-          <nav className="flex justify-between items-center bg-secondary py-2">
-            <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              {user?.company?.logo || config?.logo ? (
-                <img
-                  src={
-                    user?.company?.logo
-                      ? user.company.logo.replace("/api/upload", "/uploads")
-                      : config?.logo || "/default_logo_purple.png"
-                  }
-                  alt={params.portalid}
-                  className="h-[52px] mr-2"
-                />
-              ) : (
-                // Skeleton for logo
-                <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
-              )}
-
-              <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-                {filterValue("Header Text") || params.portalId ? (
-                  filterValue("Header Text") || params.portalId
-                ) : (
-                  // Skeleton for header text
-                  <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
-                )}
-              </span>
-            </a>
-
-            <div className="hidden md:flex space-x-4 items-center">
-              <NavBarItem title="Dashboard" href="dashboard" />
-              <NavBarItem title="My Documents" href="my-docs" />
-              <NavBarItem title="Shared Documents" href="shared-docs" />
-
-              {userIsAdmin && (
-                // <NavBarItem title="Settings" href='settings' />
-                <button
-                  className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
-                  onClick={() => setIsSettingsOpen(true)}
-                >
-                  Settings
-                </button>
-              )}
-
-              {/* Profile dropdown */}
-
-              <div className="flex items-center space-x-8 cursor-pointer">
-                <div
-                  className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
-                  onClick={() => setAccountDropdown((prev) => !prev)}
-                >
-                  {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                  <div
-                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                      userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                    }`}
-                  >
-                    {user?.name?.charAt(0) || "U"}
-                  </div>
-                  <div className="flex flex-col text-sm xl:text-base">
-                    <span className="text-gray-900 font-medium">
-                      {user?.name}
-                    </span>
-                    {userIsAdmin && (
-                      <span className="text-blue-600 text-sm font-medium">
-                        Administrator
-                      </span>
-                    )}
-                  </div>
-
-                  {/* DROPDOWN SECTION DONE*/}
-                  {accountDropdown && (
-                    <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                      <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
-                        <CircleUserRound className="h-5 w-5" /> Account Info
-                      </button>
-                      {userIsAdmin && (
-                        <button
-                          onClick={() => setIsSettingsOpen(true)}
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        >
-                          <Settings className="h-5 w-5" />
-                          Settings
-                        </button>
-                      )}
-                      {userIsAdmin && (
-                        <button
-                          onClick={() =>
-                            setIsTechSupportModalOpen((prev) => !prev)
-                          }
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        >
-                          <Headset className="h-5 w-5" />
-                          Tech Support
-                        </button>
-                      )}
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      >
-                        <LogOut className="h-5 w-5" />
-                        Sign out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* <div className="relative">
-                    <button className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-200" onClick={toggleDropdown}>
-                      <div
-                        className={`w-8 h-8 xl:w-10 xl:h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                          }`}
-                      >
-                        {user?.name?.charAt(0) || "U"}
-                      </div>
-                      <div className="flex flex-col text-sm xl:text-base">
-                        <span className="text-gray-900 font-medium">{user?.name}</span>
-                        {userIsAdmin && (
-                          <span className="text-blue-600 text-sm font-medium">
-                            Administrator
-                          </span>
-                        )}
-                      </div>
-                      <span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="18"
-                          height="18"
-                          fill="currentColor"
-                        >
-                          <path d="M12 16L6 10H18L12 16Z"></path>
-                        </svg>
-                      </span>
-                    </button>
-    
-                    
-                    <div
-                      className={`absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8] ${isOpen ? 'block' : 'invisible'}`}
-                    >
-                      <ul>
-                        <li>
-                          <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100">
-                            Advisor view
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100"
-                            onClick={handleLogout}
-                          >
-                            Logout
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div> */}
-
-              {/* Edit button */}
-              <button className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="12"
-                  height="12"
-                  fill="currentColor"
-                >
-                  <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-                </svg>
-              </button>
-            </div>
-            <button className="md:hidden text-text">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-          </nav>
-        </div>
-      </div>
-
-      {/* Shared documents */}
+    // <div className="bg-white min-h-screen">
+    // <Container>
       <div className="max-w-[1820px] mx-auto pt-12 mt-12">
         <div>
           <div className="grid grid-cols-5 px-4 gap-7">
             <div className="col-span-5 lg:col-span-3">
               <div className="flex items-center gap-10">
                 <span className="text-xl font-light text-[#212529] font-lato">
-                  {listType === "shared" ? "Shared Documents" : "My Documents"}
+                  {fileType === "shared" ? "Shared Documents" : "My Documents"}
                 </span>
                 <span className="text-black font-lato font-normal text-sm">
                   Securely share content with your advisor and trusted
@@ -1714,9 +1519,7 @@ function Documents({ fileType }) {
           </div>
         </div>
       </div>
-
-      <Footer config={config} filterValue={filterValue} user={user} />
-    </div>
+    // </Container>
   );
 }
 

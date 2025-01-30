@@ -32,6 +32,10 @@ export default function SignupPage() {
         password: password,
         role: UserRole.SUPER_ADMIN,
         isOnboardingRequired: false,
+        permissions: {
+          portalId: null,
+          role: UserRole.SUPER_ADMIN,
+        },
       };
       const response = await fetchWrapper(
         "/api/users",

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const Footer = ({ config, filterValue, user, from }) => {
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -13,6 +12,29 @@ const Footer = ({ config, filterValue, user, from }) => {
     }
   }, [config, filterValue]);
 
+  const isValidJSON = (str) => {
+    try {
+      JSON.parse(str);
+      return true; // It's valid JSON
+    } catch (error) {
+      return false; // It's not valid JSON
+    }
+  };
+  const contactInfo = filterValue("Footer Content")?.split("\n") || [];
+  // const links = JSON.parse(filterValue("Footer Links") || "null") || [];
+  const links = (() => {
+    try {
+      const filteredValue = filterValue("Footer Links");
+      if (isValidJSON(filteredValue)) {
+        const parsedLinks = filteredValue ? JSON.parse(filteredValue) : null;
+        return Array.isArray(parsedLinks) ? parsedLinks : filteredValue;
+      }
+    } catch (error) {
+      console.error("Error parsing Footer Links:", error);
+      return [];
+    }
+  })();
+  const isFromAvailable = from;
   if (isLoading) {
     return (
       <footer className="pt-12 mt-auto">
@@ -29,11 +51,6 @@ const Footer = ({ config, filterValue, user, from }) => {
       </footer>
     );
   }
-
-  const contactInfo = filterValue("Footer Content")?.split("\n") || [];
-  const links = JSON.parse(filterValue("Footer Links") || "null") || [];
-  const isFromAvailable = from;
-
   return (
     <footer className=" mt-auto">
       <div className="container mx-auto px-4">
@@ -85,12 +102,14 @@ const Footer = ({ config, filterValue, user, from }) => {
             </div>
           </div> */}
 
-          <div className="mb-1"
+          <div
+            className="mb-1"
             style={{
               maxWidth: "100px",
               maxHeight: "100px",
               overflow: "hidden",
-            }}>
+            }}
+          >
             <Image
               src={
                 user?.company?.logo
@@ -105,35 +124,45 @@ const Footer = ({ config, filterValue, user, from }) => {
             {/* <img src={config?.logo} alt={config?.legalName} width="auto" height="auto" className='w-auto h-12'/> */}
           </div>
 
-
           <div>
             <div>
               <div className="text-sm text-[#6c757d] font-medium font-lato mb-1">
                 <div>
-                  <p>
-                    {links.length > 0 && links.slice(0, 5).map((item, index) => (
-                      <span key={index}>
-                        <Link href={item.link} className={`hover:underline px-[5px] ${isFromAvailable ? 'pointer-events-none text-gray-400' : ''}`}                        >
-                          {item.label}
-                        </Link>
-                        {index < links.length - 1 && ' | '}
-                      </span>
-                    ))}
-                  </p>
+                  <div>
+                    {links &&
+                      links.length > 0 &&
+                      links.slice(0, 5).map((item, index) => (
+                        <span key={index}>
+                          {isFromAvailable ? (
+                            <span className="px-[5px] text-gray-400 cursor-not-allowed">
+                              {item.label}
+                            </span>
+                          ) : (
+                            <Link
+                              href={item.link}
+                              className="hover:underline px-[5px]"
+                            >
+                              {item.label}
+                            </Link>
+                          )}
+                          {index < links.length - 1 && " | "}
+                        </span>
+                      ))}
+                    {!links && <div>Footer Links</div>}
+                  </div>
                 </div>
               </div>
             </div>
-
-
 
             <div className="flex items-center justify-between flex-col md:flex-row">
               <div className="max-w-[670px] w-full">
                 <ul className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
                   {contactInfo &&
-                    contactInfo.map((item, index) => <li key={index}>{item}</li>)}
+                    contactInfo.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
                   <span>©2017 Wealthportal, Inc.</span>
                 </ul>
-
               </div>
               <div className="flex items-end text-end mb-2 md:mb-0">
                 <div className="flex items-end gap-1">
@@ -157,7 +186,7 @@ const Footer = ({ config, filterValue, user, from }) => {
             <div className="text-center mt-2">© 2024 MStrategy Portal</div>
           </div> */}
       </div>
-    </footer >
+    </footer>
   );
 };
 

@@ -57,9 +57,10 @@ import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 
 
 import CreateFolder from "@/components/CreateFolder";
+import Documents from "@/components/Documents";
 
 export default function HomePage() {
-  // return <Dashboard fileType={'my'}/>;
+  return <Documents fileType={'my'}/>;
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);

@@ -24,7 +24,7 @@ import React, { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { toast } from "react-toastify";
@@ -443,6 +443,7 @@ function SharedFolderExplorer({
 }) {
   const params = useParams();
   const pathName = usePathname();
+  const router = useRouter();
   const [previewFileId, setPreviewFileId] = useState("");
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
@@ -451,10 +452,6 @@ function SharedFolderExplorer({
   const [usersList, setUsersList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteDropdown, setDeleteDropdown] = useState(null);
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
   const handleFolderClick = (folder) => {
     setSelectedBulkItems([]);
@@ -465,7 +462,11 @@ function SharedFolderExplorer({
   };
 
   const handleDelete = (file) => {
-    if (listType == "shared" && file.currentUserRole == "viewer" && view == "list") {
+    if (
+      listType == "shared" &&
+      file.currentUserRole == "viewer" &&
+      view == "list"
+    ) {
       return;
     }
     setDeleteDropdown((prev) => (prev === file.id ? null : file.id));
@@ -540,7 +541,7 @@ function SharedFolderExplorer({
   const fetchUser = async () => {
     try {
       const url = params.portalid
-        ? `/api/users?portalid=${params.portalid}`
+        ? `/api/users?portalid=${params.portalid || "default"}`
         : "/api/users";
       const response = await fetchWrapper(url, {}, "fetchUserList");
       if (!response.ok) throw new Error("Download failed");
@@ -658,6 +659,13 @@ function SharedFolderExplorer({
         : prevSelected.filter((itemId) => itemId !== id)
     );
   };
+
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem("user"));
+    if (loggedInUser) {
+      fetchUser();
+    }
+  }, []);
 
   return (
     <div>
@@ -868,7 +876,11 @@ function SharedFolderExplorer({
               <EmptyState />
             </div>
           ) : (
-            <div className={`grid ${cols === 2 ? `grid-cols-4` : `grid-cols-${6 - cols}`} gap-5 p-5`}>
+            <div
+              className={`grid ${
+                cols === 2 ? `grid-cols-4` : `grid-cols-${6 - cols}`
+              } gap-5 p-5`}
+            >
               {currentFilesList &&
                 currentFilesList.length > 0 &&
                 currentFilesList.map((file, index) => (

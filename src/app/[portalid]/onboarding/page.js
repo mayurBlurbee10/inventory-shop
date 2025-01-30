@@ -10,7 +10,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
   const isActive = currentStep === step;
@@ -20,9 +19,10 @@ const WizardStep = ({ step, currentStep }) => {
       <div
         className={`
           w-8 h-8 rounded-full flex items-center justify-center border
-          ${isCompleted
-            ? "bg-gray-900 border-gray-900"
-            : isActive
+          ${
+            isCompleted
+              ? "bg-gray-900 border-gray-900"
+              : isActive
               ? "bg-white border-gray-900"
               : "bg-white border-gray-300"
           }
@@ -70,16 +70,21 @@ export default function OnBoardingPage() {
   }, [router]);
 
   const fetchContent = async () => {
-    const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
-      { method: "GET" },
-      "fetchContentManagement"
-    );
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to fetch Content Management");
+    try {
+      setLoading(true);
+      const response = await fetchWrapper(
+        `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+        { method: "GET" },
+        "fetchContentManagement"
+      );
+      if (!response.ok) throw new Error("Failed to fetch Content Management");
+      const data = await response.json();
+      setContent(data.portalContent);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
     }
-    setContent(data);
   };
 
   useEffect(() => {
@@ -106,13 +111,12 @@ export default function OnBoardingPage() {
       }
     };
     fetchConfig();
-    // fetchContent();
-    // fetchData();
+    fetchContent();
   }, []);
 
-  useEffect(() => {
-    fetchContent();
-  }, [content])
+  // useEffect(() => {
+  //   fetchContent();
+  // }, [])
 
   const handleBack = () => {
     setCurrentStep(currentStep - 1);
@@ -127,7 +131,6 @@ export default function OnBoardingPage() {
           completeOnboarding(userData.id);
         } else {
           router.push(`/${params.portalid}/dashboard`);
-
         }
       } else {
         setCurrentStep(currentStep + 1);
@@ -152,7 +155,6 @@ export default function OnBoardingPage() {
     if (!response.ok) throw new Error(response.error);
     router.push(`/${params.portalid}/dashboard`);
   };
-
 
   const handleContentLengthChange = (event) => {
     setContentLength(event);
@@ -195,39 +197,15 @@ export default function OnBoardingPage() {
   //   return value;
   // };
 
-  const filterValue = (title) => {
-    // Check if content is defined
-    if (!content) return null;
-
-    // Ensure portalContent is an array
-    const portalContentArray = Array.isArray(content.portalContent)
-      ? content.portalContent
-      : [];
-
-    // Find in portalContent
-    const contentItem = portalContentArray.find((item) => item.title === title);
-    const value = contentItem ? contentItem.value : null;
-
-    if (!value) {
-      // Ensure defaultContent is an array
-      const defaultContentArray = Array.isArray(content.defaultContent)
-        ? content.defaultContent
-        : [];
-
-      // Find in defaultContent
-      const defaultItem = defaultContentArray.find((item) => item.title === title);
-      return defaultItem ? defaultItem.value : null;
-    }
-
+  const filterContent = (title) => {
+    const contentItem = content?.find((item) => item.title === title);
+    const value = contentItem ? contentItem.value : title;
     return value;
   };
-
 
   const NavBarItem = ({ title }) => (
     <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
   );
-
-
 
   if (!config || !content) return <LoadingSpinner />;
 
@@ -297,10 +275,11 @@ export default function OnBoardingPage() {
             <button
               onClick={handleNext}
               disabled={isSubmitting}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-900 hover:bg-gray-800"
-                }`}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gray-900 hover:bg-gray-800"
+              }`}
             >
               {currentStep === steps.length - 1
                 ? "Save & Continue"
@@ -310,7 +289,7 @@ export default function OnBoardingPage() {
         </div>
       </div>
 
-      <div className="h-full col-span-8 relative overflow-hidden">
+      <div className="h-full col-span-8 relative overflow-hidden bg-background">
         <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
           <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
@@ -321,7 +300,7 @@ export default function OnBoardingPage() {
                 className="h-[52px] mr-2"
               />
               <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-                {filterValue("Header Text")}
+                {filterContent("Header Text")}
               </span>
             </a>
             <div className="hidden md:flex space-x-4">
@@ -365,7 +344,7 @@ export default function OnBoardingPage() {
               <div>
                 <div className="px-[15px]">
                   <h2 className="text-[56px] font-light leading-tight text-text font-lato">
-                    {filterValue("Title")}
+                    {filterContent("Title")}
                   </h2>
                   <div
                     style={{ backgroundColor: config?.primaryColor }}
@@ -373,7 +352,7 @@ export default function OnBoardingPage() {
                   ></div>
 
                   <p className="font-light text-xl text-black leading-7 font-lato mb-3 line-clamp-5">
-                    {filterValue("Paragraph")}
+                    {filterContent("Paragraph")}
                   </p>
                 </div>
               </div>
@@ -433,15 +412,25 @@ export default function OnBoardingPage() {
           {/* cards */}
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-10">
-
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="28"
+                      height="28"
+                      fill="currentColor"
+                    >
+                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                    </svg>
                   </div>
-                  {filterValue("Card 1 Title")}</h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">{filterValue("Card 1 Content")}</p>
+                  {filterContent("Card 1 Title")}
+                </h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">
+                  {filterContent("Card 1 Content")}
+                </p>
               </div>
             </div>
 
@@ -449,10 +438,21 @@ export default function OnBoardingPage() {
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="28"
+                      height="28"
+                      fill="currentColor"
+                    >
+                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                    </svg>
                   </div>
-                  {filterValue("Card 2 Title")}</h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">{filterValue("Card 2 Content")}</p>
+                  {filterContent("Card 2 Title")}
+                </h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">
+                  {filterContent("Card 2 Content")}
+                </p>
               </div>
             </div>
 
@@ -460,22 +460,34 @@ export default function OnBoardingPage() {
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path></svg>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="28"
+                      height="28"
+                      fill="currentColor"
+                    >
+                      <path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path>
+                    </svg>
                   </div>
-                  {filterValue("Card 3 Title")}</h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">{filterValue("Card 3 Content")}</p>
+                  {filterContent("Card 3 Title")}
+                </h5>
+                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">
+                  {filterContent("Card 3 Content")}
+                </p>
               </div>
             </div>
           </div>
-
         </div>
-
 
         <div className="w-full ">
-          <Footer config={config} filterValue={filterValue} from={"onboarding"} />
+          <Footer
+            config={config}
+            filterValue={filterContent}
+            from={"onboarding"}
+          />
         </div>
       </div>
-
     </div>
   );
 }

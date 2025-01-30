@@ -4,9 +4,16 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
+const filterRole = (user, portalId) => {
+  const permission = user?.permissions?.find(
+    (item) => item.portalId === portalId
+  );
+  return permission?.role;
+};
 
 function ViewProfileModal({
   isOpen,
@@ -16,19 +23,25 @@ function ViewProfileModal({
   setOnDeleteUser,
 }) {
   const router = useRouter();
+  const params = useParams();
   const [enteredEmail, setEnteredEmail] = useState("");
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingRoleChange, setIsLoadingRoleChange] = useState(false);
+ 
   const [role, setRole] = useState(
-    user?.role === "user" ? UserRole.USER : UserRole.ADMIN
+    filterRole(user, params?.portalid) === "user" ? UserRole.USER : UserRole.ADMIN
   );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(null);
 
   const handleChangeRole = async () => {
     try {
       setIsLoadingRoleChange(true);
+      if (filterRole(user, params?.portalid) === role) {
+        toast.success("Role updated successfully");
+        return;
+      }
       const response = await fetchWrapper(
         "/api/users/role",
         {
@@ -36,7 +49,11 @@ function ViewProfileModal({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id: user.id, role: role }),
+          body: JSON.stringify({
+            id: user.id,
+            role: role,
+            portalId: params?.portalid,
+          }),
         },
         "update-user"
       );
@@ -70,7 +87,10 @@ function ViewProfileModal({
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id: isDeleteModalOpen?.id }),
+            body: JSON.stringify({
+              id: isDeleteModalOpen?.id,
+              portalId: params?.portalid,
+            }),
           },
           "delete-user"
         );
@@ -106,7 +126,7 @@ function ViewProfileModal({
 
   useEffect(() => {
     if (user) {
-      setRole(user?.role === "user" ? UserRole.USER : UserRole.ADMIN);
+      setRole(filterRole(user, params?.portalid) === "user" ? UserRole.USER : UserRole.ADMIN);
     }
   }, [user]);
 
@@ -118,7 +138,7 @@ function ViewProfileModal({
     }
     setLoggedInUser(userData);
     if (user) {
-      setRole(user?.role === "user" ? UserRole.USER : UserRole.ADMIN);
+      setRole(filterRole(user, params?.portalid) === "user" ? UserRole.USER : UserRole.ADMIN);
     }
   }, []);
 
@@ -171,16 +191,18 @@ function ViewProfileModal({
                   <button
                     type="button"
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                    onClick={() => setRole(user?.role)}
+                    onClick={() =>setRole(filterRole(user, params?.portalid))}
                     disabled={loggedInUser?.id === user?.id}
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
-                    className={`inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed w-[100px] flex justify-center`}
+                    className={`inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed w-[100px] justify-center`}
                     onClick={handleChangeRole}
-                    disabled={loggedInUser?.id === user?.id || isLoadingRoleChange}
+                    disabled={
+                      loggedInUser?.id === user?.id || isLoadingRoleChange
+                    }
                   >
                     {/* {isLoadingRoleChange ? "Saving" : "Save"} */}
                     {isLoadingRoleChange ? (

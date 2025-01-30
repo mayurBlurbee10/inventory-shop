@@ -22,13 +22,21 @@ const getApiLogs = async (portalName, filterYear) => {
   const apiLogRepository = connection.getRepository(ApiLogs);
 
   try {
-    const startOfYear = new Date(`${filterYear}-01-01T00:00:00Z`);
-    const endOfYear = new Date(`${filterYear}-12-31T23:59:59Z`);
+    const currentDate = new Date();
+    const startOfRange = new Date(filterYear, currentDate.getMonth() - 11, 1);
+    const endOfRange = new Date(
+      filterYear,
+      currentDate.getMonth() + 1,
+      0,
+      23,
+      59,
+      59
+    );
 
     const apiLogs = await apiLogRepository.find({
       where: {
         name: portalName,
-        createdAt: Between(startOfYear, endOfYear),
+        createdAt: Between(startOfRange, endOfRange),
       },
     });
 

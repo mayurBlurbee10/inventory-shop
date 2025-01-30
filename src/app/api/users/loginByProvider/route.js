@@ -14,17 +14,24 @@ export async function POST(request) {
         { status: 404 }
       );
     }
-    if (data.portalid != user.portalId) {
-      return NextResponse.json(
-        { error: "This user does not have access to this portal" },
-        { status: 403 }
-      );
-    }
+    const userPermission =
+    Array.isArray(user.permissions) &&
+    user.permissions.find(
+      (permission) => permission.portalId === data.portalid
+    );
+
+  if (!userPermission) {
+    return NextResponse.json(
+      { error: "This user does not have access to this portal" },
+      { status: 403 }
+    );
+  }
+  const userRole = userPermission?.role;
     const userData = {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
+      role: userRole,
       company: user.company,
       isOnboardingRequired: user.isOnboardingRequired,
       boxUserId: user.boxUserId,

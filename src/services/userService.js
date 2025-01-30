@@ -35,14 +35,18 @@ const getUsers = async () => {
   }
 };
 
-const getUsersByPortal = async (portal) => {
+const getUsersByPortal = async (portalId) => {
   const userRepository = await getRepository(Users);
   try {
-    return await userRepository.find({
-      where: {
-        portalId: portal,
-      },
-    });
+    const users = await userRepository.find();
+
+    const filteredUsers = users.filter(
+      (user) =>
+        Array.isArray(user.permissions) &&
+        user.permissions.some((permission) => permission.portalId === portalId)
+    );
+
+    return filteredUsers;
   } catch (error) {
     throw new Error("Failed to get users.");
   }
@@ -51,15 +55,27 @@ const getUsersByPortal = async (portal) => {
 const getUserByEmail = async (email, portalId) => {
   const userRepository = await getRepository(Users);
   try {
-    const query = { email };
-    if (portalId) {
-      query.portalId = portalId;
+    const user = await userRepository.findOneBy({ email });
+
+    if (!user) {
+      return null;
     }
-    return await userRepository.findOneBy(query);
+
+    if (portalId) {
+      const hasPermission =
+        Array.isArray(user.permissions) &&
+        user.permissions.some((perm) => perm.portalId === portalId);
+
+      if (!hasPermission) {
+        return null;
+      }
+    }
+    return user;
   } catch (error) {
-    throw new Error("Failed to get users.");
+    console.error("Error getting user by email:", error.message);
+    throw new Error("Failed to get user.");
   }
-};
+}
 
 const getUserByRole = async (role, userId) => {
   const userRepository = await getRepository(Users);
@@ -74,22 +90,26 @@ const getUserByRole = async (role, userId) => {
       if (!user) {
         throw new Error(`User with ID ${userId} not found.`);
       }
-      if (
-        !Array.isArray(user.groupMembersIds) ||
-        user.groupMembersIds.length === 0
-      ) {
-        return [];
+
+      if (!Array.isArray(user.groupMembersIds) || user.groupMembersIds.length === 0) {
+        return []; 
       }
+
+      // Fetch users matching the group member IDs
       const users = await userRepository.findBy({
         id: In(user.groupMembersIds),
       });
 
       return users;
-    } else {
-      const users = await userRepository.find({
-        where: { role },
-      });
-      return users;
+    } else if (role) {
+      // Fetch users based on role in permissions
+      const users = await userRepository.find(); // Fetch all users
+      const filteredUsers = users.filter((user) =>
+        Array.isArray(user.permissions) &&
+        user.permissions.some((perm) => perm.role === role)
+      );
+
+      return filteredUsers;
     }
   } catch (error) {
     console.error("Error in getUserByRole:", error.message);
@@ -201,6 +221,7 @@ const deleteUser = async (userId) => {
     throw new Error(`Failed to delete user. ${error.message}`);
   }
 };
+
 const setResetPasswordToken = async (email, token) => {
   const userRepository = await getRepository(Users);
   try {
@@ -235,6 +256,7 @@ const updateUser = async (id, updatedData) => {
     Object.assign(mainUser, updatedData);
     await userRepository.save(mainUser);
     console.log("User updated successfully!");
+    return mainUser;
   } catch (error) {
     console.error("Error updating user:", error.message);
     throw error;

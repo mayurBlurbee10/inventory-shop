@@ -61,9 +61,10 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
 import CreateFolder from "@/components/CreateFolder";
+import Documents from "@/components/Documents";
 
 export default function HomePage() {
-  // return <Dashboard fileType={'my'}/>;
+  return <Documents fileType={'shared'}/>;
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);

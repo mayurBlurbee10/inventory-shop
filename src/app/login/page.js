@@ -19,6 +19,7 @@ const LoadingSpinner = () => (
 );
 
 export default function LoginPage() {
+  return <Login/>
   // const router = useRouter();
   // const params = useParams();
   // const [isLoading, setIsLoading] = useState(false);
@@ -386,5 +387,4 @@ export default function LoginPage() {
   //   </div>
   // );
 
-  return <Login/>
 }

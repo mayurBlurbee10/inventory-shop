@@ -16,7 +16,13 @@ export async function POST(request) {
         { status: 404 }
       );
     }
-    if (data.portalid != user.portalId) {
+    const userPermission =
+      Array.isArray(user.permissions) &&
+      user.permissions.find(
+        (permission) => permission.portalId === data.portalid
+      );
+
+    if (!userPermission) {
       return NextResponse.json(
         { error: "This user does not have access to this portal" },
         { status: 403 }
@@ -29,7 +35,7 @@ export async function POST(request) {
     await userService.setResetPasswordToken(user.email, token);
 
     if (user.role !== UserRole.SUPER_ADMIN && user.role !== UserRole.MASTER) {
-      sendSetPasswordEmail(user.email, user.name, token, user.portalId);
+      sendSetPasswordEmail(user.email, user.name, token, userPermission.portalId);
     }
 
     return NextResponse.json({
