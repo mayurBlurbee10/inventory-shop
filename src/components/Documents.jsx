@@ -1115,7 +1115,7 @@ function Documents({ fileType }) {
                   selectedItem={selectedItem}
                   handleShareLink={() => {}}
                   onFileChanges={refreshFiles}
-                  listType={"shared"}
+                  listType={fileType}
                   setSearchQuery={setSearchQuery}
                   view={view}
                   cols={cols}

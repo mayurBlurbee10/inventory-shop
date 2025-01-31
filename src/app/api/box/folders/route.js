@@ -76,14 +76,17 @@ async function fetchNestedItems(folderId) {
   const result = [];
   try {
     const folderItems = await client.folders.getItems(folderId, {
-      fields: "id,name,type,shared_link,created_at,modified_at,collaborators,size",
+      fields:
+        "id,name,type,shared_link,created_at,modified_at,collaborators,size",
       limit: 100,
     });
 
     for (const item of folderItems.entries) {
       let collaborators = [];
       if (item.type == "folder") {
-        collaborators = await fetchCollaborators(item.id);
+        collaborators = await fetchFolderCollaborators(item.id);
+      } else {
+        collaborators = await fetchFileCollaborators(item.id);
       }
       if (item.type === "folder") {
         // Recursively fetch items inside subfolder
@@ -91,7 +94,8 @@ async function fetchNestedItems(folderId) {
         result.push({ ...item, collaborators, children: nestedItems });
       } else {
         // File, directly push to the result
-        result.push({ ...item, collaborators });
+        const reverseCollaborator = collaborators?.reverse();
+        result.push({ ...item, collaborators: reverseCollaborator });
       }
     }
   } catch (error) {
@@ -104,9 +108,29 @@ async function fetchNestedItems(folderId) {
   return result;
 }
 
-async function fetchCollaborators(itemId) {
+async function fetchFolderCollaborators(itemId) {
   try {
     const collaborations = await client.folders.getCollaborations(itemId);
+    return collaborations.entries.map((collaboration) => {
+      console.log("collaboration:", collaboration);
+      return {
+        id: collaboration.id,
+        role: collaboration.role,
+        user: collaboration.accessible_by,
+      };
+    });
+  } catch (error) {
+    console.error(
+      `Error fetching collaborators for item ${itemId}:`,
+      error.message
+    );
+    return [];
+  }
+}
+
+async function fetchFileCollaborators(itemId) {
+  try {
+    const collaborations = await client.files.getCollaborations(itemId);
     return collaborations.entries.map((collaboration) => {
       console.log("collaboration:", collaboration);
       return {

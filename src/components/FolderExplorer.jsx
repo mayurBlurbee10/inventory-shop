@@ -23,6 +23,7 @@ import { useParams } from "next/navigation";
 import { usePathname } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { toast } from "react-toastify";
+import { getUserData } from "@/app/lib/auth";
 
 const ShareModal = ({
   isOpen,
@@ -30,6 +31,7 @@ const ShareModal = ({
   item,
   onShareLinkToggle,
   usersList,
+  user,
 }) => {
   const params = useParams();
   const [userID, setUserID] = useState("");
@@ -86,7 +88,7 @@ const ShareModal = ({
           userID: userID.value,
           role: "viewer",
           itemId: item?.id,
-          type: item?.type
+          type: item?.type,
         }),
       };
       const response = await fetchWrapper(
@@ -102,6 +104,7 @@ const ShareModal = ({
         id: data.response.id,
         userID: userID.value,
         isForAdd: true,
+        type: item?.type,
       });
       setUserID("");
       toast.success("File shared successfully");
@@ -212,7 +215,7 @@ const ShareModal = ({
     setCollaborator(collaborator);
   };
 
-  const handleRoleChange = async (event, userId, collaborationId) => {
+  const handleRoleChange = async (event, userId, collaborationId, type) => {
     try {
       setCollabLoading(true);
       const newRole = event.target.value;
@@ -226,6 +229,7 @@ const ShareModal = ({
           role: newRole,
           itemId: collaborationId,
           updateRole: true,
+          type: item?.type,
         }),
       };
       const response = await fetchWrapper(
@@ -242,6 +246,7 @@ const ShareModal = ({
         userID: userId,
         isForAdd: true,
         role: newRole,
+        type: item?.type,
       });
       toast.success(data.message || "Collaborator Role Changed");
     } catch (error) {
@@ -310,37 +315,37 @@ const ShareModal = ({
           )}
 
           {/* {item?.type === "folder" && ( */}
-            <div className="space-y-2">
-              <label className="text-gray-800 font-semibold">
-                Share with user
-              </label>
-              <div className="flex items-center gap-3">
-                <Select
-                  className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  classNamePrefix="Enter email address"
-                  isClearable={true}
-                  isSearchable={true}
-                  value={userID}
-                  onChange={(e) => setUserID(e)}
-                  options={userList}
-                />
-                <button
-                  onClick={handleEmailShare}
-                  disabled={!userID}
-                  className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
+          <div className="space-y-2">
+            <label className="text-gray-800 font-semibold">
+              Share with user
+            </label>
+            <div className="flex items-center gap-3">
+              <Select
+                className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                classNamePrefix="Enter email address"
+                isClearable={true}
+                isSearchable={true}
+                value={userID}
+                onChange={(e) => setUserID(e)}
+                options={userList}
+              />
+              <button
+                onClick={handleEmailShare}
+                disabled={!userID}
+                className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
                     ${
                       userID
                         ? "bg-blue-600 text-white hover:bg-blue-700"
                         : "bg-gray-100 text-gray-400 cursor-not-allowed"
                     }`}
-                >
-                  <Send size={16} />
-                  <span>Send</span>
-                </button>
-              </div>
+              >
+                <Send size={16} />
+                <span>Send</span>
+              </button>
             </div>
+          </div>
           {/* )} */}
-          {collaborator.slice(1).length > 0 && (
+          {collaborator.length > 0 && (
             <div>
               <div className="text-gray-700 py-2 pr-2 grid grid-cols-2">
                 <div className="font-semibold">Name</div>
@@ -348,7 +353,7 @@ const ShareModal = ({
                 <div></div>
               </div>
               {collaborator.length > 0 &&
-                collaborator.slice(1).map((content, idx) => (
+                collaborator.map((content, idx) => (
                   <div
                     key={idx}
                     className="text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group grid grid-cols-2"
@@ -424,6 +429,7 @@ function FolderExplorer({
   const [usersList, setUsersList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteDropdown, setDeleteDropdown] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     fetchUser();
@@ -441,7 +447,7 @@ function FolderExplorer({
     if (listType == "shared" && file.currentUserRole == "viewer") {
       return;
     }
-    setDeleteDropdown((prev) => (prev === file?.id ? null : file?.id));
+    setDeleteDropdown((prev) => (prev?.id === file?.id ? null : file));
   };
 
   const handlePreview = (fileId) => {
@@ -476,6 +482,26 @@ function FolderExplorer({
   //     console.error("Download error:", error);
   //   }
   // };
+
+  const handelRemoveCollaborator = async (collaborator) => {
+    console.log("collaborator", collaborator);
+    try {
+      const obj = {
+        method: "DELETE",
+      };
+      const response = await fetchWrapper(
+        `/api/box/files/share?collaboratorId=${collaborator.id}&userId=${collaborator.user.id}`,
+        obj,
+        "removeCollaborator"
+      );
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Failed to remove collaborator");
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Remove collaborator error:", error);
+    }
+  };
 
   const handleDownload = async (fileId, fileName) => {
     try {
@@ -521,12 +547,34 @@ function FolderExplorer({
     }
   };
 
-  const handleDeleteFile = async (fileId) => {
+  const handleDeleteFile = async (file) => {
     // setCurrentFilesList((prev) => prev.filter((item) => item.id !== fileId));
     setIsLoading(true);
     try {
+      const parentCollaboratorIds = path
+        .map((item) => item.collaborators)
+        .flat()
+        .map((collab) => collab.id);
+
+      const hasParentCollaborator = file?.collaborators?.some((collab) =>
+        parentCollaboratorIds.includes(collab.id)
+      );
+
+      if (hasParentCollaborator) {
+        console.log(
+          "A parent or sub-parent folder already has this collaborator. Skipping removal."
+        );
+      } else {
+        if (file?.collaborators?.length > 0) {
+          await Promise.all(
+            file.collaborators.map((collab) => handelRemoveCollaborator(collab))
+          );
+          console.log("Collaborators removed from the current file.");
+        }
+      }
+
       const response = await fetchWrapper(
-        `/api/box/files?fileId=${fileId}`,
+        `/api/box/files?fileId=${file?.id}`,
         {
           method: "DELETE",
           headers: {
@@ -539,7 +587,6 @@ function FolderExplorer({
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.error || "Failed to delete file");
-      setIsLoading(false);
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
       setIsDeleteModalOpen(false);
       setDeleteDropdown(null);
@@ -587,7 +634,7 @@ function FolderExplorer({
   };
 
   const getUserName = (file) => {
-    if (file.collaborators.length > 0 && file.type == "folder") {
+    if (file?.collaborators?.length > 0 && file.type == "folder") {
       const findeduser = usersList.find(
         (user) => user.email == file.collaborators[0].user.name
       );
@@ -618,6 +665,15 @@ function FolderExplorer({
         : prevSelected.filter((itemId) => itemId !== id)
     );
   };
+
+  useEffect(() => {
+    const userData = getUserData();
+    if (!userData) {
+      router.push("login");
+      return;
+    }
+    setUser(userData);
+  }, []);
 
   return (
     <>
@@ -723,31 +779,44 @@ function FolderExplorer({
                           <Share2 className="h-4 w-4 text-gray-600" />
                         </button>
                       )}
-                      {file.type === "file" && (
-                        <button
-                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(file.id, file.name);
-                            setDeleteDropdown(null);
-                          }}
-                          title="Download"
-                        >
-                          <Download className="h-4 w-4 text-gray-600" />
-                        </button>
-                      )}
+                      {file.type === "file" &&
+                        (listType !== "shared" ||
+                          file.currentUserRole !== "viewer") && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(file.id, file.name);
+                              setDeleteDropdown(null);
+                            }}
+                            title="Download"
+                          >
+                            <Download className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
                     </div>
                     <div className="relative">
                       {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                      <button
-                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                        onClick={() => handleDelete(file)}
-                      >
-                        <EllipsisVertical className="h-4 w-4 text-gray-600" />
-                      </button>
-
+                      {listType === "shared" &&
+                        file.type === "folder" &&
+                        file.currentUserRole === "editor" && (
+                          <button
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                            onClick={() => handleDelete(file)}
+                          >
+                            <EllipsisVertical className="h-4 w-4 text-gray-600" />
+                          </button>
+                        )}
+                      {listType !== "shared" && (
+                        <button
+                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                          onClick={() => handleDelete(file)}
+                        >
+                          <EllipsisVertical className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
                       {/* DELETE DROPDOWN DONE*/}
-                      {deleteDropdown === file?.id && (
+                      {deleteDropdown?.id === file?.id && (
                         <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
                           {listType !== "shared" && (
                             <button
@@ -860,35 +929,39 @@ function FolderExplorer({
                             <Share2 className="h-4 w-4 text-gray-600" />
                           </button>
                         )}
-                        {file.type === "file" && (
+                        {file.type === "file" &&
+                          (listType !== "shared" ||
+                            file.currentUserRole !== "viewer") && (
+                            <button
+                              className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(file.id, file.name);
+                                setDeleteDropdown(null);
+                              }}
+                              title="Download"
+                            >
+                              <Download className="h-4 w-4 text-gray-600" />
+                            </button>
+                          )}
+                        {listType !== "shared" && (
                           <button
-                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDownload(file.id, file.name);
-                              setDeleteDropdown(null);
+                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                            onClick={() => {
+                              if (
+                                listType == "shared" &&
+                                file.currentUserRole == "viewer"
+                              ) {
+                                return;
+                              } else {
+                                setIsDeleteModalOpen((prev) => !prev);
+                                setDeleteDropdown(file);
+                              }
                             }}
-                            title="Download"
                           >
-                            <Download className="h-4 w-4 text-gray-600" />
+                            <Trash2 className="h-4 w-4 text-gray-600" />
                           </button>
                         )}
-                        <button
-                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                          onClick={() => {
-                            if (
-                              listType == "shared" &&
-                              file.currentUserRole == "viewer"
-                            ) {
-                              return;
-                            } else {
-                              setIsDeleteModalOpen((prev) => !prev);
-                              setDeleteDropdown(file?.id);
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-gray-600" />
-                        </button>
                         {listType !== "shared" && (
                           <button
                             className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
@@ -940,6 +1013,7 @@ function FolderExplorer({
             item={shareFile}
             onShareLinkToggle={handleShareLinkToggle}
             usersList={usersList}
+            user={user}
           />
         </td>
       </tr>

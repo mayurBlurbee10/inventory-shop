@@ -55,9 +55,12 @@ export async function POST(request) {
     const { collaborated } = await request.json();
     let items = [];
     for await (const element of collaborated) {
-      if (element.type === 'folder') {
+      if (element.type === "folder") {
         const folder = await fetchNestedItems(element.folderId, element.role);
-        const collaborators = await fetchCollaborators(element.folderId);
+        const collaborators = await fetchCollaborators(
+          element.folderId,
+          element.type
+        );
         const folderName = await client.folders.get(element.folderId);
 
         items.push({
@@ -67,13 +70,16 @@ export async function POST(request) {
           currentUserRole: element.role,
         });
       } else {
-        const collaborators = await fetchCollaborators(element.folderId);
+        const collaborators = await fetchCollaborators(
+          element.folderId,
+          element.type
+        );
         const file = await client.files.get(element.folderId);
         items.push({
           ...file,
           collaborators,
           currentUserRole: element.role,
-        })
+        });
       }
     }
 
@@ -94,38 +100,104 @@ async function fetchNestedItems(folderId, role) {
   const result = [];
   try {
     const folderItems = await client.folders.getItems(folderId, {
-      fields: "id,description,name,type,owned_by,shared_link,created_at,modified_at,collaborators",
+      fields:
+        "id,description,name,type,owned_by,shared_link,created_at,modified_at,collaborators,size",
       limit: 100,
     });
 
     for (const item of folderItems.entries) {
       let collaborators = [];
+      if (item.type == "folder") {
+        collaborators = await fetchFolderCollaborators(item.id);
+      } else {
+        collaborators = await fetchFileCollaborators(item.id);
+      }
       if (item.type === "folder") {
-        collaborators = await fetchCollaborators(item.id);
         const nestedItems = await fetchNestedItems(item.id, role);
-        result.push({ ...item, collaborators, children: nestedItems, currentUserRole: role });
+        result.push({
+          ...item,
+          collaborators,
+          children: nestedItems,
+          currentUserRole: role,
+        });
       } else {
         result.push({ ...item, collaborators, currentUserRole: role });
       }
     }
   } catch (error) {
-    console.error(`Error fetching items for folder ${folderId}:`, error.message);
+    console.error(
+      `Error fetching items for folder ${folderId}:`,
+      error.message
+    );
   }
 
   return result;
 }
 
-async function fetchCollaborators(itemId) {
+async function fetchCollaborators(itemId, type) {
+  try {
+    if (type === "folder") {
+      const collaborations = await client.folders.getCollaborations(itemId);
+      return collaborations.entries.map((collaboration) => ({
+        id: collaboration.id,
+        role: collaboration.role,
+        user: collaboration.accessible_by,
+        type: collaboration.type,
+      }));
+    } else {
+      const collaborations = await client.files.getCollaborations(itemId);
+      return collaborations.entries.map((collaboration) => ({
+        id: collaboration.id,
+        role: collaboration.role,
+        user: collaboration.accessible_by,
+        type: collaboration.type,
+      }));
+    }
+  } catch (error) {
+    console.error(
+      `Error fetching collaborators for folder ${itemId}:`,
+      error.message
+    );
+    return [];
+  }
+}
+
+async function fetchFolderCollaborators(itemId) {
   try {
     const collaborations = await client.folders.getCollaborations(itemId);
-    return collaborations.entries.map((collaboration) => ({
-      id: collaboration.id,
-      role: collaboration.role,
-      user: collaboration.accessible_by,
-      type: collaboration.type,
-    }));
+    return collaborations.entries.map((collaboration) => {
+      console.log("collaboration:", collaboration);
+      return {
+        id: collaboration.id,
+        role: collaboration.role,
+        user: collaboration.accessible_by,
+      };
+    });
   } catch (error) {
-    console.error(`Error fetching collaborators for folder ${itemId}:`, error.message);
+    console.error(
+      `Error fetching collaborators for item ${itemId}:`,
+      error.message
+    );
+    return [];
+  }
+}
+
+async function fetchFileCollaborators(itemId) {
+  try {
+    const collaborations = await client.files.getCollaborations(itemId);
+    return collaborations.entries.map((collaboration) => {
+      console.log("collaboration:", collaboration);
+      return {
+        id: collaboration.id,
+        role: collaboration.role,
+        user: collaboration.accessible_by,
+      };
+    });
+  } catch (error) {
+    console.error(
+      `Error fetching collaborators for item ${itemId}:`,
+      error.message
+    );
     return [];
   }
 }

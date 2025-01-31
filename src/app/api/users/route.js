@@ -277,7 +277,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Error in POST /api/users:", error);
     return NextResponse.json(
-      { error: "Failed to save user", details: error.message },
+      { error: error.message, details: "Failed to save user" },
       { status: 500 }
     );
   }
