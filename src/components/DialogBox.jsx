@@ -1,41 +1,12 @@
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { Share2, X } from "lucide-react";
-import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { useParams } from "next/navigation";
 
 
-const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen }) => {
-  const [config, setConfig] = useState(null);
+
+const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen , config}) => {
+
   const [isLoading, setIsLoading] = useState(false);
-  const params = useParams();
-
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        if (!params?.portalid) return;
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-
-        setConfig(data.data);
-      } catch (error) {
-        console.log("error: ", error);
-      }
-    };
-
-    fetchConfig();
-  }, []);
 
   return (
     <Dialog

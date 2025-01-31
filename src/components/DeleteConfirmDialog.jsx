@@ -1,41 +1,11 @@
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { Trash2, X } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 
-function DeleteConfirmDialog({ isModalOpen, setIsModalOpen, handleDelete }) {
-  const params = useParams();
-  const [config, setConfig] = useState(null);
+function DeleteConfirmDialog({ isModalOpen, setIsModalOpen, handleDelete, config }) {
 
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        if (!params?.portalid) return;
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-
-        setConfig(data.data);
-      } catch (error) {
-        console.log("error: ", error);
-      }
-    };
-
-    fetchConfig();
-  }, []);
-
+  
   return (
     <Dialog
       open={isModalOpen}

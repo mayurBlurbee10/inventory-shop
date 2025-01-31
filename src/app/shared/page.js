@@ -1320,6 +1320,7 @@ export default function SharedPage() {
                   isModalOpen={isDeleteModalOpen}
                   setIsModalOpen={setIsDeleteModalOpen}
                   handleDelete={handleBulkDelete}
+                  config={config}
                 />
                 <MoveDialog
                   item={moveItem}

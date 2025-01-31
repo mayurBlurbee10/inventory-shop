@@ -94,6 +94,7 @@ export async function GET(req) {
     const userId = searchParams.get("userId");
     const id = searchParams.get("id");
     console.log("portalId get: ", portalId);
+
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
       const portal = await portalService.getPortalByLegalName(portalLegalName);
@@ -143,6 +144,7 @@ export async function GET(req) {
         data: portals,
       });
     }
+    
   } catch (error) {
     console.error("Error fetching portal files:", error.message);
     return NextResponse.json(
