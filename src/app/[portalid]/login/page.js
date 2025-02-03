@@ -10,6 +10,7 @@ import { IdCard, LockKeyhole, UserRound, SquarePen } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession, signIn } from "next-auth/react";
 import { getUserData } from "@/lib/auth";
+import Login from "@/components/Login";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -22,6 +23,7 @@ const LoadingSpinner = () => (
 );
 
 export default function LoginPage() {
+  return <Login/>
   const router = useRouter();
   const params = useParams();
   const [isLoading, setIsLoading] = useState(false);

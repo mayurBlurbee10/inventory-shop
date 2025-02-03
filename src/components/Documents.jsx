@@ -949,8 +949,8 @@ function Documents({ fileType }) {
               </div>
 
               {/* breadcrumbs */}
-              <div className="px-5 border-b overflow-x-auto break-words sm:overflow-visible">
-                <div className="py-3 flex items-center justify-between flex-wrap">
+              <div className="px-5 border-b break-words">
+                <div className="py-3 flex items-center justify-between flex-wrap relative">
                   <div>
                     {/* <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
                             <button className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato">
@@ -976,7 +976,7 @@ function Documents({ fileType }) {
                     <div className="flex items-center gap-3">
                       {/* Grid range */}
                       {view === "grid" && (
-                        <div className="flex items-center justify=-center gap-2">
+                        <div className="items-center justify=-center gap-2 hidden md:flex">
                           <button
                             className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
                             onClick={() =>
@@ -1142,6 +1142,7 @@ function Documents({ fileType }) {
                 isModalOpen={isDeleteModalOpen}
                 setIsModalOpen={setIsDeleteModalOpen}
                 handleDelete={handleBulkDelete}
+                config={config}
               />
               <MoveDialog
                 item={moveItem}

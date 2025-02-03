@@ -135,8 +135,8 @@ const ShareModal = ({
         sharedLink !== null
           ? null
           : params.portalid
-            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-            : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+          : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
       // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
       setSharedLink(newSharedLink);
       if (onShareLinkToggle) {
@@ -293,18 +293,18 @@ const ShareModal = ({
                     className={`
                                         relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                                         ${sharedLink !== null
-                        ? "bg-blue-600"
-                        : "bg-gray-200"
-                      }
+                                            ? "bg-blue-600"
+                                            : "bg-gray-200"
+                                        }
                                         `}
                   >
                     <span
                       className={`
                                             pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
                                             ${sharedLink !== null
-                          ? "translate-x-5"
-                          : "translate-x-0"
-                        }
+                                                ? "translate-x-5"
+                                                : "translate-x-0"
+                                            }
                                             `}
                     />
                   </button>
@@ -350,9 +350,9 @@ const ShareModal = ({
                 disabled={!userID}
                 className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
                                     ${userID
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  }`}
+                                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    }`}
               >
                 <Send size={16} />
                 <span>Send</span>
@@ -902,9 +902,9 @@ function SharedFolderExplorer({
                         <div className="flex items-center justify-between">
                           <h6
                             className="text-sm font-medium text-black font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full"
-                          // onClick={() =>
-                          //     file?.type === "folder" && handleFolderClick(file)
-                          // }
+                            // onClick={() =>
+                            //     file?.type === "folder" && handleFolderClick(file)
+                            // }
                           >
                             {file?.name}
                           </h6>
