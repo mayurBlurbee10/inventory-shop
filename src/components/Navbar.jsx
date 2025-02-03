@@ -38,7 +38,7 @@ function Navbar({ content, config, user, filterValue }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
             }`}
         >
           {title}
@@ -186,7 +186,7 @@ function Navbar({ content, config, user, filterValue }) {
             <NavBarItem title="Shared Documents" href="shared-docs" />
             {userIsAdmin && (
               <button
-                className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
+                className="px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
                 onClick={() => setIsSettingsOpen(true)}
               >
                 Settings
@@ -269,9 +269,12 @@ function Navbar({ content, config, user, filterValue }) {
             </button>
           </div>
 
+
+          {/* Mobile Navbar */}
+
           <button
             className="lg:hidden text-text"
-            // onClick={() => setIsOpenNavbar(true)} 
+            onClick={() => setIsOpenNavbar(true)}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -283,13 +286,15 @@ function Navbar({ content, config, user, filterValue }) {
             </svg>
           </button>
 
-          {/* Mobile Navbar */}
           {isOpenNavbar && (
-            <div className="fixed top-0 left-0 w-1/2 h-full bg-white shadow-lg z-50 p-5 transition-all">
+            <div className="fixed top-0 right-0 sm:w-2/5 w-1/2 h-full bg-white shadow-lg z-50 p-5 transition-all">
               {/* Close Icon */}
               <button
-                className="absolute top-4 right-4 text-gray-600 hover:text-black"
-                onClick={() => setIsOpenNavbar(false)} // Close menu
+                className="absolute top-5 left-5 text-gray-600 hover:text-black"
+                onClick={() => {
+                  setIsOpenNavbar(false); // Close navbar
+                  setAccountDropdown(false); // Also close account dropdown
+                }} // Close menu
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -302,41 +307,76 @@ function Navbar({ content, config, user, filterValue }) {
               </button>
 
               {/* Navbar Content */}
-              <NavBarItem title="Dashboard" href="dashboard" />
-              <NavBarItem title="My Documents" href="my-docs" />
-              <NavBarItem title="Shared Documents" href="shared-docs" />
-              {userIsAdmin && (
-                <button
-                  className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
-                  onClick={() => setIsSettingsOpen(true)}
-                >
-                  Settings
-                </button>
-              )}
-              <div className="flex items-center space-x-8 cursor-pointer">
-                <div
-                  className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
-                  onClick={() => setAccountDropdown((prev) => !prev)}
-                >
-                  {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                  <div
-                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                      }`}
+              <div className="flex flex-col justify-center space-y-4 mt-10">
+                <NavBarItem title="Dashboard" href="dashboard" />
+                <NavBarItem title="My Documents" href="my-docs" />
+                <NavBarItem title="Shared Documents" href="shared-docs" />
+                {userIsAdmin && (
+                  <button
+                    className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
+                    onClick={() => setIsSettingsOpen(true)}
                   >
-                    {user?.name?.charAt(0) || "U"}
-                  </div>
-                  <div className="flex flex-col text-sm xl:text-base">
-                    <span className="text-gray-900 font-medium">
-                      {user?.name}
-                    </span>
-                    {userIsAdmin && (
-                      <span className="text-blue-600 text-sm font-medium">
-                        Administrator
+                    Settings
+                  </button>
+                )}
+                <div className="flex items-center space-x-8 cursor-pointer">
+                  <div
+                    className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
+                    onClick={() => setAccountDropdown((prev) => !prev)}
+                  >
+                    {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+                    <div
+                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                        }`}
+                    >
+                      {user?.name?.charAt(0) || "U"}
+                    </div>
+                    <div className="flex flex-col text-sm xl:text-base">
+                      <span className="text-gray-900 font-medium">
+                        {user?.name}
                       </span>
+                      {userIsAdmin && (
+                        <span className="text-blue-600 text-sm font-medium">
+                          Administrator
+                        </span>
+                      )}
+                    </div>
+                    {accountDropdown && (
+                      <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                        <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
+                          <CircleUserRound className="h-5 w-5" /> Account Info
+                        </button>
+                        {userIsAdmin && (
+                          <button
+                            onClick={() => setIsSettingsOpen(true)}
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          >
+                            <Settings className="h-5 w-5" />
+                            Settings
+                          </button>
+                        )}
+                        {userIsAdmin && (
+                          <button
+                            onClick={() =>
+                              setIsTechSupportModalOpen((prev) => !prev)
+                            }
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          >
+                            <Headset className="h-5 w-5" />
+                            Tech Support
+                          </button>
+                        )}
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Sign out
+                        </button>
+                      </div>
                     )}
-                  </div>
 
-                  
+                  </div>
                 </div>
               </div>
 

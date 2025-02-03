@@ -182,7 +182,7 @@ const UsersContent = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-scroll">
+        <div className="bg-white shadow rounded-lg overflow-x-scroll custom-scrollbar mt-5">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
