@@ -26,6 +26,8 @@ function Navbar({ content, config, user, filterValue }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
+  const [isOpenNavbar, setIsOpenNavbar] = useState(false);
+
 
   const NavBarItem = ({ title, href }) => {
     if (!href) {
@@ -36,9 +38,8 @@ function Navbar({ content, config, user, filterValue }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-            pathname.includes(href) ? "text-blue-500" : ""
-          }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+            }`}
         >
           {title}
         </button>
@@ -156,19 +157,19 @@ function Navbar({ content, config, user, filterValue }) {
         <nav className="flex justify-between items-center bg-secondary py-2">
           <div className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             {user?.company?.logo || config?.logo ? (
-            <img
-              src={
-                user?.company?.logo
-                  ? user.company.logo.replace("/api/upload", "/uploads")
-                  : config?.logo
-              }
-              alt={params.portalid}
-              className="h-[52px] mr-2"
-            />
-             ) : (
+              <img
+                src={
+                  user?.company?.logo
+                    ? user.company.logo.replace("/api/upload", "/uploads")
+                    : config?.logo
+                }
+                alt={params.portalid}
+                className="h-[52px] mr-2"
+              />
+            ) : (
               // Skeleton for logo
               <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
-            )} 
+            )}
 
             <span className="text-3xl text-[#000000e6] mb-1 font-lato">
               {filterValue("Header Text") || params.portalId ? (
@@ -179,7 +180,7 @@ function Navbar({ content, config, user, filterValue }) {
               )}
             </span>
           </div>
-          <div className="hidden md:flex space-x-4 items-center">
+          <div className="hidden lg:flex space-x-4 items-center">
             <NavBarItem title="Dashboard" href="dashboard" />
             <NavBarItem title="My Documents" href="my-docs" />
             <NavBarItem title="Shared Documents" href="shared-docs" />
@@ -200,9 +201,8 @@ function Navbar({ content, config, user, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                  }`}
+                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                    }`}
                 >
                   {user?.name?.charAt(0) || "U"}
                 </div>
@@ -268,13 +268,12 @@ function Navbar({ content, config, user, filterValue }) {
               </svg>
             </button>
           </div>
-          <button className="md:hidden text-text">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+
+          <button
+            className="lg:hidden text-text"
+            // onClick={() => setIsOpenNavbar(true)} 
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -283,6 +282,66 @@ function Navbar({ content, config, user, filterValue }) {
               />
             </svg>
           </button>
+
+          {/* Mobile Navbar */}
+          {isOpenNavbar && (
+            <div className="fixed top-0 left-0 w-1/2 h-full bg-white shadow-lg z-50 p-5 transition-all">
+              {/* Close Icon */}
+              <button
+                className="absolute top-4 right-4 text-gray-600 hover:text-black"
+                onClick={() => setIsOpenNavbar(false)} // Close menu
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* Navbar Content */}
+              <NavBarItem title="Dashboard" href="dashboard" />
+              <NavBarItem title="My Documents" href="my-docs" />
+              <NavBarItem title="Shared Documents" href="shared-docs" />
+              {userIsAdmin && (
+                <button
+                  className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
+                  onClick={() => setIsSettingsOpen(true)}
+                >
+                  Settings
+                </button>
+              )}
+              <div className="flex items-center space-x-8 cursor-pointer">
+                <div
+                  className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
+                  onClick={() => setAccountDropdown((prev) => !prev)}
+                >
+                  {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
+                  <div
+                    className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
+                  >
+                    {user?.name?.charAt(0) || "U"}
+                  </div>
+                  <div className="flex flex-col text-sm xl:text-base">
+                    <span className="text-gray-900 font-medium">
+                      {user?.name}
+                    </span>
+                    {userIsAdmin && (
+                      <span className="text-blue-600 text-sm font-medium">
+                        Administrator
+                      </span>
+                    )}
+                  </div>
+
+                  
+                </div>
+              </div>
+
+            </div>
+          )}
         </nav>
       </div>
       <SettingsModal

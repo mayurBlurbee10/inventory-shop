@@ -56,7 +56,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
         >
           <X className="h-6 w-6" />
         </button>
-        <div className="w-64 border-r border-gray-600 p-4 bg-[#3f4347]">
+        <div className="w-2/5 md:w-64 border-r border-gray-600 p-3 bg-[#3f4347] flex-shrink-0">
           <h2 className="text-xl font-semibold text-white mb-6">Settings</h2>
           <nav className="space-y-1">
             {tabs.map(({ id, label, icon: Icon }) => (
@@ -82,7 +82,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
             ))}
           </nav>
         </div>
-        <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
+        <div className="w-3/5 md:flex-1 p-6 overflow-y-auto bg-gray-50">
           {getActiveContent()}
         </div>
       </div>

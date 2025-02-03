@@ -135,8 +135,8 @@ const ShareModal = ({
         sharedLink !== null
           ? null
           : params.portalid
-          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-          : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+            : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
       // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
       setSharedLink(newSharedLink);
       if (onShareLinkToggle) {
@@ -292,21 +292,19 @@ const ShareModal = ({
                     onClick={() => handleToggleShare()}
                     className={`
                                         relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                                        ${
-                                          sharedLink !== null
-                                            ? "bg-blue-600"
-                                            : "bg-gray-200"
-                                        }
+                                        ${sharedLink !== null
+                        ? "bg-blue-600"
+                        : "bg-gray-200"
+                      }
                                         `}
                   >
                     <span
                       className={`
                                             pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                                            ${
-                                              sharedLink !== null
-                                                ? "translate-x-5"
-                                                : "translate-x-0"
-                                            }
+                                            ${sharedLink !== null
+                          ? "translate-x-5"
+                          : "translate-x-0"
+                        }
                                             `}
                     />
                   </button>
@@ -351,11 +349,10 @@ const ShareModal = ({
                 onClick={handleEmailShare}
                 disabled={!userID}
                 className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
-                                    ${
-                                      userID
-                                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                    }`}
+                                    ${userID
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
               >
                 <Send size={16} />
                 <span>Send</span>
@@ -670,7 +667,7 @@ function SharedFolderExplorer({
   return (
     <div>
       {view === "list" && (
-        <div className="min-h-[450px]">
+        <div className="min-h-[450px] max-h-[600px] overflow-x-auto custom-scrollbar">
           <table className="min-w-full divide-y divide-gray-200 overflow-auto z-10">
             {!currentFilesList || currentFilesList?.length === 0 ? (
               <thead>
@@ -758,10 +755,10 @@ function SharedFolderExplorer({
                           </p>
                         </td>
 
-                        <td className="py-1 pr-4">
+                        <td className="py-1 pr-4 pl-10">
                           <div className="flex items-center justify-end">
-                            <div className="opacity-0 flex items-center justify-start gap-2 group-hover:opacity-100">
-                              <div className="opacity-0 flex items-center justify-start gap-2 group-hover:opacity-100">
+                            <div className="flex items-center justify-start gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                              <div className="flex items-center justify-start gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                                 {/* FOR ONLY FILES */}
                                 {file.type === "file" && (
                                   <button
@@ -778,7 +775,7 @@ function SharedFolderExplorer({
 
                                 {file.type === "file" && (
                                   <button
-                                    className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                                    className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center ${ listType==='shared' && file.currentUserRole === 'viewer' ? 'hidden' : ''}`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleDownload(file.id, file.name);
@@ -791,7 +788,7 @@ function SharedFolderExplorer({
                                 )}
 
                                 <button
-                                  className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center `}
+                                  className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center ${listType === 'shared' ? 'hidden' : ''} `}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleShare(file);
@@ -806,7 +803,7 @@ function SharedFolderExplorer({
 
                             <div className="relative">
                               <button
-                                className=" h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10"
+                                className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10 ${listType === 'shared' ? 'hidden' : ''}`}
                                 onClick={() => handleDelete(file)}
                               >
                                 <EllipsisVertical className="h-4 w-4 text-gray-600" />
@@ -870,16 +867,15 @@ function SharedFolderExplorer({
       )}
 
       {view === "grid" && (
-        <div className="min-h-[450px]">
+        <div className="min-h-[450px] max-h-[600px] overflow-x-auto custom-scrollbar">
           {!currentFilesList || currentFilesList?.length === 0 ? (
             <div className="w-full h-full flex justify-center items-center">
               <EmptyState />
             </div>
           ) : (
             <div
-              className={`grid ${
-                cols === 2 ? `grid-cols-4` : `grid-cols-${6 - cols}`
-              } gap-5 p-5`}
+              className={`grid ${cols === 2 ? `grid-cols-4` : `grid-cols-${6 - cols}`
+                } gap-5 p-5 `}
             >
               {currentFilesList &&
                 currentFilesList.length > 0 &&
@@ -906,16 +902,16 @@ function SharedFolderExplorer({
                         <div className="flex items-center justify-between">
                           <h6
                             className="text-sm font-medium text-black font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full"
-                            // onClick={() =>
-                            //     file?.type === "folder" && handleFolderClick(file)
-                            // }
+                          // onClick={() =>
+                          //     file?.type === "folder" && handleFolderClick(file)
+                          // }
                           >
                             {file?.name}
                           </h6>
 
                           <div className="relative">
                             <button
-                              className=" h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10"
+                              className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10  ${file.type === 'folder' && listType==='shared' ? 'hidden' : ''}`}
                               onClick={() => handleDelete(file)}
                             >
                               <Ellipsis className="h-4 w-4 text-gray-600" />
@@ -940,7 +936,7 @@ function SharedFolderExplorer({
                                 )}
                                 {file.type === "file" && (
                                   <button
-                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                                    className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${file.currentUserRole === 'viewer' ? 'hidden' : ''}`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleDownload(file.id, file.name);
@@ -954,7 +950,7 @@ function SharedFolderExplorer({
                                 )}
 
                                 <button
-                                  className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600`}
+                                  className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === 'shared' ? 'hidden' : ''}`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleShare(file);
@@ -968,7 +964,7 @@ function SharedFolderExplorer({
 
                                 {listType !== "shared" && (
                                   <button
-                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                                    className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === 'shared' ? 'hidden' : ''}`}
                                     onClick={() => {
                                       setIsMoveModalOpen((prev) => !prev);
                                       setMoveItem(file);
@@ -980,7 +976,7 @@ function SharedFolderExplorer({
                                   </button>
                                 )}
                                 <button
-                                  className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                                  className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === 'shared' ? 'hidden' : ''}`}
                                   // onClick={() => {
                                   //   if (file.type === "folder") {
                                   //     handleDeleteFolder(file?.id);

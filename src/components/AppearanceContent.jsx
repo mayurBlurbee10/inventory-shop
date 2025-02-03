@@ -289,7 +289,7 @@ const AppearanceContent = () => {
                 />
               </div>
             )}
-            <div className="mt-1 flex items-center space-x-4">
+           <div className="mt-1 flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-4">
               <input
                 type="file"
                 accept="image/*"
@@ -338,7 +338,7 @@ const AppearanceContent = () => {
           </div>
         </div>
       </div>
-      <div className="w-full flex items-center justify-end gap-5">
+      <div className="w-full flex flex-col sm:flex-row items-center sm:justify-center md:justify-end gap-1 sm:gap-1 md:gap-5">
         <button
           type="button"
           className="px-8 py-2 text-sm font-medium text-black border rounded-md"

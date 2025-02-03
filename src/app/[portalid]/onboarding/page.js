@@ -19,10 +19,9 @@ const WizardStep = ({ step, currentStep }) => {
       <div
         className={`
           w-8 h-8 rounded-full flex items-center justify-center border
-          ${
-            isCompleted
-              ? "bg-gray-900 border-gray-900"
-              : isActive
+          ${isCompleted
+            ? "bg-gray-900 border-gray-900"
+            : isActive
               ? "bg-white border-gray-900"
               : "bg-white border-gray-300"
           }
@@ -210,8 +209,8 @@ export default function OnBoardingPage() {
   if (!config || !content) return <LoadingSpinner />;
 
   return (
-    <div className="grid grid-cols-12 w-screen">
-      <div className="min-h-screen col-span-4 bg-gray-50 bg-opacity-80 flex items-center justify-center">
+    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-12 w-screen min-h-screen">
+      <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-gray-50 bg-opacity-80 flex items-center justify-center min-h-[50vh] md:min-h-screen">
         <div className="bg-white rounded-lg w-[80%] h-[calc(100vh-120px)] flex flex-col relative">
           {/* Loading Overlay */}
           {isSubmitting && (
@@ -275,11 +274,10 @@ export default function OnBoardingPage() {
             <button
               onClick={handleNext}
               disabled={isSubmitting}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-                isSubmitting
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gray-900 hover:bg-gray-800"
-              }`}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-900 hover:bg-gray-800"
+                }`}
             >
               {currentStep === steps.length - 1
                 ? "Save & Continue"
@@ -289,7 +287,7 @@ export default function OnBoardingPage() {
         </div>
       </div>
 
-      <div className="h-full col-span-8 relative overflow-hidden bg-background">
+      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-hidden bg-background min-h-[50vh] md:min-h-screen">
         <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
           <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
@@ -303,7 +301,7 @@ export default function OnBoardingPage() {
                 {filterContent("Header Text")}
               </span>
             </a>
-            <div className="hidden md:flex space-x-4">
+            <div className="hidden xl:flex space-x-4">
               <NavBarItem title="Individual" />
               <NavBarItem title="Business" />
               <NavBarItem title="About Us" />
@@ -322,7 +320,7 @@ export default function OnBoardingPage() {
               </button>
             </div>
 
-            <button className="md:hidden text-text">
+            <button className="xl:hidden text-text">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -339,7 +337,7 @@ export default function OnBoardingPage() {
             </button>
           </nav>
 
-          <div className="flex-1 flex flex-col md:flex-row pt-12">
+          <div className="flex-1 flex flex-col xl:flex-row  pt-12">
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
               <div>
                 <div className="px-[15px]">
@@ -359,7 +357,7 @@ export default function OnBoardingPage() {
             </div>
 
             {/* Right Panel - Login Form */}
-            <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
+            <div className="w-full md:w-full lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
               <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
                 <form>
                   <div className="">
@@ -404,14 +402,14 @@ export default function OnBoardingPage() {
               <button className="text-text/40 hover:text-text/60">
                 Forgot password?
               </button>
-            </div> */}
-              </div>
+               </div> */}
+            </div>
             </div>
           </div>
 
           {/* cards */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-3">
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">

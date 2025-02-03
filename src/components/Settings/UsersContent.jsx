@@ -127,8 +127,8 @@ const UsersContent = () => {
   return (
     <div className="space-b-6">
       <div className="flex justify-between items-center space-x-4 pr-4">
-        <div className="flex justify-between items-center w-full">
-          <div>
+      <div className="flex flex-col sm:flex-row justify-between items-center w-full space-y-3 sm:space-y-0">
+      <div className="text-center sm:text-left">
             <h3 className="text-lg font-medium text-gray-900">
               User Management
             </h3>
@@ -138,7 +138,7 @@ const UsersContent = () => {
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB] inline-flex items-center"
+           className="w-full sm:w-auto flex flex-col sm:flex-row items-center justify-center px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB]"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add User
@@ -182,7 +182,7 @@ const UsersContent = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white shadow rounded-lg overflow-scroll">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

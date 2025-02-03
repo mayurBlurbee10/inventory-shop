@@ -52,7 +52,7 @@ const Footer = ({ config, filterValue, user, from }) => {
     );
   }
   return (
-    <footer className=" mt-auto">
+    <footer className=" mt-10">
       <div className="container mx-auto px-4">
         <div className="max-w-[1140px] mx-auto md:px-[15px]">
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
