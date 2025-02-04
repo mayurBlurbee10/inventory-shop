@@ -7,37 +7,37 @@ import { useEffect } from "react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 
-export default function MyTaskPopupBox({ onClose, content }) {
+export default function MyTaskPopupBox({ onClose, content, config }) {
     const [confirmPopup, setConfirmPopup] = useState(false);
-    const [config, setConfig] = useState(null);
+    // const [config, setConfig] = useState(null);
     const params = useParams();
 
-    useEffect(() => {
-        const fetchConfig = async () => {
-            try {
-                if (!params?.portalid) return;
-                const response = await fetchWrapper(
-                    `/api/portal?portalid=${params.portalid}`,
-                    {},
-                    "portal-login"
-                );
-                const data = await response.json();
-                if (!data.data && response.status === 404) {
-                    router.push(`/${params.portalid}/not-found`);
-                    return;
-                }
-                if (!response.ok) {
-                    throw new Error("Failed to fetch users");
-                }
+    // useEffect(() => {
+    //     const fetchConfig = async () => {
+    //         try {
+    //             if (!params?.portalid) return;
+    //             const response = await fetchWrapper(
+    //                 `/api/portal?portalid=${params.portalid}`,
+    //                 {},
+    //                 "portal-login"
+    //             );
+    //             const data = await response.json();
+    //             if (!data.data && response.status === 404) {
+    //                 router.push(`/${params.portalid}/not-found`);
+    //                 return;
+    //             }
+    //             if (!response.ok) {
+    //                 throw new Error("Failed to fetch users");
+    //             }
 
-                setConfig(data.data);
-            } catch (error) {
-                console.log("error: ", error);
-            }
-        };
+    //             setConfig(data.data);
+    //         } catch (error) {
+    //             console.log("error: ", error);
+    //         }
+    //     };
 
-        fetchConfig();
-    }, []);
+    //     fetchConfig();
+    // }, []);
 
     return (
 

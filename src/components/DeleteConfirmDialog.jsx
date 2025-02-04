@@ -4,8 +4,13 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
-
-function DeleteConfirmDialog({ isModalOpen, setIsModalOpen, handleDelete }) {
+function DeleteConfirmDialog({
+  isModalOpen,
+  setIsModalOpen,
+  handleDelete,
+  title = "Delete File",
+  content = "Confirm delete?",
+}) {
   const params = useParams();
   const [config, setConfig] = useState(null);
 
@@ -49,7 +54,7 @@ function DeleteConfirmDialog({ isModalOpen, setIsModalOpen, handleDelete }) {
         <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-md">
           <div className="flex justify-between items-center mb-4">
             <Dialog.Title className="text-xl text-gray-600 font-medium">
-              Delete File
+              {title}
             </Dialog.Title>
             <button
               onClick={() => setIsModalOpen(false)}
@@ -59,7 +64,7 @@ function DeleteConfirmDialog({ isModalOpen, setIsModalOpen, handleDelete }) {
             </button>
           </div>
           <div className="text-center py-4">
-            <div className="text-lg text-red-600 mb-4">Confirm delete?</div>
+            <div className="text-lg text-red-600 mb-4">{content}</div>
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setIsModalOpen(false)}

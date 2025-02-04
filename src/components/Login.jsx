@@ -10,6 +10,8 @@ import { IdCard, LockKeyhole, UserRound, SquarePen } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession, signIn } from "next-auth/react";
 import { getUserData } from "@/lib/auth";
+import TNCModal from "./TNCModal";
+import { UserRole } from "@/config/constants";
 
 const NavBarItem = ({ title }) => (
   <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
@@ -34,6 +36,101 @@ function Login() {
   const [isLoadingOkta, setIsLoadingOkta] = useState(false);
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
+  const [isTNCOpen, setIsTNCOpen] = useState(false);
+  const [page, setPage] = useState(null);
+
+  const fetchPage = async () => {
+    try {
+      setIsLoading(true);
+      const encodedPage = encodeURIComponent(`t&c`);
+      const response = await fetchWrapper(
+        `/api/plugins?portalId=${params?.portalid}&type=${encodedPage}`,
+        {},
+        "fetch-page"
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch page");
+      }
+      const data = await response.json();
+      if (!data || (data && data?.length === 0)) {
+        setPage(null);
+        return;
+      }
+      if (data?.data.length > 0 && data?.data[0].pages.length > 0) {
+        setPage(data?.data[0].pages[0]);
+      } else {
+        setPage(null);
+      }
+    } catch (error) {
+      console.error("Error fetching plugins:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const validateUserAccess = (user, config, portalId, setUser) => {
+    if (!user) {
+      setUser(null);
+      setError("Invalid user email or password");
+      return;
+    }
+    const { role, id, portalId: userPortalId } = user;
+    if (role === UserRole.SUPER_ADMIN && id !== config?.createdBy?.id) {
+      setUser(null);
+      setError("User does not have access to this portal.");
+    } else if (
+      [UserRole.USER, UserRole.ADMIN].includes(role) &&
+      userPortalId !== portalId
+    ) {
+      setUser(null);
+      setError("User does not have access to this portal.");
+    } else {
+      setUser(user);
+    }
+    return;
+  };
+
+  const fetchUser = async () => {
+    try {
+      setIsLoadingLogin(true);
+      const encodedEmail = encodeURIComponent(email);
+      const response = await fetchWrapper(
+        `/api/users?email=${encodedEmail}`,
+        {},
+        "fetch-user"
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user");
+      }
+      const data = await response.json();
+      validateUserAccess(data, config, params.portalid, setUser);
+    } catch (error) {
+      console.log("error: ", error);
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCheckForTNC = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Wait for the fetchUser function to complete
+      await fetchUser();
+
+      if (page && !user?.isTNCAccepted) {
+        // Open the TNC modal if the user hasn't accepted TNC
+        setIsTNCOpen(true);
+      } else {
+        // Call handleLogin only if the user has accepted TNC
+        handleLogin(e);
+      }
+    } catch (error) {
+      console.error("Error handling TNC check:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -60,6 +157,7 @@ function Login() {
     };
     fetchConfig();
     fetchContent();
+    fetchPage();
   }, []);
 
   const fetchContent = async () => {
@@ -76,8 +174,6 @@ function Login() {
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-
     // Identify which button was clicked
     const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
 
@@ -159,6 +255,11 @@ function Login() {
 
   const login = async () => {
     try {
+      await fetchUser();
+      if (!user?.isTNCAccepted) {
+        setIsTNCOpen(true);
+        return;
+      }
       await signIn("okta");
     } catch (error) {
       console.log("error: ", error);
@@ -176,7 +277,7 @@ function Login() {
       const data = await response.json();
       const userData = data.user;
       setUserData(userData);
-      localStorage.setItem("portal", params?.portalid || 'default');
+      localStorage.setItem("portal", params?.portalid || "default");
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
@@ -395,7 +496,7 @@ function Login() {
                 </p>
               </div> */}
 
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleCheckForTNC}>
                 <div className="">
                   <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
                     <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
@@ -540,6 +641,18 @@ function Login() {
         </div>
       </div>
       <Footer config={config} filterValue={filterValue} />
+      {isTNCOpen && (
+        <TNCModal
+          onClose={() => {
+            setIsTNCOpen(false);
+            setUser(null);
+          }}
+          user={user}
+          email={email}
+          password={password}
+          page={page}
+        />
+      )}
     </div>
   );
 }

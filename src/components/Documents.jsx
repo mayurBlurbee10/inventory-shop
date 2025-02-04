@@ -1447,6 +1447,7 @@ function Documents({ fileType }) {
                   <MyTaskPopupBox
                     onClose={() => setIsMyTaskPopupOpen(false)}
                     content={myTaskPopupBoxContent}
+                    config={config}
                   />
                 )
               }

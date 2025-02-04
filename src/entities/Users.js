@@ -77,6 +77,9 @@ export @Entity("users")
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   folderId;
 
+  @Column({ type: "bit", nullable: false, default: 0 })
+  isTNCAccepted;
+
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   groupMembersIds;
 

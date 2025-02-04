@@ -875,14 +875,14 @@ function SharedFolderExplorer({
           ) : (
             <div
               className={`grid ${cols === 2 ? `grid-cols-4` : `grid-cols-${6 - cols}`
-                } gap-5 p-5 `}
+                } gap-5 p-5`}
             >
               {currentFilesList &&
                 currentFilesList.length > 0 &&
                 currentFilesList.map((file, index) => (
                   // <div className={`grid grid-cols-${6 - cols} gap-5`} key={index}>
-                  <div key={index}>
-                    <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
+                  <div key={index} className={`col-span-${6-cols} md:col-span-1`}>
+                    <div className={`border border-[#e8e8e8] card-shadow hover:border-sky-500`}>
                       <div
                         className="min-h-48 flex items-center justify-center bg-[#fbfbfb]"
                         onClick={() =>

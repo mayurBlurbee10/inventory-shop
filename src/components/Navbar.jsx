@@ -28,7 +28,6 @@ function Navbar({ content, config, user, filterValue }) {
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isOpenNavbar, setIsOpenNavbar] = useState(false);
 
-
   const NavBarItem = ({ title, href }) => {
     if (!href) {
       console.error("href prop is required for NavBarItem.");
@@ -38,8 +37,9 @@ function Navbar({ content, config, user, filterValue }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
-            }`}
+          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-500" : ""
+          }`}
         >
           {title}
         </button>
@@ -184,13 +184,15 @@ function Navbar({ content, config, user, filterValue }) {
             <NavBarItem title="Dashboard" href="dashboard" />
             <NavBarItem title="My Documents" href="my-docs" />
             <NavBarItem title="Shared Documents" href="shared-docs" />
+            <NavBarItem title="Loans" href="loans" />
             {userIsAdmin && (
-              <button
-                className="px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm"
-                onClick={() => setIsSettingsOpen(true)}
-              >
-                Settings
-              </button>
+              // <button
+              //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
+              //   onClick={() => setIsSettingsOpen(true)}
+              // >
+              //   Settings
+              // </button>
+              <NavBarItem title="Settings" href="settings" />
             )}
 
             {/* Profile dropdown */}
@@ -201,8 +203,9 @@ function Navbar({ content, config, user, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                    }`}
+                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                  }`}
                 >
                   {user?.name?.charAt(0) || "U"}
                 </div>
@@ -269,14 +272,18 @@ function Navbar({ content, config, user, filterValue }) {
             </button>
           </div>
 
-
           {/* Mobile Navbar */}
 
           <button
             className="lg:hidden text-text"
             onClick={() => setIsOpenNavbar(true)}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -296,7 +303,12 @@ function Navbar({ content, config, user, filterValue }) {
                   setAccountDropdown(false); // Also close account dropdown
                 }} // Close menu
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -311,13 +323,15 @@ function Navbar({ content, config, user, filterValue }) {
                 <NavBarItem title="Dashboard" href="dashboard" />
                 <NavBarItem title="My Documents" href="my-docs" />
                 <NavBarItem title="Shared Documents" href="shared-docs" />
+                <NavBarItem title="Loans" href="loans" />
                 {userIsAdmin && (
-                  <button
-                    className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
-                    onClick={() => setIsSettingsOpen(true)}
-                  >
-                    Settings
-                  </button>
+                  // <button
+                  //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
+                  //   onClick={() => setIsSettingsOpen(true)}
+                  // >
+                  //   Settings
+                  // </button>
+                  <NavBarItem title="Settings" href="settings" />
                 )}
                 <div className="flex items-center space-x-8 cursor-pointer">
                   <div
@@ -326,8 +340,9 @@ function Navbar({ content, config, user, filterValue }) {
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                        }`}
+                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                        userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
                     >
                       {user?.name?.charAt(0) || "U"}
                     </div>
@@ -375,11 +390,9 @@ function Navbar({ content, config, user, filterValue }) {
                         </button>
                       </div>
                     )}
-
                   </div>
                 </div>
               </div>
-
             </div>
           )}
         </nav>

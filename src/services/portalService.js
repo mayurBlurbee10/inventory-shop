@@ -90,7 +90,10 @@ const getPortals = async () => {
 const getPortalByLegalName = async (legalName) => {
   const portalRepository = await getRepository(Portals);
   try {
-    return await portalRepository.findOneBy({ legalName });
+    return await portalRepository.findOne({
+      where: { legalName },
+      relations: ["createdBy"],
+    });
   } catch (error) {
     throw new Error("Failed to get portal.");
   }

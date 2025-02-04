@@ -1,5 +1,7 @@
 import { ApiLogs } from "@/entities/ApiLogs";
 import { ContentManagement } from "@/entities/ContentManagement";
+import { Pages } from "@/entities/Pages";
+import { Plugins } from "@/entities/Plugins";
 import { Portals } from "@/entities/Portals";
 import { Users } from "@/entities/Users";
 import { DataSource } from "typeorm";
@@ -10,7 +12,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [ApiLogs, ContentManagement, Portals, Users],
+  entities: [ApiLogs, ContentManagement, Portals, Users, Plugins, Pages],
   logging: true,
   synchronize: true,
 });
