@@ -72,7 +72,7 @@ function Login() {
     if (!user) {
       setUser(null);
       setError("Invalid user email or password");
-      return null; 
+      return null;
     }
 
     const permission = user?.permissions?.find(
@@ -101,7 +101,7 @@ function Login() {
     }
 
     setUser(user);
-    return user; 
+    return user;
   };
 
   const fetchUser = async () => {
@@ -127,7 +127,6 @@ function Login() {
       return validatedUser;
     } catch (error) {
       console.log("error: ", error);
-      toast.error(error.message);
     } finally {
       setIsLoadingLogin(false);
     }
@@ -138,10 +137,10 @@ function Login() {
 
     try {
       const userData = await fetchUser();
-      if (userData && page && userData?.isTNCAccepted) {
-        handleLogin(e);
-      } else {
+      if (userData && page && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
+      } else {
+        handleLogin(e);
       }
     } catch (error) {
       console.error("Error handling TNC check:", error);
@@ -218,12 +217,11 @@ function Login() {
         "default-login"
       );
 
+      const data = await response.json();
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || "Login failed");
       }
 
-      const data = await response.json();
       // Store user data using auth utility
       const userData = data.user;
       console.log("Storing user data:", userData);
@@ -239,15 +237,10 @@ function Login() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast.error(err.message);
       setError(err.message);
     } finally {
-      // Reset loading states
-      if (buttonType === "log in") {
-        setIsLoadingLogin(false);
-      } else if (buttonType === "login with okta") {
-        setIsLoadingOkta(false);
-      }
+      setIsLoadingLogin(false);
+      setIsLoadingOkta(false);
     }
   };
 
