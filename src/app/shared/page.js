@@ -57,7 +57,7 @@ import TechSupport from "@/components/TechSupport";
 
 
 
-export default function HomePage() {
+export default function SharedPage() {
   // return <Dashboard fileType={'my'}/>;
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
@@ -1320,6 +1320,7 @@ export default function HomePage() {
                   isModalOpen={isDeleteModalOpen}
                   setIsModalOpen={setIsDeleteModalOpen}
                   handleDelete={handleBulkDelete}
+                  config={config}
                 />
                 <MoveDialog
                   item={moveItem}

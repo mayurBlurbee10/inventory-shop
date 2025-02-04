@@ -238,6 +238,7 @@ function Dashboard({ fileType }) {
 
   const refreshFiles = async () => {
     try {
+      
       setIsLoading(true);
       const userData = getUserData();
       const requestOptions = {
@@ -277,7 +278,7 @@ function Dashboard({ fileType }) {
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false);      
     }
   };
 
@@ -380,6 +381,7 @@ function Dashboard({ fileType }) {
       }
 
       setConfig(data.data);
+      
     } catch (error) {
       console.log("error: ", error);
     }
@@ -1005,6 +1007,7 @@ function Dashboard({ fileType }) {
         fileLocation={uploadedfilePath}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
+        config={config}
       />
       <SettingsModal
         isOpen={isSettingsOpen}

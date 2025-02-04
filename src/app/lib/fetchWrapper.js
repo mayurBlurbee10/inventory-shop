@@ -21,7 +21,10 @@ export const fetchWrapper = async (url, options = {}, type) => {
 
   try {
     // Make the fetch call
+    // console.log(`🛠️ API Call from fetchWrapper → URL: ${url} | Type: ${type}`);
+    // console.trace();  // This prints the function call stack
     const response = await fetch(url, options);
+
     // Handle non-OK responses
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);

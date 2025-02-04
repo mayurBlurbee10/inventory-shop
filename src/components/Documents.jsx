@@ -745,6 +745,9 @@ function Documents({ fileType }) {
       setSession(sessionData);
       if (sessionData) {
         await getUserDetailsByEmail(sessionData.user.email);
+      } else {
+        const userData = getUserData();
+        await getUserDetailsByEmail(userData.email);
       }
       if (!userData) {
         router.push("login");

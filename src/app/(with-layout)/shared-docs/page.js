@@ -63,7 +63,7 @@ import TechSupport from "@/components/TechSupport";
 import CreateFolder from "@/components/CreateFolder";
 import Documents from "@/components/Documents";
 
-export default function HomePage() {
+export default function SharedDocsPage() {
   return <Documents fileType={'shared'}/>;
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);

@@ -1,6 +1,6 @@
 import Dashboard from "@/components/Dashboard";
 
-function SharewithMe() {
+function SharewithMePage() {
   return <Dashboard fileType={"shared"} />;
 }
 

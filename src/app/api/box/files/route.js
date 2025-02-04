@@ -1,39 +1,41 @@
 // src/app/api/box/files/route.js
-import { NextResponse } from 'next/server';
-import { getBoxAppUserContent } from '@/lib/box';  // Updated import name
-import BoxSDK from 'box-node-sdk';
-import { Readable } from 'stream';
-import { logApiCall } from '@/app/lib/api-log-middleware';
+import { NextResponse } from "next/server";
+import { getBoxAppUserContent } from "@/lib/box"; // Updated import name
+import BoxSDK from "box-node-sdk";
+import { Readable } from "stream";
+import { logApiCall } from "@/app/lib/api-log-middleware";
 
 const sdk = new BoxSDK({
   clientID: process.env.BOX_CLIENT_ID,
   clientSecret: process.env.BOX_CLIENT_SECRET,
   appAuth: {
     keyID: process.env.BOX_PUBLIC_KEY_ID,
-    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
     passphrase: process.env.BOX_PASSPHRASE,
-    enterpriseID: process.env.BOX_ENTERPRISE_ID
-  }
+    enterpriseID: process.env.BOX_ENTERPRISE_ID,
+  },
 });
-const client = sdk.getAppAuthClient('enterprise', process.env.BOX_ENTERPRISE_ID);
-
+const client = sdk.getAppAuthClient(
+  "enterprise",
+  process.env.BOX_ENTERPRISE_ID
+);
 
 export async function GET(request) {
   try {
-    await logApiCall(request, ()=>{});
+    await logApiCall(request, () => {});
     // Get the service account token
     const accessToken = await client._session.getAccessToken();
-    
-    const { searchParams } = new URL(request.url);
-    const folderId = searchParams.get('folderId') || '0';
 
-    const data = await getBoxAppUserContent(accessToken, folderId);  // Updated function call
+    const { searchParams } = new URL(request.url);
+    const folderId = searchParams.get("folderId") || "0";
+
+    const data = await getBoxAppUserContent(accessToken, folderId); // Updated function call
     return NextResponse.json(data.entries);
   } catch (error) {
-    console.error('Files error:', error);
+    console.error("Files error:", error);
     return NextResponse.json(
       { error: error.message },
-      { status: error.message.includes('token') ? 401 : 500 }
+      { status: error.message.includes("token") ? 401 : 500 }
     );
   }
 }
@@ -45,7 +47,7 @@ export async function POST(req) {
     const newClient = sdk.getBasicClient(accessToken);
     // Process the multipart request
     const formData = await req.formData();
-    const files = formData.getAll('file');
+    const files = formData.getAll("file");
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
@@ -89,26 +91,28 @@ export async function POST(req) {
 }
 
 export async function DELETE(req) {
-  try{
-    await logApiCall(req, ()=>{});
+  try {
+    await logApiCall(req, () => {});
     const accessToken = await client._session.getAccessToken();
     const newClient = sdk.getBasicClient(accessToken);
     const { searchParams } = new URL(req.url);
-    const fileId = searchParams.get('fileId');
+    const fileId = searchParams.get("fileId");
 
     if (!fileId) {
-      return NextResponse.json({ error: 'No fileId provided' }, { status: 400 });
+      return NextResponse.json(
+        { error: "No fileId provided" },
+        { status: 400 }
+      );
     }
 
     await newClient.files.delete(fileId);
 
     return NextResponse.json({
-      message: 'File deleted successfully',
+      message: "File deleted successfully",
       fileId: fileId,
     });
-
-  }catch (error) { 
-    console.error('Error deleting file:', error);
+  } catch (error) {
+    console.error("Error deleting file:", error);
     return NextResponse.json(
       { error: error.response?.body.message, details: error.message },
       { status: error.response?.statusCode || 500 }
