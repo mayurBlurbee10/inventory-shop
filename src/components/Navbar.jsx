@@ -155,7 +155,7 @@ function Navbar({ content, config, user, filterValue }) {
     <div className="border-b border-[#0000001a]">
       <div className="max-w-[1140px] mx-auto px-3">
         <nav className="flex justify-between items-center bg-secondary py-2">
-          <div className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+          <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
             {user?.company?.logo || config?.logo ? (
               <img
                 src={
@@ -184,6 +184,7 @@ function Navbar({ content, config, user, filterValue }) {
             <NavBarItem title="Dashboard" href="dashboard" />
             <NavBarItem title="My Documents" href="my-docs" />
             <NavBarItem title="Shared Documents" href="shared-docs" />
+            <NavBarItem title="eSignature" href="esignature" />
             <NavBarItem title="Loans" href="loans" />
             {userIsAdmin && (
               // <button
@@ -323,6 +324,7 @@ function Navbar({ content, config, user, filterValue }) {
                 <NavBarItem title="Dashboard" href="dashboard" />
                 <NavBarItem title="My Documents" href="my-docs" />
                 <NavBarItem title="Shared Documents" href="shared-docs" />
+                <NavBarItem title="eSignature" href="esignature" />
                 <NavBarItem title="Loans" href="loans" />
                 {userIsAdmin && (
                   // <button

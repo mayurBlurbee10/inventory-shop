@@ -263,6 +263,25 @@ const updateUser = async (id, updatedData) => {
   }
 };
 
+const saveSignRequest = async (userId, signRequest) => {
+  const userRepository = await getRepository(Users);
+  try {
+    const user = await userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.signRequestsId?.length > 0) {
+      user.signRequestsId = [...user.signRequestsId, signRequest.id];
+    } else {
+      user.signRequestsId = [signRequest.id];
+    }
+    await userRepository.save(user);
+  } catch (error) {
+    console.error("Error saving sign request:", error.message);
+    throw error;
+  }
+};
+
 export default {
   createUser,
   getUsers,
@@ -279,4 +298,5 @@ export default {
   setResetPasswordToken,
   getUserById,
   updateUser,
+  saveSignRequest
 };

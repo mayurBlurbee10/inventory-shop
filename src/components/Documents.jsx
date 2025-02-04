@@ -741,10 +741,16 @@ function Documents({ fileType }) {
   useEffect(() => {
     const fetchSession = async () => {
       const sessionData = await getSession();
+      const userData = getUserData();
       setSession(sessionData);
       if (sessionData) {
         await getUserDetailsByEmail(sessionData.user.email);
       }
+      if (!userData) {
+        router.push("login");
+        return;
+      }
+      await getUserDetailsByEmail(userData.email);
     };
     fetchSession().then(() => {
       const userData = getUserData();
@@ -752,7 +758,6 @@ function Documents({ fileType }) {
         router.push("login");
         return;
       }
-
       setUser(userData);
       refreshFiles();
     });

@@ -86,6 +86,9 @@ export @Entity("users")
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   permissions;
 
+  @Column({ type: "simple-json", nullable: true, default: "[]" })
+  signRequestsId;
+
   @BeforeInsert()
   async hashPassword() {
     if (this.password) {

@@ -20,6 +20,7 @@ const client = sdk.getAppAuthClient(
 
 export async function POST(req) {
   try {
+    await logApiCall(req);
     const { items, destinationFolderId } = await req.json();
     if (!Array.isArray(items) || items.length === 0 || !destinationFolderId) {
       return NextResponse.json(
