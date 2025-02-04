@@ -5,16 +5,18 @@ import { useParams, useRouter } from "next/navigation";
 import { setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
 import { toast } from "react-toastify";
-
-import { IdCard, LockKeyhole, UserRound, SquarePen } from "lucide-react";
+import { IdCard, LockKeyhole, UserRound, SquarePen, User, Building } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession, signIn } from "next-auth/react";
 import { getUserData } from "@/lib/auth";
 import Login from "@/components/Login";
 
 const NavBarItem = ({ title }) => (
-  <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
+  <button className="px-1 py-2 text-gray-500 ">
+    {title}
+  </button>
 );
+
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -233,7 +235,7 @@ export default function LoginPage() {
           <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             {user?.company?.logo || config?.logo ? (
               <img
-              src={config?.logo || "/logo.png"}
+                src={config?.logo || "/logo.png"}
                 alt={params.portalid}
                 className="h-[52px] mr-2"
               />
@@ -251,24 +253,22 @@ export default function LoginPage() {
               )}
             </span>
           </a>
-          
-          <div className="hidden md:flex space-x-4">
-            <NavBarItem title="Individual" />
-            <NavBarItem title="Business" />
-            <NavBarItem title="About Us" />
-            <NavBarItem title="Contact" />
-            {/* Edit button */}
-            <button className="h-5 w-5 mt-2 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="12"
-                height="12"
-                fill="currentColor"
-              >
-                <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-              </svg>
-            </button>
+
+          <div className="hidden md:flex items-center gap-x-6">
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <User className="w-5 h-5 text-gray-500 pb-[2px]" />
+              <NavBarItem title="Individual" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <Building className="w-5 h-5 text-gray-500 pb-[2px]" />
+              <NavBarItem title="Business" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <NavBarItem title="About Us" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <NavBarItem title="Contact" />
+            </div>
           </div>
 
           <button className="md:hidden text-text">
@@ -292,7 +292,7 @@ export default function LoginPage() {
           <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
               <div className="px-[15px]">
-                <h2 className="text-[56px] font-light leading-tight text-text font-lato">
+                <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2">
                   {/* Ethree - Deep energy expertise */}
                   {filterValue("Title")}
                   {/* Wealth Management */}
@@ -306,7 +306,7 @@ export default function LoginPage() {
                   className="p-[1px] w-full"
                 ></div>
 
-                <p className="font-light text-xl text-black leading-7 font-lato mb-3">
+                <p className="font-light text-xl text-black leading-7 font-lato mb-3  mt-5">
                   {/* Financial decisions are complicated. But they don't have to
                   be. Whether you're planning for retirement or growing your
                   business, let us help you reach your financial goals. */}

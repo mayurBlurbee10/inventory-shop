@@ -8,7 +8,7 @@ import { setUserData } from "@/lib/auth";
 import { getSession, signOut } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import "../../../components/Plugins/RTE/tiptap-style.css";
+import "../../../../components/Plugins/RTE/tiptap-style.css";
 import TNCModal from "@/components/TNCModal";
 
 const LoadingSpinner = () => (

@@ -6,7 +6,7 @@ import { setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
 import { toast } from "react-toastify";
 
-import { IdCard, LockKeyhole, UserRound, SquarePen } from "lucide-react";
+import { IdCard, LockKeyhole, UserRound, SquarePen, User, Building } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession, signIn } from "next-auth/react";
 import { getUserData } from "@/lib/auth";
@@ -14,7 +14,9 @@ import TNCModal from "./TNCModal";
 import { UserRole } from "@/config/constants";
 
 const NavBarItem = ({ title }) => (
-  <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
+  <button className="px-1 py-2 text-gray-500 ">
+    {title}
+  </button>
 );
 
 const LoadingSpinner = () => (
@@ -350,47 +352,45 @@ function Login() {
             </span>
           </a>
 
-          <div className="hidden md:flex space-x-4">
-            <NavBarItem title="Individual" />
-            <NavBarItem title="Business" />
-            <NavBarItem title="About Us" />
-            <NavBarItem title="Contact" />
-            {/* Edit button */}
-            <button className="h-5 w-5 mt-2 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
+          <div className="hidden md:flex items-center gap-x-6">
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <User className="w-5 h-5 text-gray-500 pb-[2px]" />
+              <NavBarItem title="Individual" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <Building className="w-5 h-5 text-gray-500 pb-[2px]" />
+              <NavBarItem title="Business" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <NavBarItem title="About Us" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <NavBarItem title="Contact" />
+            </div>
+
+            <button className="md:hidden text-text">
               <svg
-                xmlns="http://www.w3.org/2000/svg"
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
-                width="12"
-                height="12"
-                fill="currentColor"
               >
-                <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
-
-          <button className="md:hidden text-text">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
         </nav>
 
         <div className="flex-1 flex flex-col md:flex-row pt-12">
           <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
               <div className="px-[15px]">
-                <h2 className="text-[56px] font-light leading-tight text-text font-lato">
+                <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2">
                   {/* Ethree - Deep energy expertise */}
                   {filterValue("Title")}
                   {/* Wealth Management */}
@@ -404,7 +404,7 @@ function Login() {
                   className="p-[1px] w-full"
                 ></div>
 
-                <p className="font-light text-xl text-black leading-7 font-lato mb-3">
+                <p className="font-light text-xl text-black leading-7 font-lato mb-3 mt-5">
                   {/* Financial decisions are complicated. But they don't have to
                   be. Whether you're planning for retirement or growing your
                   business, let us help you reach your financial goals. */}
@@ -550,7 +550,7 @@ function Login() {
                     className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
                     onClick={login}
                     disabled={isLoadingLogin || isLoadingOkta}
-                    // style={{ backgroundColor: config?.secondaryColor }}
+                  // style={{ backgroundColor: config?.secondaryColor }}
                   >
                     {isLoadingOkta ? (
                       <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />

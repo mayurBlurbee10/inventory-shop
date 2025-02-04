@@ -115,12 +115,12 @@ const ProductsContent = () => {
             icon: <Code className="w-6 h-6 text-blue-600" />,
             status: "Ready",
           },
-          {
-            name: "Account Details",
-            description: "Manage user profiles and settings",
-            icon: <UserCircle className="w-6 h-6 text-blue-600" />,
-            status: "Ready",
-          },
+          // {
+          //   name: "Account Details",
+          //   description: "Manage user profiles and settings",
+          //   icon: <UserCircle className="w-6 h-6 text-blue-600" />,
+          //   status: "Ready",
+          // },
         ].map((widget, idx) => (
           <div
             key={idx}

@@ -103,7 +103,7 @@ const Footer = ({ config, filterValue, user, from }) => {
           </div> */}
 
           <div
-            className="mb-1"
+            className="mb-3"
             style={{
               maxWidth: "100px",
               maxHeight: "100px",
@@ -161,7 +161,7 @@ const Footer = ({ config, filterValue, user, from }) => {
                     contactInfo.map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
-                  <span>©2017 Wealthportal, Inc.</span>
+                  <span>@2025 MStrategy Portal</span>
                 </ul>
               </div>
               <div className="flex items-end text-end mb-2 md:mb-0">
@@ -170,12 +170,12 @@ const Footer = ({ config, filterValue, user, from }) => {
                     <CodeXml className="h-7 w-7" />
                   </div>
                   <p className="text-xs text-[#6c757d] font-medium font-lato">
-                    by DemoEng
+                    by MStrategygroup
                   </p>
                 </div>
-                <span className="block ml-10 md:ml-12 text-xs text-[#6c757d] font-medium font-lato">
+                {/* <span className="block ml-10 md:ml-12 text-xs text-[#6c757d] font-medium font-lato">
                   Add a customization to edit text
-                </span>
+                </span> */}
               </div>
             </div>
           </div>

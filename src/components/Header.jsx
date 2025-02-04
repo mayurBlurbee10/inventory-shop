@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import TechSupport from "./TechSupport";
+import AccountInfo from "./AccountInfo";
 
 function Header({
   user,
@@ -33,6 +34,7 @@ function Header({
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [isOpenNewFolder, setIsOpenNewFolder] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
+  const [isAccountInfoModalOpen, setIsAccountInfoModalOpen] = useState(false);
 
   useEffect(() => {
     setIsSideMenuOpen(false);
@@ -56,7 +58,7 @@ function Header({
                   ? user.company.logo.replace("/api/upload", "/uploads")
                   : config?.logo || "/logo.png"
               }
-              alt="Premierportal"
+              alt="Wealthportal"
               className="h-12 xl:h-24 w-auto"
             />
           </div>
@@ -68,9 +70,8 @@ function Header({
             >
               {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
               <div
-                className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                  userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                }`}
+                className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                  }`}
               >
                 {user?.name?.charAt(0) || "U"}
               </div>
@@ -86,7 +87,10 @@ function Header({
               {/* DROPDOWN SECTION DONE*/}
               {accountDropdown && (
                 <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                  <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200">
+                  <button
+                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                    onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
+                  >
                     <CircleUserRound className="h-5 w-5" /> Account Info
                   </button>
                   {userIsAdmin && (
@@ -213,6 +217,10 @@ function Header({
       <TechSupport
         isOpen={isTechSupportModalOpen}
         onClose={() => setIsTechSupportModalOpen(false)}
+      />
+      <AccountInfo
+      isOpen={isAccountInfoModalOpen}
+      onClose={() => setIsAccountInfoModalOpen(false)}
       />
     </>
   );

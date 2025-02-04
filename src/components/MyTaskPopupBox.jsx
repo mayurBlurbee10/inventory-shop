@@ -80,13 +80,14 @@ export default function MyTaskPopupBox({ onClose, content, config }) {
                                 Cancel
                             </button>
                             <button
-                                className=" text-white px-4 py-2 rounded-lg"
+                                className={`text-white px-4 py-2 rounded-lg border-gray  ${config?.secondaryColor ? "" : "bg-blue-500 hover:bg-blue-600"
+                                    }`}
                                 onClick={() => {
                                     setConfirmPopup(
                                         (prev) => !prev
                                     )
                                 }}
-                                style={{ backgroundColor: config?.secondaryColor }}
+                                style={{ backgroundColor: config?.secondaryColor || "rgb(59, 130, 246)" }}
                             >
                                 Upload
                             </button>

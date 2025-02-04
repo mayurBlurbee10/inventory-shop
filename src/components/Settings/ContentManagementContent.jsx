@@ -1,11 +1,12 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { PlusCircle, X } from "lucide-react";
-import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useParams, useRouter } from "next/navigation";
 
 const ContentManagementContent = ({
   isAddRequired,
+  isManageRequired,
   onContentLengthChange,
   setContentOnboard,
 }) => {
@@ -307,6 +308,11 @@ const ContentManagementContent = ({
     setIsDialogOpen(true);
   };
 
+  const router = useRouter();
+  const manageContentNavigate = () => {
+    router.push("onboarding");
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -324,6 +330,14 @@ const ContentManagementContent = ({
             onClick={addContent}
           >
             Add Content
+          </button>
+        )}
+        {isManageRequired && (
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            onClick={manageContentNavigate}
+          >
+            Manage Content
           </button>
         )}
       </div>

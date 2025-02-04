@@ -18,9 +18,9 @@ function SettingsPage() {
       { id: 'products', label: 'Widgets', icon: ShoppingBag },
       { id: 'content', label: 'Content', icon: FileText },
       { id: 'identity', label: 'Identity Management', icon: Users },
-      { id: 'invoicing', label: 'Forms', icon: FileSpreadsheet },
+      // { id: 'invoicing', label: 'Forms', icon: FileSpreadsheet },
       { id: 'Integrations', label: 'Integrations', icon: Plug },
-      { id: 'box', label: 'Box Settings', icon: Box }
+      // { id: 'box', label: 'Box Settings', icon: Box }
     ];
   
     const getActiveContent = () => {
@@ -32,11 +32,11 @@ function SettingsPage() {
         case 'identity':
           return <IdentityManagementContent />;
         case 'content':
-          return <ContentManagementContent />;
-        case 'invoicing':
-          return <InvoicingContent />;
-        case 'box':
-          return <BoxSettingsContent />;
+          return <ContentManagementContent isManageRequired="true"/>;
+        // case 'invoicing':
+        //   return <InvoicingContent />;
+        // case 'box':
+        //   return <BoxSettingsContent />;
         case 'Integrations':
           return <div><h1 className='text-gray-700'>Coming Soon..</h1></div>;
         case 'products':

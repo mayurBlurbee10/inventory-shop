@@ -68,14 +68,14 @@ function DeleteConfirmDialog({
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 "
               >
                 Close
               </button>
               <button
                 onClick={handleDelete}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md  "
-                style={{ backgroundColor: config?.secondaryColor }}
+                className={`inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md  ${config?.secondaryColor ? "" : "bg-blue-500 hover:bg-blue-600"}`}
+                style={{ backgroundColor: config?.secondaryColor || "rgb(59, 130, 246)" }}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete
