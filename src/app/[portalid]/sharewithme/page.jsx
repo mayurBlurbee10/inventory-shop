@@ -4,4 +4,4 @@ function SharewithMePage() {
   return <Dashboard fileType={"shared"} />;
 }
 
-export default SharewithMe;
+export default SharewithMePage;
