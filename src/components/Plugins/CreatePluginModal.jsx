@@ -183,10 +183,10 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
                   Cancel
                 </button> */}
               {/* <div className="flex items-center gap-2 w-full justify-end"> */}
-              {(pluginData.type === PluginType.TNC &&
-                pages &&
-                pages?.length < 1) ||
-              pluginData.type !== PluginType.TNC ? (
+              {(plugin?.type === PluginType.TNC &&
+                plugin.pages &&
+                plugin.pages?.length < 1) ||
+              plugin.type !== PluginType.TNC ? (
                 <button
                   type="button"
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 bg-gray-100 rounded-md border  disabled:opacity-50 disabled:cursor-not-allowed"

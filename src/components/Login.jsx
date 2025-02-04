@@ -68,26 +68,40 @@ function Login() {
     }
   };
 
-  const validateUserAccess = (user, config, portalId, setUser) => {
+  const validateUserAccess = async (user, config, portalId, setUser) => {
     if (!user) {
       setUser(null);
       setError("Invalid user email or password");
-      return;
+      return null; 
     }
-    const { role, id, portalId: userPortalId } = user;
-    if (role === UserRole.SUPER_ADMIN && id !== config?.createdBy?.id) {
+
+    const permission = user?.permissions?.find(
+      (perm) => perm.portalId === portalId
+    );
+
+    if (!permission) {
       setUser(null);
       setError("User does not have access to this portal.");
+      return null;
+    }
+
+    const { role, portalId: userPortalId } = permission;
+
+    if (role === UserRole.SUPER_ADMIN && user?.id !== config?.createdBy?.id) {
+      setUser(null);
+      setError("User does not have access to this portal.");
+      return null;
     } else if (
       [UserRole.USER, UserRole.ADMIN].includes(role) &&
       userPortalId !== portalId
     ) {
       setUser(null);
       setError("User does not have access to this portal.");
-    } else {
-      setUser(user);
+      return null;
     }
-    return;
+
+    setUser(user);
+    return user; 
   };
 
   const fetchUser = async () => {
@@ -104,12 +118,18 @@ function Login() {
         throw new Error("Failed to fetch user");
       }
       const data = await response.json();
-      validateUserAccess(data, config, params.portalid, setUser);
+      const validatedUser = await validateUserAccess(
+        data,
+        config,
+        params.portalid,
+        setUser
+      );
+      return validatedUser;
     } catch (error) {
       console.log("error: ", error);
       toast.error(error.message);
     } finally {
-      setIsLoading(false);
+      setIsLoadingLogin(false);
     }
   };
 
@@ -117,15 +137,11 @@ function Login() {
     e.preventDefault();
 
     try {
-      // Wait for the fetchUser function to complete
-      await fetchUser();
-
-      if (page && !user?.isTNCAccepted) {
-        // Open the TNC modal if the user hasn't accepted TNC
-        setIsTNCOpen(true);
-      } else {
-        // Call handleLogin only if the user has accepted TNC
+      const userData = await fetchUser();
+      if (userData && page && userData?.isTNCAccepted) {
         handleLogin(e);
+      } else {
+        setIsTNCOpen(true);
       }
     } catch (error) {
       console.error("Error handling TNC check:", error);
@@ -177,12 +193,10 @@ function Login() {
     // Identify which button was clicked
     const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
 
-    if (buttonType === "log in") {
-      setIsLoadingLogin(true);
-    } else if (buttonType === "login with okta") {
+    if (buttonType === "login with okta") {
       setIsLoadingOkta(true);
     }
-
+    setIsLoadingLogin(true);
     setError("");
 
     console.log("Login attempt for:", email);
@@ -255,8 +269,8 @@ function Login() {
 
   const login = async () => {
     try {
-      await fetchUser();
-      if (!user?.isTNCAccepted) {
+      const userData = await fetchUser();
+      if (userData && page && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
         return;
       }
