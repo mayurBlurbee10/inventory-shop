@@ -906,7 +906,7 @@ function SharedFolderExplorer({
 
                               {/* OPTION DROPDOWN DONE*/}
 
-                              {deleteDropdown === file?.id && (
+                              {deleteDropdown?.id === file?.id && (
                                 <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
                                   {listType !== "shared" && (
                                     <>
@@ -1035,7 +1035,7 @@ function SharedFolderExplorer({
                                   ? "hidden"
                                   : ""
                               }`}
-                              onClick={() => handleDelete(file)}
+                              onClick={() => handleSelect(file)}
                             >
                               <Ellipsis className="h-4 w-4 text-gray-600" />
                             </button>
@@ -1092,21 +1092,6 @@ function SharedFolderExplorer({
                                     Share
                                   </button>
                                 )}
-
-                                <button
-                                  className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
-                                    listType === "shared" ? "hidden" : ""
-                                  }`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleShare(file);
-                                    setDeleteDropdown(null);
-                                  }}
-                                  title="Share"
-                                >
-                                  <Share2 className="h-4 w-4 text-gray-600" />{" "}
-                                  Share
-                                </button>
 
                                 {listType !== "shared" && (
                                   <>

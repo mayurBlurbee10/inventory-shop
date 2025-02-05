@@ -425,6 +425,16 @@ export default function DocDashboard() {
                   </p>
                 </div>
               </Link>
+              <Link href="loans">
+                <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
+                  <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
+                    Loans Origination
+                  </h3>
+                  <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
+                  Apply and submit documents for a loan
+                  </p>
+                </div>
+              </Link>
               {/* <div className="p-4 border rounded-md transform hover:scale-105 transition duration-300  ease-in-out">
                 <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
                   Loan Origination

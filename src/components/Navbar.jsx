@@ -10,7 +10,13 @@ import {
   isAdmin,
   setUserData,
 } from "@/app/lib/auth";
-import { CircleUserRound, Headset, LogOut, Settings, UserRoundPen } from "lucide-react";
+import {
+  CircleUserRound,
+  Headset,
+  LogOut,
+  Settings,
+  UserRoundPen,
+} from "lucide-react";
 import { getSession, signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
@@ -30,6 +36,12 @@ function Navbar({ content, config, user, filterValue }) {
   const [isOpenNavbar, setIsOpenNavbar] = useState(false);
   const [isAccountInfoModalOpen, setIsAccountInfoModalOpen] = useState(false);
   const [isAdvisorViewModalOpen, setIsAdvisorViewModalOpen] = useState(false);
+  const [isAdvisorViewOpen, setIsAdvisorViewOpen] = useState(false);
+  // const isAdvisorViewOpen = pathname.includes("advisor");
+
+  useEffect(() => {
+    setIsAdvisorViewOpen(pathname.includes("advisor"));
+  }, [pathname]);
 
   const NavBarItem = ({ title, href }) => {
     if (!href) {
@@ -40,8 +52,9 @@ function Navbar({ content, config, user, filterValue }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
-            }`}
+          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-500" : ""
+          }`}
         >
           {title}
         </button>
@@ -155,7 +168,7 @@ function Navbar({ content, config, user, filterValue }) {
 
   return (
     <div className="border-b border-[#0000001a]">
-      <div className="max-w-[1140px] mx-auto px-3">
+      <div className="lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto px-3">
         <nav className="flex justify-between items-center bg-secondary py-2">
           <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
             {user?.company?.logo || config?.logo ? (
@@ -183,19 +196,80 @@ function Navbar({ content, config, user, filterValue }) {
             </span>
           </div>
           <div className="hidden lg:flex space-x-4 items-center">
-            <NavBarItem title="Dashboard" href="dashboard" />
-            <NavBarItem title="My Documents" href="my-docs" />
-            <NavBarItem title="Shared Documents" href="shared-docs" />
-            <NavBarItem title="eSignature" href="esignature" />
-            <NavBarItem title="Loans" href="loans" />
-            {userIsAdmin && (
-              // <button
-              //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
-              //   onClick={() => setIsSettingsOpen(true)}
-              // >
-              //   Settings
-              // </button>
-              <NavBarItem title="Settings" href="settings" />
+            {isAdvisorViewOpen ? (
+              <>
+                <NavBarItem
+                  title="Dashboard"
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/advisor/dashboard`
+                      : `/dashboard`
+                  }
+                />
+                <NavBarItem
+                  title="Shared Documents"
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/advisor/shared-docs`
+                      : "/shared-docs"
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <NavBarItem
+                  title="Dashboard"
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/dashboard`
+                      : `/dashboard`
+                  }
+                />
+                <NavBarItem
+                  title="My Documents"
+                  href={
+                    params.portalid ? `/${params.portalid}/my-docs` : "/my-docs"
+                  }
+                />
+                <NavBarItem
+                  title="Shared Documents"
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/shared-docs`
+                      : "/shared-docs"
+                  }
+                />
+                <NavBarItem
+                  title="eSignature"
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/esignature`
+                      : "/esignature"
+                  }
+                />
+                <NavBarItem
+                  title="Loans"
+                  href={
+                    params.portalid ? `/${params.portalid}/loans` : "/loans"
+                  }
+                />
+                {userIsAdmin && (
+                  // <button
+                  //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
+                  //   onClick={() => setIsSettingsOpen(true)}
+                  // >
+                  //   Settings
+                  // </button>
+                  <NavBarItem
+                    title="Settings"
+                    href={
+                      params.portalid
+                        ? `/${params.portalid}/settings`
+                        : "/settings"
+                    }
+                  />
+                )}
+              </>
             )}
 
             {/* Profile dropdown */}
@@ -206,8 +280,9 @@ function Navbar({ content, config, user, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                    }`}
+                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                  }`}
                 >
                   {user?.name?.charAt(0) || "U"}
                 </div>
@@ -224,51 +299,65 @@ function Navbar({ content, config, user, filterValue }) {
 
                 {/* DROPDOWN SECTION DONE*/}
                 {accountDropdown && (
-                  <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                    <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
-                    >
-                      <CircleUserRound className="h-5 w-5" /> Account Info
-                    </button>
-                    {userIsAdmin && (
-                      <button
-                        onClick={() => setIsSettingsOpen(true)}
-                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      >
-                        <Settings className="h-5 w-5" />
-                        Settings
-                      </button>
-                    )}
-                    {userIsAdmin && (
-                      <button
-                        onClick={() =>
-                          setIsTechSupportModalOpen((prev) => !prev)
-                        }
-                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      >
-                        <Headset className="h-5 w-5" />
-                        Tech Support
-                      </button>
-                    )}
-                    <div
-                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      onClick={() =>
-                        setIsAdvisorViewModalOpen((prev) => !prev)
-                      }
-                    >
-                      <div className="flex items-center">
-                        <UserRoundPen className="h-5 w-5" />
-                        <NavBarItem title="Advisor View" href="advisor" />
+                  <>
+                    {isAdvisorViewOpen ? (
+                      <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                        <button
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          onClick={() =>
+                            router.push(
+                              params.portalid
+                                ? `/${params.portalid}/dashboard`
+                                : "/dashboard"
+                            )
+                          }
+                        >
+                          <UserRoundPen className="h-5 w-5" /> Client View
+                        </button>
                       </div>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                    >
-                      <LogOut className="h-5 w-5" />
-                      Sign out
-                    </button>
-                  </div>
+                    ) : (
+                      <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                        <button
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          onClick={() =>
+                            setIsAccountInfoModalOpen((prev) => !prev)
+                          }
+                        >
+                          <CircleUserRound className="h-5 w-5" /> Account Info
+                        </button>
+                        {userIsAdmin && (
+                          <button
+                            onClick={() =>
+                              setIsTechSupportModalOpen((prev) => !prev)
+                            }
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          >
+                            <Headset className="h-5 w-5" />
+                            Tech Support
+                          </button>
+                        )}
+                        <button
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          onClick={() =>
+                            router.push(
+                              params.portalid
+                                ? `/${params.portalid}/advisor/dashboard`
+                                : "/advisor/dashboard"
+                            )
+                          }
+                        >
+                          <UserRoundPen className="h-5 w-5" /> Advisor View
+                        </button>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Sign out
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -335,19 +424,82 @@ function Navbar({ content, config, user, filterValue }) {
 
               {/* Navbar Content */}
               <div className="flex flex-col justify-center space-y-4 mt-10">
-                <NavBarItem title="Dashboard" href="dashboard" />
-                <NavBarItem title="My Documents" href="my-docs" />
-                <NavBarItem title="Shared Documents" href="shared-docs" />
-                <NavBarItem title="eSignature" href="esignature" />
-                <NavBarItem title="Loans" href="loans" />
-                {userIsAdmin && (
-                  // <button
-                  //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
-                  //   onClick={() => setIsSettingsOpen(true)}
-                  // >
-                  //   Settings
-                  // </button>
-                  <NavBarItem title="Settings" href="settings" />
+                {isAdvisorViewOpen ? (
+                  <>
+                    <NavBarItem
+                      title="Dashboard"
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/advisor/dashboard`
+                          : `/dashboard`
+                      }
+                    />
+                    <NavBarItem
+                      title="Shared Documents"
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/advisor/shared-docs`
+                          : "/shared-docs"
+                      }
+                    />
+                  </>
+                ) : (
+                  <>
+                    <NavBarItem
+                      title="Dashboard"
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/dashboard`
+                          : `/dashboard`
+                      }
+                    />
+                    <NavBarItem
+                      title="My Documents"
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/my-docs`
+                          : "/my-docs"
+                      }
+                    />
+                    <NavBarItem
+                      title="Shared Documents"
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/shared-docs`
+                          : "/shared-docs"
+                      }
+                    />
+                    <NavBarItem
+                      title="eSignature"
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/esignature`
+                          : "/esignature"
+                      }
+                    />
+                    <NavBarItem
+                      title="Loans"
+                      href={
+                        params.portalid ? `/${params.portalid}/loans` : "/loans"
+                      }
+                    />
+                    {userIsAdmin && (
+                      // <button
+                      //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
+                      //   onClick={() => setIsSettingsOpen(true)}
+                      // >
+                      //   Settings
+                      // </button>
+                      <NavBarItem
+                        title="Settings"
+                        href={
+                          params.portalid
+                            ? `/${params.portalid}/settings`
+                            : "/settings"
+                        }
+                      />
+                    )}
+                  </>
                 )}
                 <div className="flex items-center space-x-8 cursor-pointer">
                   <div
@@ -356,8 +508,9 @@ function Navbar({ content, config, user, filterValue }) {
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                        }`}
+                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                        userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
                     >
                       {user?.name?.charAt(0) || "U"}
                     </div>
@@ -372,51 +525,67 @@ function Navbar({ content, config, user, filterValue }) {
                       )}
                     </div>
                     {accountDropdown && (
-                      <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                        <button className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
-                        >
-                          <CircleUserRound className="h-5 w-5" /> Account Info
-                        </button>
-                        {userIsAdmin && (
-                          <button
-                            onClick={() => setIsSettingsOpen(true)}
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          >
-                            <Settings className="h-5 w-5" />
-                            Settings
-                          </button>
-                        )}
-                        {userIsAdmin && (
-                          <button
-                            onClick={() =>
-                              setIsTechSupportModalOpen((prev) => !prev)
-                            }
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          >
-                            <Headset className="h-5 w-5" />
-                            Tech Support
-                          </button>
-                        )}
-                        <div
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          onClick={() =>
-                            setIsAdvisorViewModalOpen((prev) => !prev)
-                          }
-                        >
-                          <div className="flex items-center">
-                            <UserRoundPen className="h-5 w-5" />
-                            <NavBarItem title="Advisor View" href="advisor" />
+                      <>
+                        {isAdvisorViewOpen ? (
+                          <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                            <button
+                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                              onClick={() =>
+                                router.push(
+                                  params.portalid
+                                    ? `/${params.portalid}/dashboard`
+                                    : "/dashboard"
+                                )
+                              }
+                            >
+                              <UserRoundPen className="h-5 w-5" /> Client View
+                            </button>
                           </div>
-                        </div>
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        >
-                          <LogOut className="h-5 w-5" />
-                          Sign out
-                        </button>
-                      </div>
+                        ) : (
+                          <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                            <button
+                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                              onClick={() =>
+                                setIsAccountInfoModalOpen((prev) => !prev)
+                              }
+                            >
+                              <CircleUserRound className="h-5 w-5" /> Account
+                              Info
+                            </button>
+                            {userIsAdmin && (
+                              <button
+                                onClick={() =>
+                                  setIsTechSupportModalOpen((prev) => !prev)
+                                }
+                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                              >
+                                <Headset className="h-5 w-5" />
+                                Tech Support
+                              </button>
+                            )}
+                            <button
+                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                              onClick={() =>
+                                router.push(
+                                  params.portalid
+                                    ? `/${params.portalid}/advisor/dashboard`
+                                    : "/advisor/dashboard"
+                                )
+                              }
+                            >
+                              <UserRoundPen className="h-5 w-5" /> Advisor View
+                            </button>
+                           
+                            <button
+                              onClick={handleLogout}
+                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                            >
+                              <LogOut className="h-5 w-5" />
+                              Sign out
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

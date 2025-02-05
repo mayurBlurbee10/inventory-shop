@@ -12,7 +12,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { ArrowLeft, Users, Activity, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Users,
+  Activity,
+  X,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
@@ -374,38 +380,68 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
 
   return (
     <div className="flex min-h-screen">
-      <div className="w-64 bg-[#0161D5] p-6 flex flex-col">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center text-white hover:text-gray-200 mb-8"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </button>
+      <div className="w-64 bg-[#0161D5] p-6 flex flex-col justify-between">
+        <div className="">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center text-white hover:text-gray-200 mb-8"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </button>
 
-        <div className="space-y-4">
-          <ActionButton
-            icon={Users}
-            onClick={() => console.log("Buy more users")}
-          >
-            Buy More User Licenses
-          </ActionButton>
-          <ActionButton
-            icon={Activity}
-            onClick={() => console.log("Buy more API calls")}
-          >
-            Increase API Call Limit
-          </ActionButton>
+          <div className="space-y-4">
+            <ActionButton
+              icon={Users}
+              onClick={() => console.log("Buy more users")}
+            >
+              Buy More User Licenses
+            </ActionButton>
+            <ActionButton
+              icon={Activity}
+              onClick={() => console.log("Buy more API calls")}
+            >
+              Increase API Call Limit
+            </ActionButton>
+            <ActionButton
+              icon={SquareArrowOutUpRight}
+              onClick={() => {
+                const url = `/${sanitizeName(config.legalName)}/login`;
+                window.open(url, "_blank");
+              }}
+            >
+              Visit Portal
+            </ActionButton>
+          </div>
         </div>
+
+        {user?.id === config?.createdBy?.id && (
+          <button
+            className="inline-flex items-center justify-center mt-5 px-4 py-2 text-sm font-medium text-white bg-[#e63434e8] rounded-md hover:bg-[#bd2626] disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setPortalToDelete(config)}
+          >
+            Delete Portal
+          </button>
+        )}
       </div>
 
       {/* Main Content */}
       <div className="flex-1 bg-gray-50 p-8">
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Statistics Report for {config?.legalName}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Statistics Report for {config?.legalName}
+            </h1>
+            <SquareArrowOutUpRight
+              className="text-black hover:text-blue-500 size-4"
+              onClick={() => {
+                const url = `/${sanitizeName(config.legalName)}/login`;
+                window.open(url, "_blank");
+              }}
+            />
+          </div>
+
           <p className="text-gray-500 mb-6">{subsidiaryData.description}</p>
         </div>
 
@@ -469,16 +505,8 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
             </ResponsiveContainer>
           </div>
         </div>
-        {user?.id === config?.createdBy?.id && (
-        <button
-          className="inline-flex items-center mt-5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={() => setPortalToDelete(config)}
-        >
-          Delete
-        </button>
-      )}
       </div>
-      
+
       <DeletePortalModal
         isOpen={portalToDelete?.id === subsidiaryId}
         onClose={() => setPortalToDelete(null)}

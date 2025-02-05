@@ -151,14 +151,15 @@ export async function POST(request) {
             const groupPortals = await portalService.getPortalsByUser(
               String(id).toLowerCase()
             );
-            allPortals = [...allPortals, ...groupPortals];
+            console.log("groupPortal", groupPortals.portals)
+            allPortals = [...allPortals, ...groupPortals.portals];
           }
         }
         const portals = await portalService.getPortalsByUser(
           String(user.id).toLowerCase()
         );
         console.log("portals", portals);
-        allPortals = [...allPortals, ...portals];
+        allPortals = [...allPortals, ...portals.portals];
         // const portals = await portalService.getPortalsByUser(user.id);
         const portalOwners = allPortals.some(
           (portal) => sanitizeName(portal.legalName) === data.portalid

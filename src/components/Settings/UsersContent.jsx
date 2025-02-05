@@ -126,7 +126,7 @@ const UsersContent = () => {
 
   return (
     <div className="space-b-6">
-      <div className="flex justify-between items-center space-x-4 pr-4">
+      <div className="flex justify-between items-center space-x-4 ">
       <div className="flex flex-col sm:flex-row justify-between items-center w-full space-y-3 sm:space-y-0">
       <div className="text-center sm:text-left">
             <h3 className="text-lg font-medium text-gray-900">
