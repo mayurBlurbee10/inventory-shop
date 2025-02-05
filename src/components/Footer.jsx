@@ -103,10 +103,10 @@ const Footer = ({ config, filterValue, user, from }) => {
           </div> */}
 
           <div
-            className="mb-3"
+            className="mb-5"
             style={{
-              maxWidth: "100px",
-              maxHeight: "100px",
+              maxWidth: "75px",
+              maxHeight: "75px",
               overflow: "hidden",
             }}
           >

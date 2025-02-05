@@ -5,7 +5,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Footer from "@/components/Footer";
 import ContentManagementContent from "@/components/Settings/ContentManagementContent";
 import UsersContent from "@/components/Settings/UsersContent";
-import { ChevronRight, Check, IdCard, LockKeyhole } from "lucide-react";
+import { ChevronRight, Check, IdCard, LockKeyhole, User, Building } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -54,7 +54,8 @@ export default function OnBoardingPage() {
   const [content, setContent] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [isAddRequired, setIsAddRequired] = useState(true)
+  const [isUserData , setIsUserData] = useState("");
   const steps = [
     { component: ContentManagementContent },
     { component: UsersContent },
@@ -63,6 +64,7 @@ export default function OnBoardingPage() {
 
   useEffect(() => {
     const userData = getUserData();
+    setIsUserData(userData)
     if (!userData?.isOnboardingRequired) {
       router.push("login");
     }
@@ -203,13 +205,13 @@ export default function OnBoardingPage() {
   };
 
   const NavBarItem = ({ title }) => (
-    <button className="px-6 py-2 text-text hover:text-text/80">{title}</button>
+    <button className="px-1 py-2 text-text hover:text-text/80">{title}</button>
   );
 
   if (!config || !content) return <LoadingSpinner />;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-12 w-screen min-h-screen">
+    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">
       <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-gray-50 bg-opacity-80 flex items-center justify-center min-h-[50vh] md:min-h-screen">
         <div className="bg-white rounded-lg w-[80%] h-[calc(100vh-120px)] flex flex-col relative">
           {/* Loading Overlay */}
@@ -243,9 +245,10 @@ export default function OnBoardingPage() {
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
             <CurrentStepComponent
-              isAddRequired="true"
+              isAddRequired={isAddRequired}
               onContentLengthChange={handleContentLengthChange}
               setContentOnboard={setContent}
+              userData={isUserData}
             />
           </div>
           {errors.contentLength && (
@@ -301,26 +304,23 @@ export default function OnBoardingPage() {
                 {filterContent("Header Text")}
               </span>
             </a>
-            <div className="hidden xl:flex space-x-4">
-              <NavBarItem title="Individual" />
-              <NavBarItem title="Business" />
-              <NavBarItem title="About Us" />
-              <NavBarItem title="Contact" />
-              {/* Edit button */}
-              <button className="h-5 w-5 mt-2 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="12"
-                  height="12"
-                  fill="currentColor"
-                >
-                  <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-                </svg>
-              </button>
+            <div className="hidden md:flex items-center gap-x-6">
+              <div className="flex items-center transition-transform transform hover:scale-105 ">
+                <User className="w-5 h-5 text-gray-500 pb-[2px]" />
+                <NavBarItem title="Individual" />
+              </div>
+              <div className="flex items-center transition-transform transform hover:scale-105 ">
+                <Building className="w-5 h-5 text-gray-500 pb-[2px]" />
+                <NavBarItem title="Business" />
+              </div>
+              <div className="flex items-center transition-transform transform hover:scale-105 ">
+                <NavBarItem title="About Us" />
+              </div>
+              <div className="flex items-center transition-transform transform hover:scale-105 ">
+                <NavBarItem title="Contact" />
+              </div>
             </div>
-
-            <button className="xl:hidden text-text">
+            <button className="md:hidden text-text">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -341,7 +341,7 @@ export default function OnBoardingPage() {
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
               <div>
                 <div className="px-[15px]">
-                  <h2 className="text-[56px] font-light leading-tight text-text font-lato">
+                  <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2">
                     {filterContent("Title")}
                   </h2>
                   <div
@@ -349,7 +349,7 @@ export default function OnBoardingPage() {
                     className="p-[1px] w-full"
                   ></div>
 
-                  <p className="font-light text-xl text-black leading-7 font-lato mb-3 line-clamp-5">
+                  <p className="font-light text-xl text-black leading-7 font-lato mb-3 mt-5">
                     {filterContent("Paragraph")}
                   </p>
                 </div>
@@ -403,7 +403,7 @@ export default function OnBoardingPage() {
                 Forgot password?
               </button>
                </div> */}
-            </div>
+              </div>
             </div>
           </div>
 

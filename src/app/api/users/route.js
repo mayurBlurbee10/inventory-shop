@@ -8,6 +8,7 @@ import { sendSetPasswordEmail } from "@/app/lib/email";
 import userService from "@/services/userService";
 import { UserRole } from "@/config/constants";
 import permissionService from "@/services/permissionService";
+import portalService from "@/services/portalService";
 
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
 

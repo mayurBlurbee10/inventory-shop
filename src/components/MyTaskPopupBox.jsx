@@ -42,22 +42,22 @@ export default function MyTaskPopupBox({ onClose, content, config }) {
     return (
 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg w-full max-w-2xl shadow-lg border border-gray-300 p-10 relative">
-                <div className="pb-5">
+            <div className="bg-white rounded-lg w-full max-w-2xl shadow-lg border border-gray-300 px-10 pb-10 pt-7 relative">
+                <div className="pb-7 flex justify-between items-center">
                     {content?.title}
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-500 "
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
                 </div>
                 {/* Wrap all content inside outline */}
-                <div className="border border-gray-300 rounded-lg">
+                <div className="border border-gray-300 rounded-lg ">
 
                     {/* Header */}
                     <div className="flex justify-between items-center p-4 border-b">
                         <h2 className="text-lg font-semibold text-gray-900">{content?.actionText}</h2>
-                        <button
-                            onClick={onClose}
-                            className="text-gray-400 hover:text-gray-500 absolute top-[20px] right-[20px]"
-                        >
-                            <X className="h-5 w-5" />
-                        </button>
                     </div>
 
                     {/* File Upload Section */}

@@ -36,7 +36,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                                     className={`size-8 size-20 rounded-full w-[70px] h-[70px] text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
                                         }`}
                                 >
-                                    {user?.name?.charAt(0) || "U"}
+                                    {user?.name?.charAt(0)?.toUpperCase()  || "U"}
                                 </div>
                             </div>
 

@@ -1,5 +1,5 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { PlusCircle, X } from "lucide-react";
+import { PlusCircle, X, Pencil, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useParams, useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ const ContentManagementContent = ({
   isManageRequired,
   onContentLengthChange,
   setContentOnboard,
+  userData
 }) => {
   const params = useParams();
   const [content, setContent] = useState([]);
@@ -31,6 +32,7 @@ const ContentManagementContent = ({
   const [newType, setNewType] = useState("");
   const [loading, setLoading] = useState(false);
   const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
+  const [contentLength, setContentLength] = useState("")
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -78,6 +80,8 @@ const ContentManagementContent = ({
       if (!response.ok) throw new Error("Failed to fetch Content Management");
       const data = await response.json();
       setContent(data.portalContent);
+      setContentLength(data.portalContent.length)
+      // console.log('content:' , data.portalContent.length)
       setContentOnboard && setContentOnboard(data.portalContent)
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -120,17 +124,17 @@ const ContentManagementContent = ({
 
       const obj = imageUrl
         ? {
-            ...newContent,
+          ...newContent,
 
-            portalId: params.portalid ?? "default",
-          }
+          portalId: params.portalid ?? "default",
+        }
         : newContent.type === "Links"
-        ? {
+          ? {
             ...newContent,
             value: JSON.stringify(linkFields),
             portalId: params.portalid ?? "default",
           }
-        : { ...newContent, portalId: params.portalid ?? "default" };
+          : { ...newContent, portalId: params.portalid ?? "default" };
 
       const requestOptions = {
         method: isEditMode ? "PUT" : "POST",
@@ -154,10 +158,9 @@ const ContentManagementContent = ({
       fetchData();
       handleModalClose();
       toast.success(
-        `${
-          apiType === "updateContentManagement"
-            ? "Content updated successfully"
-            : "Content added successfully"
+        `${apiType === "updateContentManagement"
+          ? "Content updated successfully"
+          : "Content added successfully"
         }`
       );
     } catch (error) {
@@ -312,7 +315,7 @@ const ContentManagementContent = ({
   const manageContentNavigate = () => {
     router.push("onboarding");
   }
-
+  console.log('content length:', contentLength)
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -324,7 +327,7 @@ const ContentManagementContent = ({
             Organize and edit the information displayed across your platform.
           </p>
         </div>
-        {isAddRequired && (
+        {!isManageRequired && userData?.isOnboardingRequired && (
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             onClick={addContent}
@@ -332,7 +335,7 @@ const ContentManagementContent = ({
             Add Content
           </button>
         )}
-        {isManageRequired && (
+        {isManageRequired && userData?.isOnboardingRequired && (
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             onClick={manageContentNavigate}
@@ -340,16 +343,17 @@ const ContentManagementContent = ({
             Manage Content
           </button>
         )}
+        
       </div>
       {loading ? (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {content.map((item, idx) => (
-            <div key={idx} className="border rounded-lg p-4 bg-white">
-              <div className="flex justify-between items-start">
+            <div key={idx} className="border rounded-lg p-4 bg-white relative">
+              <div className="flex justify-between items-start ">
                 <div>
                   <h4 className="text-lg font-medium text-gray-900">
                     {item.title}
@@ -359,12 +363,14 @@ const ContentManagementContent = ({
                     Last Updated: {formatDate(item?.updatedAt)}
                   </p>
                 </div>
-                <button
-                  className="text-blue-600 hover:text-blue-900"
-                  onClick={() => handleModalOpenForEdit(item.id)}
-                >
-                  Edit
-                </button>
+
+                    <button
+                      className="text-blue-600 hover:text-blue-900 px-2 absolute top-0 right-0 m-2"
+                      onClick={() => handleModalOpenForEdit(item.id)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                
               </div>
             </div>
           ))}
@@ -372,7 +378,7 @@ const ContentManagementContent = ({
       )}
       {/* Dialog Box */}
       {isDialogOpen && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50" style={{margin : 0}}>
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50" style={{ margin: 0 }}>
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl text-gray-800 font-semibold">
@@ -546,8 +552,8 @@ const ContentManagementContent = ({
                       ? "Updating..."
                       : "Adding..."
                     : isEditMode
-                    ? "Update"
-                    : "Add"}
+                      ? "Update"
+                      : "Add"}
                 </button>
               </div>
             </form>
