@@ -13,6 +13,8 @@ import {
   LogOut,
   X,
   Trash2,
+  ChevronDown,
+  Menu as MenuIcon
 } from "lucide-react";
 import CreationWizard from "./CreationWizard";
 import Image from "next/image";
@@ -21,16 +23,17 @@ import { UserRole } from "@/config/constants";
 import { clearUserData, getUserData } from "@/app/lib/auth";
 import MasterUsersContent from "./Master/MasterUsersContent";
 import { toast } from "react-toastify";
-import { Dialog, DialogBackdrop } from "@headlessui/react";
+import { Dialog, DialogBackdrop, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import PortalCreatedPopup from "./PortalCreatedPopup";
 
 const SidePanel = ({ setCurrentPage }) => (
-  <div className="w-80 bg-[#0161D5] p-6 flex flex-col h-screen fixed left-0">
+  <div className="w-80 bg-[#0061D5] p-6 flex flex-col h-screen fixed left-0">
     <div className="mb-8">
       <Image
-        src="/logo_admin.png"
+        src="/M_Strategy_logo.png"
         alt="Client Logo"
-        width={150}
-        height={100}
+        width={100}
+        height={80}
         className="w-auto mx-auto"
       />
     </div>
@@ -43,7 +46,10 @@ const SidePanel = ({ setCurrentPage }) => (
         <Layout className="w-5 h-5 mr-3" />
         Dashboard
       </button>
-      <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors">
+      <button
+        className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
+        onClick={() => setCurrentPage("Reports")}
+      >
         <FileText className="w-5 h-5 mr-3" />
         Reports
       </button>
@@ -55,25 +61,12 @@ const SidePanel = ({ setCurrentPage }) => (
         <Users className="w-5 h-5 mr-3" />
         User Management
       </button>
-      <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors">
-        <HeadphonesIcon className="w-5 h-5 mr-3" />
-        Customer Support
-      </button>
-      <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors">
-        <Settings className="w-5 h-5 mr-3" />
-        Settings
-      </button>
     </nav>
     <button className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors mt-auto">
       Powered by MStrategy
     </button>
   </div>
 );
-
-function sanitizeName(name) {
-  let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
-  return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
-}
 
 const SubsidiaryCard = ({
   subsidiary,
@@ -113,12 +106,15 @@ const SubsidiaryCard = ({
   // useEffect(() => {
   //   fetchUsers();
   // }, []);
-
+  function sanitizeName(name) {
+    let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+    return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
+  }
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#0161D5] to-[#0161D5] rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#0061D5] to-[#0061D5] rounded-lg flex items-center justify-center">
             <span className="text-lg font-semibold text-white">
               {(subsidiary.legalName || subsidiary.tradingName || "U")
                 .charAt(0)
@@ -127,11 +123,10 @@ const SubsidiaryCard = ({
           </div>
           <div className="flex items-center gap-2">
             <div
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                subsidiary.status === "active"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
+              className={`px-2 py-1 rounded-full text-xs font-medium ${subsidiary.status === "active"
+                ? "bg-green-100 text-green-800"
+                : "bg-yellow-100 text-yellow-800"
+                }`}
             >
               {subsidiary.status}
             </div>
@@ -149,7 +144,14 @@ const SubsidiaryCard = ({
           <h3 className="text-lg font-medium text-gray-900 mb-1">
             {subsidiary.legalName}
           </h3>
-          <p className="text-sm text-gray-500 mb-4">
+          <p
+            className="text-sm text-gray-500 mb-4 hover:text-bg-[#0061D5]"
+            onClick={(event) => {
+              event.stopPropagation();
+              const url = `/${sanitizeName(subsidiary.legalName)}/login`;
+              window.open(url, "_blank");
+            }}
+          >
             {subsidiary.domain
               ? `${subsidiary.domain}.company.com`
               : "Domain not configured"}
@@ -180,10 +182,10 @@ const SubsidiaryCard = ({
 const CreateSubsidiaryButton = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="h-full min-h-[240px] rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors bg-white p-6 flex flex-col items-center justify-center text-gray-500 hover:text-blue-600"
+    className="h-full min-h-[200px] rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors bg-white p-6 flex flex-col items-center justify-center text-gray-500 hover:text-blue-600"
   >
     <Plus size={24} className="mb-2" />
-    <span className="text-sm font-medium">Create New Subsidiary</span>
+    <span className="text-sm font-medium">Create New Portal</span>
   </button>
 );
 
@@ -215,7 +217,7 @@ const DashboardHeader = ({
         >
           {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
           <div
-            className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 bg-blue-600`}
+            className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 bg-[#0061D5]`}
           >
             {user?.name?.charAt(0) || "U"}
           </div>
@@ -256,7 +258,7 @@ const SubsidiaryMetrics = ({ activeUsers, currentPageCount }) => {
     <div className="grid grid-cols-3 gap-6 mb-8">
       {[
         {
-          label: "Total Subsidiaries",
+          label: "Total Portals",
           value: currentPageCount,
           change: "+2 this month",
         },
@@ -300,6 +302,7 @@ const SubsidiaryGrid = ({
       <LoadingSpinner />
     ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <CreateSubsidiaryButton onClick={onCreateNew} />
         {subsidiaries?.map((subsidiary) => {
           return (
             <React.Fragment key={subsidiary.id}>
@@ -311,7 +314,7 @@ const SubsidiaryGrid = ({
             </React.Fragment>
           );
         })}
-        <CreateSubsidiaryButton onClick={onCreateNew} />
+
       </div>
     )}
   </>
@@ -330,8 +333,16 @@ export default function AdminDashboard() {
   const [currentPageCount, setCurrentPageCount] = useState(0);
   const [activeUsers, setActiveUsers] = useState(0);
 
+  const [filteredSubsidiaries, setFilteredSubsidiaries] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [newPortalName, setNewPortalName] = useState("");
+  const [newPortalId, setNewPortalId] = useState("");
+
   const handleSelectSubsidiary = (subsidiary) => {
-    router.push(`/admin/subsidiaries/${subsidiary.id}`);
+    router.push(`/admin/portals/${subsidiary.id}`);
   };
 
   const sanitizeName = (name) => {
@@ -470,7 +481,10 @@ export default function AdminDashboard() {
 
       setSubsidiaries((prev) => [...prev, subsidiary.data]);
       getPortal();
-      toast.success(subsidiary.message || "Subsidiary created successfully");
+      // toast.success(subsidiary.message || "Subsidiary created successfully");
+      setNewPortalName(subsidiary.data.legalName);
+      setNewPortalId(sanitizeName(subsidiary.data.legalName));
+      setIsPopupOpen(true);
     } catch (error) {
       toast.error(error.message);
       console.error("Error creating subsidiary:", error);
@@ -493,6 +507,7 @@ export default function AdminDashboard() {
       const data = await response.json();
       const subsidiaries = data.data;
       setSubsidiaries(subsidiaries.portals);
+      setFilteredSubsidiaries(subsidiaries.portals);
       setCurrentPageCount(subsidiaries.portals.length);
       setActiveUsers(subsidiaries.activeUsers);
     } catch (err) {
@@ -500,6 +515,15 @@ export default function AdminDashboard() {
     } finally {
       setIsPortalLoading(false);
     }
+  };
+
+  const handleSearch = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+  };
+
+  const handleFilterChange = (selectedFilter) => {
+    setFilter(selectedFilter);
   };
 
   useEffect(() => {
@@ -516,28 +540,59 @@ export default function AdminDashboard() {
   useEffect(() => {
     setCurrentPageCount(0);
 
-    if (currentPage === "Portals") {
+    if (currentPage === "Portals" || currentPage === "Reports") {
       setCurrentPageCount(subsidiaries.length);
 
     }
   }, [currentPage, subsidiaries?.length]);
+
+  useEffect(() => {
+    const filtered = subsidiaries.filter((subsidiary) => {
+      const matchesSearch = subsidiary.legalName
+        .toLowerCase()
+        .includes(searchTerm);
+      const matchesFilter =
+        filter === "all" || subsidiary.createdBy.id === user.id;
+
+      return matchesSearch && matchesFilter;
+    });
+
+    setFilteredSubsidiaries(filtered);
+  }, [subsidiaries, searchTerm, filter, user]);
 
   const handleLogout = () => {
     setAccountDropdown(false);
     clearUserData();
     router.push("login");
   };
+  // const recentSubsidiary =  subsidiaries[subsidiaries.length - 1].domain
+  // console.log("Last Subsidiary:",);
+
+
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
 
   return (
     <div
-      className="min-h-screen bg-gray-50 flex"
+      className="min-h-screen bg-gray-50"
       onClick={() => {
         setAccountDropdown(false);
       }}
     >
-      <SidePanel setCurrentPage={setCurrentPage} />
-      <div className="flex-1 ml-80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div
+        className="block sm:hidden absolute top-0 left-0 z-20"
+        onClick={() =>
+          setSidePanelOpen((prev) => !prev)
+        }
+      >
+        {sidePanelOpen ? <X className="m-5 text-white" /> : <MenuIcon className="m-5" />}
+      </div>
+
+      <div className={`sm:block z-10 ${sidePanelOpen ? "block" : "hidden"}`}>
+        <SidePanel setCurrentPage={setCurrentPage} />
+      </div>
+
+      <div className="flex-1 sm:ml-80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sm:py-8 pt-10">
           <DashboardHeader
             currentPageCount={currentPageCount}
             currentPage={currentPage}
@@ -548,14 +603,48 @@ export default function AdminDashboard() {
           />
           {currentPage === "Portals" && (
             <>
-              <SubsidiaryMetrics
-                activeUsers={activeUsers}
-                currentPage={currentPage}
-                currentPageCount={currentPageCount}
-              />
+              <div className="flex justify-between items-center mb-6 text-gray-600 gap-4">
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Search Portals..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
+
+                <Menu as="div" className="relative flex-shrink-0">
+                  <MenuButton className="flex items-center px-4 py-2 text-gray-600 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    {filter === "all" ? "All Portals" : "My Portals"}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </MenuButton>
+
+                  <MenuItems className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+                    <MenuItem>
+                      <button
+                        onClick={() => handleFilterChange("all")}
+                        className={`block w-full text-left px-4 py-2 text-sm ${
+                          filter === "all" ? "bg-blue-100" : ""
+                        }`}
+                      >
+                        All Portals
+                      </button>
+                    </MenuItem>
+                    <MenuItem>
+                      <button
+                        onClick={() => handleFilterChange("my")}
+                        className={`block w-full text-left px-4 py-2 text-sm ${
+                          filter === "my" ? "bg-blue-100" : ""
+                        }`}
+                      >
+                        My Portals
+                      </button>
+                    </MenuItem>
+                  </MenuItems>
+                </Menu>
+              </div>
               <SubsidiaryGrid
                 isLoading={isPortalLoading}
-                subsidiaries={subsidiaries}
+                subsidiaries={filteredSubsidiaries}
                 onSelectSubsidiary={handleSelectSubsidiary}
                 onCreateNew={() => {
                   setShowCreationModal(true);
@@ -564,6 +653,14 @@ export default function AdminDashboard() {
                 refreshPortals={getPortal}
               />
             </>
+          )}
+
+          {currentPage === "Reports" && (
+            <SubsidiaryMetrics
+              activeUsers={activeUsers}
+              currentPage={currentPage}
+              currentPageCount={currentPageCount}
+            />
           )}
 
           {currentPage === "Super User" && (
@@ -578,6 +675,12 @@ export default function AdminDashboard() {
             setShowCreationModal(false);
           }}
           onCreateSubsidiary={handleCreateSubsidiary}
+        />
+        <PortalCreatedPopup
+          isOpen={isPopupOpen}
+          portalName={newPortalName}
+          portalId={newPortalId}
+          onClose={()=>setIsPopupOpen(false)}
         />
       </div>
     </div>

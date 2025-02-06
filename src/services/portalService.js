@@ -47,10 +47,13 @@ const getPortalsByUser = async (user) => {
     const portals = await portalRepository.find({
       where: {
         createdBy: {
-          id: userId, // Querying for the userId in the createdBy relation
+          id: userId,
         },
       },
       relations: ["createdBy"],
+      order: {
+        createdAt: "DESC",
+      },
     });
 
     console.log("Portals", portals)
