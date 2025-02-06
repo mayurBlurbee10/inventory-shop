@@ -45,7 +45,7 @@ export default function MasterUsersContent({setCurrentPageCount}) {
       <div className="flex justify-end items-center mb-4 w-full">
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB] inline-flex items-center"
+          className="px-4 py-2 text-white bg-[#0061D5] rounded-md hover:bg-[#0061D5] inline-flex items-center"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add User

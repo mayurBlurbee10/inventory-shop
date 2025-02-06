@@ -14,6 +14,7 @@ import {
   Sun,
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import DialogBox from "./DialogBox";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -24,13 +25,12 @@ const WizardStep = ({ step, currentStep }) => {
       <div
         className={`
         w-8 h-8 rounded-full flex items-center justify-center border
-        ${
-          isCompleted
-            ? "bg-gray-900 border-gray-900"
+        ${isCompleted
+            ? "bg-[#0061D5]"
             : isActive
-            ? "bg-white border-gray-900"
-            : "bg-white border-gray-300"
-        }
+              ? "bg-white border-gray-900"
+              : "bg-white border-gray-300"
+          }
         ${isCompleted || isActive ? "text-white" : "text-gray-500"}
       `}
       >
@@ -54,7 +54,7 @@ const InputField = ({
   type = "text",
   value,
   onChange,
-  onBlur=()=>{},
+  onBlur = () => { },
   placeholder = "",
   required = true,
 }) => (
@@ -82,7 +82,7 @@ const CompanyDetailsStep = ({ formData, setFormData }) => (
         Company Information
       </h3>
       <p className="text-sm text-gray-500">
-        Basic information about the subsidiary
+      Please enter company information
       </p>
     </div>
 
@@ -172,7 +172,7 @@ const CompanyDetailsStep = ({ formData, setFormData }) => (
           }
           rows={3}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
-          placeholder="Brief description of the subsidiary's operations"
+          placeholder="Brief description of the portal's operations"
         />
       </div>
     </div>
@@ -247,7 +247,7 @@ const BrandingStep = ({ formData, setFormData }) => {
           Brand Settings
         </h3>
         <p className="text-sm text-gray-500">
-          Customize the appearance for this subsidiary
+          Customize the appearance for this portal
         </p>
       </div>
 
@@ -263,11 +263,10 @@ const BrandingStep = ({ formData, setFormData }) => {
               return (
                 <div
                   key={theme.value}
-                  className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                    formData.theme === theme.value
-                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500 ring-opacity-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${formData.theme === theme.value
+                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500 ring-opacity-50"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                   onClick={() =>
                     setFormData({ ...formData, theme: theme.value })
                   }
@@ -427,6 +426,7 @@ const BrandingStep = ({ formData, setFormData }) => {
 const AdministratorStep = ({ formData, setFormData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
   const handleEmailBlur = async () => {
     if (!formData?.adminEmail) return;
     setIsLoading(true);
@@ -466,7 +466,7 @@ const AdministratorStep = ({ formData, setFormData }) => {
           Administrator Account
         </h3>
         <p className="text-sm text-gray-500">
-          Create the primary administrator for this subsidiary
+          Create the primary administrator for this portal
         </p>
       </div>
       <InputField
@@ -768,7 +768,7 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
-
+  const [dialogOpen, setDialogOpen] = useState(false)
   const validateStep = () => {
     const errors = {};
 
@@ -806,16 +806,21 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
         // Simulate API call with 3 second delay
         // await new Promise(resolve => setTimeout(resolve, 6000));
         onCreateSubsidiary(formData);
-        resetOnClose();
-        setIsSubmitting(false);
         setShowSuccess(true);
+        setIsSubmitting(false);
         // Close the modal after showing success for 3 seconds
-        // setTimeout(() => {
-        setShowSuccess(false);
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 6000);
         // onClose();
-        // }, 3000);
+        resetOnClose();
       } else {
         setCurrentStep(currentStep + 1);
+        // console.log('name:', formData.legalName);
+        // setDialogOpen(
+        //   (prev) => !prev
+        // )
+        // console.log('open:', dialogOpen)
       }
     }
   };
@@ -845,11 +850,15 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
 
   const CurrentStepComponent = steps[currentStep].component;
 
+
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
         {/* Success Message */}
-        {showSuccess && (
+
+
+        {/* {showSuccess && (
           <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
             <div className="text-center space-y-3">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
@@ -860,7 +869,7 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
               </h3>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Loading Overlay */}
         {(isSubmitting || isLoading) && (
@@ -905,18 +914,18 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
           <button
             onClick={handleNext}
             disabled={isSubmitting || isLoading}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-              isSubmitting || isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-900 hover:bg-gray-800"
-            }`}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting || isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-[#0061D5] hover:bg-blue-600"
+              }`}
           >
             {currentStep === steps.length - 1
-              ? "Create Subsidiary"
+              ? "Create Portal"
               : "Continue"}
           </button>
         </div>
       </div>
+
     </div>
   );
 };

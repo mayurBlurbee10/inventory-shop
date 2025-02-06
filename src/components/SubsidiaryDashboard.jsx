@@ -380,7 +380,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
 
   return (
     <div className="flex min-h-screen">
-      <div className="w-64 bg-[#0161D5] p-6 flex flex-col justify-between">
+      <div className="w-64 bg-[#0061D5] p-6 flex flex-col justify-between">
         <div className="">
           <button
             onClick={() => router.back()}

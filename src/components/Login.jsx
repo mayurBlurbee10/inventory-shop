@@ -314,6 +314,8 @@ function Login() {
   }, [router]);
 
   if (!config || !content) return <LoadingSpinner />;
+  console.log('portalId:', params.portalid);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -343,13 +345,17 @@ function Login() {
             )}
 
             <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-              {filterValue("Header Text") || params.portalId ? (
-                filterValue("Header Text") || params.portalId
+              {filterValue("Header Text") && filterValue("Header Text") !== "Premier Customer Portal" ? (
+                filterValue("Header Text")
+              ) : params?.portalid ? (
+                params.portalid
               ) : (
-                // Skeleton for header text
                 <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
               )}
             </span>
+
+
+
           </a>
 
           <div className="hidden md:flex items-center gap-x-6">
@@ -540,7 +546,7 @@ function Login() {
                     {isLoadingLogin ? (
                       <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
                     ) : (
-                      <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
+                      <span className="group-hover:scale-105 transition-all ease-in-out duration-200 text-white">
                         Log In
                       </span>
                     )}

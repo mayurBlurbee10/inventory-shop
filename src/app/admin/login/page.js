@@ -82,9 +82,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6 bg-[#0161D5] py-2 rounded-md">
+          <div className="flex justify-center mb-6 bg-[#0061D5] py-2 rounded-md">
             <img
-              src="/logo_admin.png"
+               src="/M_Strategy_logo.png"
               alt="Company Logo"
               priority="true"
               className="h-16" 

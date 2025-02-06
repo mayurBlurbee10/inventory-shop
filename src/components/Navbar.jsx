@@ -52,9 +52,8 @@ function Navbar({ content, config, user, filterValue }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-            pathname.includes(href) ? "text-blue-500" : ""
-          }`}
+          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+            }`}
         >
           {title}
         </button>
@@ -187,14 +186,17 @@ function Navbar({ content, config, user, filterValue }) {
             )}
 
             <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-              {filterValue("Header Text") || params.portalId ? (
-                filterValue("Header Text") || params.portalId
+              {filterValue("Header Text") && filterValue("Header Text") !== "Premier Customer Portal" ? (
+                filterValue("Header Text")
+              ) : params?.portalid ? (
+                params.portalid
               ) : (
-                // Skeleton for header text
                 <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
               )}
             </span>
+            
           </div>
+
           <div className="hidden lg:flex space-x-4 items-center">
             {isAdvisorViewOpen ? (
               <>
@@ -280,9 +282,8 @@ function Navbar({ content, config, user, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                  }`}
+                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                    }`}
                 >
                   {user?.name?.charAt(0) || "U"}
                 </div>
@@ -508,9 +509,8 @@ function Navbar({ content, config, user, filterValue }) {
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                        userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                      }`}
+                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                        }`}
                     >
                       {user?.name?.charAt(0) || "U"}
                     </div>
@@ -575,7 +575,7 @@ function Navbar({ content, config, user, filterValue }) {
                             >
                               <UserRoundPen className="h-5 w-5" /> Advisor View
                             </button>
-                           
+
                             <button
                               onClick={handleLogout}
                               className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"

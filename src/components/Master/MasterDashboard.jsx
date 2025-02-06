@@ -12,7 +12,7 @@ const SidePanel = ({ setCurrentPage }) => {
   };
 
   return (
-    <div className="w-80 bg-[#0161D5] p-6 flex flex-col h-screen fixed left-0">
+    <div className="w-80 bg-[#0061D5] p-6 flex flex-col h-screen fixed left-0">
       <div className="mb-8">
         <Image
           src="/logo_admin.png"
