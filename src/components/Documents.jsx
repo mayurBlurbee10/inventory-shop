@@ -687,6 +687,7 @@ function Documents({ fileType }) {
   useEffect(() => {
     fetchConfig();
     fetchContent();
+    refreshFiles();
   }, []);
 
   const filterValue = (title) => {
@@ -914,7 +915,7 @@ function Documents({ fileType }) {
                     </p>
                     <button
                       className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "opacity-50 cursor-not-allowed"
+                        ? "hidden"
                         : "hover:bg-gray-200"
                         } outline-none`}
                       onClick={() =>
@@ -927,7 +928,7 @@ function Documents({ fileType }) {
                     </button>
                     <button
                       className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "opacity-50 cursor-not-allowed"
+                        ? "hidden"
                         : "hover:bg-gray-200"
                         } outline-none`}
                       onClick={
@@ -941,7 +942,7 @@ function Documents({ fileType }) {
                     </button>
                     <button
                       className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "opacity-50 cursor-not-allowed"
+                        ? "hidden"
                         : "hover:bg-gray-200"
                         } outline-none`}
                       onClick={() =>
@@ -1144,6 +1145,7 @@ function Documents({ fileType }) {
                 setIsMoveModalOpen={setIsMoveModalOpen}
                 setMoveItem={setMoveItem}
                 setIsNewFolderModalOpen={setIsNewFolderModalOpen}
+                loading={isLoading}
               />
 
               <DeleteConfirmDialog
@@ -1165,6 +1167,7 @@ function Documents({ fileType }) {
                 fileLocation={uploadedfilePath}
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
+                config={config}
               />
               <SettingsModal
                 isOpen={isSettingsOpen}

@@ -124,6 +124,7 @@ export default function AdvisorView() {
     useEffect(() => {
         fetchConfig();
         fetchContent();
+        refreshFiles();
     }, []);
 
     const fetchContent = async () => {
@@ -865,6 +866,7 @@ export default function AdvisorView() {
                             setIsMoveModalOpen={setIsMoveModalOpen}
                             setMoveItem={setMoveItem}
                             setIsNewFolderModalOpen={setIsNewFolderModalOpen}
+                            loading={isLoading}
                         />
                         <DeleteConfirmDialog
                             isModalOpen={isDeleteModalOpen}

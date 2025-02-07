@@ -50,7 +50,7 @@ function SendforSignatureDialog({
         const data = await response.json();
         throw new Error(data.error || "Failed to send e-sign request");
       }
-      toast.success("E-sign request sended successfully.");
+      toast.success("E-sign request sent successfully.");
       setIsLoading(false);
       setSelectedUser(null);
       setIsModalOpen(false);

@@ -217,9 +217,9 @@ const DashboardHeader = ({
         >
           {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
           <div
-            className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 bg-[#0061D5]`}
+            className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 bg-[#0061D5]`}
           >
-            {user?.name?.charAt(0) || "U"}
+            {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
           <div className="flex flex-col text-sm xl:text-base">
             <span className="text-gray-900 font-medium">{user?.name}</span>
@@ -291,34 +291,55 @@ const LoadingSpinner = () => (
   </div>
 );
 
+
 const SubsidiaryGrid = ({
   isLoading,
   subsidiaries,
   onSelectSubsidiary,
   onCreateNew,
-}) => (
-  <>
-    {isLoading ? (
-      <LoadingSpinner />
-    ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <CreateSubsidiaryButton onClick={onCreateNew} />
-        {subsidiaries?.map((subsidiary) => {
-          return (
-            <React.Fragment key={subsidiary.id}>
-              <SubsidiaryCard
-                key={subsidiary.id}
-                subsidiary={subsidiary}
-                onSelect={onSelectSubsidiary}
-              />
-            </React.Fragment>
-          );
-        })}
+ }) => {
+  const [visibleSubsidiaries, setVisibleSubsidiaries] = useState(5);
 
-      </div>
-    )}
-  </>
-);
+  const handleLoadMore = () => {
+    setVisibleSubsidiaries(subsidiaries.length);
+  };
+
+  return (
+
+    <>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <CreateSubsidiaryButton onClick={onCreateNew} />
+            {subsidiaries?.slice(0, visibleSubsidiaries).map((subsidiary) => {
+              return (
+                <React.Fragment key={subsidiary.id}>
+                  <SubsidiaryCard
+                    key={subsidiary.id}
+                    subsidiary={subsidiary}
+                    onSelect={onSelectSubsidiary}
+                  />
+                </React.Fragment>
+              );
+            })}
+          </div>
+          {visibleSubsidiaries < subsidiaries.length && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleLoadMore}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Load More
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+};
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -499,7 +520,7 @@ export default function AdminDashboard() {
       setIsPortalLoading(true);
       const userData = getUserData();
       const response = await fetchWrapper(
-        `/api/portal?userId=${userData?.id}`,
+        `/api/portal?userId=${userData?.id}?_limit=5`, // ⬅ Add limit parameter
         { method: "GET" },
         "get-portal"
       );
@@ -596,9 +617,9 @@ export default function AdminDashboard() {
           <X className="" />
         </div>
       )}
-      <div 
-      className={`sm:block z-[50]  ${sidePanelOpen ? "block" : "hidden"} `}
-       >
+      <div
+        className={`sm:block z-[50]  ${sidePanelOpen ? "block" : "hidden"} `}
+      >
         <SidePanel setCurrentPage={setCurrentPage} />
       </div>
 
