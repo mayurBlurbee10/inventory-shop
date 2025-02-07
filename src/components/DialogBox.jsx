@@ -7,7 +7,7 @@ import { Share2, X } from "lucide-react";
 const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen , config}) => {
 
   const [isLoading, setIsLoading] = useState(false);
-
+console.log('dialog:', config)
   return (
     <Dialog
       open={isModalOpen}
@@ -45,7 +45,7 @@ const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen ,
                     ? "text-gray-400 cursor-not-allowed"
                     : "text-white cursor-pointer"
                   }`}
-                style={{ backgroundColor: config?.secondaryColor }}
+                style={{ backgroundColor: config?.secondaryColor || '#0061D5' }}
               >
                 {isLoading ? (
                   <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />

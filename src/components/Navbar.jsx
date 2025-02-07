@@ -194,7 +194,7 @@ function Navbar({ content, config, user, filterValue }) {
                 <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
               )}
             </span>
-            
+
           </div>
 
           <div className="hidden lg:flex space-x-4 items-center">
@@ -255,13 +255,7 @@ function Navbar({ content, config, user, filterValue }) {
                     params.portalid ? `/${params.portalid}/loans` : "/loans"
                   }
                 />
-                {userIsAdmin && (
-                  // <button
-                  //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
-                  //   onClick={() => setIsSettingsOpen(true)}
-                  // >
-                  //   Settings
-                  // </button>
+                {/* {userIsAdmin && (
                   <NavBarItem
                     title="Settings"
                     href={
@@ -270,7 +264,7 @@ function Navbar({ content, config, user, filterValue }) {
                         : "/settings"
                     }
                   />
-                )}
+                )} */}
               </>
             )}
 
@@ -282,20 +276,15 @@ function Navbar({ content, config, user, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                  className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
                     }`}
                 >
-                  {user?.name?.charAt(0) || "U"}
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div className="flex flex-col text-sm xl:text-base">
                   <span className="text-gray-900 font-medium">
                     {user?.name}
                   </span>
-                  {userIsAdmin && (
-                    <span className="text-blue-600 text-sm font-medium">
-                      Administrator
-                    </span>
-                  )}
                 </div>
 
                 {/* DROPDOWN SECTION DONE*/}
@@ -364,17 +353,29 @@ function Navbar({ content, config, user, filterValue }) {
             </div>
 
             {/* Edit button */}
-            <button className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="12"
-                height="12"
-                fill="currentColor"
+            {userIsAdmin && !isAdvisorViewOpen && (
+              <button
+                className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center"
+                onClick={() =>
+                  router.push(
+                    params.portalid
+                      ? `/${params.portalid}/settings`
+                      : "/settings"
+                  )
+                }
               >
-                <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="12"
+                  height="12"
+                  fill="currentColor"
+                >
+                  <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
+                </svg>
+              </button>
+            )}
+
           </div>
 
           {/* Mobile Navbar */}
@@ -484,22 +485,6 @@ function Navbar({ content, config, user, filterValue }) {
                         params.portalid ? `/${params.portalid}/loans` : "/loans"
                       }
                     />
-                    {userIsAdmin && (
-                      // <button
-                      //   className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm flex justify-start`}
-                      //   onClick={() => setIsSettingsOpen(true)}
-                      // >
-                      //   Settings
-                      // </button>
-                      <NavBarItem
-                        title="Settings"
-                        href={
-                          params.portalid
-                            ? `/${params.portalid}/settings`
-                            : "/settings"
-                        }
-                      />
-                    )}
                   </>
                 )}
                 <div className="flex items-center space-x-8 cursor-pointer">
@@ -509,7 +494,7 @@ function Navbar({ content, config, user, filterValue }) {
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
                         }`}
                     >
                       {user?.name?.charAt(0) || "U"}
@@ -518,12 +503,8 @@ function Navbar({ content, config, user, filterValue }) {
                       <span className="text-gray-900 font-medium">
                         {user?.name}
                       </span>
-                      {userIsAdmin && (
-                        <span className="text-blue-600 text-sm font-medium">
-                          Administrator
-                        </span>
-                      )}
                     </div>
+
                     {accountDropdown && (
                       <>
                         {isAdvisorViewOpen ? (
@@ -588,7 +569,30 @@ function Navbar({ content, config, user, filterValue }) {
                       </>
                     )}
                   </div>
+                  {userIsAdmin && !isAdvisorViewOpen && (
+                    <button
+                      className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center"
+                      onClick={() =>
+                        router.push(
+                          params.portalid
+                            ? `/${params.portalid}/settings`
+                            : "/settings"
+                        )
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="12"
+                        height="12"
+                        fill="currentColor"
+                      >
+                        <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
+                      </svg>
+                    </button>
+                  )}
                 </div>
+
               </div>
             </div>
           )}

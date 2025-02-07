@@ -87,7 +87,7 @@ export default function MyTaskPopupBox({ onClose, content, config }) {
                                         (prev) => !prev
                                     )
                                 }}
-                                style={{ backgroundColor: config?.secondaryColor || "rgb(59, 130, 246)" }}
+                                style={{ backgroundColor: config?.secondaryColor || "#0061D5" }}
                             >
                                 Upload
                             </button>
@@ -99,6 +99,7 @@ export default function MyTaskPopupBox({ onClose, content, config }) {
                                         message="Document uploaded successfully!"
                                         isModalOpen={confirmPopup}
                                         setIsModalOpen={setConfirmPopup}
+                                        config={config}
                                     />
                                     // <div className="fixed inset-0 flex items-center justify-center z-100">
                                     //     <div className="bg-white rounded-lg w-full max-w-xl shadow-lg border border-gray-300 absolute top-20 p-5">

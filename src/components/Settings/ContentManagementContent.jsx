@@ -9,7 +9,7 @@ const ContentManagementContent = ({
   isManageRequired,
   onContentLengthChange,
   setContentOnboard,
-  userData
+  onboardingStatus
 }) => {
   const params = useParams();
   const [content, setContent] = useState([]);
@@ -316,6 +316,8 @@ const ContentManagementContent = ({
     router.push("onboarding");
   }
   console.log('content length:', contentLength)
+  console.log('onboardingStatus:',onboardingStatus);
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -327,7 +329,7 @@ const ContentManagementContent = ({
             Organize and edit the information displayed across your platform.
           </p>
         </div>
-        {!isManageRequired && userData?.isOnboardingRequired && (
+        {!isManageRequired && contentLength < 11 && (
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             onClick={addContent}
@@ -335,7 +337,7 @@ const ContentManagementContent = ({
             Add Content
           </button>
         )}
-        {isManageRequired && userData?.isOnboardingRequired && (
+        {isManageRequired && onboardingStatus && (
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             onClick={manageContentNavigate}
