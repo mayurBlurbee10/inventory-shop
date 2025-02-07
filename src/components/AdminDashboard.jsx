@@ -27,7 +27,7 @@ import { Dialog, DialogBackdrop, Menu, MenuButton, MenuItem, MenuItems } from "@
 import PortalCreatedPopup from "./PortalCreatedPopup";
 
 const SidePanel = ({ setCurrentPage }) => (
-  <div className="w-80 bg-[#0061D5] p-6 flex flex-col h-screen fixed left-0">
+  <div className="w-80 bg-[#0061D5] z-50 p-6 flex flex-col h-screen fixed left-0">
     <div className="mb-8">
       <Image
         src="/M_Strategy_logo.png"
@@ -255,7 +255,7 @@ const SubsidiaryMetrics = ({ activeUsers, currentPageCount }) => {
   //   setUsers(totalActiveUsers);
   // }, [activeUsers]);
   return (
-    <div className="grid grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {[
         {
           label: "Total Portals",
@@ -579,19 +579,30 @@ export default function AdminDashboard() {
       }}
     >
       <div
-        className="block sm:hidden absolute top-0 left-0 z-20"
+        className={`block sm:hidden fixed w-full border-b border-gray-200 top-0 left-0  z-50 bg-white p-4 flex items-center justify-start ${sidePanelOpen ? "hidden" : "block"}`}
         onClick={() =>
           setSidePanelOpen((prev) => !prev)
         }
       >
-        {sidePanelOpen ? <X className="m-5 text-white" /> : <MenuIcon className="m-5" />}
+        {sidePanelOpen ? '' : <MenuIcon className="" />}
       </div>
 
-      <div className={`sm:block z-10 ${sidePanelOpen ? "block" : "hidden"}`}>
+
+      {sidePanelOpen && (
+        <div
+          className="fixed top-4 left-4 z-[60] text-white cursor-pointer"
+          onClick={() => setSidePanelOpen(false)}
+        >
+          <X className="" />
+        </div>
+      )}
+      <div 
+      className={`sm:block z-[50]  ${sidePanelOpen ? "block" : "hidden"} `}
+       >
         <SidePanel setCurrentPage={setCurrentPage} />
       </div>
 
-      <div className="flex-1 sm:ml-80">
+      <div className="flex-1 pt-10 sm:pt-0 sm:ml-80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sm:py-8 pt-10">
           <DashboardHeader
             currentPageCount={currentPageCount}
@@ -622,9 +633,8 @@ export default function AdminDashboard() {
                     <MenuItem>
                       <button
                         onClick={() => handleFilterChange("all")}
-                        className={`block w-full text-left px-4 py-2 text-sm ${
-                          filter === "all" ? "bg-blue-100" : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 text-sm ${filter === "all" ? "bg-blue-100" : ""
+                          }`}
                       >
                         All Portals
                       </button>
@@ -632,9 +642,8 @@ export default function AdminDashboard() {
                     <MenuItem>
                       <button
                         onClick={() => handleFilterChange("my")}
-                        className={`block w-full text-left px-4 py-2 text-sm ${
-                          filter === "my" ? "bg-blue-100" : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 text-sm ${filter === "my" ? "bg-blue-100" : ""
+                          }`}
                       >
                         My Portals
                       </button>
@@ -680,7 +689,7 @@ export default function AdminDashboard() {
           isOpen={isPopupOpen}
           portalName={newPortalName}
           portalId={newPortalId}
-          onClose={()=>setIsPopupOpen(false)}
+          onClose={() => setIsPopupOpen(false)}
         />
       </div>
     </div>

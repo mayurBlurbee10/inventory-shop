@@ -86,7 +86,7 @@ const CompanyDetailsStep = ({ formData, setFormData }) => (
       </p>
     </div>
 
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-2 gap-4 ">
       <div className="col-span-2 text-gray-700">
         <InputField
           label="Legal Company Name"
@@ -130,8 +130,8 @@ const CompanyDetailsStep = ({ formData, setFormData }) => (
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Domain Setup <span className="text-gray-400">*</span>
         </label>
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex-1 min-w-[200px]">
             <div className="mt-1 flex rounded-md shadow-sm">
               <input
                 type="text"
@@ -147,7 +147,7 @@ const CompanyDetailsStep = ({ formData, setFormData }) => (
               </span>
             </div>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-[200px]">
             <input
               type="text"
               value={formData.customDomain}
@@ -853,7 +853,7 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
 
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-[70] bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
         {/* Success Message */}
 
@@ -884,7 +884,7 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
         )}
 
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 overflow-auto">
           <div className="flex justify-between items-center space-x-8">
             {[0, 1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">

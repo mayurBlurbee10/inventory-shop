@@ -132,7 +132,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0061D5] hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"/>
@@ -142,7 +142,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
         <div className="mt-6 text-center">
-          <a href="#" className="text-blue-600 hover:text-blue-500 text-sm">
+          <a href="#" className="text-[#0061D5] hover:text-blue-500 text-sm">
             Forgot password?
           </a>
         </div>
@@ -158,11 +158,11 @@ export default function AdminLoginPage() {
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>&copy; 2024 MStrategy. All rights reserved.</p>
           <p className="mt-2">
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <a href="#" className="text-[#0061D5] hover:text-blue-500">
               Privacy Policy
             </a>
             <span className="mx-2">•</span>
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <a href="#" className="text-[#0061D5] hover:text-blue-500">
               Terms of Service
             </a>
           </p>
