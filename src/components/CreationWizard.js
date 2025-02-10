@@ -25,12 +25,13 @@ const WizardStep = ({ step, currentStep }) => {
       <div
         className={`
         w-8 h-8 rounded-full flex items-center justify-center border
-        ${isCompleted
+        ${
+          isCompleted
             ? "bg-[#0061D5]"
             : isActive
-              ? "bg-white border-gray-900"
-              : "bg-white border-gray-300"
-          }
+            ? "bg-white border-gray-900"
+            : "bg-white border-gray-300"
+        }
         ${isCompleted || isActive ? "text-white" : "text-gray-500"}
       `}
       >
@@ -54,130 +55,180 @@ const InputField = ({
   type = "text",
   value,
   onChange,
-  onBlur = () => { },
+  onBlur = () => {},
   placeholder = "",
   required = true,
+  isLoading = false,
 }) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">
       {label}
       {required && <span className="text-gray-400 ml-1">*</span>}
     </label>
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      required={required}
-      placeholder={placeholder}
-      onBlur={onBlur}
-      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
-    />
+    <div className="w-full px-3 py-2 border border-gray-300 rounded-md flex justify-between items-center focus:ring-1 focus:ring-gray-400">
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        required={required}
+        placeholder={placeholder}
+        onBlur={onBlur}
+        className="w-full focus:outline-none"
+      />
+      {isLoading && (
+        <div className="flex items-center gap-2 ">
+          <div className="spinner"></div>
+        </div>
+      )}
+    </div>
   </div>
 );
 
-const CompanyDetailsStep = ({ formData, setFormData }) => (
-  <div className="space-y-6  text-gray-700">
-    <div className="border-b border-gray-200 pb-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-1">
-        Company Information
-      </h3>
-      <p className="text-sm text-gray-500">
-      Please enter company information
-      </p>
-    </div>
+const CompanyDetailsStep = ({ formData, setFormData }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    <div className="grid grid-cols-2 gap-4 ">
-      <div className="col-span-2 text-gray-700">
+  function sanitizeName(name) {
+    let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+    return sanitizeName.endsWith(".")
+      ? sanitizeName.slice(0, -1)
+      : sanitizeName;
+  }
+
+  const handlePortalBlur = async () => {
+    if (!formData?.legalName) return;
+    setIsLoading(true);
+    setError("");
+    try {
+      const legalName = sanitizeName(formData?.legalName);
+      const encodedPortal = encodeURIComponent(legalName);
+      const response = await fetchWrapper(
+        `/api/portal?portalid=${encodedPortal}`,
+        {},
+        "fetch-portal"
+      );
+      const portal = await response.json();
+      if (portal.error) {
+        setError("");
+      } else {
+        setError("This name is already in use, please choose another one");
+      }
+    } catch (err) {
+      console.error("Error fetching portal data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return (
+    <div className="space-y-6  text-gray-700">
+      <div className="border-b border-gray-200 pb-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-1">
+          Company Information
+        </h3>
+        <p className="text-sm text-gray-500">
+          Please enter company information
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 ">
+        <div className="col-span-2 text-gray-700">
+          <InputField
+            label="Legal Company Name"
+            type="legalName"
+            value={formData.legalName}
+            onChange={(e) =>
+              setFormData({ ...formData, legalName: e.target.value })
+            }
+            onBlur={handlePortalBlur}
+            placeholder="e.g., Acme Corporation Ltd."
+            isLoading={isLoading}
+          />
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+        </div>
+
         <InputField
-          label="Legal Company Name"
-          value={formData.legalName}
+          label="Trading Name"
+          value={formData.tradingName}
           onChange={(e) =>
-            setFormData({ ...formData, legalName: e.target.value })
+            setFormData({ ...formData, tradingName: e.target.value })
           }
-          placeholder="e.g., Acme Corporation Ltd."
+          placeholder="e.g., Acme Corp"
         />
-      </div>
 
-      <InputField
-        label="Trading Name"
-        value={formData.tradingName}
-        onChange={(e) =>
-          setFormData({ ...formData, tradingName: e.target.value })
-        }
-        placeholder="e.g., Acme Corp"
-      />
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Region <span className="text-gray-400">*</span>
-        </label>
-        <select
-          value={formData.region}
-          onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
-        >
-          <option value="">Select a region</option>
-          <option value="na">North America</option>
-          <option value="eu">Europe</option>
-          <option value="asia">Asia Pacific</option>
-          <option value="latam">Latin America</option>
-        </select>
-      </div>
-    </div>
-
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Domain Setup <span className="text-gray-400">*</span>
-        </label>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <input
-                type="text"
-                value={formData.domain}
-                onChange={(e) =>
-                  setFormData({ ...formData, domain: e.target.value })
-                }
-                className="flex-1 block w-full px-3 py-2 rounded-l-md border border-r-0 border-gray-300"
-                placeholder="subdomain"
-              />
-              <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500">
-                .company.com
-              </span>
-            </div>
-          </div>
-          <div className="flex-1 min-w-[200px]">
-            <input
-              type="text"
-              value={formData.customDomain}
-              onChange={(e) =>
-                setFormData({ ...formData, customDomain: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              placeholder="Custom domain (optional)"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Region <span className="text-gray-400">*</span>
+          </label>
+          <select
+            value={formData.region}
+            onChange={(e) =>
+              setFormData({ ...formData, region: e.target.value })
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
+          >
+            <option value="">Select a region</option>
+            <option value="na">North America</option>
+            <option value="eu">Europe</option>
+            <option value="asia">Asia Pacific</option>
+            <option value="latam">Latin America</option>
+          </select>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Company Description
-        </label>
-        <textarea
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
-          placeholder="Brief description of the portal's operations"
-        />
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Domain Setup <span className="text-gray-400">*</span>
+          </label>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <div className="mt-1 flex rounded-md shadow-sm">
+                <input
+                  type="text"
+                  value={formData.domain}
+                  onChange={(e) =>
+                    setFormData({ ...formData, domain: e.target.value })
+                  }
+                  className="flex-1 block w-full px-3 py-2 rounded-l-md border border-r-0 border-gray-300"
+                  placeholder="subdomain"
+                />
+                <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500">
+                  .company.com
+                </span>
+              </div>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <input
+                type="text"
+                value={formData.customDomain}
+                onChange={(e) =>
+                  setFormData({ ...formData, customDomain: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Custom domain (optional)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Company Description
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
+            placeholder="Brief description of the portal's operations"
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const BrandingStep = ({ formData, setFormData }) => {
   const themes = [
@@ -263,10 +314,11 @@ const BrandingStep = ({ formData, setFormData }) => {
               return (
                 <div
                   key={theme.value}
-                  className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${formData.theme === theme.value
-                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500 ring-opacity-50"
-                    : "border-gray-200 hover:border-gray-300"
-                    }`}
+                  className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                    formData.theme === theme.value
+                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500 ring-opacity-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
                   onClick={() =>
                     setFormData({ ...formData, theme: theme.value })
                   }
@@ -478,6 +530,7 @@ const AdministratorStep = ({ formData, setFormData }) => {
         }
         onBlur={handleEmailBlur}
         placeholder="john.doe@company.com"
+        isLoading={isLoading}
       />
       {isLoading && (
         <p className="text-sm text-gray-500">Loading user data...</p>
@@ -502,7 +555,6 @@ const AdministratorStep = ({ formData, setFormData }) => {
       </div>
 
       <div className="space-y-4">
-
         <InputField
           label="Job Title"
           value={formData.jobTitle}
@@ -768,7 +820,7 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false);
   const validateStep = () => {
     const errors = {};
 
@@ -850,13 +902,10 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
 
   const CurrentStepComponent = steps[currentStep].component;
 
-
-
   return (
     <div className="fixed inset-0 z-[70] bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
         {/* Success Message */}
-
 
         {/* {showSuccess && (
           <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
@@ -914,18 +963,16 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
           <button
             onClick={handleNext}
             disabled={isSubmitting || isLoading}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting || isLoading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-[#0061D5] hover:bg-blue-600"
-              }`}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+              isSubmitting || isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#0061D5] hover:bg-blue-600"
+            }`}
           >
-            {currentStep === steps.length - 1
-              ? "Create Portal"
-              : "Continue"}
+            {currentStep === steps.length - 1 ? "Create Portal" : "Continue"}
           </button>
         </div>
       </div>
-
     </div>
   );
 };

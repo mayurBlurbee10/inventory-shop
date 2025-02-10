@@ -600,7 +600,7 @@ export default function AdminDashboard() {
       }}
     >
       <div
-        className={`block sm:hidden fixed w-full border-b border-gray-200 top-0 left-0  z-50 bg-white p-4 flex items-center justify-start ${sidePanelOpen ? "hidden" : "block"}`}
+        className={`sm:hidden fixed w-full border-b border-gray-200 top-0 left-0  z-50 bg-white p-4 flex items-center justify-start ${sidePanelOpen ? "hidden" : "block"}`}
         onClick={() =>
           setSidePanelOpen((prev) => !prev)
         }

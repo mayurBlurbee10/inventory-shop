@@ -43,6 +43,7 @@ import CreateFolder from "./CreateFolder";
 import Navbar from "./Navbar";
 import Container from "./Container";
 import MyTaskPopupBox from "./MyTaskPopupBox";
+import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
 
 function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFolderId }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -71,7 +72,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [moveItem, setMoveItem] = useState(null);
-  const [uploadedfilePath, setUpladedFilePath] = useState("");
+  const [uploadedfilePath, setUpladedFilePath] = useState([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
@@ -81,7 +82,8 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
-  const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState('');
+  const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState("");
+  const [duplicateFiles, setDuplicateFiles] = useState([]);
   const pathname = usePathname();
 
   const handleBrowse = (event) => {
@@ -179,7 +181,14 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
           requestOptions,
           "uploadFile"
         );
-        if (!response.ok) throw new Error("Failed to upload files");
+        const data = await response.json();
+        if (!response.ok) {
+          console.log("data status", data.status);
+          throw new Error(data.error || "Failed to upload files");
+        }
+        if (data.duplicateFiles.length > 0) {
+          setDuplicateFiles(data.duplicateFiles);
+        }
         setIsModalOpen(true);
         setShowUploadArea(false);
         await refreshFiles();
@@ -187,19 +196,11 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
           filesList,
           selectedItem?.id || userData?.boxFolderId
         );
-        const location = `
-              <div>
-                <div>
-                  Location: Home${path}
-                </div>
-                <div>
-                  Name: 
-                  ${files.map((file) => file.name)}
-                </div>
-              </div>
-              `;
+        let location = "";
+        if (data.files.length > 0) {
+          location = [...data.files.map((file) => file.name)];
+        }
         setUpladedFilePath(location);
-        toast.success("File uploaded successfully");
       } catch (error) {
         toast.error(error.message);
         console.error("Error uploading files:", error);
@@ -312,8 +313,9 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-300" : ""
-            }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-300" : ""
+          }`}
         >
           {title}
         </button>
@@ -516,6 +518,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
     const selectedItemsDetails = currentFilesList
       .filter((item) => selectedBulkItems.includes(item.id))
       .map((item) => ({ id: item.id, type: item.type }));
+    console.log("selectedItemsDetails", selectedItemsDetails);
     try {
       const requestOptions = {
         method: "POST",
@@ -767,13 +770,13 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
         await getUserDetailsByEmail(sessionData.user.email);
       } else {
         const userData = getUserData();
-        await getUserDetailsByEmail(userData.email);
+        await getUserDetailsByEmail(userData?.email);
       }
       if (!userData) {
         router.push("login");
         return;
       }
-      await getUserDetailsByEmail(userData.email);
+      await getUserDetailsByEmail(userData?.email);
     };
     fetchSession().then(() => {
       const userData = getUserData();
@@ -831,10 +834,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                     <img
                       src={
                         user?.company?.logo
-                          ? user.company.logo.replace(
-                            "/api/upload",
-                            "/uploads"
-                          )
+                          ? user.company.logo.replace("/api/upload", "/uploads")
                           : config?.logo || "/default_logo_purple.png"
                       }
                       alt={params.portalid}
@@ -1163,7 +1163,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                 setCurrentFilesList={setCurrentFilesList}
                 setSelectedItem={setSelectedItem}
                 selectedItem={selectedItem}
-                handleShareLink={() => { }}
+                handleShareLink={() => {}}
                 onFileChanges={refreshFiles}
                 listType={fileType}
                 setSearchQuery={setSearchQuery}
@@ -1190,14 +1190,29 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                 fileList={filesList}
                 handleMove={handleMove}
               />
-              <DialogBox
+              <UploadFileConfirmDialog
                 title="File Uploaded"
                 message="File uploaded successfully!"
                 fileLocation={uploadedfilePath}
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
+                isDuplicateFile={duplicateFiles.length > 0}
+                duplicateFiles={duplicateFiles}
+                setDuplicateFiles={setDuplicateFiles}
                 config={config}
+                selectedItem={selectedItem}
+                refreshFiles={refreshFiles}
+                path={getFolderPath(
+                  filesList ? filesList : [],
+                  selectedItem?.id || user?.boxFolderId
+                )}
               />
+              {/* <UploadFileConfirmDialog
+                fileLocation={uploadedfilePath}
+                isModalOpen={isModalOpen}
+                setIsModalOpen={setIsModalOpen}
+                config={config}
+              /> */}
               <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}

@@ -2,8 +2,6 @@ import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { Share2, X } from "lucide-react";
 
-
-
 const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen , config}) => {
 
   const [isLoading, setIsLoading] = useState(false);
