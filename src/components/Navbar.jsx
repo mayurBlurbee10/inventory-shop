@@ -164,28 +164,35 @@ function Navbar({ content, config, user, filterValue }) {
     // fetchContent();
     setUserIsAdmin(isAdmin());
   }, []);
+console.log('content:' , content);
 
   return (
     <div className="border-b border-[#0000001a]">
       <div className="lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto px-3">
         <nav className="flex justify-between items-center bg-secondary py-2">
           <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
-            {user?.company?.logo || config?.logo ? (
-              <img
-                src={
-                  user?.company?.logo
-                    ? user.company.logo.replace("/api/upload", "/uploads")
-                    : config?.logo
-                }
-                alt={params.portalid}
-                className="h-[52px] mr-2"
-              />
-            ) : (
+            {/* {user?.company?.logo || config?.logo ? ( */}
+            <img
+              src={
+                user?.company?.logo
+                  ? user.company.logo.replace("/api/upload", "/uploads")
+                  : config?.logo || "/logo.png"
+              }
+              alt={params.portalid}
+              className="h-[52px] mr-2"
+            />
+            {/* ) : (
               // Skeleton for logo
               <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
-            )}
+            )} */}
 
-            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+            <span
+              className="text-3xl text-[#000000e6] mb-1 font-lato"
+              style={{
+                fontSize:
+                  content?.portalContent?.find((item) => item.title === "Header Text")?.fontSize || '30px',
+              }}
+            >
               {filterValue("Header Text") && filterValue("Header Text") !== "Premier Customer Portal" ? (
                 filterValue("Header Text")
               ) : params?.portalid ? (
