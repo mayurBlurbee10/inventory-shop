@@ -1,30 +1,33 @@
 "use client";
+import { getUserData } from "@/app/lib/auth";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import Documents from "@/components/Documents";
+import SignRequestModal from "@/components/SignRequestModal";
 import {
   ArrowDownUp,
+  CircleCheckBig,
   Folder,
   ListChecks,
   Plus,
   Signature,
   UploadCloud,
+  X,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 
-const ApplicationStep = ({ setActiveStep }) => {
-  const [userData, setUserData] = useState({
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    SSN_1: "",
-    SSN_2: "",
-    SSN_3: "",
-    employer: "",
-    annualIncome: "",
-    purchasePrice: "",
-    mortgageAmount: "",
-    propertyLocation: "",
-  });
-
+const ApplicationStep = ({
+  setActiveStep,
+  type,
+  setLoanFolderId,
+  loanFolderId,
+  filesList,
+  userData,
+  setUserData,
+  uniqueNo
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
   const preUserData = {
     firstName: "David",
     lastName: "West",
@@ -38,6 +41,83 @@ const ApplicationStep = ({ setActiveStep }) => {
     mortgageAmount: "565,000.00",
     propertyLocation: "CA",
   };
+
+  const handelNext = async () => {
+    try {
+      if(loanFolderId){
+        setActiveStep("documents");
+        return;
+      }
+      setIsLoading(true);
+      let loansId = null;
+      const item = findFolderWithName(filesList, "Loans");
+      if (!item) {
+        // make loan folder
+        const userData = getUserData();
+        let obj = {
+          name: "Loans",
+          boxFolderId: userData.boxFolderId,
+        };
+        const response = await fetchWrapper(
+          "/api/box/folders",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(obj),
+          },
+          "create-folder"
+        );
+
+        const folderResponse = await response.json();
+
+        if (!response.ok)
+          throw new Error(folderResponse.error || "Failed to create folder");
+        loansId = folderResponse.id;
+      } else {
+        loansId = item.id;
+      }
+      const res = await fetchWrapper(
+        "/api/box/folders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: `${type} - ${uniqueNo}`,
+            boxFolderId: loansId,
+          }),
+        },
+        "create-folder"
+      );
+
+      const loanTypeFolder = await res.json();
+      if (!res.ok)
+        throw new Error(folderResponse.error || "Failed to create folder");
+
+      setLoanFolderId(loanTypeFolder.id);
+      setActiveStep("documents");
+    } catch (error) {
+      console.error("Error creating folder files:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const findFolderWithName = (data, targetName) => {
+    for (const item of data) {
+      if (item.type === "folder" && item.name === targetName) {
+        return item;
+      }
+      if (item.children && findFolderWithName(item.children, targetName)) {
+        return item;
+      }
+    }
+    return null;
+  };
+
   return (
     <div className="flex flex-col justify-center w-full font-lato">
       <h1 className="text-center text-3xl text-black p-10">Application</h1>
@@ -212,9 +292,13 @@ const ApplicationStep = ({ setActiveStep }) => {
           <ListChecks className="size-5" />
         </div>
         <button
-          className="px-3 py-2 border border-black rounded"
-          onClick={() => setActiveStep("documents")}
+          className="px-3 py-2 border border-black rounded flex gap-2"
+          disabled={isLoading}
+          onClick={handelNext}
         >
+          {isLoading && (
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          )}
           Next
         </button>
       </div>
@@ -222,7 +306,119 @@ const ApplicationStep = ({ setActiveStep }) => {
   );
 };
 
-const DocumentStep = ({ setActiveStep }) => {
+const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isRest, setIsRest] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploadLoading, setIsUploadLoading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [files, setFiles] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const handelChoose = async () => {
+    const selectedItemsDetails = findItemsById(filesList, selectedItems, []);
+    let obj = {
+      items: selectedItemsDetails,
+      destinationFolderId: loanFolderId,
+    };
+    try {
+      setIsLoading(true);
+      const requestOptions = {
+        method: "POST",
+        body: JSON.stringify(obj),
+      };
+      const response = await fetchWrapper(
+        `/api/box/bulk/copy`,
+        requestOptions,
+        "bulk-copy"
+      );
+      if (!response.ok) throw new Error("Error bulk copy files or folders");
+      setIsRest(true)
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const findItemsById = (items, idArray, result = []) => {
+    items.forEach((item) => {
+      if (idArray.includes(item.id)) {
+        result.push({ id: item.id, type: item.type });
+      }
+      if (item.children && item.children.length > 0) {
+        findItemsById(item.children, idArray, result);
+      }
+    });
+    return result;
+  };
+
+  const handleDragEvent = (e, isEntering) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(isEntering);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setFiles((prev) => [...prev, ...Array.from(e.dataTransfer.files)]);
+  }
+
+  const handleFileSelect = async (event) => {
+    setFiles((prev) => [...prev, ...Array.from(event.target.files)]);
+  }
+
+  const uploadFiles = async () => {
+    if (files.length === 0) return;
+    try {
+      setIsUploadLoading(true);
+      const uploadData = new FormData();
+      files.forEach((file) => {
+        uploadData.append("file", file);
+      });
+      uploadData.append("boxFolderId", loanFolderId);
+      const userData = getUserData();
+      uploadData.append("email", userData.email);
+      const requestOptions = {
+        method: "POST",
+        body: uploadData,
+      };
+      const response = await fetchWrapper(
+        "/api/box/files",
+        requestOptions,
+        "uploadFile"
+      );
+      if (!response.ok) throw new Error("Failed to upload files");
+      toast.success("File uploaded successfully");
+      setUploadSuccess(true);
+      handleCancel();
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Error uploading files:", error);
+    } finally {
+      setIsUploadLoading(false);
+    }
+  }
+
+  const removeFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  }
+
+  const handleCancel = () => {
+    setFiles([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+
+  useEffect(() => {
+    setIsRest(false);
+  }, [selectedItems]);
+
   return (
     <div className="flex flex-col justify-center w-full font-lato px-10">
       <h1 className="text-center text-3xl text-black pt-10 pb-3">Documents</h1>
@@ -241,67 +437,33 @@ const DocumentStep = ({ setActiveStep }) => {
       </div>
       <div className="grid grid-cols-2 gap-x-5">
         <div className="flex flex-col border border-blue-500">
-          <div className="flex items-center gap-2 p-3 bg-[#fcfcfc] border-b border-[#ced4da]">
-            <img
-              src={"/uploads/logo-1736255560176-312280627.png"}
-              alt={"logo"}
-              className="h-[40px] mr-2"
-            />
-            <input
-              type="text"
-              placeholder="Search files and folder"
-              className="text-sm border border-[#ced4da] rounded p-1 w-full mr-2"
-            />
-          </div>
-          <div className="flex items-center justify-between text-sm p-3 border-b border-[#ced4da]">
-            <p>testUser@yopmail.com</p>
-            <div className="flex items-center gap-1">
-              <ArrowDownUp className="size-4" />
-              <Plus className="size-4" />
-            </div>
-          </div>
-          <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-            <Folder />
-            <div>
-              <p className="text-sm font-normal text-black">Loans</p>
-              <p>Modified today by testUser@yopmail.com</p>
-              <p>1.38 MB</p>
-            </div>
-          </div>
-          <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-            <Folder />
-            <div>
-              <p className="text-sm font-normal text-black">
-                Personal Documents
-              </p>
-              <p>Modified Wed Jan 12 2025 by Wealthportal Service Account</p>
-              <p>40.63 KB</p>
-            </div>
-          </div>
-          <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-            <Folder />
-            <div>
-              <p className="text-sm font-normal text-black">Text Prep 2019</p>
-              <p>Modified Wed Jan 12 2025 by Wealthportal Service Account</p>
-              <p>368.28 KB</p>
-            </div>
-          </div>
-          {/* <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-              <Folder />
-              <div>
-                <p className="text-sm font-normal text-black">pay-stub.pdf</p>
-                <p>Modified Wed Jan 12 2025 by Wealthportal Service Account</p>
-                <p>40.63 KB</p>
-              </div>
-            </div> */}
+          <Documents
+            fileType={"loan"}
+            setSelectedItems={setSelectedItems}
+            selectedItems={selectedItems}
+            isRest={isRest}
+          />
           <div className="flex items-center justify-between p-4">
-            <p>0 Selected</p>
+            <p>{selectedItems.length} Selected</p>
             <div className="flex gap-2">
-              <button className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100">
+              <button
+                className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
+                onClick={() => {
+                  setIsRest(true);
+                }}
+                disabled={isLoading}
+              >
                 Cancel
               </button>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
-                Choose
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                onClick={handelChoose}
+                disabled={isLoading}
+              >
+                <div className="flex items-center gap-2">
+                  {isLoading && <div className="spinner"></div>}
+                  Choose
+                </div>
               </button>
             </div>
           </div>
@@ -309,28 +471,77 @@ const DocumentStep = ({ setActiveStep }) => {
 
         <div className="flex flex-col border border-[#17a2b8]">
           {/* File Upload Section */}
-          <div className="p-6 flex flex-col items-center text-center border-b flex-1 justify-center text-sm">
-            <UploadCloud className="h-12 w-12 text-blue-500 mb-2" />
-            <p className="text-gray-600">Drag and drop files</p>
-            <p className="text-blue-600 cursor-pointer underline">
-              Browse your device
-            </p>
-          </div>
+          {uploadSuccess ? (
+            <div className="p-6 flex flex-col flex-1 justif-center items-center text-center border-b text-sm">
+              <CircleCheckBig className="h-12 w-12 text-blue-500 mb-2" />
+              <p className="text-gray-600">Success! Your files have been uploaded.</p>
+              <p className="text-blue-600 cursor-pointer underline" onClick={() => fileInputRef.current?.click()}>
+                Select More Files
+              </p>
+            </div>
+          ) : (
+            <div
+              className={`p-6 flex flex-col flex-1 justify-center items-center text-center border-b text-sm ${
+                isDragging ? "bg-blue-50" : "bg-gray-50"
+              } ${files.length > 0 ? "hidden" : ""}`}
+              onDragEnter={(e) => handleDragEvent(e, true)}
+              onDragLeave={(e) => handleDragEvent(e, false)}
+              onDragOver={(e) => handleDragEvent(e, true)}
+              onDrop={handleDrop}
+            >
+              <UploadCloud className="h-12 w-12 text-blue-500 mb-2" />
+              <p className="text-gray-600">Drag and drop files</p>
+              <p className="text-blue-600 cursor-pointer underline" onClick={() => fileInputRef.current?.click()}>
+                Browse your device
+              </p>
+            </div>
+          )}
+
+          {files.length > 0 && (
+            <div className="p-6 text-sm flex flex-1 flex-col">
+              {files.map((file, index) => (
+                <div key={index} className="flex justify-between items-center border-b py-2">
+                  <span>{file.name}</span>
+                  <X className="cursor-pointer text-black-500" onClick={() => removeFile(index)} />
+                </div>
+              ))}
+            </div>
+          )}
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileSelect}
+            multiple
+          />
 
           {/* Footer with Buttons */}
           <div className="flex justify-between items-center p-4">
-            <button className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100">
+            <button 
+              className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
+              disabled = {files.length > 0}
+            >
               Close
             </button>
             <div className="flex space-x-2">
-              <button className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100">
+              <button 
+                className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
+                onClick={handleCancel}
+                disabled={isUploadLoading || files.length==0}
+              >
                 Cancel
               </button>
               <button
-                className={`text-white px-4 py-2 rounded-md border-gray bg-blue-500 hover:bg-blue-600
-                    `}
+                className="text-white px-4 py-2 rounded-md border-gray bg-blue-500 hover:bg-blue-600"
+                disabled={isUploadLoading  || files.length==0}
+                onClick={uploadFiles}
               >
-                Upload
+                <div className="flex items-center gap-2">
+                  {isUploadLoading 
+                    ? <><div className="spinner"></div> Uploading</>
+                    : "Upload"
+                  }
+                </div>
               </button>
             </div>
           </div>
@@ -339,6 +550,7 @@ const DocumentStep = ({ setActiveStep }) => {
       <div className="flex items-center justify-between py-10">
         <button
           className="px-3 py-2 border border-black rounded"
+          disabled={isLoading || isUploadLoading}
           onClick={() => setActiveStep("loanestimate")}
         >
           Next
@@ -348,9 +560,57 @@ const DocumentStep = ({ setActiveStep }) => {
   );
 };
 
-const LoanEstimateStep = () => {
-  const router = useRouter();
-  const params = useParams();
+const LoanEstimateStep = ({finalStep, params}) => {
+
+  const [isSignModalOpen, setIsSignModalOpen] = useState(false);
+  const [selectedSignUrl, setSelectedSignUrl] = useState(null);
+
+  const handelSelfSign = async() => {
+    try {
+      // setIsLoading(true);
+      const userData = getUserData();
+      const response = await fetchWrapper(
+        "/api/box/e-sign",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileId: '1773656670098',
+            signers:[{
+              signerEmail: userData.email,
+              signerId: userData.id,
+            }],
+            boxUserId: userData.boxUserId,
+            portal: params.portalid,
+            onSameDoc: false,
+          }),
+        },
+        "self-esign-request"
+      );
+      const data = await response.json();
+      console.log('data: ', data)
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate e-sign request");
+      }
+      toast.success("E-sign request generated successfully.");
+      const currentUserReq = data.data[0].signers.find(
+        (item) => item.email === user.email
+      );
+      if (currentUserReq) {
+        setTimeout(() => {
+          setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+          setIsSignModalOpen(true);
+          // setIsLoading(false);
+        }, 2500);
+      }
+    } catch (error) { 
+      // setIsLoading(false);
+      toast.error(error.message);
+    }
+  };
+
   return (
     <div className="w-full font-lato px-10">
       <div className="w-full">
@@ -364,44 +624,172 @@ const LoanEstimateStep = () => {
       <div className="h-full border border-[#ced4da] rounded flex flex-col items-center justify-center pt-20 pb-10 mt-16 space-y-2">
         <button
           className="border border-black rounded-md py-3 px-4 text-xl"
-          onClick={() =>
-            router.push(
-              params.portalid ? `/${params.portalid}/loans` : "/loans"
-            )
-          }
+          onClick={handelSelfSign}
         >
           Review and Sign
         </button>
         <Signature className="text-[#0057ca] size-10" />
+        <p className="font-light text-lg text-center">Your Loan has been created successfully.</p>
+        <button
+          onClick={finalStep}
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Loan Origination 
+        </button>
       </div>
+      <SignRequestModal
+        isOpen={isSignModalOpen}
+        onClose={() => setIsSignModalOpen(false)}
+        signUrl={selectedSignUrl}
+      />
     </div>
   );
 };
 
 function NewLoanPage() {
   const [activeStep, setActiveStep] = useState("application");
+  const [loanFolderId, setLoanFolderId] = useState(null);
+  const [filesList, setFilesList] = useState([]);
+  const [shareFilesList, setShareFilesList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    SSN_1: "",
+    SSN_2: "",
+    SSN_3: "",
+    employer: "",
+    annualIncome: "",
+    purchasePrice: "",
+    mortgageAmount: "",
+    propertyLocation: "",
+  });
+  const [uniqueNo, setUniqueNo] = useState(null);
+
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const type = searchParams.get("type");
 
   useEffect(() => {
-    localStorage.setItem("newLoan", true);
+    // localStorage.setItem("newLoan", true);
+    const uniqueNo = Math.floor(Date.now() % 1000000);
+    setUniqueNo(uniqueNo);
+    getFile();
+    getShareFile();
   }, []);
+
+  const getFile = async () => {
+    try {
+      setIsLoading(true);
+      const userData = getUserData();
+      const requestOptions = {
+        method: "GET",
+      };
+      const response = await fetchWrapper(
+        `/api/box/folders?folderId=${userData.boxFolderId}`,
+        requestOptions,
+        "fetchFile"
+      );
+      if (!response.ok) throw new Error("Failed to fetch files");
+      const data = await response.json();
+      const newFilesList = data?.items || [];
+      setFilesList(newFilesList);
+    } catch (error) {
+      console.error("Error get files:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getShareFile = async () => {
+    try {
+      setIsLoading(true);
+      const userData = getUserData();
+      if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
+        const requestOptions = {
+          method: "POST",
+          body: JSON.stringify({ collaborated: userData.collaborationIds }),
+        };
+        const response = await fetchWrapper(
+          `/api/box/collaborations`,
+          requestOptions,
+          "fetchCollaboratedFolder"
+        );
+        if (!response.ok) throw new Error("Failed to get collaborated folder");
+        const data = await response.json();
+        const newFilesList = data?.items;
+        setShareFilesList(newFilesList);
+      }
+    } catch (error) {
+      console.error("Error get files:", error);
+    } finally {
+      // setIsLoading(false);
+    }
+  };
+
+  const finalStep = () => {
+    const loans = JSON.parse(localStorage.getItem("loan")||"[]");
+    const obj = {
+      id: uniqueNo,
+      icon: type=='personal'?'User':(type=='auto'?'CarFront':'Home'),
+      name: `${type} - ${uniqueNo}`,
+      type: type,
+      status: "Processing",
+      folderId:loanFolderId,
+      complete: 30,
+      paid: "In process"
+    }
+    loans.push(obj);
+    localStorage.setItem("loan", JSON.stringify(loans));
+      router.push(
+        params.portalid ? `/${params.portalid}/loans` : "/loans"
+      )
+
+  };
 
   const getActiveStepContent = () => {
     switch (activeStep) {
       case "application":
-        return <ApplicationStep setActiveStep={setActiveStep} />;
+        return (
+          <ApplicationStep
+            setActiveStep={setActiveStep}
+            type={type}
+            setLoanFolderId={setLoanFolderId}
+            loanFolderId={loanFolderId}
+            filesList={filesList}
+            userData={userData}
+            setUserData={setUserData}
+            uniqueNo={uniqueNo}
+          />
+        );
       case "documents":
-        return <DocumentStep setActiveStep={setActiveStep} />;
+        return (
+          <DocumentStep
+            setActiveStep={setActiveStep}
+            loanFolderId={loanFolderId}
+            filesList={shareFilesList}
+          />
+        );
       case "loanestimate":
-        return <LoanEstimateStep />;
+        return <LoanEstimateStep finalStep={finalStep} params={params}/>;
       default:
         return null;
     }
   };
+
+  if (isLoading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   return (
-    <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
+    <div className="bg-white rounded-lg flex flex-col relative w-full h-[91vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div className="flex items-center justify-between font-lato">
         <div className="w-2/5 md:w-64 h-full border-r border-[#dee2e6] pt-5 pr-2 bg-white text-gray-700">
-          <h1 className="text-3xl text-black mb-5">New Mortgage Loan</h1>
+          <h1 className="text-3xl text-black mb-5">New {type} Loan</h1>
           <div className="flex flex-col items-start space-y-4">
             <button
               onClick={() => setActiveStep("application")}

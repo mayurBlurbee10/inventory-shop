@@ -1,11 +1,12 @@
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog, DialogPanel } from "@headlessui/react";
-import { Loader2, Send, Signature, X } from "lucide-react";
+import { Loader2, Send, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import { toast } from "react-toastify";
+
 function SendforSignatureDialog({
   item,
   usersList,
@@ -13,9 +14,11 @@ function SendforSignatureDialog({
   setIsModalOpen,
 }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnSameDoc, setIsOnSameDoc] = useState(false);
   const [userList, setUserList] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const params = useParams();
+
   useEffect(() => {
     const users = usersList.map((user) => ({
       value: user.boxUserId,
@@ -25,8 +28,15 @@ function SendforSignatureDialog({
     }));
     setUserList(users);
   }, [usersList]);
-  const handelSendforSignature = async (selectedUser) => {
+
+  const handelSendforSignature = async (selectedUsers) => {
+
     try {
+      setIsLoading(true);
+      const signers = selectedUsers.map((user) => ({
+        signerEmail: user.email,
+        signerId: user.userId,
+      }));
       const userData = getUserData();
       const response = await fetchWrapper(
         "/api/box/e-sign",
@@ -37,28 +47,29 @@ function SendforSignatureDialog({
           },
           body: JSON.stringify({
             fileId: item.id,
-            signerEmail: selectedUser.email,
-            userId: userData.id,
+            signers,
             boxUserId: userData.boxUserId,
             portal: params.portalid,
-            signerId: selectedUser.userId,
+            onSameDoc: isOnSameDoc,
           }),
         },
         "esign-request"
       );
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || "Failed to send e-sign request");
       }
       toast.success("E-sign request sent successfully.");
       setIsLoading(false);
-      setSelectedUser(null);
+      setSelectedUsers([]);
       setIsModalOpen(false);
     } catch (error) {
       setIsLoading(false);
-      toast.error(err.message);
+      toast.error(error.message);
     }
   };
+
   return (
     <Dialog
       open={isModalOpen}
@@ -66,6 +77,7 @@ function SendforSignatureDialog({
       className="relative z-50 text-gray-600"
     >
       <div className="fixed inset-0 bg-black/10" aria-hidden="true" />
+
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="w-full max-w-md rounded-lg bg-white shadow-lg">
           {/* Header */}
@@ -86,15 +98,30 @@ function SendforSignatureDialog({
               </p>
               <div>
                 <Select
+                  isMulti={true}
                   className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   classNamePrefix="Select the user"
                   isClearable={true}
                   isSearchable={true}
-                  value={selectedUser}
-                  onChange={(e) => setSelectedUser(e)}
+                  value={selectedUsers}
+                  onChange={(e) => setSelectedUsers(e)}
                   options={userList}
                 />
               </div>
+              {selectedUsers.length>1 && (
+                <div className="flex items-center mt-4">
+                  <input
+                    type="checkbox"
+                    id="onSameDoc"
+                    checked={isOnSameDoc}
+                    onChange={(e) => setIsOnSameDoc(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="onSameDoc" className="text-gray-600">
+                    Send all signers in one request (Same Document)
+                  </label>
+                </div>
+              )}
             </div>
           </div>
           {/* Actions */}
@@ -106,10 +133,7 @@ function SendforSignatureDialog({
               Cancel
             </button>
             <button
-              onClick={() => {
-                setIsLoading(true);
-                handelSendforSignature(selectedUser);
-              }}
+              onClick={() => handelSendforSignature(selectedUsers)}
               disabled={isLoading}
               className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
@@ -126,4 +150,5 @@ function SendforSignatureDialog({
     </Dialog>
   );
 }
+
 export default SendforSignatureDialog;

@@ -44,7 +44,7 @@ import Navbar from "./Navbar";
 import Container from "./Container";
 import MyTaskPopupBox from "./MyTaskPopupBox";
 
-function Documents({ fileType }) {
+function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFolderId }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
@@ -216,8 +216,19 @@ function Documents({ fileType }) {
       const requestOptions = {
         method: "GET",
       };
-      if (fileType === "shared") {
-        if (
+      if (fileType == "shared" || fileType == "loan") {
+        if(loanFolderId) {
+          const response = await fetchWrapper(
+            `/api/box/folders?folderId=${loanFolderId}`,
+            requestOptions,
+            "fetchFile"
+          );
+          if (!response.ok) throw new Error("Failed to fetch files");
+          const data = await response.json();
+          const newFilesList = data?.items || [];
+          setFilesList(newFilesList);
+          setSelectedItem({type: "folder", id: loanFolderId});
+        } else if (
           userData?.collaborationIds &&
           userData.collaborationIds.length > 0
         ) {
@@ -491,7 +502,15 @@ function Documents({ fileType }) {
 
   useEffect(() => {
     setIsToolbarVisible(selectedBulkItems.length > 0);
+    setSelectedItems && setSelectedItems(selectedBulkItems);
   }, [selectedBulkItems]);
+
+  useEffect(() => {
+    if(selectedItems?.length > 0 && isRest) {
+      setSelectedBulkItems([]);
+      setSelectedItems([])
+    }
+  }, [isRest]);
 
   const handleBulkDelete = async () => {
     const selectedItemsDetails = currentFilesList
@@ -779,20 +798,24 @@ function Documents({ fileType }) {
   return (
     // <div className="bg-white min-h-screen">
     // <Container>
-    <div className="max-w-[1820px] mx-auto pt-12 mt-12">
+    <div className={`max-w-[1820px] ${fileType === 'loan'?"":"mx-auto pt-12 mt-12"}`}>
       <div>
-        <div className="grid grid-cols-5 px-4 gap-7">
-          <div className="col-span-5 lg:col-span-3">
-            <div className="flex items-center gap-10">
-              <span className="text-xl font-light text-[#212529] font-lato">
-                {fileType === "shared" ? "Shared Documents" : "My Documents"}
-              </span>
-              <span className="text-black font-lato font-normal text-sm">
-                Securely share content with your advisor and trusted
-                collaborators
-              </span>
-            </div>
-            <hr className="my-4" />
+        <div className={`grid gap-7 grid-cols-5 ${fileType === 'loan'?"":"px-4"}`}>
+          <div className={`col-span-5 ${fileType === 'loan'?"lg:col-span-5":"lg:col-span-3"}`}>
+           {fileType !== 'loan' && (
+              <>
+                <div className="flex items-center gap-10">
+                  <span className="text-xl font-light text-[#212529] font-lato">
+                    {fileType === "shared" ? "Shared Documents" : "My Documents"}
+                  </span>
+                  <span className="text-black font-lato font-normal text-sm">
+                    Securely share content with your advisor and trusted
+                    collaborators
+                  </span>
+                </div>
+                <hr className="my-4" />
+              </>
+            )}
             <div className="border border-solid border-[#0000001a] rounded-sm relative">
               <div className="border-b border-solid border-[#0000001a]">
                 <div className="py-[18px] flex items-center w-full px-5 bg-gray-50">
@@ -897,65 +920,67 @@ function Documents({ fileType }) {
                 </div>
               </div>
 
-              <div>
-                <div
-                  className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
-                         ${isToolbarVisible ? "opacity-1" : "hidden"}
-                        `}
-                >
-                  <div className="flex items-center gap-3">
-                    <button
-                      className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
-                      onClick={clearBulkItem}
-                    >
-                      <X className="size-5" />
-                    </button>
-                    <p className="text-sm font-medium mr-4 text-[#444746]">
-                      {selectedBulkItems.length} item(s) selected
-                    </p>
-                    <button
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "hidden"
-                        : "hover:bg-gray-200"
-                        } outline-none`}
-                      onClick={() =>
-                        selectedBulkItems.length > 0 &&
-                        handelToolbarMoveClick()
-                      }
-                      disabled={fileType === "shared"}
-                    >
-                      <FolderInput className="size-5" />
-                    </button>
-                    <button
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "hidden"
-                        : "hover:bg-gray-200"
-                        } outline-none`}
-                      onClick={
-                        () =>
-                          selectedBulkItems.length > 0 && handleBulkDownload()
-                        // console.log("selectedBulkItems", selectedBulkItems)
-                      }
-                      disabled={fileType === "shared"}
-                    >
-                      <Download className="size-5" />
-                    </button>
-                    <button
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "hidden"
-                        : "hover:bg-gray-200"
-                        } outline-none`}
-                      onClick={() =>
-                        selectedBulkItems.length > 0 &&
-                        setIsDeleteModalOpen(true)
-                      }
-                      disabled={fileType === "shared"}
-                    >
-                      <Trash2 className="size-5" />
-                    </button>
+              {fileType !== 'loan' && (
+                <div>
+                  <div
+                    className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
+                          ${isToolbarVisible ? "opacity-1" : "hidden"}
+                          `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
+                        onClick={clearBulkItem}
+                      >
+                        <X className="size-5" />
+                      </button>
+                      <p className="text-sm font-medium mr-4 text-[#444746]">
+                        {selectedBulkItems.length} item(s) selected
+                      </p>
+                      <button
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
+                          ? "hidden"
+                          : "hover:bg-gray-200"
+                          } outline-none`}
+                        onClick={() =>
+                          selectedBulkItems.length > 0 &&
+                          handelToolbarMoveClick()
+                        }
+                        disabled={fileType === "shared"}
+                      >
+                        <FolderInput className="size-5" />
+                      </button>
+                      <button
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
+                          ? "hidden"
+                          : "hover:bg-gray-200"
+                          } outline-none`}
+                        onClick={
+                          () =>
+                            selectedBulkItems.length > 0 && handleBulkDownload()
+                          // console.log("selectedBulkItems", selectedBulkItems)
+                        }
+                        disabled={fileType === "shared"}
+                      >
+                        <Download className="size-5" />
+                      </button>
+                      <button
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
+                          ? "hidden"
+                          : "hover:bg-gray-200"
+                          } outline-none`}
+                        onClick={() =>
+                          selectedBulkItems.length > 0 &&
+                          setIsDeleteModalOpen(true)
+                        }
+                        disabled={fileType === "shared"}
+                      >
+                        <Trash2 className="size-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* breadcrumbs */}
               <div className="px-5 border-b break-words">
@@ -1014,37 +1039,41 @@ function Documents({ fileType }) {
                         </div>
                       )}
 
-                      {/* Card view button */}
-                      <button
-                        className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
-                          }`}
-                        onClick={() => {
-                          setView("grid");
-                          // setIsOpenOptionDrawer(false);
-                        }}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          height="24"
-                          fill="currentColor"
-                        >
-                          <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
-                        </svg>
-                      </button>
+                      {fileType !== 'loan' && (
+                        <>
+                          {/* Card view button */}
+                          <button
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
+                              }`}
+                            onClick={() => {
+                              setView("grid");
+                              // setIsOpenOptionDrawer(false);
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              height="24"
+                              fill="currentColor"
+                            >
+                              <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
+                            </svg>
+                          </button>
 
-                      {/* List view button */}
-                      <button
-                        className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
-                          }`}
-                        onClick={() => {
-                          setView("list");
-                          // setIsOpenOptionDrawer(false);
-                        }}
-                      >
-                        <AlignJustify />
-                      </button>
+                          {/* List view button */}
+                          <button
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
+                              }`}
+                            onClick={() => {
+                              setView("list");
+                              // setIsOpenOptionDrawer(false);
+                            }}
+                          >
+                            <AlignJustify />
+                          </button>
+                        </>
+                      )}
 
                       {/* Upload items */}
                       <div className="relative">
@@ -1342,246 +1371,249 @@ function Documents({ fileType }) {
           </div>
 
           {/* right panel */}
-          <div className="col-span-5 lg:col-span-2">
-            <div>
-              <div className="grid grid-cols-3">
-                <div></div>
-                <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                  My Tasks
-                </h3>
-                <div className="flex items-center justify-end text-[#dc3545]">
-                  <RotateCw className="h-4 w-4" />
-                </div>
-              </div>
-              {/* Tasks */}
-              <div className="mb-7">
-                <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
-                  <tbody className="divide-y divide-gray-200 ">
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Upload identity information
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Upload identity information",
-                              actionText: "Upload"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Upload
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Upload 2023 tax return
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Upload 2023 tax return",
-                              actionText: "Complete Forms"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Complete Forms
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Sign money transfer agreement
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Sign money transfer agreement",
-                              actionText: " Sign"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Sign
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Auto Loan Forms
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Auto Loan Forms",
-                              actionText: "Start Forms"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Start Forms
-                        </p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {
-                isMyTaskPopupOpen && (
-                  <MyTaskPopupBox
-                    onClose={() => setIsMyTaskPopupOpen(false)}
-                    content={myTaskPopupBoxContent}
-                    config={config}
-                  />
-                )
-              }
-
-              {/* My advisor */}
-              <div className="mb-7">
-                <div>
-                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                    My Advisor
-                  </h3>
-                </div>
-
-                {/* Advisory card */}
-
-                <div className="rounded-md border border-[#dee2e6]">
-                  <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
-                    <div className="max-w-[150px] w-full">
-                      <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
-                        <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
-                      </a>
-                    </div>
-
-                    <div>
-                      <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
-                        Erica Smith
-                      </h2>
-                      <p className="font-lato text-base text-[#6c757d]">
-                        Senior Financial Advisor
-                      </p>
-                    </div>
-                  </div>
-                  <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
-                    <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                      Meet
-                    </button>
-                    <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                      Call
-                    </button>
-                    <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                      Chat
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Collaborators */}
-
+          
+          {fileType !== 'loan' && (
+            <div className="col-span-5 lg:col-span-2">
               <div>
-                <div>
+                <div className="grid grid-cols-3">
+                  <div></div>
                   <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                    My Collaborators
+                    My Tasks
                   </h3>
+                  <div className="flex items-center justify-end text-[#dc3545]">
+                    <RotateCw className="h-4 w-4" />
+                  </div>
                 </div>
-                <div className="p-4 border border-[#dee2e6]">
-                  <form className="mb-3.5">
-                    <input
-                      type="email"
-                      className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
+                {/* Tasks */}
+                <div className="mb-7">
+                  <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
+                    <tbody className="divide-y divide-gray-200 ">
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Upload identity information
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent({
+                                title: "Upload identity information",
+                                actionText: "Upload"
+                              });
+                              setIsMyTaskPopupOpen((prev) => !prev);
+                            }}
+                          >
+                            Upload
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Upload 2023 tax return
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent({
+                                title: "Upload 2023 tax return",
+                                actionText: "Complete Forms"
+                              });
+                              setIsMyTaskPopupOpen((prev) => !prev);
+                            }}
+                          >
+                            Complete Forms
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Sign money transfer agreement
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent({
+                                title: "Sign money transfer agreement",
+                                actionText: " Sign"
+                              });
+                              setIsMyTaskPopupOpen((prev) => !prev);
+                            }}
+                          >
+                            Sign
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Auto Loan Forms
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent({
+                                title: "Auto Loan Forms",
+                                actionText: "Start Forms"
+                              });
+                              setIsMyTaskPopupOpen((prev) => !prev);
+                            }}
+                          >
+                            Start Forms
+                          </p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {
+                  isMyTaskPopupOpen && (
+                    <MyTaskPopupBox
+                      onClose={() => setIsMyTaskPopupOpen(false)}
+                      content={myTaskPopupBoxContent}
+                      config={config}
                     />
+                  )
+                }
 
-                    <div className="flex items-center gap-6">
-                      <select className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato">
-                        <option>Co-Owner</option>
-                        <option>Editor</option>
-                        <option>Viewer</option>
-                        <option>Previewer</option>
-                        <option>Uploader</option>
-                        <option>Previewer Uploader</option>
-                        <option>Viewer Uploader</option>
-                      </select>
+                {/* My advisor */}
+                <div className="mb-7">
+                  <div>
+                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                      My Advisor
+                    </h3>
+                  </div>
 
-                      <button
-                        className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm"
-                        type="button"
-                      >
-                        Invite
+                  {/* Advisory card */}
+
+                  <div className="rounded-md border border-[#dee2e6]">
+                    <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
+                      <div className="max-w-[150px] w-full">
+                        <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
+                          <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
+                        </a>
+                      </div>
+
+                      <div>
+                        <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
+                          Erica Smith
+                        </h2>
+                        <p className="font-lato text-base text-[#6c757d]">
+                          Senior Financial Advisor
+                        </p>
+                      </div>
+                    </div>
+                    <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
+                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                        Meet
+                      </button>
+                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                        Call
+                      </button>
+                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                        Chat
                       </button>
                     </div>
-                  </form>
+                  </div>
+                </div>
 
-                  {/* Table */}
+                {/* Collaborators */}
 
-                  <div className="border overflow-auto">
-                    <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
-                      <thead>
-                        <tr>
-                          <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                            Name
-                          </th>
-                          <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                            Email
-                          </th>
-                          <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                            Role
-                          </th>
-                        </tr>
-                      </thead>
+                <div>
+                  <div>
+                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                      My Collaborators
+                    </h3>
+                  </div>
+                  <div className="p-4 border border-[#dee2e6]">
+                    <form className="mb-3.5">
+                      <input
+                        type="email"
+                        className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
+                      />
 
-                      <tbody>
-                        <tr className="hover:bg-gray-300">
-                          <td className="p-3">
-                            <p className="font-semibold font-lato text-sm text-black">
-                              Erica Smith
-                            </p>
-                          </td>
-                          <td className="p-3">
-                            <p className="font-normal font-lato text-sm text-black">
-                              advisor@wealthportal.com
-                            </p>
-                          </td>
-                          <td className="p-3">
-                            <p className="font-normal font-lato text-sm text-black">
-                              Editor
-                            </p>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                      <div className="flex items-center gap-6">
+                        <select className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato">
+                          <option>Co-Owner</option>
+                          <option>Editor</option>
+                          <option>Viewer</option>
+                          <option>Previewer</option>
+                          <option>Uploader</option>
+                          <option>Previewer Uploader</option>
+                          <option>Viewer Uploader</option>
+                        </select>
+
+                        <button
+                          className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm"
+                          type="button"
+                        >
+                          Invite
+                        </button>
+                      </div>
+                    </form>
+
+                    {/* Table */}
+
+                    <div className="border overflow-auto">
+                      <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
+                        <thead>
+                          <tr>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Name
+                            </th>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Email
+                            </th>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Role
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          <tr className="hover:bg-gray-300">
+                            <td className="p-3">
+                              <p className="font-semibold font-lato text-sm text-black">
+                                Erica Smith
+                              </p>
+                            </td>
+                            <td className="p-3">
+                              <p className="font-normal font-lato text-sm text-black">
+                                advisor@wealthportal.com
+                              </p>
+                            </td>
+                            <td className="p-3">
+                              <p className="font-normal font-lato text-sm text-black">
+                                Editor
+                              </p>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
