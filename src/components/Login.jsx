@@ -262,6 +262,7 @@ function Login() {
     return value;
   };
 
+
   const login = async () => {
     try {
       const userData = await fetchUser();
@@ -316,6 +317,9 @@ function Login() {
   if (!config || !content) return <LoadingSpinner />;
   console.log('portalId:', params.portalid);
 
+  console.log('centent:', content);
+  console.log('fontSize:', content.portalContent[0].fontSize);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -344,7 +348,13 @@ function Login() {
               <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
             )}
 
-            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+            <span
+              className="text-3xl text-[#000000e6] mb-1 font-lato"
+              style={{
+                fontSize:
+                  content.portalContent.find((item) => item.title === "Header Text")?.fontSize || '30px',
+              }}
+            >
               {filterValue("Header Text") && filterValue("Header Text") !== "Premier Customer Portal" ? (
                 filterValue("Header Text")
               ) : params?.portalid ? (
@@ -353,6 +363,7 @@ function Login() {
                 <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
               )}
             </span>
+
 
 
 

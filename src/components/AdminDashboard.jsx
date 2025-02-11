@@ -329,7 +329,7 @@ const SubsidiaryGrid = ({
             <div className="flex justify-center mt-6">
               <button
                 onClick={handleLoadMore}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="bg-[#0061D5] text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 Load More
               </button>
@@ -600,7 +600,7 @@ export default function AdminDashboard() {
       }}
     >
       <div
-        className={`block sm:hidden fixed w-full border-b border-gray-200 top-0 left-0  z-50 bg-white p-4 flex items-center justify-start ${sidePanelOpen ? "hidden" : "block"}`}
+        className={`sm:hidden fixed w-full border-b border-gray-200 top-0 left-0  z-50 bg-white p-4 flex items-center justify-start ${sidePanelOpen ? "hidden" : "block"}`}
         onClick={() =>
           setSidePanelOpen((prev) => !prev)
         }

@@ -143,7 +143,7 @@ export async function POST(request) {
           true
         );
       }
-      if (mainUser.role === UserRole.SUPER_ADMIN) {
+      if (mainUser.role === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
         try {
           if (!mainUser.groupMembersIds) {
             mainUser.groupMembersIds = [];
@@ -239,7 +239,7 @@ export async function POST(request) {
       sendSetPasswordEmail(newUser.email, newUser.name, token, userPortal);
     }
 
-    if (mainUser.role === UserRole.SUPER_ADMIN) {
+    if (mainUser.role === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
       try {
         if (!mainUser.groupMembersIds) {
           mainUser.groupMembersIds = [];

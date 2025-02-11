@@ -16,4 +16,7 @@ export @Entity("content_management")
 
   @Column({ type: "nvarchar", length: 255, nullable: true })
   portalId;
+
+  @Column({ type: "nvarchar", length: 255, nullable: true })
+  fontSize;
 }

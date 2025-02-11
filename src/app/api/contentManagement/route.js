@@ -24,7 +24,7 @@ export async function POST(request) {
   try {
     await logApiCall(request);
     const contentData = await request.json();
-    console.log(contentData);
+    console.log("contentFromPOSTApi:", contentData);
     if (
       !contentData.title ||
       !contentData.type ||
@@ -105,6 +105,7 @@ export async function POST(request) {
     );
   }
 }
+
 export async function GET(request) {
   try {
     await logApiCall(request);
@@ -121,7 +122,7 @@ export async function GET(request) {
     );
 
     let defaultContentItems = []
-    if(portalId != 'default'){
+    if (portalId != 'default') {
       defaultContentItems = await contentManagementService.getContentManagement('default');
     }
     // console.log('contentItems: ', JSON.stringify(contentItems))
@@ -134,12 +135,12 @@ export async function GET(request) {
     // });
     return NextResponse.json(
       {
-        portalContent:contentItems,
-        defaultContent:defaultContentItems
-      }, 
+        portalContent: contentItems,
+        defaultContent: defaultContentItems
+      },
       {
-      status: 200,
-    });
+        status: 200,
+      });
   } catch (error) {
     console.error("Error in GET /api/content:", error);
     return NextResponse.json(
@@ -153,13 +154,14 @@ export async function PUT(request) {
   try {
     await logApiCall(request);
     const contentData = await request.json();
-    console.log(contentData);
+    console.log("contentFromPUTApi:", contentData);
     if (
       !contentData.id ||
       !contentData.title ||
       !contentData.type ||
       !contentData.value ||
-      !contentData.portalId
+      !contentData.portalId ||
+      !contentData.fontSize
     ) {
       return NextResponse.json(
         { error: "Missing required fields: id, title, type, value" },
@@ -208,8 +210,10 @@ export async function PUT(request) {
     // await writeJsonFile(dir, filePath, contentItems);
 
     // const data = { ...contentItems[portalexist]["value"][existingIndex] };
-    const contentUpdated =
-      await contentManagementService.updateContentManagement(contentData);
+    const contentUpdated = await contentManagementService.updateContentManagement({
+      ...contentData,
+      fontSize: contentData.fontSize || null, // Include fontSize
+    });
     return NextResponse.json(contentUpdated, { status: 200 });
   } catch (error) {
     console.error("Error in PUT /api/content:", error);

@@ -2,6 +2,7 @@ import { logApiCall } from "@/app/lib/api-log-middleware";
 import BoxSDK from "box-node-sdk";
 import { NextResponse } from "next/server";
 import userService from "@/services/userService";
+
 const sdk = new BoxSDK({
   clientID: process.env.BOX_CLIENT_ID,
   clientSecret: process.env.BOX_CLIENT_SECRET,
@@ -12,48 +13,71 @@ const sdk = new BoxSDK({
     enterpriseID: process.env.BOX_ENTERPRISE_ID,
   },
 });
+
 const client = sdk.getAppAuthClient(
   "enterprise",
   process.env.BOX_ENTERPRISE_ID
 );
+
 export async function POST(req) {
   try {
     await logApiCall(req);
-    const { fileId, signerEmail, boxUserId, userId, portal, signerId } =
+
+    const { fileId, signers, boxUserId, portal, onSameDoc } =
       await req.json();
-    if (
-      !fileId ||
-      !signerEmail ||
-      !boxUserId ||
-      !userId ||
-      !portal ||
-      !signerId
-    ) {
+
+    if (!fileId || !signers || !boxUserId || !portal) {
       return NextResponse.json(
         { error: "Missing required parameters" },
         { status: 400 }
       );
     }
+
     const client = sdk.getAppAuthClient("user", boxUserId);
-    const signRequest = await client.signRequests.create({
-      source_files: [{ id: fileId, type: "file" }],
-      signers: [
-        {
+    let signRequests = [];
+
+    if (onSameDoc) {
+      const signRequest = await client.signRequests.create({
+        source_files: [{ id: fileId, type: "file" }],
+        signers: signers.map(({ signerEmail, signerId }) => ({
           email: signerEmail,
           role: "signer",
-          embed_url_external_user_id: userId,
+          embed_url_external_user_id: signerId,
           suppress_notifications: true,
-          redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/dashboard`,
-        },
-      ],
-      is_document_prepared: false,
-    });
-    // await new Promise(resolve => setTimeout(resolve, 2000));
-    // const signRequestDetails = await client.signRequests.getById(signRequest.id);
-    await userService.saveSignRequest(signerId, signRequest);
+          redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+        })),
+        is_document_prepared: false,
+      });
+      signRequests.push(signRequest);
+      await Promise.all(
+        signers.map(({ signerId }) =>
+          userService.saveSignRequest(signerId, signRequest)
+        )
+      );
+    } else {
+      for (const { signerEmail, signerId } of signers) {
+        const signRequest = await client.signRequests.create({
+          source_files: [{ id: fileId, type: "file" }],
+          signers: [
+            {
+              email: signerEmail,
+              role: "signer",
+              embed_url_external_user_id: signerId,
+              suppress_notifications: true,
+              redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+            },
+          ],
+          is_document_prepared: false,
+        });
+
+        signRequests.push(signRequest);
+        await userService.saveSignRequest(signerId, signRequest);
+      }
+    }
+
     return NextResponse.json({
-      message: "Sign Request Created",
-      data: signRequest,
+      message: "Sign Requests Created",
+      data: signRequests,
     });
   } catch (error) {
     console.error("Error creating sign request:", error);
@@ -66,11 +90,13 @@ export async function POST(req) {
     );
   }
 }
+
 export async function DELETE(req) {
   try {
     await logApiCall(req);
     const { searchParams } = new URL(req.url);
     const signRequestId = searchParams.get("signRequestId");
+
     if (!signRequestId) {
       return NextResponse.json(
         { error: "Missing required parameter: signRequestId" },
@@ -93,14 +119,17 @@ export async function DELETE(req) {
     );
   }
 }
+
 export async function GET(req) {
   try {
     await logApiCall(req);
+
     const { searchParams } = new URL(req.url);
     const signRequestId = searchParams.get("id");
     const fileId = searchParams.get("fileId");
     const email = searchParams.get("email");
     const userId = searchParams.get("userId");
+
     if (signRequestId) {
       const signRequest = await client.signRequests.getById({
         sign_request_id: signRequestId,
@@ -110,6 +139,7 @@ export async function GET(req) {
         data: signRequest,
       });
     }
+
     if (userId) {
       const user = await userService.getUserById(userId);
       if (
@@ -122,6 +152,7 @@ export async function GET(req) {
           data: [],
         });
       }
+
       const signRequestsData = await Promise.all(
         user.signRequestsId.map(async (request) => {
           try {
@@ -137,20 +168,24 @@ export async function GET(req) {
           }
         })
       );
+
       const validSignRequests = signRequestsData.filter((req) => req !== null);
+
       const statusMapping = {
         pending: ["created", "sent", "converting", "viewed"],
         completed: ["signed", "completed"],
         rejected: ["declined", "expired", "canceled", "failed"],
       };
+
       const groupedSignRequests = {
         pending: [],
         completed: [],
         rejected: [],
       };
+
       validSignRequests.forEach((req) => {
         const status = req.status || "unknown";
-      
+
         if (statusMapping.pending.includes(status)) {
           groupedSignRequests.pending.push(req);
         } else if (statusMapping.completed.includes(status)) {
@@ -159,6 +194,7 @@ export async function GET(req) {
           groupedSignRequests.rejected.push(req);
         }
       });
+
       return NextResponse.json({
         message: "Sign Request Retrieved",
         data: groupedSignRequests,
@@ -166,16 +202,19 @@ export async function GET(req) {
     }
     const allSignRequests = await client.signRequests.getAll();
     let signRequests = allSignRequests.entries;
+
     if (fileId) {
       signRequests = signRequests.filter((req) =>
         req.source_files.some((file) => file.id === fileId)
       );
     }
+
     if (email) {
       signRequests = signRequests.filter((req) =>
         req.signers.some((signer) => signer.email === email)
       );
     }
+
     return NextResponse.json({
       message: "Filtered Sign Requests Retrieved",
       count: signRequests.length,

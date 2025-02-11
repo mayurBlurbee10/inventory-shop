@@ -16,48 +16,61 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-const preData = [
-  {
-    id: 635789,
-    icon: CarFront,
-    name: "Auto - 635789",
-    type: "Auto",
-    status: "Active",
-  },
-  {
-    id: 990154,
-    icon: User,
-    name: "Personal - 990154",
-    type: "Personal",
-    status: "Fully Paid",
-  },
-];
-
-const dataToAdd = [
-  {
-    id: 174192,
-    icon: Home,
-    name: "Mortgage - 174192",
-    type: "Mortgage	",
-    status: "Processing",
-  },
-];
-
 function LoansPage() {
+  const preData = [
+    // {
+    //   id: 635789,
+    //   icon: "CarFront",
+    //   name: "Auto - 635789",
+    //   type: "Auto",
+    //   status: "Active",
+    //   folderId:"306788535946",
+    //   complete: 75,
+    //   paid: "$40,225.00 Paid"
+    // },
+    // {
+    //   id: 990154,
+    //   icon: "User",
+    //   name: "Personal - 990154",
+    //   type: "Personal",
+    //   status: "Fully Paid",
+    //   folderId:"306789263204",
+    //   complete: 100,
+    //   paid: "Fully Paid"
+    // },
+  ];
+  
+  const dataToAdd = [
+    {
+      id: 174192,
+      icon: "Home",
+      name: "Mortgage - 174192",
+      type: "Mortgage	",
+      status: "Processing",
+    },
+  ];
   const router = useRouter();
   const params = useParams();
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
   const [loanData, setLoanData] = useState([...preData]);
   const [newLoan, setNewLoan] = useState(false);
 
-  console.log(loanData);
+  // console.log(loanData);
 
   useEffect(() => {
-    const userEntered = localStorage.getItem("newLoan");
+    const userEntered = JSON.parse(localStorage.getItem("newLoan"));
     setNewLoan(userEntered);
 
     if (userEntered) {
       setLoanData([...dataToAdd, ...preData]);
+    }
+
+    const loans = JSON.parse(localStorage.getItem("loan"));
+    if(!loans) {
+      localStorage.setItem("loan", JSON.stringify(preData));
+      setLoanData([...preData])
+    } else {
+      setLoanData([...loans])
     }
   }, []);
 
@@ -102,11 +115,14 @@ function LoansPage() {
               </tr>
             </thead>
             <tbody>
-              {loanData &&
-                loanData?.map(({ id, icon: Icon, name, type, status }) => (
+              {loanData.length > 0 &&
+                loanData?.map(({ id, icon, name, type, status }) => (
                   <tr key={id} className="border border-[#dee2e6] text-center">
                     <td className="py-5 flex items-center justify-center">
-                      <Icon className="size-8" />
+                      {/* <Icon className="size-8" /> */}
+                      {icon==='CarFront' && <CarFront className="size-8" />}
+                      {icon==='Home' && <Home className="size-8" />}
+                      {icon==='User' && <User className="size-8" />}
                     </td>
                     <td className="py-5 px-2">{name}</td>
                     <td>{type}</td>
@@ -147,9 +163,9 @@ function LoansPage() {
             <ChevronDown className="fill-black " />
             {isLoanOptionOpen && (
               <div className="flex flex-col border border-[#dee2e6] w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer">
-                <div onClick={() => router.push(`loans/new`)}>Mortgage</div>
-                <div onClick={() => router.push(`loans/new`)}>Auto</div>
-                <div onClick={() => router.push(`loans/new`)}>Personal</div>
+                <div onClick={() => router.push(`loans/new?type=mortgage`)}>Mortgage</div>
+                <div onClick={() => router.push(`loans/new?type=auto`)}>Auto</div>
+                <div onClick={() => router.push(`loans/new?type=personal`)}>Personal</div>
               </div>
             )}
           </div>

@@ -40,12 +40,64 @@ export async function GET(request) {
   }
 }
 
+// export async function POST(req) {
+//   try {
+//     await logApiCall(req, () => {});
+//     const accessToken = await client._session.getAccessToken();
+//     const newClient = sdk.getBasicClient(accessToken);
+//     // Process the multipart request
+//     const formData = await req.formData();
+//     const files = formData.getAll("file");
+
+//     if (!files || files.length === 0) {
+//       return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
+//     }
+
+//     const boxFolderId = formData.get("boxFolderId") || "0";
+//     const email = formData.get("email") || "";
+
+//     // Process files
+//     const uploadedFiles = [];
+
+//     for (const file of files) {
+//       const bytes = await file.arrayBuffer();
+//       const buffer = Buffer.from(bytes);
+
+//       const fileStream = new Readable();
+//       fileStream.push(buffer);
+//       fileStream.push(null);
+
+//       console.log("File name", file.name)
+
+//       const uploadedFile = await newClient.files.uploadFile(
+//         boxFolderId,
+//         file.name,
+//         fileStream,
+//         { description: email }
+//       );
+
+//       uploadedFiles.push(uploadedFile.entries[0]);
+//     }
+
+//     return NextResponse.json({
+//       message: "Files uploaded successfully",
+//       files: uploadedFiles,
+//     });
+//   } catch (error) {
+//     console.error("Error uploading files:", error);
+//     return NextResponse.json(
+//       { error: error.response?.body.message, status: error.response?.statusCode || 500 },
+//       { status: error.response?.statusCode || 500 }
+//     );
+//   }
+// }
+
 export async function POST(req) {
   try {
     await logApiCall(req, () => {});
     const accessToken = await client._session.getAccessToken();
     const newClient = sdk.getBasicClient(accessToken);
-    // Process the multipart request
+
     const formData = await req.formData();
     const files = formData.getAll("file");
 
@@ -56,16 +108,36 @@ export async function POST(req) {
     const boxFolderId = formData.get("boxFolderId") || "0";
     const email = formData.get("email") || "";
 
-    // Process files
     const uploadedFiles = [];
+    const duplicateFiles = [];
+
+    const folderItems = await newClient.folders.getItems(boxFolderId, { fields: "id,name" });
 
     for (const file of files) {
+      const existingFile = folderItems.entries.find((item) => item.name === file.name);
+
+      if (existingFile) {
+        console.log(`File "${file}" already exists, skipping upload.`);
+        const arrayBuffer = await file.arrayBuffer();
+        const base64File = Buffer.from(arrayBuffer).toString("base64");
+
+        duplicateFiles.push({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          base64: base64File, // This allows the frontend to reconstruct the file
+        });
+        continue;
+      }
+
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
       const fileStream = new Readable();
       fileStream.push(buffer);
       fileStream.push(null);
+
+      console.log("Uploading unique file:", file.name);
 
       const uploadedFile = await newClient.files.uploadFile(
         boxFolderId,
@@ -78,13 +150,17 @@ export async function POST(req) {
     }
 
     return NextResponse.json({
-      message: "Files uploaded successfully",
+      message: "Upload completed (existing files skipped)",
       files: uploadedFiles,
+      duplicateFiles: duplicateFiles,
     });
   } catch (error) {
     console.error("Error uploading files:", error);
     return NextResponse.json(
-      { error: error.message },
+      {
+        error: error.response?.body.message,
+        status: error.response?.statusCode || 500,
+      },
       { status: error.response?.statusCode || 500 }
     );
   }

@@ -43,8 +43,16 @@ import CreateFolder from "./CreateFolder";
 import Navbar from "./Navbar";
 import Container from "./Container";
 import MyTaskPopupBox from "./MyTaskPopupBox";
+import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
+import CompleteForms from "./CompleteForms";
 
-function Documents({ fileType }) {
+function Documents({
+  fileType,
+  setSelectedItems,
+  selectedItems,
+  isRest,
+  loanFolderId,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
@@ -71,7 +79,7 @@ function Documents({ fileType }) {
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [moveItem, setMoveItem] = useState(null);
-  const [uploadedfilePath, setUpladedFilePath] = useState("");
+  const [uploadedfilePath, setUpladedFilePath] = useState([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
@@ -81,7 +89,17 @@ function Documents({ fileType }) {
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
-  const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState('');
+  const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState("");
+  const [isCompleteFormPopupOpen, setIsCompleteFormPopupOpen] = useState(false);
+  const [duplicateFiles, setDuplicateFiles] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [collaborator, setCollaborator] = useState({
+    email: "",
+    role: "viewer",
+  });
+  const [collaborators, setCollaborators] = useState(
+    JSON.parse(localStorage.getItem("collaborators")) || []
+  );
   const pathname = usePathname();
 
   const handleBrowse = (event) => {
@@ -179,27 +197,26 @@ function Documents({ fileType }) {
           requestOptions,
           "uploadFile"
         );
-        if (!response.ok) throw new Error("Failed to upload files");
-        setIsModalOpen(true);
+        const data = await response.json();
+        if (!response.ok) {
+          console.log("data status", data.status);
+          throw new Error(data.error || "Failed to upload files");
+        }
+        if (data.duplicateFiles.length > 0) {
+          setDuplicateFiles(data.duplicateFiles);
+        }
         setShowUploadArea(false);
         await refreshFiles();
         const path = getFolderPath(
           filesList,
           selectedItem?.id || userData?.boxFolderId
         );
-        const location = `
-              <div>
-                <div>
-                  Location: Home${path}
-                </div>
-                <div>
-                  Name: 
-                  ${files.map((file) => file.name)}
-                </div>
-              </div>
-              `;
+        let location = "";
+        if (data.files.length > 0) {
+          location = [...data.files.map((file) => file.name)];
+        }
         setUpladedFilePath(location);
-        toast.success("File uploaded successfully");
+        setIsModalOpen(true);
       } catch (error) {
         toast.error(error.message);
         console.error("Error uploading files:", error);
@@ -216,8 +233,19 @@ function Documents({ fileType }) {
       const requestOptions = {
         method: "GET",
       };
-      if (fileType === "shared") {
-        if (
+      if (fileType == "shared" || fileType == "loan") {
+        if (loanFolderId) {
+          const response = await fetchWrapper(
+            `/api/box/folders?folderId=${loanFolderId}`,
+            requestOptions,
+            "fetchFile"
+          );
+          if (!response.ok) throw new Error("Failed to fetch files");
+          const data = await response.json();
+          const newFilesList = data?.items || [];
+          setFilesList(newFilesList);
+          setSelectedItem({ type: "folder", id: loanFolderId });
+        } else if (
           userData?.collaborationIds &&
           userData.collaborationIds.length > 0
         ) {
@@ -238,7 +266,7 @@ function Documents({ fileType }) {
         }
       } else {
         const response = await fetchWrapper(
-          `/api/box/folders?folderId=${userData.boxFolderId}`,
+          `/api/box/folders?folderId=${userData?.boxFolderId}`,
           requestOptions,
           "fetchFile"
         );
@@ -301,8 +329,9 @@ function Documents({ fileType }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-300" : ""
-            }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-300" : ""
+          }`}
         >
           {title}
         </button>
@@ -491,12 +520,22 @@ function Documents({ fileType }) {
 
   useEffect(() => {
     setIsToolbarVisible(selectedBulkItems.length > 0);
+    setSelectedItems && setSelectedItems(selectedBulkItems);
   }, [selectedBulkItems]);
 
+  useEffect(() => {
+    if (selectedItems?.length > 0 && isRest) {
+      setSelectedBulkItems([]);
+      setSelectedItems([]);
+    }
+  }, [isRest]);
+
   const handleBulkDelete = async () => {
+    setIsDeleting(true)
     const selectedItemsDetails = currentFilesList
       .filter((item) => selectedBulkItems.includes(item.id))
       .map((item) => ({ id: item.id, type: item.type }));
+    console.log("selectedItemsDetails", selectedItemsDetails);
     try {
       const requestOptions = {
         method: "POST",
@@ -514,6 +553,8 @@ function Documents({ fileType }) {
       setIsDeleteModalOpen(false);
     } catch (error) {
       toast.error(error.message);
+    }finally {
+      setIsDeleting(false)
     }
   };
 
@@ -748,13 +789,13 @@ function Documents({ fileType }) {
         await getUserDetailsByEmail(sessionData.user.email);
       } else {
         const userData = getUserData();
-        await getUserDetailsByEmail(userData.email);
+        await getUserDetailsByEmail(userData?.email);
       }
       if (!userData) {
         router.push("login");
         return;
       }
-      await getUserDetailsByEmail(userData.email);
+      await getUserDetailsByEmail(userData?.email);
     };
     fetchSession().then(() => {
       const userData = getUserData();
@@ -763,9 +804,51 @@ function Documents({ fileType }) {
         return;
       }
       setUser(userData);
-      refreshFiles();
+      // refreshFiles();
     });
   }, [router]);
+
+  const addCollaborator = ({ email, role }) => {
+    const collaborators =
+      JSON.parse(localStorage.getItem("collaborators")) || [];
+    const collabExist = collaborators.find((collab) => collab.email === email);
+    if (collabExist) {
+      toast.error("Collaborator with same email already exist");
+      return;
+    }
+    const collab = {
+      name: email.split("@")[0],
+      email: email,
+      role: role,
+    };
+    collaborators.push(collab);
+    localStorage.setItem("collaborators", JSON.stringify(collaborators));
+    setCollaborators(collaborators);
+    setCollaborator({
+      email: "",
+      role: "viewer",
+    });
+  };
+
+  const removeCollaborator = (email) => {
+    const collaborators =
+      JSON.parse(localStorage.getItem("collaborators")) || [];
+    const newList = collaborators.filter((collab) => collab.email !== email);
+    localStorage.setItem("collaborators", JSON.stringify(newList));
+    setCollaborators(newList);
+  };
+
+  // useEffect(() => {
+  //   const collabs = [
+  //     {
+  //       name: "Erica Smith",
+  //       email: "advisor@wealthportal.com",
+  //       role: "Editor",
+  //     },
+  //   ];
+  //   localStorage.setItem("collaborators", JSON.stringify(collabs));
+  //   setCollaborators(collabs);
+  // }, []);
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -779,20 +862,38 @@ function Documents({ fileType }) {
   return (
     // <div className="bg-white min-h-screen">
     // <Container>
-    <div className="max-w-[1820px] mx-auto pt-12 mt-12">
+    <div
+      className={`max-w-[1820px] ${
+        fileType === "loan" || fileType === 'advisor' ? "" : "mx-auto pt-12 mt-12"
+      }`}
+    >
       <div>
-        <div className="grid grid-cols-5 px-4 gap-7">
-          <div className="col-span-5 lg:col-span-3">
-            <div className="flex items-center gap-10">
-              <span className="text-xl font-light text-[#212529] font-lato">
-                {fileType === "shared" ? "Shared Documents" : "My Documents"}
-              </span>
-              <span className="text-black font-lato font-normal text-sm">
-                Securely share content with your advisor and trusted
-                collaborators
-              </span>
-            </div>
-            <hr className="my-4" />
+        <div
+          className={`grid gap-7 grid-cols-5 ${
+            fileType === "loan" || fileType === 'advisor' ? "" : "px-4"
+          }`}
+        >
+          <div
+            className={`col-span-5 ${
+              fileType === "loan" || fileType === 'advisor' ? "lg:col-span-5" : "lg:col-span-3"
+            }`}
+          >
+            {fileType !== "loan" && fileType !== 'advisor' && (
+              <>
+                <div className="flex items-center gap-10">
+                  <span className="text-xl font-light text-[#212529] font-lato">
+                    {fileType === "shared"
+                      ? "Shared Documents"
+                      : "My Documents"}
+                  </span>
+                  <span className="text-black font-lato font-normal text-sm">
+                    Securely share content with your advisor and trusted
+                    collaborators
+                  </span>
+                </div>
+                <hr className="my-4" />
+              </>
+            )}
             <div className="border border-solid border-[#0000001a] rounded-sm relative">
               <div className="border-b border-solid border-[#0000001a]">
                 <div className="py-[18px] flex items-center w-full px-5 bg-gray-50">
@@ -808,10 +909,7 @@ function Documents({ fileType }) {
                     <img
                       src={
                         user?.company?.logo
-                          ? user.company.logo.replace(
-                            "/api/upload",
-                            "/uploads"
-                          )
+                          ? user.company.logo.replace("/api/upload", "/uploads")
                           : config?.logo || "/default_logo_purple.png"
                       }
                       alt={params.portalid}
@@ -828,7 +926,7 @@ function Documents({ fileType }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={
-                      "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4"
+                      "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4 text-gray-700"
                     }
                   />
 
@@ -897,65 +995,64 @@ function Documents({ fileType }) {
                 </div>
               </div>
 
-              <div>
-                <div
-                  className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
-                         ${isToolbarVisible ? "opacity-1" : "hidden"}
-                        `}
-                >
-                  <div className="flex items-center gap-3">
-                    <button
-                      className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
-                      onClick={clearBulkItem}
-                    >
-                      <X className="size-5" />
-                    </button>
-                    <p className="text-sm font-medium mr-4 text-[#444746]">
-                      {selectedBulkItems.length} item(s) selected
-                    </p>
-                    <button
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "hidden"
-                        : "hover:bg-gray-200"
+              {fileType !== "loan" && (
+                <div>
+                  <div
+                    className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
+                          ${isToolbarVisible ? "opacity-1" : "hidden"}
+                          `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
+                        onClick={clearBulkItem}
+                      >
+                        <X className="size-5" />
+                      </button>
+                      <p className="text-sm font-medium mr-4 text-[#444746]">
+                        {selectedBulkItems.length} item(s) selected
+                      </p>
+                      <button
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
                         } outline-none`}
-                      onClick={() =>
-                        selectedBulkItems.length > 0 &&
-                        handelToolbarMoveClick()
-                      }
-                      disabled={fileType === "shared"}
-                    >
-                      <FolderInput className="size-5" />
-                    </button>
-                    <button
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "hidden"
-                        : "hover:bg-gray-200"
+                        onClick={() =>
+                          selectedBulkItems.length > 0 &&
+                          handelToolbarMoveClick()
+                        }
+                        disabled={fileType === "shared"}
+                      >
+                        <FolderInput className="size-5" />
+                      </button>
+                      <button
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
                         } outline-none`}
-                      onClick={
-                        () =>
-                          selectedBulkItems.length > 0 && handleBulkDownload()
-                        // console.log("selectedBulkItems", selectedBulkItems)
-                      }
-                      disabled={fileType === "shared"}
-                    >
-                      <Download className="size-5" />
-                    </button>
-                    <button
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                        ? "hidden"
-                        : "hover:bg-gray-200"
+                        onClick={
+                          () =>
+                            selectedBulkItems.length > 0 && handleBulkDownload()
+                          // console.log("selectedBulkItems", selectedBulkItems)
+                        }
+                        disabled={fileType === "shared"}
+                      >
+                        <Download className="size-5" />
+                      </button>
+                      <button
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
                         } outline-none`}
-                      onClick={() =>
-                        selectedBulkItems.length > 0 &&
-                        setIsDeleteModalOpen(true)
-                      }
-                      disabled={fileType === "shared"}
-                    >
-                      <Trash2 className="size-5" />
-                    </button>
+                        onClick={() =>
+                          selectedBulkItems.length > 0 &&
+                          setIsDeleteModalOpen(true)
+                        }
+                        disabled={fileType === "shared"}
+                      >
+                        <Trash2 className="size-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* breadcrumbs */}
               <div className="px-5 border-b break-words">
@@ -1014,37 +1111,43 @@ function Documents({ fileType }) {
                         </div>
                       )}
 
-                      {/* Card view button */}
-                      <button
-                        className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
-                          }`}
-                        onClick={() => {
-                          setView("grid");
-                          // setIsOpenOptionDrawer(false);
-                        }}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          height="24"
-                          fill="currentColor"
-                        >
-                          <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
-                        </svg>
-                      </button>
+                      {fileType !== "loan" && (
+                        <>
+                          {/* Card view button */}
+                          <button
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
+                              view === "grid" ? "hidden" : "visible"
+                            }`}
+                            onClick={() => {
+                              setView("grid");
+                              // setIsOpenOptionDrawer(false);
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              height="24"
+                              fill="currentColor"
+                            >
+                              <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
+                            </svg>
+                          </button>
 
-                      {/* List view button */}
-                      <button
-                        className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
-                          }`}
-                        onClick={() => {
-                          setView("list");
-                          // setIsOpenOptionDrawer(false);
-                        }}
-                      >
-                        <AlignJustify />
-                      </button>
+                          {/* List view button */}
+                          <button
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
+                              view === "list" ? "hidden" : "visible"
+                            }`}
+                            onClick={() => {
+                              setView("list");
+                              // setIsOpenOptionDrawer(false);
+                            }}
+                          >
+                            <AlignJustify />
+                          </button>
+                        </>
+                      )}
 
                       {/* Upload items */}
                       <div className="relative">
@@ -1134,7 +1237,7 @@ function Documents({ fileType }) {
                 setCurrentFilesList={setCurrentFilesList}
                 setSelectedItem={setSelectedItem}
                 selectedItem={selectedItem}
-                handleShareLink={() => { }}
+                handleShareLink={() => {}}
                 onFileChanges={refreshFiles}
                 listType={fileType}
                 setSearchQuery={setSearchQuery}
@@ -1153,6 +1256,7 @@ function Documents({ fileType }) {
                 setIsModalOpen={setIsDeleteModalOpen}
                 handleDelete={handleBulkDelete}
                 config={config}
+                isLoading={isDeleting}
               />
               <MoveDialog
                 item={moveItem}
@@ -1161,14 +1265,29 @@ function Documents({ fileType }) {
                 fileList={filesList}
                 handleMove={handleMove}
               />
-              <DialogBox
+              <UploadFileConfirmDialog
                 title="File Uploaded"
                 message="File uploaded successfully!"
                 fileLocation={uploadedfilePath}
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
+                isDuplicateFile={duplicateFiles.length > 0}
+                duplicateFiles={duplicateFiles}
+                setDuplicateFiles={setDuplicateFiles}
                 config={config}
+                selectedItem={selectedItem}
+                refreshFiles={refreshFiles}
+                path={getFolderPath(
+                  filesList ? filesList : [],
+                  selectedItem?.id || user?.boxFolderId
+                )}
               />
+              {/* <UploadFileConfirmDialog
+                fileLocation={uploadedfilePath}
+                isModalOpen={isModalOpen}
+                setIsModalOpen={setIsModalOpen}
+                config={config}
+              /> */}
               <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
@@ -1342,246 +1461,301 @@ function Documents({ fileType }) {
           </div>
 
           {/* right panel */}
-          <div className="col-span-5 lg:col-span-2">
-            <div>
-              <div className="grid grid-cols-3">
-                <div></div>
-                <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                  My Tasks
-                </h3>
-                <div className="flex items-center justify-end text-[#dc3545]">
-                  <RotateCw className="h-4 w-4" />
-                </div>
-              </div>
-              {/* Tasks */}
-              <div className="mb-7">
-                <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
-                  <tbody className="divide-y divide-gray-200 ">
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Upload identity information
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Upload identity information",
-                              actionText: "Upload"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Upload
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Upload 2023 tax return
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Upload 2023 tax return",
-                              actionText: "Complete Forms"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Complete Forms
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Sign money transfer agreement
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Sign money transfer agreement",
-                              actionText: " Sign"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Sign
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="ps-3 py-4">
-                        <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-[#212529] text-sm">
-                          Auto Loan Forms
-                        </p>
-                      </td>
-                      <td className="px-3 py-4">
-                        <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                          onClick={() => {
-                            setMyTaskPopupBoxContent({
-                              title: "Auto Loan Forms",
-                              actionText: "Start Forms"
-                            });
-                            setIsMyTaskPopupOpen((prev) => !prev);
-                          }}
-                        >
-                          Start Forms
-                        </p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
 
-              {
-                isMyTaskPopupOpen && (
+          {fileType !== "loan" && fileType !== 'advisor' && (
+            <div className="col-span-5 lg:col-span-2">
+              <div>
+                <div className="grid grid-cols-3">
+                  <div></div>
+                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                    My Tasks
+                  </h3>
+                  <div className="flex items-center justify-end text-[#dc3545]">
+                    <RotateCw className="h-4 w-4" />
+                  </div>
+                </div>
+                {/* Tasks */}
+                <div className="mb-7">
+                  <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
+                    <tbody className="divide-y divide-gray-200 ">
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Upload identity information
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent({
+                                title: "Upload identity information",
+                                actionText: "Upload",
+                              });
+                              setIsMyTaskPopupOpen((prev) => !prev);
+                            }}
+                          >
+                            Upload
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Upload 2023 tax return
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setIsCompleteFormPopupOpen((prev) => !prev)
+                            }}
+                          >
+                            Complete Forms
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Sign money transfer agreement
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent({
+                                title: "Sign money transfer agreement",
+                                actionText: " Sign",
+                              });
+                              setIsMyTaskPopupOpen((prev) => !prev);
+                            }}
+                          >
+                            Sign
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="ps-3 py-4">
+                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p className="font-lato text-[#212529] text-sm">
+                            Auto Loan Forms
+                          </p>
+                        </td>
+                        <td className="px-3 py-4">
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                            onClick={() => {
+                              setMyTaskPopupBoxContent({
+                                title: "Auto Loan Forms",
+                                actionText: "Start Forms",
+                              });
+                              setIsMyTaskPopupOpen((prev) => !prev);
+                            }}
+                          >
+                            Start Forms
+                          </p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {isMyTaskPopupOpen && (
                   <MyTaskPopupBox
                     onClose={() => setIsMyTaskPopupOpen(false)}
                     content={myTaskPopupBoxContent}
                     config={config}
                   />
-                )
-              }
-
-              {/* My advisor */}
-              <div className="mb-7">
-                <div>
-                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                    My Advisor
-                  </h3>
-                </div>
-
-                {/* Advisory card */}
-
-                <div className="rounded-md border border-[#dee2e6]">
-                  <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
-                    <div className="max-w-[150px] w-full">
-                      <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
-                        <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
-                      </a>
-                    </div>
-
-                    <div>
-                      <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
-                        Erica Smith
-                      </h2>
-                      <p className="font-lato text-base text-[#6c757d]">
-                        Senior Financial Advisor
-                      </p>
-                    </div>
-                  </div>
-                  <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
-                    <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                      Meet
-                    </button>
-                    <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                      Call
-                    </button>
-                    <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                      Chat
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Collaborators */}
-
-              <div>
-                <div>
-                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                    My Collaborators
-                  </h3>
-                </div>
-                <div className="p-4 border border-[#dee2e6]">
-                  <form className="mb-3.5">
-                    <input
-                      type="email"
-                      className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
+                )}
+                 <CompleteForms 
+                    onClose={() => setIsCompleteFormPopupOpen(false)}
+                    isOpen={isCompleteFormPopupOpen}
                     />
 
-                    <div className="flex items-center gap-6">
-                      <select className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato">
-                        <option>Co-Owner</option>
-                        <option>Editor</option>
-                        <option>Viewer</option>
-                        <option>Previewer</option>
-                        <option>Uploader</option>
-                        <option>Previewer Uploader</option>
-                        <option>Viewer Uploader</option>
-                      </select>
+                {/* My advisor */}
+                <div className="mb-7">
+                  <div>
+                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                      My Advisor
+                    </h3>
+                  </div>
 
-                      <button
-                        className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm"
-                        type="button"
-                      >
-                        Invite
+                  {/* Advisory card */}
+
+                  <div className="rounded-md border border-[#dee2e6]">
+                    <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
+                      <div className="max-w-[150px] w-full">
+                        <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
+                          <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
+                        </a>
+                      </div>
+
+                      <div>
+                        <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
+                          Erica Smith
+                        </h2>
+                        <p className="font-lato text-base text-[#6c757d]">
+                          Senior Financial Advisor
+                        </p>
+                      </div>
+                    </div>
+                    <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
+                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                        Meet
+                      </button>
+                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                        Call
+                      </button>
+                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                        Chat
                       </button>
                     </div>
-                  </form>
+                  </div>
+                </div>
 
-                  {/* Table */}
+                {/* Collaborators */}
 
-                  <div className="border overflow-auto">
-                    <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
-                      <thead>
-                        <tr>
-                          <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                            Name
-                          </th>
-                          <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                            Email
-                          </th>
-                          <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                            Role
-                          </th>
-                        </tr>
-                      </thead>
+                <div>
+                  <div>
+                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                      My Collaborators
+                    </h3>
+                  </div>
+                  <div className="p-4 border border-[#dee2e6]">
+                    <form className="mb-3.5">
+                      <input
+                        type="email"
+                        value={collaborator.email}
+                        onChange={(e) =>
+                          setCollaborator((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
+                        placeholder="user@example.com"
+                        className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
+                      />
 
-                      <tbody>
-                        <tr className="hover:bg-gray-300">
-                          <td className="p-3">
-                            <p className="font-semibold font-lato text-sm text-black">
-                              Erica Smith
-                            </p>
-                          </td>
-                          <td className="p-3">
-                            <p className="font-normal font-lato text-sm text-black">
-                              advisor@wealthportal.com
-                            </p>
-                          </td>
-                          <td className="p-3">
-                            <p className="font-normal font-lato text-sm text-black">
-                              Editor
-                            </p>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                      <div className="flex items-center gap-6">
+                        <select
+                          className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato"
+                          value={collaborator.role}
+                          onChange={(e) =>
+                            setCollaborator((prev) => ({
+                              ...prev,
+                              role: e.target.value,
+                            }))
+                          }
+                        >
+                          {/* <option>Co-Owner</option> */}
+                          <option value={"editor"}>Editor</option>
+                          <option value={"viewer"}>Viewer</option>
+                          {/* <option>Previewer</option>
+                          <option>Uploader</option>
+                          <option>Previewer Uploader</option>
+                          <option>Viewer Uploader</option> */}
+                        </select>
+
+                        <button
+                          className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm cursor-pointer"
+                          onClick={() => addCollaborator(collaborator)}
+                          type="button"
+                        >
+                          Invite
+                        </button>
+                      </div>
+                    </form>
+
+                    {/* Table */}
+
+                    <div className="border overflow-auto">
+                      <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
+                        <thead>
+                          <tr>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Name
+                            </th>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Email
+                            </th>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Role
+                            </th>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          <tr className="hover:bg-gray-300">
+                            <td className="p-3">
+                              <p className="font-semibold font-lato text-sm text-black">
+                                Erica Smith
+                              </p>
+                            </td>
+                            <td className="p-3">
+                              <p className="font-normal font-lato text-sm text-black">
+                                advisor@wealthportal.com
+                              </p>
+                            </td>
+                            <td className="p-3">
+                              <p className="font-normal font-lato text-sm text-black">
+                                Editor
+                              </p>
+                            </td>
+                            <td></td>
+                          </tr>
+                          {collaborators &&
+                            collaborators.length > 0 &&
+                            collaborators.map(({ name, email, role }) => (
+                              <tr className="hover:bg-gray-300" key={email}>
+                                <td className="p-3">
+                                  <p className="font-semibold font-lato text-sm text-black">
+                                    {name}
+                                  </p>
+                                </td>
+                                <td className="p-3">
+                                  <p className="font-normal font-lato text-sm text-black">
+                                    {email}
+                                  </p>
+                                </td>
+                                <td className="p-3">
+                                  <p className="font-normal font-lato text-sm text-black">
+                                    {role.charAt(0).toUpperCase() +
+                                      role.slice(1)}
+                                  </p>
+                                </td>
+                                <td
+                                  className="p-3"
+                                  onClick={() => removeCollaborator(email)}
+                                >
+                                  <X className="text-red-600 cursor-pointer" />
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

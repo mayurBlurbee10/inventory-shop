@@ -21,6 +21,7 @@ const ContentManagementContent = ({
     title: "",
     type: "",
     value: "",
+    fontSize:"",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -45,6 +46,7 @@ const ContentManagementContent = ({
 
     return `${month}-${day}-${year} ${hours}:${minutes}:${seconds}`;
   };
+  console.log('content:', newContent);
 
   useEffect(() => {
     fetchData();
@@ -99,6 +101,7 @@ const ContentManagementContent = ({
     try {
       let imageUrl = "";
 
+      // Handle file upload if it exists
       if (file) {
         const uploadData = new FormData();
         uploadData.append("file", file);
@@ -120,22 +123,30 @@ const ContentManagementContent = ({
         imageUrl = uploadResult.url;
       }
 
-      console.log("newContent : ", newContent);
 
+      // Construct payload with specific cases for fontSize and links
       const obj = imageUrl
         ? {
           ...newContent,
-
+          fontSize: newContent.fontSize || null, // Add fontSize here
           portalId: params.portalid ?? "default",
         }
         : newContent.type === "Links"
           ? {
             ...newContent,
             value: JSON.stringify(linkFields),
+            fontSize: newContent.fontSize || null, // Add fontSize here
             portalId: params.portalid ?? "default",
           }
-          : { ...newContent, portalId: params.portalid ?? "default" };
+          : {
+            ...newContent,
+            fontSize: newContent.fontSize || null, // Add fontSize here
+            portalId: params.portalid ?? "default",
+          };
 
+      console.log("newContentPayload : ", obj);
+
+      // Make the API request
       const requestOptions = {
         method: isEditMode ? "PUT" : "POST",
         body: JSON.stringify(obj),
@@ -150,13 +161,16 @@ const ContentManagementContent = ({
         requestOptions,
         apiType
       );
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error("Content length is too long");
       }
 
+      // Refresh data and close the modal
       fetchData();
       handleModalClose();
+
       toast.success(
         `${apiType === "updateContentManagement"
           ? "Content updated successfully"
@@ -171,6 +185,7 @@ const ContentManagementContent = ({
       setIsSubmitting(false);
     }
   };
+
 
   const handleModalOpenForEdit = (contentId) => {
     const contentToEdit = content.find((item) => item.id === contentId);
@@ -315,9 +330,10 @@ const ContentManagementContent = ({
   const manageContentNavigate = () => {
     router.push("onboarding");
   }
-  console.log('content length:', contentLength)
-  console.log('onboardingStatus:',onboardingStatus);
-  
+  // console.log('content length:', contentLength)
+  // console.log('onboardingStatus:', onboardingStatus);
+  console.log('newContent:', newContent);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -345,7 +361,7 @@ const ContentManagementContent = ({
             Manage Content
           </button>
         )}
-        
+
       </div>
       {loading ? (
         <div className="flex justify-center py-8">
@@ -366,13 +382,13 @@ const ContentManagementContent = ({
                   </p>
                 </div>
 
-                    <button
-                      className="text-blue-600 hover:text-blue-900 px-2 absolute top-0 right-0 m-2"
-                      onClick={() => handleModalOpenForEdit(item.id)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                
+                <button
+                  className="text-blue-600 hover:text-blue-900 px-2 absolute top-0 right-0 m-2"
+                  onClick={() => handleModalOpenForEdit(item.id)}
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+
               </div>
             </div>
           ))}
@@ -443,6 +459,48 @@ const ContentManagementContent = ({
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100 text-gray-500"
                 />
               </div> */}
+
+              {
+                newContent.title === "Header Text" && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="fontSize"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Font Size
+                    </label>
+                    <select
+                      id="fontSize"
+                      name="fontSize"
+                      className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                      value={newContent.fontSize || "30px"} // Default value
+                      onChange={(e) =>
+                        setNewContent((prev) => ({
+                          ...prev,
+                          fontSize: e.target.value, // Add font size only for Header Text
+                        }))
+                      }
+                      required
+                    >
+                      <option value="12px">12px</option>
+                      <option value="14px">14px</option>
+                      <option value="16px">16px</option>
+                      <option value="18px">18px</option>
+                      <option value="20px">20px</option>
+                      <option value="22px">22px</option>
+                      <option value="24px">24px</option>
+                      <option value="26px">26px</option>
+                      <option value="28px">28px</option>
+                      <option value="30px">30px</option>
+                      <option value="32px">32px</option>
+                      <option value="34px">34px</option>
+                      <option value="36px">36px</option>
+                    </select>
+                  </div>
+                )
+              }
+
+
               {/* Text */}
               {newContent.type === "Text" && (
                 <div className="mb-4">

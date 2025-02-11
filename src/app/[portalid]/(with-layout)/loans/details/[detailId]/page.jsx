@@ -1,4 +1,5 @@
 "use client";
+import Documents from "@/components/Documents";
 import { ArrowDownUp, ChevronLeft, Folder, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -45,7 +46,8 @@ function DetailsPage() {
   const [loan, setLoan] = useState(null);
   useEffect(() => {
     if (params?.detailId && data) {
-      const foundLoan = data.find((d) => d.id === Number(params.detailId));
+      const loans = JSON.parse(localStorage.getItem("loan"));
+      const foundLoan = loans.find((d) => d.id === Number(params.detailId));
       setLoan(foundLoan || null);
     }
   }, [params?.detailId, data]);
@@ -119,7 +121,11 @@ function DetailsPage() {
           <h1 className="text-xl text-center font-lato font-light my-5">
             Loan Documents
           </h1>
-          <div className="flex items-center gap-2 p-5 bg-[#fcfcfc] border-b border-[#ced4da]">
+          <Documents
+            fileType={"loan"}
+            loanFolderId={loan?.folderId}
+          />
+          {/* <div className="flex items-center gap-2 p-5 bg-[#fcfcfc] border-b border-[#ced4da]">
             <input
               type="text"
               placeholder="Search files and folder"
@@ -167,7 +173,7 @@ function DetailsPage() {
                 368.28 KB
               </p>
             </div>
-          </div>
+          </div> */}
           {/* <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
               <Folder />
               <div>

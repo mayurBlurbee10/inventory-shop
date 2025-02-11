@@ -76,6 +76,7 @@ const updateContentManagement = async (data) => {
     }
 
     content.value = data.value;
+    content.fontSize = data.fontSize;
 
     return await contentRepository.save(content);
   } catch (error) {

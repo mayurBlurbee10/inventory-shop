@@ -218,7 +218,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-[#0061D5] hover:file:bg-blue-100"
               />
             </div>
             {previewUrl && (
@@ -242,7 +242,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
+              className="px-4 py-2 text-sm font-medium text-white bg-[#0061D5] rounded-md hover:bg-blue-700 disabled:bg-blue-400"
               disabled={loading}
             >
               {loading ? "Creating..." : "Add User"}

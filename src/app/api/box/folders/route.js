@@ -161,7 +161,7 @@ export async function DELETE(req) {
     await client.folders.delete(folderId);
 
     return Response.json({
-      message: "File deleted successfully",
+      message: "Folder deleted successfully",
       folderId: folderId,
     });
   } catch (error) {
