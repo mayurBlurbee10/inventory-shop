@@ -1,0 +1,51 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - mstrategy-wealth-portal
+
+on:
+  push:
+    branches:
+      - wealth-portal
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://universalportaldemo.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_180c403baf1b492eb5f213be19f1ca22 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_fff88fb625f9463f90bceb7019f80aaf }}
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_180c403baf1b492eb5f213be19f1ca22 }}/box-wealth-portal-app:${{ github.sha }}
+        file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'mstrategy-wealth-portal'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_cacd51af159247f4924596889da01a7f }}
+        images: 'universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_180c403baf1b492eb5f213be19f1ca22 }}/box-wealth-portal-app:${{ github.sha }}'
