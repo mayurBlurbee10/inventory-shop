@@ -98,7 +98,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
                                 </p>
                                 <textarea
                                     name="input"
-                                    className="w-full sm:w-1/2 min-h-[70px] rounded-md focus:outline-none placeholder:text-sm placeholder:text-gray-600 border border-gray-400 py-1 px-3 resize-none text-sm overflow-auto custom-scrollbar"
+                                    className="w-full sm:w-1/2 min-h-[70px] rounded-md focus:outline-none placeholder:text-sm placeholder:text-gray-600 border border-gray-400 py-1 px-3 resize-none text-sm overflow-auto custom-scrollbar text-gray-700"
                                     placeholder="Enter a response"
                                     onChange={(e) => setAdditionalInfo(e.target.value)}
                                 ></textarea>
