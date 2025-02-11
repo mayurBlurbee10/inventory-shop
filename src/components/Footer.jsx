@@ -4,9 +4,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const Footer = ({ config, filterValue, user, from }) => {
-  console.log('config:', config);
-  
-  
+  console.log("config:", config);
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -105,11 +104,13 @@ const Footer = ({ config, filterValue, user, from }) => {
             </div>
           </div> */}
 
-          <div
-            className="mb-5"
+          {/* <div
+            className="mb-6"
             style={{
-              maxWidth: "75px",
-              maxHeight: "75px",
+              maxWidth: "350px",
+              maxHeight: "60px",
+              minHeight:"40px",
+              minWidth:"50px",
               overflow: "hidden",
             }}
           >
@@ -124,8 +125,16 @@ const Footer = ({ config, filterValue, user, from }) => {
               height={75}
               style={{ width: "100%", height: "auto" }}
             />
-            {/* <img src={config?.logo} alt={config?.legalName} width="auto" height="auto" className='w-auto h-12'/> */}
-          </div>
+          </div> */}
+          <img
+            src={
+              user?.company?.logo
+                ? user.company.logo.replace("/api/upload", "/uploads")
+                : config?.logo || "/logo.png"
+            }
+            alt={config?.legalName}
+            className="mr-2 max-h-[60px] max-w-[150px]"
+          />
 
           <div>
             <div>

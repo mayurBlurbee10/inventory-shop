@@ -111,7 +111,7 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg w-full max-w-2xl shadow-lg border border-gray-300 px-10 pb-10 pt-7 relative">
-                <div className="pb-7 flex justify-between items-center">
+                <div className="pb-7 flex justify-between items-center text-black">
                     {content?.title}
                     <button
                         onClick={onClose}

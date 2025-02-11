@@ -115,7 +115,7 @@ function LoansPage() {
               </tr>
             </thead>
             <tbody>
-              {loanData.length &&
+              {loanData.length > 0 &&
                 loanData?.map(({ id, icon, name, type, status }) => (
                   <tr key={id} className="border border-[#dee2e6] text-center">
                     <td className="py-5 flex items-center justify-center">

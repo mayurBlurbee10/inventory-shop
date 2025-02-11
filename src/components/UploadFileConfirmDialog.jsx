@@ -226,7 +226,7 @@ const UploadFileConfirmDialog = ({
                 {/* Replace Existing File Button */}
                 <button
                   onClick={handleReplaceFiles}
-                  disabled={isReplaceLoading}
+                  disabled={isReplaceLoading || isLoading}
                   className={`px-4 py-2 text-sm font-medium rounded-md transition ${
                     isReplaceLoading
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -243,7 +243,7 @@ const UploadFileConfirmDialog = ({
                 {/* Upload as Duplicate Button */}
                 <button
                   onClick={handleCreateDuplicateFiles}
-                  disabled={isLoading}
+                  disabled={isLoading || isReplaceLoading}
                   className={`px-4 py-2 text-sm font-medium rounded-md transition ${
                     isLoading
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"

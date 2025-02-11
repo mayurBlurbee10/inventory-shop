@@ -52,8 +52,9 @@ function Navbar({ content, config, user, filterValue }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
-            }`}
+          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-500" : ""
+          }`}
         >
           {title}
         </button>
@@ -164,7 +165,7 @@ function Navbar({ content, config, user, filterValue }) {
     // fetchContent();
     setUserIsAdmin(isAdmin());
   }, []);
-console.log('content:' , content);
+  console.log("content:", content);
 
   return (
     <div className="border-b border-[#0000001a]">
@@ -173,13 +174,13 @@ console.log('content:' , content);
           <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
             {/* {user?.company?.logo || config?.logo ? ( */}
             <img
-              src={
-                user?.company?.logo
-                  ? user.company.logo.replace("/api/upload", "/uploads")
-                  : config?.logo || "/logo.png"
-              }
+            src={
+              user?.company?.logo
+                ? user.company.logo.replace("/api/upload", "/uploads")
+                : config?.logo || "/logo.png"
+            }
               alt={params.portalid}
-              className="h-[52px] mr-2"
+              className="mr-2 max-h-[60px] max-w-[150px]"
             />
             {/* ) : (
               // Skeleton for logo
@@ -190,10 +191,13 @@ console.log('content:' , content);
               className="text-3xl text-[#000000e6] mb-1 font-lato"
               style={{
                 fontSize:
-                  content?.portalContent?.find((item) => item.title === "Header Text")?.fontSize || '30px',
+                  content?.portalContent?.find(
+                    (item) => item.title === "Header Text"
+                  )?.fontSize || "30px",
               }}
             >
-              {filterValue("Header Text") && filterValue("Header Text") !== "Premier Customer Portal" ? (
+              {filterValue("Header Text") &&
+              filterValue("Header Text") !== "Premier Customer Portal" ? (
                 filterValue("Header Text")
               ) : params?.portalid ? (
                 params.portalid
@@ -201,7 +205,6 @@ console.log('content:' , content);
                 <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
               )}
             </span>
-
           </div>
 
           <div className="hidden lg:flex space-x-4 items-center">
@@ -283,8 +286,9 @@ console.log('content:' , content);
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                    }`}
+                  className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                  }`}
                 >
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
@@ -382,7 +386,6 @@ console.log('content:' , content);
                 </svg>
               </button>
             )}
-
           </div>
 
           {/* Mobile Navbar */}
@@ -501,8 +504,9 @@ console.log('content:' , content);
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                        }`}
+                      className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                        userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
                     >
                       {user?.name?.charAt(0) || "U"}
                     </div>
@@ -599,7 +603,6 @@ console.log('content:' , content);
                     </button>
                   )}
                 </div>
-
               </div>
             </div>
           )}

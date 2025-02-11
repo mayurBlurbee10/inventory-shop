@@ -44,8 +44,15 @@ import Navbar from "./Navbar";
 import Container from "./Container";
 import MyTaskPopupBox from "./MyTaskPopupBox";
 import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
+import CompleteForms from "./CompleteForms";
 
-function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFolderId }) {
+function Documents({
+  fileType,
+  setSelectedItems,
+  selectedItems,
+  isRest,
+  loanFolderId,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
@@ -83,7 +90,16 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
   const [session, setSession] = useState(null);
   const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
   const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState("");
+  const [isCompleteFormPopupOpen, setIsCompleteFormPopupOpen] = useState(false);
   const [duplicateFiles, setDuplicateFiles] = useState([]);
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [collaborator, setCollaborator] = useState({
+    email: "",
+    role: "viewer",
+  });
+  const [collaborators, setCollaborators] = useState(
+    JSON.parse(localStorage.getItem("collaborators")) || []
+  );
   const pathname = usePathname();
 
   const handleBrowse = (event) => {
@@ -189,7 +205,6 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
         if (data.duplicateFiles.length > 0) {
           setDuplicateFiles(data.duplicateFiles);
         }
-        setIsModalOpen(true);
         setShowUploadArea(false);
         await refreshFiles();
         const path = getFolderPath(
@@ -201,6 +216,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
           location = [...data.files.map((file) => file.name)];
         }
         setUpladedFilePath(location);
+        setIsModalOpen(true);
       } catch (error) {
         toast.error(error.message);
         console.error("Error uploading files:", error);
@@ -218,7 +234,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
         method: "GET",
       };
       if (fileType == "shared" || fileType == "loan") {
-        if(loanFolderId) {
+        if (loanFolderId) {
           const response = await fetchWrapper(
             `/api/box/folders?folderId=${loanFolderId}`,
             requestOptions,
@@ -228,7 +244,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
           const data = await response.json();
           const newFilesList = data?.items || [];
           setFilesList(newFilesList);
-          setSelectedItem({type: "folder", id: loanFolderId});
+          setSelectedItem({ type: "folder", id: loanFolderId });
         } else if (
           userData?.collaborationIds &&
           userData.collaborationIds.length > 0
@@ -250,7 +266,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
         }
       } else {
         const response = await fetchWrapper(
-          `/api/box/folders?folderId=${userData.boxFolderId}`,
+          `/api/box/folders?folderId=${userData?.boxFolderId}`,
           requestOptions,
           "fetchFile"
         );
@@ -508,13 +524,14 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
   }, [selectedBulkItems]);
 
   useEffect(() => {
-    if(selectedItems?.length > 0 && isRest) {
+    if (selectedItems?.length > 0 && isRest) {
       setSelectedBulkItems([]);
-      setSelectedItems([])
+      setSelectedItems([]);
     }
   }, [isRest]);
 
   const handleBulkDelete = async () => {
+    setIsDeleting(true)
     const selectedItemsDetails = currentFilesList
       .filter((item) => selectedBulkItems.includes(item.id))
       .map((item) => ({ id: item.id, type: item.type }));
@@ -536,6 +553,8 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
       setIsDeleteModalOpen(false);
     } catch (error) {
       toast.error(error.message);
+    }finally {
+      setIsDeleting(false)
     }
   };
 
@@ -785,9 +804,51 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
         return;
       }
       setUser(userData);
-      refreshFiles();
+      // refreshFiles();
     });
   }, [router]);
+
+  const addCollaborator = ({ email, role }) => {
+    const collaborators =
+      JSON.parse(localStorage.getItem("collaborators")) || [];
+    const collabExist = collaborators.find((collab) => collab.email === email);
+    if (collabExist) {
+      toast.error("Collaborator with same email already exist");
+      return;
+    }
+    const collab = {
+      name: email.split("@")[0],
+      email: email,
+      role: role,
+    };
+    collaborators.push(collab);
+    localStorage.setItem("collaborators", JSON.stringify(collaborators));
+    setCollaborators(collaborators);
+    setCollaborator({
+      email: "",
+      role: "viewer",
+    });
+  };
+
+  const removeCollaborator = (email) => {
+    const collaborators =
+      JSON.parse(localStorage.getItem("collaborators")) || [];
+    const newList = collaborators.filter((collab) => collab.email !== email);
+    localStorage.setItem("collaborators", JSON.stringify(newList));
+    setCollaborators(newList);
+  };
+
+  // useEffect(() => {
+  //   const collabs = [
+  //     {
+  //       name: "Erica Smith",
+  //       email: "advisor@wealthportal.com",
+  //       role: "Editor",
+  //     },
+  //   ];
+  //   localStorage.setItem("collaborators", JSON.stringify(collabs));
+  //   setCollaborators(collabs);
+  // }, []);
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -801,15 +862,29 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
   return (
     // <div className="bg-white min-h-screen">
     // <Container>
-    <div className={`max-w-[1820px] ${fileType === 'loan'?"":"mx-auto pt-12 mt-12"}`}>
+    <div
+      className={`max-w-[1820px] ${
+        fileType === "loan" || fileType === 'advisor' ? "" : "mx-auto pt-12 mt-12"
+      }`}
+    >
       <div>
-        <div className={`grid gap-7 grid-cols-5 ${fileType === 'loan'?"":"px-4"}`}>
-          <div className={`col-span-5 ${fileType === 'loan'?"lg:col-span-5":"lg:col-span-3"}`}>
-           {fileType !== 'loan' && (
+        <div
+          className={`grid gap-7 grid-cols-5 ${
+            fileType === "loan" || fileType === 'advisor' ? "" : "px-4"
+          }`}
+        >
+          <div
+            className={`col-span-5 ${
+              fileType === "loan" || fileType === 'advisor' ? "lg:col-span-5" : "lg:col-span-3"
+            }`}
+          >
+            {fileType !== "loan" && fileType !== 'advisor' && (
               <>
                 <div className="flex items-center gap-10">
                   <span className="text-xl font-light text-[#212529] font-lato">
-                    {fileType === "shared" ? "Shared Documents" : "My Documents"}
+                    {fileType === "shared"
+                      ? "Shared Documents"
+                      : "My Documents"}
                   </span>
                   <span className="text-black font-lato font-normal text-sm">
                     Securely share content with your advisor and trusted
@@ -851,7 +926,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={
-                      "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4"
+                      "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4 text-gray-700"
                     }
                   />
 
@@ -920,7 +995,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                 </div>
               </div>
 
-              {fileType !== 'loan' && (
+              {fileType !== "loan" && (
                 <div>
                   <div
                     className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
@@ -938,10 +1013,9 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                         {selectedBulkItems.length} item(s) selected
                       </p>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                          ? "hidden"
-                          : "hover:bg-gray-200"
-                          } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                        } outline-none`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           handelToolbarMoveClick()
@@ -951,10 +1025,9 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                         <FolderInput className="size-5" />
                       </button>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                          ? "hidden"
-                          : "hover:bg-gray-200"
-                          } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                        } outline-none`}
                         onClick={
                           () =>
                             selectedBulkItems.length > 0 && handleBulkDownload()
@@ -965,10 +1038,9 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                         <Download className="size-5" />
                       </button>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared"
-                          ? "hidden"
-                          : "hover:bg-gray-200"
-                          } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                        } outline-none`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           setIsDeleteModalOpen(true)
@@ -1039,12 +1111,13 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                         </div>
                       )}
 
-                      {fileType !== 'loan' && (
+                      {fileType !== "loan" && (
                         <>
                           {/* Card view button */}
                           <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
-                              }`}
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
+                              view === "grid" ? "hidden" : "visible"
+                            }`}
                             onClick={() => {
                               setView("grid");
                               // setIsOpenOptionDrawer(false);
@@ -1063,8 +1136,9 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
 
                           {/* List view button */}
                           <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
-                              }`}
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
+                              view === "list" ? "hidden" : "visible"
+                            }`}
                             onClick={() => {
                               setView("list");
                               // setIsOpenOptionDrawer(false);
@@ -1182,6 +1256,7 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                 setIsModalOpen={setIsDeleteModalOpen}
                 handleDelete={handleBulkDelete}
                 config={config}
+                isLoading={isDeleting}
               />
               <MoveDialog
                 item={moveItem}
@@ -1386,8 +1461,8 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
           </div>
 
           {/* right panel */}
-          
-          {fileType !== 'loan' && (
+
+          {fileType !== "loan" && fileType !== 'advisor' && (
             <div className="col-span-5 lg:col-span-2">
               <div>
                 <div className="grid grid-cols-3">
@@ -1413,11 +1488,12 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
                               setMyTaskPopupBoxContent({
                                 title: "Upload identity information",
-                                actionText: "Upload"
+                                actionText: "Upload",
                               });
                               setIsMyTaskPopupOpen((prev) => !prev);
                             }}
@@ -1436,13 +1512,10 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
-                              setMyTaskPopupBoxContent({
-                                title: "Upload 2023 tax return",
-                                actionText: "Complete Forms"
-                              });
-                              setIsMyTaskPopupOpen((prev) => !prev);
+                              setIsCompleteFormPopupOpen((prev) => !prev)
                             }}
                           >
                             Complete Forms
@@ -1459,11 +1532,12 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
                               setMyTaskPopupBoxContent({
                                 title: "Sign money transfer agreement",
-                                actionText: " Sign"
+                                actionText: " Sign",
                               });
                               setIsMyTaskPopupOpen((prev) => !prev);
                             }}
@@ -1482,11 +1556,12 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                           </p>
                         </td>
                         <td className="px-3 py-4">
-                          <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                          <p
+                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
                               setMyTaskPopupBoxContent({
                                 title: "Auto Loan Forms",
-                                actionText: "Start Forms"
+                                actionText: "Start Forms",
                               });
                               setIsMyTaskPopupOpen((prev) => !prev);
                             }}
@@ -1499,15 +1574,17 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                   </table>
                 </div>
 
-                {
-                  isMyTaskPopupOpen && (
-                    <MyTaskPopupBox
-                      onClose={() => setIsMyTaskPopupOpen(false)}
-                      content={myTaskPopupBoxContent}
-                      config={config}
+                {isMyTaskPopupOpen && (
+                  <MyTaskPopupBox
+                    onClose={() => setIsMyTaskPopupOpen(false)}
+                    content={myTaskPopupBoxContent}
+                    config={config}
+                  />
+                )}
+                 <CompleteForms 
+                    onClose={() => setIsCompleteFormPopupOpen(false)}
+                    isOpen={isCompleteFormPopupOpen}
                     />
-                  )
-                }
 
                 {/* My advisor */}
                 <div className="mb-7">
@@ -1562,22 +1639,40 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                     <form className="mb-3.5">
                       <input
                         type="email"
+                        value={collaborator.email}
+                        onChange={(e) =>
+                          setCollaborator((prev) => ({
+                            ...prev,
+                            email: e.target.value,
+                          }))
+                        }
+                        placeholder="user@example.com"
                         className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
                       />
 
                       <div className="flex items-center gap-6">
-                        <select className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato">
-                          <option>Co-Owner</option>
-                          <option>Editor</option>
-                          <option>Viewer</option>
-                          <option>Previewer</option>
+                        <select
+                          className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato"
+                          value={collaborator.role}
+                          onChange={(e) =>
+                            setCollaborator((prev) => ({
+                              ...prev,
+                              role: e.target.value,
+                            }))
+                          }
+                        >
+                          {/* <option>Co-Owner</option> */}
+                          <option value={"editor"}>Editor</option>
+                          <option value={"viewer"}>Viewer</option>
+                          {/* <option>Previewer</option>
                           <option>Uploader</option>
                           <option>Previewer Uploader</option>
-                          <option>Viewer Uploader</option>
+                          <option>Viewer Uploader</option> */}
                         </select>
 
                         <button
-                          className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm"
+                          className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm cursor-pointer"
+                          onClick={() => addCollaborator(collaborator)}
                           type="button"
                         >
                           Invite
@@ -1600,6 +1695,9 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                             <th className="text-sm text-black font-medium font-lato p-3 text-start">
                               Role
                             </th>
+                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                              Actions
+                            </th>
                           </tr>
                         </thead>
 
@@ -1620,7 +1718,36 @@ function Documents({ fileType, setSelectedItems, selectedItems, isRest, loanFold
                                 Editor
                               </p>
                             </td>
+                            <td></td>
                           </tr>
+                          {collaborators &&
+                            collaborators.length > 0 &&
+                            collaborators.map(({ name, email, role }) => (
+                              <tr className="hover:bg-gray-300" key={email}>
+                                <td className="p-3">
+                                  <p className="font-semibold font-lato text-sm text-black">
+                                    {name}
+                                  </p>
+                                </td>
+                                <td className="p-3">
+                                  <p className="font-normal font-lato text-sm text-black">
+                                    {email}
+                                  </p>
+                                </td>
+                                <td className="p-3">
+                                  <p className="font-normal font-lato text-sm text-black">
+                                    {role.charAt(0).toUpperCase() +
+                                      role.slice(1)}
+                                  </p>
+                                </td>
+                                <td
+                                  className="p-3"
+                                  onClick={() => removeCollaborator(email)}
+                                >
+                                  <X className="text-red-600 cursor-pointer" />
+                                </td>
+                              </tr>
+                            ))}
                         </tbody>
                       </table>
                     </div>

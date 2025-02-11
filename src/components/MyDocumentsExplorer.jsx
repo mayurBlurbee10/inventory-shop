@@ -1144,13 +1144,16 @@ function SharedFolderExplorer({
                                     </button>
                                     {file.type === "file" && (
                                       <button
-                                        className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
+                                      className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
+                                        listType === "shared" ? "hidden" : ""
+                                      }`}
                                         onClick={() => {
                                           setIsMoveModalOpen((prev) => !prev);
                                           setMoveItem(file);
                                         }}
                                       >
                                         <Signature className="h-4 w-4 text-gray-600" />
+                                        Sign
                                       </button>
                                     )}
                                   </>
@@ -1185,6 +1188,7 @@ function SharedFolderExplorer({
                                   ? () => handleDeleteFile(deleteDropdown)
                                   : () => handleDeleteFolder(deleteDropdown)
                               }
+                              isLoading={isLoading}
                             />
                           </div>
                         </div>

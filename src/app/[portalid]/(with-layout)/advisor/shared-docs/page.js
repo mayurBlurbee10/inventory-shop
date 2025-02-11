@@ -28,6 +28,8 @@ import MoveDialog from "@/components/MoveDialog";
 import DialogBox from "@/components/DialogBox";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
+import Documents from "@/components/Documents";
 
 
 
@@ -59,6 +61,8 @@ export default function AdvisorView() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [uploadedfilePath, setUpladedFilePath] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [duplicateFiles, setDuplicateFiles] = useState([]);
+    const [isDeleting, setIsDeleting] = useState(false)
 
     const router = useRouter();
 
@@ -175,64 +179,94 @@ export default function AdvisorView() {
         }
     };
 
-
-    const handleFileSelect = async (event) => {
-        const files = Array.from(event.target.files);
-        if (files.length > 0) {
-            try {
-                setIsLoading(true);
-                const uploadData = new FormData();
-                const userData = getUserData();
-                files.forEach((file) => {
-                    uploadData.append("file", file);
-                });
-                if (!!selectedItem && selectedItem.type == "folder") {
-                    uploadData.append("boxFolderId", selectedItem.id);
-                } else {
-                    uploadData.append("boxFolderId", userData.boxFolderId);
-                }
-
-                uploadData.append("email", userData.email);
-
-                const requestOptions = {
-                    method: "POST",
-                    body: uploadData,
-                };
-
-                const response = await fetchWrapper(
-                    "/api/box/files",
-                    requestOptions,
-                    "uploadFile"
-                );
-                if (!response.ok) throw new Error("Failed to upload files");
-                setIsModalOpen(true);
-                setShowUploadArea(false);
-                await refreshFiles();
-                const path = getFolderPath(
-                    filesList,
-                    selectedItem?.id || userData?.boxFolderId
-                );
-                const location = `
-                  <div>
-                    <div>
-                      Location: Home${path}
-                    </div>
-                    <div>
-                      Name: 
-                      ${files.map((file) => file.name)}
-                    </div>
-                  </div>
-                  `;
-                setUpladedFilePath(location);
-                toast.success("File uploaded successfully");
-            } catch (error) {
-                toast.error(error.message);
-                console.error("Error uploading files:", error);
-            } finally {
-                setIsLoading(false);
-            }
+    const getFolderPath = (data, folderId, currentPath = "") => {
+        if (!Array.isArray(data)) {
+          console.error("Invalid data: Expected an array of folder items");
+          return "";
         }
-    };
+    
+        for (const item of data) {
+          if (item && item.id === folderId) {
+            return currentPath + "/" + (item.name || "Unnamed Folder");
+          }
+    
+          if (
+            item &&
+            item.type === "folder" &&
+            Array.isArray(item.children) &&
+            item.children.length > 0
+          ) {
+            const path = getFolderPath(
+              item.children,
+              folderId,
+              currentPath + "/" + (item.name || "Unnamed Folder")
+            );
+            if (path) {
+              return path;
+            }
+          }
+        }
+    
+        return "";
+      };
+
+
+  const handleFileSelect = async (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length > 0) {
+      try {
+        setIsLoading(true);
+        const uploadData = new FormData();
+        const userData = getUserData();
+        files.forEach((file) => {
+          uploadData.append("file", file);
+        });
+        if (!!selectedItem && selectedItem.type == "folder") {
+          uploadData.append("boxFolderId", selectedItem.id);
+        } else {
+          uploadData.append("boxFolderId", userData.boxFolderId);
+        }
+
+        uploadData.append("email", userData.email);
+
+        const requestOptions = {
+          method: "POST",
+          body: uploadData,
+        };
+
+        const response = await fetchWrapper(
+          "/api/box/files",
+          requestOptions,
+          "uploadFile"
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          console.log("data status", data.status);
+          throw new Error(data.error || "Failed to upload files");
+        }
+        if (data.duplicateFiles.length > 0) {
+          setDuplicateFiles(data.duplicateFiles);
+        }
+        setIsOpenUploadArea(false);
+        await refreshFiles();
+        const path = getFolderPath(
+          filesList,
+          selectedItem?.id || userData?.boxFolderId
+        );
+        let location = "";
+        if (data.files.length > 0) {
+          location = [...data.files.map((file) => file.name)];
+        }
+        setUpladedFilePath(location);
+        setIsModalOpen(true);
+      } catch (error) {
+        toast.error(error.message);
+        console.error("Error uploading files:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
     const updatePath = (prevPath, filesList) => {
         let updatedPath = [...prevPath];
@@ -583,312 +617,7 @@ export default function AdvisorView() {
 
 
                 <div className="col-span-3">
-                    <div className="mb-7 border">
-                        <div className="border-b border-solid border-[#0000001a]">
-                            <div className="py-[18px] flex items-center w-full px-5 bg-gray-50">
-
-                                {user?.company?.logo || config?.logo ? (
-                                    <img
-                                        src={
-                                            user?.company?.logo
-                                                ? user.company.logo.replace(
-                                                    "/api/upload",
-                                                    "/uploads"
-                                                )
-                                                : config?.logo || "/default_logo_purple.png"
-                                        }
-                                        alt={params.portalid}
-                                        className="h-8 w-8"
-                                    />
-                                ) : (
-                                    // Skeleton for logo
-                                    <div className="h-8 w-8 mr-2 bg-gray-300 animate-pulse rounded" />
-                                )}
-
-                                <input
-                                    type="search"
-                                    placeholder="Search file and folders"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className={
-                                        "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4"
-                                    }
-                                />
-
-                                {suggestions.length > 0 && (
-                                    <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
-                                        {suggestions.map((item, index) => (
-                                            <li
-                                                onClick={() => {
-                                                    handleSuggestionClick(item);
-                                                }}
-                                                key={item.id}
-                                                className={`flex items-center px-4 py-2 hover:bg-gray-100 transition relative cursor-pointer`}
-                                            >
-                                                <span className="mr-2">
-                                                    {item.type === "folder" ? (
-                                                        <Folder className="h-5 w-5 text-[#3c4043]" />
-                                                    ) : (
-                                                        <File className="h-5 w-5 text-[#3c4043]" />
-                                                    )}
-                                                </span>
-                                                <span className="text-gray-700 font-medium">
-                                                    {item.name}
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div
-                                className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
-                         ${isToolbarVisible ? "opacity-1" : "hidden"}
-                        `}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <button
-                                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
-                                        onClick={clearBulkItem}
-                                    >
-                                        <X className="size-5" />
-                                    </button>
-                                    <p className="text-sm font-medium mr-4 text-[#444746]">
-                                        {selectedBulkItems.length} item(s) selected
-                                    </p>
-                                    <button
-                                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 outline-none`}
-                                        onClick={() =>
-                                            selectedBulkItems.length > 0 &&
-                                            handelToolbarMoveClick()
-                                        }
-
-                                    >
-                                        <FolderInput className="size-5" />
-                                    </button>
-                                    <button
-                                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 outline-none`}
-                                        onClick={
-                                            () =>
-                                                selectedBulkItems.length > 0 && handleBulkDownload()
-                                            // console.log("selectedBulkItems", selectedBulkItems)
-                                        }
-
-                                    >
-                                        <Download className="size-5" />
-                                    </button>
-                                    <button
-                                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 outline-none`}
-                                        onClick={() =>
-                                            selectedBulkItems.length > 0 &&
-                                            setIsDeleteModalOpen(true)
-                                        }
-
-                                    >
-                                        <Trash2 className="size-5" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* breadcrumbs */}
-                        <div className="px-5 border-b break-words">
-                            <div className="py-3 flex items-center justify-between flex-wrap relative">
-                                <div>
-                                    <Breadcrumbs
-                                        path={path}
-                                        setPath={setPath}
-                                        setSearchQuery={setSearchQuery}
-                                        user={user}
-                                        setSelectedBulkItems={setSelectedBulkItems}
-                                    />
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-3">
-                                        {/* Grid range */}
-                                        {view === "grid" && (
-                                            <div className="items-center justify=-center gap-2 hidden md:flex">
-                                                <button
-                                                    className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                                                    onClick={() =>
-                                                        setCols((prev) => Math.max(prev - 1, 1))
-                                                    }
-                                                >
-                                                    <Minus className="h-5 w-5" />
-                                                </button>
-                                                <input
-                                                    type="range"
-                                                    min="1" // Set the minimum value for the range
-                                                    max="5" // Set the maximum value for the range
-                                                    value={cols} // Bind the current value of `cols` to the input
-                                                    onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
-                                                    className="w-32 range-slider" // Optional styling for the slider width
-                                                />
-
-                                                <button
-                                                    className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                                                    onClick={() =>
-                                                        setCols((prev) => Math.min(prev + 1, 5))
-                                                    }
-                                                >
-                                                    <Plus className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* Card view button */}
-                                        <button
-                                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
-                                                }`}
-                                            onClick={() => {
-                                                setView("grid");
-                                                // setIsOpenOptionDrawer(false);
-                                            }}
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="24"
-                                                height="24"
-                                                fill="currentColor"
-                                            >
-                                                <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
-                                            </svg>
-                                        </button>
-
-                                        {/* List view button */}
-                                        <button
-                                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
-                                                }`}
-                                            onClick={() => {
-                                                setView("list");
-                                                // setIsOpenOptionDrawer(false);
-                                            }}
-                                        >
-                                            <AlignJustify />
-                                        </button>
-
-                                        {/* Upload items */}
-                                        <div className="relative">
-                                            <button
-                                                className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                                                onClick={() =>
-                                                    setIsOpenNewFolderDrawer((prev) => !prev)
-                                                }
-                                            >
-                                                <Plus />
-                                            </button>
-
-                                            {isOpenNewFolderDrawer && (
-                                                <div className="absolute top-[50px] z-20 right-0 w-48 bg-white shadow-md p-3 rounded-md">
-                                                    <ul>
-                                                        <li>
-                                                            <button
-                                                                className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                                                onClick={() => {
-                                                                    setIsOpenNewFolderDrawer(false); // Close the drawer
-                                                                    setIsOpenUploadArea((prev) => !prev); // Toggle upload area
-                                                                }}
-                                                            >
-                                                                Upload
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <button
-                                                                className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                                                onClick={() => {
-                                                                    setIsOpenNewFolderDrawer(false); // Close the drawer
-                                                                    setIsNewFolderModalOpen((prev) => !prev);
-                                                                }}
-                                                            >
-                                                                New Folder
-                                                            </button>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {isNewFolderModalOpen && (
-                            <div className="absolute top-[50%] left-[50%]">
-                                <CreateFolder
-                                    onFolderCreated={refreshFiles}
-                                    onUploadClick={() => setShowUploadArea(true)}
-                                    selectedItem={selectedItem}
-                                    isModalOpen={isNewFolderModalOpen}
-                                    setIsModalOpen={setIsNewFolderModalOpen}
-                                />
-                            </div>
-                        )}
-
-                        {isOpenUploadArea && (
-                            <div className="mb-6">
-                                <UploadArea
-                                    isForImport={false}
-                                    onBrowse={handleBrowse}
-                                    onClose={() => setIsOpenUploadArea(false)}
-                                />
-                            </div>
-                        )}
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            onChange={handleFileSelect}
-                            multiple
-                        />
-
-                        <div className={` ${isLoading == true ? "visible" : "hidden"}`}>
-                            <LinearProgress />
-                        </div>
-
-                        <SharedFolderExplorer
-                            fileList={filesList}
-                            setPath={setPath}
-                            path={path}
-                            currentFilesList={currentFilesList}
-                            setCurrentFilesList={setCurrentFilesList}
-                            setSelectedItem={setSelectedItem}
-                            selectedItem={selectedItem}
-                            handleShareLink={() => { }}
-                            onFileChanges={refreshFiles}
-                            listType={'my'}
-                            setSearchQuery={setSearchQuery}
-                            view={view}
-                            cols={cols}
-                            setSelectedBulkItems={setSelectedBulkItems}
-                            selectedBulkItems={selectedBulkItems}
-                            setIsMoveModalOpen={setIsMoveModalOpen}
-                            setMoveItem={setMoveItem}
-                            setIsNewFolderModalOpen={setIsNewFolderModalOpen}
-                            loading={isLoading}
-                        />
-                        <DeleteConfirmDialog
-                            isModalOpen={isDeleteModalOpen}
-                            setIsModalOpen={setIsDeleteModalOpen}
-                            handleDelete={handleBulkDelete}
-                            config={config}
-                        />
-                        <MoveDialog
-                            item={moveItem}
-                            isModalOpen={isMoveModalOpen}
-                            setIsModalOpen={setIsMoveModalOpen}
-                            fileList={filesList}
-                            handleMove={handleMove}
-                        />
-                        <DialogBox
-                            title="File Uploaded"
-                            message="File uploaded successfully!"
-                            fileLocation={uploadedfilePath}
-                            isModalOpen={isModalOpen}
-                            setIsModalOpen={setIsModalOpen}
-                        />
-                    </div>
+                    <Documents fileType={'advisor'}/>
                 </div>
             </div>
 

@@ -1,5 +1,5 @@
 import { Dialog, DialogBackdrop } from "@headlessui/react";
-import { Trash2, X } from "lucide-react";
+import { Loader2, Trash2, X } from "lucide-react";
 import { useParams } from "next/navigation";
 
 function DeleteConfirmDialog({
@@ -9,6 +9,7 @@ function DeleteConfirmDialog({
   config,
   title = "Delete File",
   content = "Confirm delete?",
+  isLoading = false,
 }) {
   return (
     <Dialog
@@ -51,8 +52,15 @@ function DeleteConfirmDialog({
                     config?.secondaryColor || "rgb(59, 130, 246)",
                 }}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deleting
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete
+                  </>
+                )}
               </button>
             </div>
           </div>

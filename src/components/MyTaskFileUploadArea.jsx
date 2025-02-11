@@ -120,7 +120,7 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
                                     </p>
                                     <button
                                         onClick={handleBrowse}
-                                        className="border px-3 py-1 rounded-lg border-gray-300 hover:border-blue-300 "
+                                        className="border px-3 py-1 rounded-lg border-gray-300 hover:border-blue-300 text-gray-700"
                                     >
                                         Select Files
                                     </button>

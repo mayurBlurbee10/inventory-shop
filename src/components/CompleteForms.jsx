@@ -73,7 +73,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
                                 <input
                                     type="email"
                                     id="email"
-                                    className="w-1/2 rounded-md focus:outline-none placeholder:text-sm placeholder:text-gray-600 border border-gray-400 py-1 px-3 w-full"
+                                    className="w-1/2 rounded-md focus:outline-none placeholder:text-sm placeholder:text-gray-600 border border-gray-400 py-1 px-3"
                                     placeholder="Enter your email"
                                     required
                                     value={email}
@@ -93,7 +93,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
                                 <MyTaskFileUploadArea isForImport={isForImport} onFileChange={handleFileChangeFor1040} />
                             </div>
                             <div className="space-y-5">
-                                <p className="font-semibold text-sm">
+                                <p className="font-semibold text-sm text-black">
                                     Is there anything else we should know about that might affect your tax situation? <span className="text-red-500"> * </span>
                                 </p>
                                 <textarea
