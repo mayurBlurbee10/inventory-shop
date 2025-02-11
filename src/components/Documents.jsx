@@ -92,14 +92,12 @@ function Documents({
   const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState("");
   const [isCompleteFormPopupOpen, setIsCompleteFormPopupOpen] = useState(false);
   const [duplicateFiles, setDuplicateFiles] = useState([]);
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false);
   const [collaborator, setCollaborator] = useState({
     email: "",
     role: "viewer",
   });
-  const [collaborators, setCollaborators] = useState(
-    JSON.parse(localStorage.getItem("collaborators")) || []
-  );
+  const [collaborators, setCollaborators] = useState([]);
   const pathname = usePathname();
 
   const handleBrowse = (event) => {
@@ -531,7 +529,7 @@ function Documents({
   }, [isRest]);
 
   const handleBulkDelete = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     const selectedItemsDetails = currentFilesList
       .filter((item) => selectedBulkItems.includes(item.id))
       .map((item) => ({ id: item.id, type: item.type }));
@@ -553,8 +551,8 @@ function Documents({
       setIsDeleteModalOpen(false);
     } catch (error) {
       toast.error(error.message);
-    }finally {
-      setIsDeleting(false)
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -838,17 +836,13 @@ function Documents({
     setCollaborators(newList);
   };
 
-  // useEffect(() => {
-  //   const collabs = [
-  //     {
-  //       name: "Erica Smith",
-  //       email: "advisor@wealthportal.com",
-  //       role: "Editor",
-  //     },
-  //   ];
-  //   localStorage.setItem("collaborators", JSON.stringify(collabs));
-  //   setCollaborators(collabs);
-  // }, []);
+  useEffect(() => {
+    const isCollabsExist = localStorage.getItem("collaborators");
+    if (isCollabsExist) {
+      const collabs = JSON.parse(isCollabsExist);
+      setCollaborators(collabs);
+    }
+  }, []);
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -864,21 +858,25 @@ function Documents({
     // <Container>
     <div
       className={`max-w-[1820px] ${
-        fileType === "loan" || fileType === 'advisor' ? "" : "mx-auto pt-12 mt-12"
+        fileType === "loan" || fileType === "advisor"
+          ? ""
+          : "mx-auto pt-12 mt-12"
       }`}
     >
       <div>
         <div
           className={`grid gap-7 grid-cols-5 ${
-            fileType === "loan" || fileType === 'advisor' ? "" : "px-4"
+            fileType === "loan" || fileType === "advisor" ? "" : "px-4"
           }`}
         >
           <div
             className={`col-span-5 ${
-              fileType === "loan" || fileType === 'advisor' ? "lg:col-span-5" : "lg:col-span-3"
+              fileType === "loan" || fileType === "advisor"
+                ? "lg:col-span-5"
+                : "lg:col-span-3"
             }`}
           >
-            {fileType !== "loan" && fileType !== 'advisor' && (
+            {fileType !== "loan" && fileType !== "advisor" && (
               <>
                 <div className="flex items-center gap-10">
                   <span className="text-xl font-light text-[#212529] font-lato">
@@ -1462,7 +1460,7 @@ function Documents({
 
           {/* right panel */}
 
-          {fileType !== "loan" && fileType !== 'advisor' && (
+          {fileType !== "loan" && fileType !== "advisor" && (
             <div className="col-span-5 lg:col-span-2">
               <div>
                 <div className="grid grid-cols-3">
@@ -1515,7 +1513,7 @@ function Documents({
                           <p
                             className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
-                              setIsCompleteFormPopupOpen((prev) => !prev)
+                              setIsCompleteFormPopupOpen((prev) => !prev);
                             }}
                           >
                             Complete Forms
@@ -1581,10 +1579,10 @@ function Documents({
                     config={config}
                   />
                 )}
-                 <CompleteForms 
-                    onClose={() => setIsCompleteFormPopupOpen(false)}
-                    isOpen={isCompleteFormPopupOpen}
-                    />
+                <CompleteForms
+                  onClose={() => setIsCompleteFormPopupOpen(false)}
+                  isOpen={isCompleteFormPopupOpen}
+                />
 
                 {/* My advisor */}
                 <div className="mb-7">
