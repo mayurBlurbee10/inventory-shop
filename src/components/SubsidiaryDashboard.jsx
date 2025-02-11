@@ -491,7 +491,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
                   yAxisId="left"
                   type="monotone"
                   dataKey="apiCalls"
-                  stroke="#2563eb"
+                  stroke="#0061D5"
                   name="API Calls"
                 />
                 <Line

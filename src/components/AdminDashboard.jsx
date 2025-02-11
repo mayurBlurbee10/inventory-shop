@@ -329,7 +329,7 @@ const SubsidiaryGrid = ({
             <div className="flex justify-center mt-6">
               <button
                 onClick={handleLoadMore}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="bg-[#0061D5] text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 Load More
               </button>

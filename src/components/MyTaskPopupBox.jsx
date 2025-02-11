@@ -10,6 +10,7 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
     const [confirmPopup, setConfirmPopup] = useState(false);
     const [fileSelected, setFileSelected] = useState(false);
     const [arrayOfFiles, setArrayOfFiles] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     // const [config, setConfig] = useState(null);
     // const params = useParams();
@@ -36,6 +37,48 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
         const updatedFiles = arrayOfFiles.filter((_, i) => i !== index);
         setArrayOfFiles(updatedFiles); // Update state
     };
+
+    const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const droppedFiles = Array.from(e.dataTransfer.files);
+        const validFiles = isForImport
+            ? droppedFiles.filter((file) => file.type === "text/csv")
+            : droppedFiles;
+
+        if (validFiles.length === 0) {
+            return;
+        }
+
+        setArrayOfFiles((prevFiles) => {
+            const existingFileNames = prevFiles.map((file) => file.name);
+            const newFiles = validFiles.filter(
+                (file) => !existingFileNames.includes(file.name)
+            );
+            return [...prevFiles, ...newFiles];
+        });
+    };
+
 
     // useEffect(() => {
     //     const fetchConfig = async () => {
@@ -86,12 +129,20 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
                     </div>
 
                     {/* File Upload Section */}
-                    <div className="py-6 flex flex-col items-center text-center border-b max-h-[350px] overflow-auto custom-scrollbar">
+                    <div className={`py-6 flex flex-col items-center text-center border-b max-h-[350px] overflow-auto custom-scrollbar ${isDragging
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+                        }`}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                    >
                         <div>
                             {
                                 arrayOfFiles.length === 0 && (
                                     <div className="flex flex-col items-center text-center">
-                                        <UploadCloud className="h-12 w-12 text-blue-500 mb-2" />
+                                        <UploadCloud className={`h-12 w-12 text-blue-500 mb-2 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
                                         <p className="text-gray-600">
                                             Drag and drop file
                                             {isForImport ? ' csv ' : ' '}
@@ -115,7 +166,7 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
                             }
                         </div>
 
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto w-full">
                             <table className="w-full border-collapse ">
                                 <tbody>
                                     {arrayOfFiles && arrayOfFiles.length > 0 ? (

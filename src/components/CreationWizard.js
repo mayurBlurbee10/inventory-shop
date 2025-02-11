@@ -29,7 +29,7 @@ const WizardStep = ({ step, currentStep }) => {
           isCompleted
             ? "bg-[#0061D5]"
             : isActive
-            ? "bg-white border-gray-900"
+            ? "bg-white border-[#0061D5]"
             : "bg-white border-gray-300"
         }
         ${isCompleted || isActive ? "text-white" : "text-gray-500"}
