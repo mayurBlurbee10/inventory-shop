@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 3003",
     "lint": "next lint",
     "create-box-user": "node src/scripts/createBoxUser.js"
   },
