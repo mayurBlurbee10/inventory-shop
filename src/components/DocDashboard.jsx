@@ -405,7 +405,7 @@ export default function DocDashboard() {
             </div>
             <div>
               {/* Shared document cards */}
-              <Link href="my-docs">
+              {/* <Link href="my-docs">
                 <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
                   <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
                     My Documents
@@ -414,7 +414,7 @@ export default function DocDashboard() {
                     Securely share content with your advisor
                   </p>
                 </div>
-              </Link>
+              </Link> */}
               <Link href="shared-docs">
                 <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
                   <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">

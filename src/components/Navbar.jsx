@@ -237,12 +237,13 @@ function Navbar({ content, config, user, filterValue }) {
                       : `/dashboard`
                   }
                 />
-                <NavBarItem
+                {/* <NavBarItem
                   title="My Documents"
                   href={
                     params.portalid ? `/${params.portalid}/my-docs` : "/my-docs"
                   }
-                />
+                /> */}
+
                 <NavBarItem
                   title="Shared Documents"
                   href={
@@ -465,14 +466,14 @@ function Navbar({ content, config, user, filterValue }) {
                           : `/dashboard`
                       }
                     />
-                    <NavBarItem
+                    {/* <NavBarItem
                       title="My Documents"
                       href={
                         params.portalid
                           ? `/${params.portalid}/my-docs`
                           : "/my-docs"
                       }
-                    />
+                    /> */}
                     <NavBarItem
                       title="Shared Documents"
                       href={
@@ -497,7 +498,7 @@ function Navbar({ content, config, user, filterValue }) {
                     />
                   </>
                 )}
-                <div className="flex items-center space-x-8 cursor-pointer">
+                <div className="flex items-center space-x-2 cursor-pointer">
                   <div
                     className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
                     onClick={() => setAccountDropdown((prev) => !prev)}

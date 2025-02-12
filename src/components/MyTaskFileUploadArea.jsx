@@ -171,6 +171,22 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
                         </table>
                     </div>
                 </div >
+                {
+                    arrayOfFiles.length > 0 && (
+                        <div className="my-2">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileSelect}
+                                style={{ display: "none" }} // Hide the file input
+                                multiple
+                            />
+                            <button className="border border-gray-600 py-1 px-2 rounded-lg hover:bg-gray-50 text-sm hover:border-gray-400 text-[#0061D5]" onClick={handleBrowse}>
+                                Add another file
+                            </button>
+                        </div>
+                    )
+                }
             </div >
         </>
 

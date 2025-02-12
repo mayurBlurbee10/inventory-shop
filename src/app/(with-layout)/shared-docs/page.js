@@ -64,7 +64,7 @@ import CreateFolder from "@/components/CreateFolder";
 import Documents from "@/components/Documents";
 
 export default function SharedDocsPage() {
-  return <Documents fileType={'shared'}/>;
+  return <Documents fileType={'my'}/>;
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);

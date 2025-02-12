@@ -91,7 +91,7 @@ export default function AdminLoginPage() {
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-          <p className="text-gray-600 mt-2">Log in to manage subsidiary accounts</p>
+          <p className="text-gray-600 mt-2">Log in to manage portals</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -156,7 +156,7 @@ export default function AdminLoginPage() {
         </div> */}
         {/* footer with copyright and some links */}
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p>&copy; 2024 MStrategy. All rights reserved.</p>
+          <p>&copy; 2025 MStrategy. All rights reserved.</p>
           <p className="mt-2">
             <a href="#" className="text-[#0061D5] hover:text-blue-500">
               Privacy Policy

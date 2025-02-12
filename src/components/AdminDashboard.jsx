@@ -497,18 +497,18 @@ export default function AdminDashboard() {
 
       const subsidiary = await saveResponse.json();
       if (!saveResponse.ok) {
-        throw new Error(subsidiary.error || "Failed to save subsidiary data");
+        throw new Error(subsidiary.error || "Failed to save portal data");
       }
 
       setSubsidiaries((prev) => [...prev, subsidiary.data]);
       getPortal();
-      // toast.success(subsidiary.message || "Subsidiary created successfully");
+      // toast.success(subsidiary.message || "Portal created successfully");
       setNewPortalName(subsidiary.data.legalName);
       setNewPortalId(sanitizeName(subsidiary.data.legalName));
       setIsPopupOpen(true);
     } catch (error) {
       toast.error(error.message);
-      console.error("Error creating subsidiary:", error);
+      console.error("Error creating portal:", error);
     } finally {
       setIsLoading(false);
       setShowCreationModal(false);
@@ -587,7 +587,7 @@ export default function AdminDashboard() {
     router.push("login");
   };
   // const recentSubsidiary =  subsidiaries[subsidiaries.length - 1].domain
-  // console.log("Last Subsidiary:",);
+  // console.log("Last Portal:",);
 
 
   const [sidePanelOpen, setSidePanelOpen] = useState(false);

@@ -18,26 +18,26 @@ import React, { useEffect, useState } from "react";
 
 function LoansPage() {
   const preData = [
-    // {
-    //   id: 635789,
-    //   icon: "CarFront",
-    //   name: "Auto - 635789",
-    //   type: "Auto",
-    //   status: "Active",
-    //   folderId:"306788535946",
-    //   complete: 75,
-    //   paid: "$40,225.00 Paid"
-    // },
-    // {
-    //   id: 990154,
-    //   icon: "User",
-    //   name: "Personal - 990154",
-    //   type: "Personal",
-    //   status: "Fully Paid",
-    //   folderId:"306789263204",
-    //   complete: 100,
-    //   paid: "Fully Paid"
-    // },
+    {
+      id: 635789,
+      icon: "CarFront",
+      name: "Auto - 635789",
+      type: "Auto",
+      status: "Active",
+      folderId:"306788535946",
+      complete: 75,
+      paid: "$40,225.00 Paid"
+    },
+    {
+      id: 990154,
+      icon: "User",
+      name: "Personal - 990154",
+      type: "Personal",
+      status: "Fully Paid",
+      folderId:"306789263204",
+      complete: 100,
+      paid: "Fully Paid"
+    },
   ];
   
   const dataToAdd = [
@@ -52,7 +52,7 @@ function LoansPage() {
   const router = useRouter();
   const params = useParams();
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
-  const [loanData, setLoanData] = useState([...preData]);
+  const [loanData, setLoanData] = useState([]);
   const [newLoan, setNewLoan] = useState(false);
 
   // console.log(loanData);
@@ -66,23 +66,26 @@ function LoansPage() {
     }
 
     const loans = JSON.parse(localStorage.getItem("loan"));
+    console.log('loans:' , loans);
+    
     if(!loans) {
       localStorage.setItem("loan", JSON.stringify(preData));
       setLoanData([...preData])
     } else {
-      setLoanData([...loans])
+      setLoanData([...loans , ...preData])
     }
   }, []);
 
   const handleRefresh = () => {
     localStorage.setItem("newLoan", false);
+    localStorage.setItem("loan", JSON.stringify([]));
     setNewLoan(false);
     setLoanData([...preData]);
   };
 
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
-      <div>
+      <div className="m-1">
         <div className="border-b border-[#dee2e6] pt-12 pb-5">
           <p className="text-sm font-lato mt-1">
             <span className="text-xl font-light text-center text-[#212529] mr-10 font-lato">

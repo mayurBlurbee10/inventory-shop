@@ -342,7 +342,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
       );
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch subsidiary");
+        throw new Error(data.error || "Failed to fetch portal");
       }
       setConfig(data?.data);
     } catch (error) {
