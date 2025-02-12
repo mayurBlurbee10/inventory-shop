@@ -609,6 +609,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId }) => {
 
   const handelSelfSign = async () => {
     try {
+      finalStep()
       setIsLoading(true);
       const userData = getUserData();
       const response = await fetchWrapper(
@@ -701,13 +702,13 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId }) => {
           )}
         </button>
         <Signature className="text-[#0057ca] size-10" />
-        <p className="font-light text-lg text-center">Your Loan has been created successfully.</p>
+        {/* <p className="font-light text-lg text-center">Your Loan has been created successfully.</p>
         <button
           onClick={finalStep}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Loan Origination
-        </button>
+        </button> */}
       </div>
       <SignRequestModal
         isOpen={isSignModalOpen}
@@ -803,23 +804,21 @@ function NewLoanPage() {
 
   const finalStep = () => {
     localStorage.setItem("newLoan", true);
-    const loans = JSON.parse(localStorage.getItem("loan") || "[]");
-    const obj = {
-      id: uniqueNo,
-      icon: type == 'personal' ? 'User' : (type == 'auto' ? 'CarFront' : 'Home'),
-      name: `${type} - ${uniqueNo}`,
-      type: type,
-      status: "Processing",
-      folderId: loanFolderId,
-      complete: 30,
-      paid: "In process"
-    }
-    loans.push(obj);
-    localStorage.setItem("loan", JSON.stringify(loans));
-    router.push(
-      params.portalid ? `/${params.portalid}/loans` : "/loans"
-    )
-
+    // const loans = JSON.parse(localStorage.getItem("loan") || "[]");
+    // const obj = {
+    //   id: uniqueNo,
+    //   icon: type == 'personal' ? 'User' : (type == 'auto' ? 'CarFront' : 'Home'),
+    //   name: `${type} - ${uniqueNo}`,
+    //   type: type,
+    //   status: "Processing",
+    //   folderId: loanFolderId,
+    //   complete: 30,
+    //   paid: "In process"
+    // }
+    // if(loans.length < 3){
+    //   loans.push(obj)
+    // }
+    // localStorage.setItem("loan", JSON.stringify(loans));
   };
 
   const getActiveStepContent = () => {

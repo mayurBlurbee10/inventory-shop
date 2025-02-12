@@ -24,9 +24,9 @@ function LoansPage() {
       name: "Auto - 635789",
       type: "Auto",
       status: "Active",
-      folderId:"306788535946",
+      folderId: "306788535946",
       complete: 75,
-      paid: "$40,225.00 Paid"
+      paid: "$40,225.00 Paid",
     },
     {
       id: 990154,
@@ -34,12 +34,12 @@ function LoansPage() {
       name: "Personal - 990154",
       type: "Personal",
       status: "Fully Paid",
-      folderId:"306789263204",
+      folderId: "306789263204",
       complete: 100,
-      paid: "Fully Paid"
+      paid: "Fully Paid",
     },
   ];
-  
+
   const dataToAdd = [
     {
       id: 174192,
@@ -63,18 +63,30 @@ function LoansPage() {
 
     if (userEntered) {
       setLoanData([...dataToAdd, ...preData]);
+      localStorage.setItem("loan", JSON.stringify([...dataToAdd, ...preData]));
     }
 
     const loans = JSON.parse(localStorage.getItem("loan"));
-    console.log('loans:' , loans);
-    
-    if(!loans) {
+    console.log("loans:", loans);
+
+    if (loans.length === 0) {
       localStorage.setItem("loan", JSON.stringify(preData));
-      setLoanData([...preData])
-    } else {
-      setLoanData([...loans , ...preData])
+      setLoanData([...preData]);
     }
+
+    // else {
+    //   setLoanData([...loans , ...preData])
+    // }
+    // return () => {
+    //   localStorage.setItem("loan", JSON.stringify([]));
+    // };
   }, []);
+
+  useEffect(() => {
+    if (newLoan) {
+      localStorage.setItem("loan", JSON.stringify([...dataToAdd, ...preData]));
+    }
+  }, [newLoan]);
 
   const handleRefresh = () => {
     localStorage.setItem("newLoan", false);
@@ -123,9 +135,9 @@ function LoansPage() {
                   <tr key={id} className="border border-[#dee2e6] text-center">
                     <td className="py-5 flex items-center justify-center">
                       {/* <Icon className="size-8" /> */}
-                      {icon==='CarFront' && <CarFront className="size-8" />}
-                      {icon==='Home' && <Home className="size-8" />}
-                      {icon==='User' && <User className="size-8" />}
+                      {icon === "CarFront" && <CarFront className="size-8" />}
+                      {icon === "Home" && <Home className="size-8" />}
+                      {icon === "User" && <User className="size-8" />}
                     </td>
                     <td className="py-5 px-2">{name}</td>
                     <td>{type}</td>
@@ -138,7 +150,12 @@ function LoansPage() {
                     >
                       {status}
                     </td>
-                    <td className="text-blue-500 cursor-pointer" onClick={()=>router.push(`loans/details/${id}`)}>Details</td>
+                    <td
+                      className="text-blue-500 cursor-pointer"
+                      onClick={() => router.push(`loans/details/${id}`)}
+                    >
+                      Details
+                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -166,9 +183,15 @@ function LoansPage() {
             <ChevronDown className="fill-black " />
             {isLoanOptionOpen && (
               <div className="flex flex-col border border-[#dee2e6] w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer">
-                <div onClick={() => router.push(`loans/new?type=mortgage`)}>Mortgage</div>
-                <div onClick={() => router.push(`loans/new?type=auto`)}>Auto</div>
-                <div onClick={() => router.push(`loans/new?type=personal`)}>Personal</div>
+                <div onClick={() => router.push(`loans/new?type=mortgage`)}>
+                  Mortgage
+                </div>
+                <div onClick={() => router.push(`loans/new?type=auto`)}>
+                  Auto
+                </div>
+                <div onClick={() => router.push(`loans/new?type=personal`)}>
+                  Personal
+                </div>
               </div>
             )}
           </div>

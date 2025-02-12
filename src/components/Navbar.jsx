@@ -65,7 +65,7 @@ function Navbar({ content, config, user, filterValue }) {
     clearUserData();
     await signOut();
     toast.success("User signout successfully");
-    router.push("login");
+    router.push(params.portalid ? `/${params.portalid}/login` : "/login");
   };
   //   const fetchConfig = async () => {
   //     try {

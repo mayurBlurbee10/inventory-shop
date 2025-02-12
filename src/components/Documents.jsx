@@ -962,9 +962,10 @@ function Documents({
               <>
                 <div className="flex items-center gap-10">
                   <span className="text-xl font-light text-[#212529] font-lato">
-                    {fileType === "shared"
+                    {/* {fileType === "shared"
                       ? "Shared Documents"
-                      : "My Documents"}
+                      : "My Documents"} */}
+                      Shared Documents
                   </span>
                   <span className="text-black font-lato font-normal text-sm">
                     Securely share content with your advisor and trusted
