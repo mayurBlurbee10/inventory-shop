@@ -270,7 +270,7 @@ const saveSignRequest = async (userId, signRequest) => {
     if (!user) {
       throw new Error("User not found");
     }
-    if (user.signRequestsId?.length > 0) {
+    if (user.signRequestsId && user.signRequestsId?.length > 0) {
       user.signRequestsId = [...user.signRequestsId, signRequest.id];
     } else {
       user.signRequestsId = [signRequest.id];

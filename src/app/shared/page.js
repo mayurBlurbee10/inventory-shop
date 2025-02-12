@@ -250,7 +250,7 @@ export default function SharedPage() {
       //   }
       // } else {
       const response = await fetchWrapper(
-        `/api/box/folders?folderId=${userData.boxFolderId}`,
+        `/api/box/folders?folderId=${userData?.boxFolderId}`,
         requestOptions,
         "fetchFile"
       );

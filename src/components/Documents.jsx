@@ -20,6 +20,7 @@ import {
   Settings,
   Headset,
   LogOut,
+  Loader2,
 } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -45,6 +46,7 @@ import Container from "./Container";
 import MyTaskPopupBox from "./MyTaskPopupBox";
 import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
 import CompleteForms from "./CompleteForms";
+import SignRequestModal from "./SignRequestModal";
 
 function Documents({
   fileType,
@@ -98,6 +100,15 @@ function Documents({
     role: "viewer",
   });
   const [collaborators, setCollaborators] = useState([]);
+  const [isSignModalOpen, setIsSignModalOpen] = useState(false);
+  const [selectedSignUrl, setSelectedSignUrl] = useState(null);
+  const [isSignReqLoading, setIsSignReqLoading] = useState(null);
+  const [completedTask, setCompletedTask] = useState({
+    upload: false,
+    completeForm: false,
+    sign: false,
+    autoLoan: false,
+  });
   const pathname = usePathname();
 
   const handleBrowse = (event) => {
@@ -117,6 +128,54 @@ function Documents({
     // Calculate percentage for the custom CSS variable
     const percentage = ((5 - value) / 4) * 100; // 5 should be 0%, 1 should be 100%
     e.target.style.setProperty("--value-percent", percentage);
+  };
+
+  const handleSelfSign = async (file, taskType) => {
+    try {
+      setIsSignReqLoading(taskType);
+      const response = await fetchWrapper(
+        "/api/box/e-sign",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileId: file.id,
+            signers: [
+              {
+                signerEmail: user.email,
+                signerId: user.id,
+              },
+            ],
+            boxUserId: user.boxUserId,
+            portal: params.portalid,
+            onSameDoc: false,
+          }),
+        },
+        "self-esign-request"
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate e-sign request");
+      }
+      toast.success("E-sign request generated successfully.");
+      const currentUserReq = data.data[0].signers.find(
+        (item) => item.email === user.email
+      );
+      if (currentUserReq) {
+        setTimeout(() => {
+          setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+          setIsSignModalOpen(true);
+          setIsSignReqLoading(null);
+        }, 2500);
+      }
+    } catch (error) {
+      setIsSignReqLoading(null);
+    } finally {
+      setIsSignReqLoading(null);
+    }
   };
 
   const handleCreateFolder = async () => {
@@ -261,8 +320,24 @@ function Documents({
           const data = await response.json();
           const newFilesList = data?.items;
           setFilesList(newFilesList);
+        } else {
+          if (!userData?.boxFolderId) {
+            return;
+          }
+          const response = await fetchWrapper(
+            `/api/box/folders?folderId=${userData?.boxFolderId}`,
+            requestOptions,
+            "fetchFile"
+          );
+          if (!response.ok) throw new Error("Failed to fetch files");
+          const data = await response.json();
+          const newFilesList = data?.items || [];
+          setFilesList(newFilesList);
         }
       } else {
+        if (!userData?.boxFolderId) {
+          return;
+        }
         const response = await fetchWrapper(
           `/api/box/folders?folderId=${userData?.boxFolderId}`,
           requestOptions,
@@ -760,6 +835,9 @@ function Documents({
 
   const getUserDetailsByEmail = async (email) => {
     try {
+      if(!email){
+        return
+      }
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
@@ -843,6 +921,10 @@ function Documents({
       setCollaborators(collabs);
     }
   }, []);
+
+  const firstFileToSign = () => {
+    return filesList?.find((file) => file.type === "file") || null;
+  };
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -1468,7 +1550,17 @@ function Documents({
                   <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
                     My Tasks
                   </h3>
-                  <div className="flex items-center justify-end text-[#dc3545]">
+                  <div
+                    className="flex items-center justify-end text-[#dc3545] cursor-pointer"
+                    onClick={() =>
+                      setCompletedTask({
+                        upload: false,
+                        completeForm: false,
+                        sign: false,
+                        autoLoan: false,
+                      })
+                    }
+                  >
                     <RotateCw className="h-4 w-4" />
                   </div>
                 </div>
@@ -1494,9 +1586,17 @@ function Documents({
                                 actionText: "Upload",
                               });
                               setIsMyTaskPopupOpen((prev) => !prev);
+                              setCompletedTask((prev) => ({
+                                ...prev,
+                                upload: true,
+                              }));
                             }}
                           >
-                            Upload
+                            {completedTask.upload ? (
+                              <span className="italic">Completed</span>
+                            ) : (
+                              "Upload"
+                            )}
                           </p>
                         </td>
                       </tr>
@@ -1514,9 +1614,17 @@ function Documents({
                             className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
                               setIsCompleteFormPopupOpen((prev) => !prev);
+                              setCompletedTask((prev) => ({
+                                ...prev,
+                                completeForm: true,
+                              }));
                             }}
                           >
-                            Complete Forms
+                            {completedTask.completeForm ? (
+                              <span className="italic">Completed</span>
+                            ) : (
+                              "Complete Forms"
+                            )}
                           </p>
                         </td>
                       </tr>
@@ -1533,14 +1641,21 @@ function Documents({
                           <p
                             className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
-                              setMyTaskPopupBoxContent({
-                                title: "Sign money transfer agreement",
-                                actionText: " Sign",
-                              });
-                              setIsMyTaskPopupOpen((prev) => !prev);
+                              handleSelfSign(firstFileToSign(), "sign");
+                              setCompletedTask((prev) => ({
+                                ...prev,
+                                sign: true,
+                              }));
                             }}
+                            disabled={!firstFileToSign()}
                           >
-                            Sign
+                            {isSignReqLoading === "sign" ? (
+                              <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                            ) : completedTask.sign ? (
+                              <span className="italic">Completed</span>
+                            ) : (
+                              "Sign"
+                            )}
                           </p>
                         </td>
                       </tr>
@@ -1557,14 +1672,21 @@ function Documents({
                           <p
                             className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
                             onClick={() => {
-                              setMyTaskPopupBoxContent({
-                                title: "Auto Loan Forms",
-                                actionText: "Start Forms",
-                              });
-                              setIsMyTaskPopupOpen((prev) => !prev);
+                              handleSelfSign(firstFileToSign(), "autoLoan");
+                              setCompletedTask((prev) => ({
+                                ...prev,
+                                autoLoan: true,
+                              }));
                             }}
+                            disabled={!firstFileToSign()}
                           >
-                            Start Forms
+                            {isSignReqLoading === "autoLoan" ? (
+                              <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                            ) : completedTask.autoLoan ? (
+                              <span className="italic">Completed</span>
+                            ) : (
+                              "Start Forms"
+                            )}
                           </p>
                         </td>
                       </tr>
@@ -1754,6 +1876,11 @@ function Documents({
               </div>
             </div>
           )}
+          <SignRequestModal
+            isOpen={isSignModalOpen}
+            onClose={() => setIsSignModalOpen(false)}
+            signUrl={selectedSignUrl}
+          />
         </div>
       </div>
     </div>

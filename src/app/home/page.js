@@ -346,7 +346,7 @@ export default function HomePage() {
         method: "GET",
       };
       const response = await fetchWrapper(
-        `/api/box/folders?folderId=${userData.boxFolderId}`,
+        `/api/box/folders?folderId=${userData?.boxFolderId}`,
         requestOptions,
         "fetchFile"
       );

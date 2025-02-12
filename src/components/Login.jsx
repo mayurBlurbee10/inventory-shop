@@ -315,11 +315,6 @@ function Login() {
   }, [router]);
 
   if (!config || !content) return <LoadingSpinner />;
-  console.log('portalId:', params.portalid);
-
-  console.log('centent:', content);
-  console.log('fontSize:', content.portalContent[0].fontSize);
-
 
   return (
     <div className="min-h-screen bg-background">

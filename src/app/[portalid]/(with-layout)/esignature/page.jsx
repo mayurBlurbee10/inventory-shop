@@ -85,6 +85,13 @@ function ESignature() {
   };
 
   useEffect(() => {
+    if (!isSignModalOpen) {
+      const userData = getUserData();
+      fetchSignRequests(userData);
+    }
+  }, [isSignModalOpen]);
+
+  useEffect(() => {
     const userData = getUserData();
     setUser(userData);
     fetchConfig();
@@ -197,10 +204,7 @@ function ESignature() {
       />
       <SignRequestModal
         isOpen={isSignModalOpen}
-        onClose={() => {
-          setIsSignModalOpen(false);
-          fetchSignRequests(user);
-        }}
+        onClose={() => setIsSignModalOpen(false)}
         signUrl={selectedSignUrl}
       />
     </div>

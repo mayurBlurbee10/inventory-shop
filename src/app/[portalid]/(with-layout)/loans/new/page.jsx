@@ -8,6 +8,7 @@ import {
   CircleCheckBig,
   Folder,
   ListChecks,
+  Loader2,
   Plus,
   Signature,
   UploadCloud,
@@ -25,7 +26,8 @@ const ApplicationStep = ({
   filesList,
   userData,
   setUserData,
-  uniqueNo
+  uniqueNo,
+  fileListLoading
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const preUserData = {
@@ -44,13 +46,14 @@ const ApplicationStep = ({
 
   const handelNext = async () => {
     try {
-      if(loanFolderId){
+      if (loanFolderId) {
         setActiveStep("documents");
         return;
       }
       setIsLoading(true);
       let loansId = null;
       const item = findFolderWithName(filesList, "Loans");
+      console.log("filesList", filesList)
       if (!item) {
         // make loan folder
         const userData = getUserData();
@@ -111,15 +114,16 @@ const ApplicationStep = ({
       if (item.type === "folder" && item.name === targetName) {
         return item;
       }
-      if (item.children && findFolderWithName(item.children, targetName)) {
-        return item;
+      if (item.children) {
+        const found = findFolderWithName(item.children, targetName);
+        if (found) return found; 
       }
     }
-    return null;
+    return null; 
   };
 
   return (
-    <div className="flex flex-col justify-center w-full font-lato">
+    <div className="flex flex-col justify-center w-full font-lato sm:border-l overflow-hidden border-l border-[#dee2e6]">
       <h1 className="text-center text-3xl text-black p-10">Application</h1>
       <form className="space-y-3">
         <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
@@ -293,13 +297,13 @@ const ApplicationStep = ({
         </div>
         <button
           className="px-3 py-2 border border-black rounded flex gap-2"
-          disabled={isLoading}
+          disabled={isLoading || fileListLoading}
           onClick={handelNext}
         >
-          {isLoading && (
+          {(isLoading) && (
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           )}
-          Next
+          {fileListLoading ?  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /> : "Next"}
         </button>
       </div>
     </div>
@@ -317,12 +321,16 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
   const fileInputRef = useRef(null);
 
   const handelChoose = async () => {
-    const selectedItemsDetails = findItemsById(filesList, selectedItems, []);
+    try {
+    const selectedItemsDetails = await new Promise((resolve) => {
+      const foundItems = findItemsById(filesList, selectedItems);
+      resolve(foundItems);
+    });
     let obj = {
       items: selectedItemsDetails,
       destinationFolderId: loanFolderId,
     };
-    try {
+   
       setIsLoading(true);
       const requestOptions = {
         method: "POST",
@@ -345,7 +353,9 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
   const findItemsById = (items, idArray, result = []) => {
     items.forEach((item) => {
       if (idArray.includes(item.id)) {
-        result.push({ id: item.id, type: item.type });
+        if (item.type !== "folder") {
+          result.push({ id: item.id, type: item.type });
+        }
       }
       if (item.children && item.children.length > 0) {
         findItemsById(item.children, idArray, result);
@@ -420,134 +430,136 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
   }, [selectedItems]);
 
   return (
-    <div className="flex flex-col justify-center w-full font-lato px-10">
+    <div className="flex flex-col justify-center w-full font-lato px-5 sm:px-10 border-l border-[#dee2e6]">
       <h1 className="text-center text-3xl text-black pt-10 pb-3">Documents</h1>
       <p className="font-light text-xl text-center">
         We need the <span className="font-normal">most recent</span> versions of
         these documents to proceed with your application:
       </p>
-      <div className="flex items-center justify-between font-light text-xl text-center py-5 px-32">
+      <div className="flex justify-between gap-5 items-center font-light text-base sm:text-lg md:text-xl text-center py-5 px-4 sm:px-10 md:px-20 lg:px-32 whitespace-nowrap overflow-x-auto">
         <p>W2 Form</p>
         <p>Pay Stub</p>
         <p>Bank Statement</p>
       </div>
-      <div className="grid grid-cols-2 gap-x-5 text-center text-xl py-5">
-        <h1 className="text-[#007bff]">Select from Shared Documents</h1>
-        <h1 className="text-[#17a2b8] ">Upload</h1>
-      </div>
-      <div className="grid grid-cols-2 gap-x-5">
-        <div className="flex flex-col border border-blue-500">
-          <Documents
-            fileType={"loan"}
-            setSelectedItems={setSelectedItems}
-            selectedItems={selectedItems}
-            isRest={isRest}
-          />
-          <div className="flex items-center justify-between p-4">
-            <p>{selectedItems.length} Selected</p>
-            <div className="flex gap-2">
-              <button
-                className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
-                onClick={() => {
-                  setIsRest(true);
-                }}
-                disabled={isLoading}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                onClick={handelChoose}
-                disabled={isLoading}
-              >
-                <div className="flex items-center gap-2">
-                  {isLoading && <div className="spinner"></div>}
-                  Choose
-                </div>
-              </button>
+
+      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-y-5 sm:gap-x-5">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[#007bff] text-center text-xl">Select from Shared Documents</h1>
+          <div className="border border-blue-500">
+            <Documents
+              fileType={"loan"}
+              setSelectedItems={setSelectedItems}
+              selectedItems={selectedItems}
+              isRest={isRest}
+            />
+            <div className="flex items-center justify-between p-4">
+              <p>{selectedItems.length} Selected</p>
+              <div className="flex gap-2">
+                <button
+                  className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
+                  onClick={() => {
+                    setIsRest(true);
+                  }}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                  onClick={handelChoose}
+                  disabled={isLoading}
+                >
+                  <div className="flex items-center gap-2">
+                    {isLoading && <div className="spinner"></div>}
+                    Choose
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col border border-[#17a2b8]">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[#007bff] text-center text-xl">Upload</h1>
           {/* File Upload Section */}
-          {uploadSuccess ? (
-            <div className="p-6 flex flex-col flex-1 justif-center items-center text-center border-b text-sm">
-              <CircleCheckBig className="h-12 w-12 text-blue-500 mb-2" />
-              <p className="text-gray-600">Success! Your files have been uploaded.</p>
-              <p className="text-blue-600 cursor-pointer underline" onClick={() => fileInputRef.current?.click()}>
-                Select More Files
-              </p>
-            </div>
-          ) : (
-            <div
-              className={`p-6 flex flex-col flex-1 justify-center items-center text-center border-b text-sm ${
-                isDragging ? "bg-blue-50" : "bg-gray-50"
-              } ${files.length > 0 ? "hidden" : ""}`}
-              onDragEnter={(e) => handleDragEvent(e, true)}
-              onDragLeave={(e) => handleDragEvent(e, false)}
-              onDragOver={(e) => handleDragEvent(e, true)}
-              onDrop={handleDrop}
-            >
-              <UploadCloud className="h-12 w-12 text-blue-500 mb-2" />
-              <p className="text-gray-600">Drag and drop files</p>
-              <p className="text-blue-600 cursor-pointer underline" onClick={() => fileInputRef.current?.click()}>
-                Browse your device
-              </p>
-            </div>
-          )}
-
-          {files.length > 0 && (
-            <div className="p-6 text-sm flex flex-1 flex-col">
-              {files.map((file, index) => (
-                <div key={index} className="flex justify-between items-center border-b py-2">
-                  <span>{file.name}</span>
-                  <X className="cursor-pointer text-black-500" onClick={() => removeFile(index)} />
-                </div>
-              ))}
-            </div>
-          )}
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileSelect}
-            multiple
-          />
-
-          {/* Footer with Buttons */}
-          <div className="flex justify-between items-center p-4">
-            <button 
-              className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
-              disabled = {files.length > 0}
-            >
-              Close
-            </button>
-            <div className="flex space-x-2">
-              <button 
-                className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
-                onClick={handleCancel}
-                disabled={isUploadLoading || files.length==0}
+          <div className="border  border-[#17a2b8] h-full flex flex-col">
+            {uploadSuccess ? (
+              <div className="p-6 flex flex-col flex-1 justif-center items-center text-center border-b text-sm">
+                <CircleCheckBig className="h-12 w-12 text-blue-500 mb-2" />
+                <p className="text-gray-600">Success! Your files have been uploaded.</p>
+                <p className="text-blue-600 cursor-pointer underline" onClick={() => fileInputRef.current?.click()}>
+                  Select More Files
+                </p>
+              </div>
+            ) : (
+              <div
+                className={`p-6 flex flex-col min-h-[200px] flex-1 justify-center items-center text-center text-sm ${isDragging ? "bg-blue-50" : "bg-gray-50"
+                  } ${files.length > 0 ? "hidden" : ""}`}
+                onDragEnter={(e) => handleDragEvent(e, true)}
+                onDragLeave={(e) => handleDragEvent(e, false)}
+                onDragOver={(e) => handleDragEvent(e, true)}
+                onDrop={handleDrop}
               >
-                Cancel
-              </button>
+                <UploadCloud className="h-12 w-12 text-blue-500 mb-2" />
+                <p className="text-gray-600">Drag and drop files</p>
+                <p className="text-blue-600 cursor-pointer underline" onClick={() => fileInputRef.current?.click()}>
+                  Browse your device
+                </p>
+              </div>
+            )}
+
+            {files.length > 0 && (
+              <div className="p-6 text-sm min-h-[200px] flex flex-1 flex-col">
+                {files.map((file, index) => (
+                  <div key={index} className="flex justify-between items-center border-b py-2">
+                    <span>{file.name}</span>
+                    <X className="cursor-pointer text-black-500" onClick={() => removeFile(index)} />
+                  </div>
+                ))}
+              </div>
+            )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileSelect}
+              multiple
+            />
+
+            {/* Footer with Buttons */}
+            <div className="flex justify-between border-t items-center p-4">
               <button
-                className="text-white px-4 py-2 rounded-md border-gray bg-blue-500 hover:bg-blue-600"
-                disabled={isUploadLoading  || files.length==0}
-                onClick={uploadFiles}
+                className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
+                disabled={files.length > 0}
               >
-                <div className="flex items-center gap-2">
-                  {isUploadLoading 
-                    ? <><div className="spinner"></div> Uploading</>
-                    : "Upload"
-                  }
-                </div>
+                Close
               </button>
+              <div className="flex space-x-2">
+                <button
+                  className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
+                  onClick={handleCancel}
+                  disabled={isUploadLoading || files.length == 0}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="text-white px-4 py-2 rounded-md border-gray bg-blue-500 hover:bg-blue-600"
+                  disabled={isUploadLoading || files.length == 0}
+                  onClick={uploadFiles}
+                >
+                  <div className="flex items-center gap-2">
+                    {isUploadLoading
+                      ? <><div className="spinner"></div> Uploading</>
+                      : "Upload"
+                    }
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between py-10">
+      <div className="flex items-center justify-end py-10">
         <button
           className="px-3 py-2 border border-black rounded"
           disabled={isLoading || isUploadLoading}
@@ -560,14 +572,44 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
   );
 };
 
-const LoanEstimateStep = ({finalStep, params}) => {
+const LoanEstimateStep = ({ finalStep, params, loanFolderId }) => {
 
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
+  const [filesToSign, setFilesToSign] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFilesLoading, setIsFilesLoading] = useState(false);
 
-  const handelSelfSign = async() => {
+  const refreshFiles = async () => {
     try {
-      // setIsLoading(true);
+      setIsFilesLoading(true);
+
+      const requestOptions = {
+        method: "GET",
+      };
+
+      if (loanFolderId) {
+        const response = await fetchWrapper(
+          `/api/box/folders?folderId=${loanFolderId}`,
+          requestOptions,
+          "fetchFile"
+        );
+        if (!response.ok) throw new Error("Failed to fetch files");
+        const data = await response.json();
+        const newFilesList = data?.items || [];
+        setFilesToSign(newFilesList);
+      }
+    } catch (error) {
+      console.error("Error refreshing files:", error);
+    } finally {
+      setIsFilesLoading(false);
+    }
+  };
+
+
+  const handelSelfSign = async () => {
+    try {
+      setIsLoading(true);
       const userData = getUserData();
       const response = await fetchWrapper(
         "/api/box/e-sign",
@@ -577,8 +619,8 @@ const LoanEstimateStep = ({finalStep, params}) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            fileId: '1773656670098',
-            signers:[{
+            fileId: filesToSign[0].id,
+            signers: [{
               signerEmail: userData.email,
               signerId: userData.id,
             }],
@@ -596,23 +638,38 @@ const LoanEstimateStep = ({finalStep, params}) => {
       }
       toast.success("E-sign request generated successfully.");
       const currentUserReq = data.data[0].signers.find(
-        (item) => item.email === user.email
+        (item) => item.email === userData.email
       );
       if (currentUserReq) {
         setTimeout(() => {
           setSelectedSignUrl(currentUserReq.iframeable_embed_url);
           setIsSignModalOpen(true);
-          // setIsLoading(false);
+          setIsLoading(false);
         }, 2500);
       }
-    } catch (error) { 
+    } catch (error) {
       // setIsLoading(false);
       toast.error(error.message);
     }
   };
 
+  const LoadingSpinner = () => (
+    <div className="w-full inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
+      <div className="text-center space-y-3">
+        <div className="mx-auto h-8 w-8 animate-spin">
+          <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
+        </div>
+        <p className="text-sm text-gray-500">Loading...</p>
+      </div>
+    </div>
+  );
+
+  useEffect(() => {
+    refreshFiles();
+  }, [loanFolderId]);
+
   return (
-    <div className="w-full font-lato px-10">
+    <div className="w-full font-lato px-10 border-l border-[#dee2e6]">
       <div className="w-full">
         <h1 className="text-center text-3xl text-black pt-10 pb-3">
           Loan Terms
@@ -622,11 +679,26 @@ const LoanEstimateStep = ({finalStep, params}) => {
         </p>
       </div>
       <div className="h-full border border-[#ced4da] rounded flex flex-col items-center justify-center pt-20 pb-10 mt-16 space-y-2">
+      {isFilesLoading ? (
+          <LoadingSpinner />
+        ) : (
+          filesToSign?.length === 0 && (
+            <h1 className="text-xl mb-3">
+              Please select at least one file from previous step
+            </h1>
+          )
+        )}
+
         <button
-          className="border border-black rounded-md py-3 px-4 text-xl"
+          className="border border-black rounded-md py-3 px-4 text-xl disabled:bg-gray-100 w-48 disabled:text-gray-400"
           onClick={handelSelfSign}
+          disabled={filesToSign?.length === 0 || isFilesLoading}
         >
-          Review and Sign
+          {isLoading ? (
+            <div className="spinner mx-auto"></div>
+          ) : (
+            "Review and Sign"
+          )}
         </button>
         <Signature className="text-[#0057ca] size-10" />
         <p className="font-light text-lg text-center">Your Loan has been created successfully.</p>
@@ -634,13 +706,14 @@ const LoanEstimateStep = ({finalStep, params}) => {
           onClick={finalStep}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          Loan Origination 
+          Loan Origination
         </button>
       </div>
       <SignRequestModal
         isOpen={isSignModalOpen}
         onClose={() => setIsSignModalOpen(false)}
         signUrl={selectedSignUrl}
+        redirect_url={`/${params?.portalid}/loans`}
       />
     </div>
   );
@@ -673,7 +746,6 @@ function NewLoanPage() {
   const type = searchParams.get("type");
 
   useEffect(() => {
-    // localStorage.setItem("newLoan", true);
     const uniqueNo = Math.floor(Date.now() % 1000000);
     setUniqueNo(uniqueNo);
     getFile();
@@ -688,7 +760,7 @@ function NewLoanPage() {
         method: "GET",
       };
       const response = await fetchWrapper(
-        `/api/box/folders?folderId=${userData.boxFolderId}`,
+        `/api/box/folders?folderId=${userData?.boxFolderId}`,
         requestOptions,
         "fetchFile"
       );
@@ -730,22 +802,23 @@ function NewLoanPage() {
   };
 
   const finalStep = () => {
-    const loans = JSON.parse(localStorage.getItem("loan")||"[]");
+    localStorage.setItem("newLoan", true);
+    const loans = JSON.parse(localStorage.getItem("loan") || "[]");
     const obj = {
       id: uniqueNo,
-      icon: type=='personal'?'User':(type=='auto'?'CarFront':'Home'),
+      icon: type == 'personal' ? 'User' : (type == 'auto' ? 'CarFront' : 'Home'),
       name: `${type} - ${uniqueNo}`,
       type: type,
       status: "Processing",
-      folderId:loanFolderId,
+      folderId: loanFolderId,
       complete: 30,
       paid: "In process"
     }
     loans.push(obj);
     localStorage.setItem("loan", JSON.stringify(loans));
-      router.push(
-        params.portalid ? `/${params.portalid}/loans` : "/loans"
-      )
+    router.push(
+      params.portalid ? `/${params.portalid}/loans` : "/loans"
+    )
 
   };
 
@@ -762,6 +835,7 @@ function NewLoanPage() {
             userData={userData}
             setUserData={setUserData}
             uniqueNo={uniqueNo}
+            fileListLoading={isLoading}
           />
         );
       case "documents":
@@ -769,55 +843,52 @@ function NewLoanPage() {
           <DocumentStep
             setActiveStep={setActiveStep}
             loanFolderId={loanFolderId}
-            filesList={shareFilesList}
+            filesList={filesList}
           />
         );
       case "loanestimate":
-        return <LoanEstimateStep finalStep={finalStep} params={params}/>;
+        return <LoanEstimateStep finalStep={finalStep} params={params} loanFolderId={loanFolderId}/>;
       default:
         return null;
     }
   };
 
-  if (isLoading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+  // if (isLoading)
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  //       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  //     </div>
+  //   );
   return (
-    <div className="bg-white rounded-lg flex flex-col relative w-full h-[91vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
-      <div className="flex items-center justify-between font-lato">
-        <div className="w-2/5 md:w-64 h-full border-r border-[#dee2e6] pt-5 pr-2 bg-white text-gray-700">
-          <h1 className="text-3xl text-black mb-5">New {type} Loan</h1>
-          <div className="flex flex-col items-start space-y-4">
+    <div className="bg-white rounded-lg flex flex-col relative w-full min-h-[70vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
+      <div className="flex flex-col sm:flex-row justify-between font-lato">
+        <div className="w-full sm:w-64 h-full pb-5 sm:pb-0 border-b sm:border-b-0 pt-5 px-2 bg-white text-gray-700 ">
+          <h1 className="text-2xl sm:text-3xl text-black mb-5">New {type} Loan</h1>
+          <div className="flex sm:items-start justify-around sm:flex-col sm:gap-4 gap-2">
             <button
               onClick={() => setActiveStep("application")}
-              className={`text-[#107fff] ${
-                activeStep === "application"
-                  ? "text-3xl transition-all ease-in-out"
-                  : "text-xl"
-              }`}
+              className={`text-[#107fff] text-sm sm:text-lg md:text-xl ${activeStep === "application"
+                ? "font-bold scale-[1.1] transition-all ease-in-out"
+                : ""
+                }`}
             >
               1. Application
             </button>
             <button
               onClick={() => setActiveStep("documents")}
-              className={`text-[#107fff] ${
-                activeStep === "documents"
-                  ? "text-3xl transition-all ease-in-out"
-                  : "text-xl"
-              }`}
+              className={`text-[#107fff] text-sm sm:text-lg md:text-xl ${activeStep === "documents"
+                ? "font-bold scale-[1.1] transition-all ease-in-out"
+                : ""
+                }`}
             >
               2. Documents
             </button>
             <button
               onClick={() => setActiveStep("loanestimate")}
-              className={`text-[#107fff] ${
-                activeStep === "loanestimate"
-                  ? "text-2xl transition-all ease-in-out"
-                  : "text-xl"
-              }`}
+              className={`text-[#107fff] text-sm sm:text-lg md:text-xl ${activeStep === "loanestimate"
+                ? "font-bold scale-[1.1] transition-all ease-in-out"
+                : ""
+                }`}
             >
               3. Loan Estimate
             </button>

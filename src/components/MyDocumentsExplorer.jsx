@@ -20,6 +20,9 @@ import {
   FilePen,
   FolderInput,
   Signature,
+  Loader2,
+  UserRound,
+  UsersRoundIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
@@ -34,6 +37,8 @@ import CreateFolder from "./CreateFolder";
 import SendforSignatureDialog from "./SendForSignature";
 import { getUserData } from "@/app/lib/auth";
 import { UserRole } from "@/config/constants";
+import SignRequestModal from "./SignRequestModal";
+import { Menu, MenuItem, MenuItems, MenuButton } from "@headlessui/react";
 
 const ShareModal = ({
   isOpen,
@@ -487,6 +492,8 @@ function SharedFolderExplorer({
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [signatureFile, setSignatureFile] = useState(null);
   const [fileSelectedInGrid, seFileSelectedInGrid] = useState(null);
+  const [isSignModalOpen, setIsSignModalOpen] = useState(false);
+  const [selectedSignUrl, setSelectedSignUrl] = useState(null);
 
   const handleFolderClick = (folder) => {
     setSelectedBulkItems([]);
@@ -726,6 +733,53 @@ function SharedFolderExplorer({
     }
   };
 
+  const handleSelfSign = async (file) => {
+    try {
+      setIsLoading(true);
+      const response = await fetchWrapper(
+        "/api/box/e-sign",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileId: file.id,
+            signers: [
+              {
+                signerEmail: user.email,
+                signerId: user.id,
+              },
+            ],
+            boxUserId: user.boxUserId,
+            portal: params.portalid,
+            onSameDoc: false,
+          }),
+        },
+        "self-esign-request"
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate e-sign request");
+      }
+      toast.success("E-sign request generated successfully.");
+      const currentUserReq = data.data[0].signers.find(
+        (item) => item.email === user.email
+      );
+      if (currentUserReq) {
+        setTimeout(() => {
+          setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+          setIsSignModalOpen(true);
+          setIsLoading(false);
+        }, 2500);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      toast.error(error.message);
+    }
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
@@ -765,6 +819,17 @@ function SharedFolderExplorer({
     }
     setUser(userData);
   }, []);
+
+  if (isLoading) {
+    return (
+      isLoading && (
+        <div className="flex justify-center items-center h-40">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <p className="ml-2 text-gray-500">Loading...</p>
+        </div>
+      )
+    );
+  }
 
   return (
     <div>
@@ -938,7 +1003,7 @@ function SharedFolderExplorer({
                                 {/* OPTION DROPDOWN DONE*/}
 
                                 {deleteDropdown?.id === file?.id && (
-                                  <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
+                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg z-20">
                                     {listType !== "shared" && (
                                       <>
                                         <button
@@ -953,19 +1018,37 @@ function SharedFolderExplorer({
                                           Move
                                         </button>
                                         {file.type === "file" && (
-                                          <button
-                                            className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
-                                            onClick={() => {
-                                              setIsSignatureModalOpen(
-                                                (prev) => !prev
-                                              );
-                                              setSignatureFile(file);
-                                              setSelectedBulkItems([]);
-                                            }}
-                                          >
-                                            <Signature className="h-4 w-4 text-gray-600" />{" "}
-                                            Sign
-                                          </button>
+                                          <div className="relative group/sign text-gray-600">
+                                            <button className="group/sign hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 ">
+                                              <Signature className="h-4 w-4 text-gray-600" />{" "}
+                                              Sign
+                                            </button>
+                                            <div className="absolute top-0 right-full bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/sign:opacity-100 group-hover/sign:scale-100 w-48">
+                                              <button
+                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1"
+                                                onClick={() => {
+                                                  setIsSignatureModalOpen(
+                                                    (prev) => !prev
+                                                  );
+                                                  setSignatureFile(file);
+                                                  setSelectedBulkItems([]);
+                                                }}
+                                              >
+                                                <UsersRoundIcon className="h-4 w-4 mr-2" />
+                                                Request Signature
+                                              </button>
+
+                                              <button
+                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1"
+                                                onClick={() =>
+                                                  handleSelfSign(file)
+                                                }
+                                              >
+                                                <UserRound className="h-4 w-4 mr-2" />
+                                                Sign Myself
+                                              </button>
+                                            </div>
+                                          </div>
                                         )}
                                         <button
                                           className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
@@ -1062,8 +1145,8 @@ function SharedFolderExplorer({
                             {file?.name}
                           </h6>
 
-                          <div className="relative">
-                            <button
+                          <Menu className="relative">
+                            <MenuButton
                               className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10  ${
                                 file.type === "folder" && listType === "shared"
                                   ? "hidden"
@@ -1072,14 +1155,14 @@ function SharedFolderExplorer({
                               onClick={() => handleSelect(file)}
                             >
                               <Ellipsis className="h-4 w-4 text-gray-600" />
-                            </button>
+                            </MenuButton>
 
                             {/* OPTION DROPDOWN DONE*/}
 
                             {fileSelectedInGrid?.id === file?.id && (
-                              <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
+                              <MenuItems className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
                                 {file.type === "file" && (
-                                  <button
+                                  <MenuButton
                                     className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1089,12 +1172,12 @@ function SharedFolderExplorer({
                                   >
                                     <Eye className="h-4 w-4 text-gray-600" />
                                     View
-                                  </button>
+                                  </MenuButton>
                                 )}
                                 {file.type === "file" &&
                                   (listType !== "shared" ||
                                     file.currentUserRole !== "viewer") && (
-                                    <button
+                                    <MenuButton
                                       className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -1105,11 +1188,11 @@ function SharedFolderExplorer({
                                     >
                                       <Download className="h-4 w-4 text-gray-600" />
                                       Download
-                                    </button>
+                                    </MenuButton>
                                   )}
 
                                 {listType !== "shared" && (
-                                  <button
+                                  <MenuButton
                                     className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
                                       file.currentUserRole === "viewer"
                                         ? "hidden"
@@ -1124,40 +1207,71 @@ function SharedFolderExplorer({
                                   >
                                     <Share2 className="h-4 w-4 text-gray-600" />{" "}
                                     Share
-                                  </button>
+                                  </MenuButton>
                                 )}
 
                                 {listType !== "shared" && (
-                                  <>
-                                    <button
-                                      className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
-                                        listType === "shared" ? "hidden" : ""
-                                      }`}
-                                      onClick={() => {
-                                        setIsMoveModalOpen((prev) => !prev);
-                                        setMoveItem(file);
-                                        setSelectedBulkItems([]);
-                                      }}
-                                    >
-                                      <FolderInput className="h-4 w-4 text-gray-600" />{" "}
-                                      Move
-                                    </button>
-                                    {file.type === "file" && (
-                                      <button
-                                      className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
-                                        listType === "shared" ? "hidden" : ""
-                                      }`}
-                                        onClick={() => {
-                                          setIsMoveModalOpen((prev) => !prev);
-                                          setMoveItem(file);
-                                        }}
-                                      >
-                                        <Signature className="h-4 w-4 text-gray-600" />
-                                        Sign
-                                      </button>
-                                    )}
-                                  </>
+                                  <MenuButton
+                                    className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
+                                      listType === "shared" ? "hidden" : ""
+                                    }`}
+                                    onClick={() => {
+                                      setIsMoveModalOpen((prev) => !prev);
+                                      setMoveItem(file);
+                                      setSelectedBulkItems([]);
+                                    }}
+                                  >
+                                    <FolderInput className="h-4 w-4 text-gray-600" />{" "}
+                                    Move
+                                  </MenuButton>
                                 )}
+                                {listType !== "shared" &&
+                                  file.type === "file" && (
+                                    <MenuItem>
+                                      {() => (
+                                        <div className="relative group/sign">
+                                          <button
+                                            className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
+                                              listType === "shared"
+                                                ? "hidden"
+                                                : ""
+                                            }`}
+                                          >
+                                            <Signature className="h-4 w-4 text-gray-600" />
+                                            Sign
+                                          </button>
+                                          <div className="absolute top-0 right-full hidden group-hover/sign:block bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none w-48">
+                                            <MenuItem>
+                                              <button
+                                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                                                onClick={() => {
+                                                  setIsSignatureModalOpen(
+                                                    (prev) => !prev
+                                                  );
+                                                  setSignatureFile(file);
+                                                  setSelectedBulkItems([]);
+                                                }}
+                                              >
+                                                <UsersRoundIcon className="h-4 w-4 mr-2 text-gray-600" />
+                                                Request Signature
+                                              </button>
+                                            </MenuItem>
+                                            <MenuItem>
+                                              <button
+                                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                                                onClick={() =>
+                                                  handleSelfSign(file)
+                                                }
+                                              >
+                                                <UserRound className="h-4 w-4 mr-2 text-gray-600" />
+                                                Sign Myself
+                                              </button>
+                                            </MenuItem>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </MenuItem>
+                                  )}
                                 <button
                                   className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${
                                     listType === "shared" ? "hidden" : ""
@@ -1177,7 +1291,7 @@ function SharedFolderExplorer({
                                   <Trash2 className="h-4 w-4 text-gray-600" />{" "}
                                   Delete
                                 </button>
-                              </div>
+                              </MenuItems>
                             )}
 
                             <DeleteConfirmDialog
@@ -1190,7 +1304,7 @@ function SharedFolderExplorer({
                               }
                               isLoading={isLoading}
                             />
-                          </div>
+                          </Menu>
                         </div>
                         <p className="text-xs text-gray-500 font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full">
                           Modified today by Wealthportal Service Account
@@ -1238,6 +1352,11 @@ function SharedFolderExplorer({
         usersList={usersList}
         isModalOpen={isSignatureModalOpen}
         setIsModalOpen={setIsSignatureModalOpen}
+      />
+      <SignRequestModal
+        isOpen={isSignModalOpen}
+        onClose={() => setIsSignModalOpen(false)}
+        signUrl={selectedSignUrl}
       />
     </div>
   );

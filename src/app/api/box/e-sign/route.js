@@ -33,11 +33,11 @@ export async function POST(req) {
       );
     }
 
-    const client = sdk.getAppAuthClient("user", boxUserId);
+    const newClient = sdk.getAppAuthClient("user", boxUserId);
     let signRequests = [];
 
     if (onSameDoc) {
-      const signRequest = await client.signRequests.create({
+      const signRequest = await newClient.signRequests.create({
         source_files: [{ id: fileId, type: "file" }],
         signers: signers.map(({ signerEmail, signerId }) => ({
           email: signerEmail,
@@ -56,7 +56,7 @@ export async function POST(req) {
       );
     } else {
       for (const { signerEmail, signerId } of signers) {
-        const signRequest = await client.signRequests.create({
+        const signRequest = await newClient.signRequests.create({
           source_files: [{ id: fileId, type: "file" }],
           signers: [
             {

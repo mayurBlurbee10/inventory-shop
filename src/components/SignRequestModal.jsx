@@ -1,8 +1,15 @@
 "use client";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Loader2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-export default function SignRequestModal({ isOpen, onClose, signUrl }) {
+export default function SignRequestModal({
+  isOpen,
+  onClose,
+  signUrl,
+  redirect_url = "",
+}) {
+  const router = useRouter();
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -13,8 +20,14 @@ export default function SignRequestModal({ isOpen, onClose, signUrl }) {
               Sign Document
             </DialogTitle>
             <button
-              onClick={onClose}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              onClick={() => {
+                if (redirect_url) {
+                  router.push(redirect_url);
+                  onClose()
+                }
+                onClose();
+              }}
+              className="p-1 hover:bg-gray-100 rounded-full text-black"
             >
               <X className="h-5 w-5" />
             </button>
@@ -40,3 +53,4 @@ export default function SignRequestModal({ isOpen, onClose, signUrl }) {
     </Dialog>
   );
 }
+
