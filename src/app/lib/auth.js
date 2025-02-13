@@ -120,6 +120,9 @@ export const clearUserData = () => {
     // Clear from localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('newLoan');
+    localStorage.removeItem('loan');
+    localStorage.removeItem('portal');
 
     // Clear from cookies
     document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';

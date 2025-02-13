@@ -23,8 +23,8 @@ import { toast } from "react-toastify";
 import AccountInfo from "./AccountInfo";
 
 function Navbar({ content, config, user, filterValue }) {
-  const params = useParams();
   const pathname = usePathname();
+  const params = useParams();
   const router = useRouter();
   // const [user, setUser] = useState(null);
   const [userIsAdmin, setUserIsAdmin] = useState(false);
@@ -42,6 +42,8 @@ function Navbar({ content, config, user, filterValue }) {
   useEffect(() => {
     setIsAdvisorViewOpen(pathname.includes("advisor"));
   }, [pathname]);
+
+  console.log("portalid", params.portalid);
 
   const NavBarItem = ({ title, href }) => {
     if (!href) {
@@ -65,7 +67,8 @@ function Navbar({ content, config, user, filterValue }) {
     clearUserData();
     await signOut();
     toast.success("User signout successfully");
-    router.push(params.portalid ? `/${params.portalid}/login` : "/login");
+    document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    window.location.href = params.portalid ? `/${params.portalid}/login` : "/login";
   };
   //   const fetchConfig = async () => {
   //     try {
@@ -174,11 +177,11 @@ function Navbar({ content, config, user, filterValue }) {
           <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
             {/* {user?.company?.logo || config?.logo ? ( */}
             <img
-            src={
-              user?.company?.logo
-                ? user.company.logo.replace("/api/upload", "/uploads")
-                : config?.logo || "/logo.png"
-            }
+              src={
+                user?.company?.logo
+                  ? user.company.logo.replace("/api/upload", "/uploads")
+                  : config?.logo || "/logo.png"
+              }
               alt={params.portalid}
               className="mr-2 max-h-[60px] max-w-[150px]"
             />

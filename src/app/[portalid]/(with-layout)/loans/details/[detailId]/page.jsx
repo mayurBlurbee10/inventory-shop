@@ -1,12 +1,13 @@
 "use client";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Documents from "@/components/Documents";
-import { ArrowDownUp, ChevronLeft, Folder, Plus } from "lucide-react";
+import { getUserData } from "@/lib/auth";
+import { ArrowDownUp, ChevronLeft, Folder, Loader2, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 const data = [
   {
     id: 635789,
-    // icon: CarFront,
     name: "Auto - 635789",
     type: "Auto",
     status: "Active",
@@ -15,7 +16,6 @@ const data = [
   },
   {
     id: 990154,
-    // icon: User,
     name: "Personal - 990154",
     type: "Personal",
     status: "Fully Paid",
@@ -24,7 +24,6 @@ const data = [
   },
   {
     id: 174192,
-    // icon: Home,
     name: "Mortgage - 174192",
     type: "Mortgage	",
     status: "Processing",
@@ -44,21 +43,146 @@ function DetailsPage() {
   const params = useParams();
   const router = useRouter();
   const [loan, setLoan] = useState(null);
-  useEffect(() => {
-    if (params?.detailId && data) {
-      const loans = JSON.parse(localStorage.getItem("loan"));
-      const foundLoan = loans.find((d) => d.id === Number(params.detailId));
-      setLoan(foundLoan || null);
+  const [filesList, setFilesList] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const findFolderWithName = (data, targetName) => {
+    for (const item of data) {
+      if (item.type === "folder" && item.name === targetName) {
+        return item;
+      }
+      if (item.children) {
+        const found = findFolderWithName(item.children, targetName);
+        if (found) return found;
+      }
     }
-  }, [params?.detailId, data]);
+    return null;
+  };
+
+  const getFiles = async () => {
+    try {
+      const userData = getUserData();
+      if (!userData) return;
+      const response = await fetchWrapper(
+        `/api/box/folders?folderId=${userData?.boxFolderId}`,
+        { method: "GET" },
+        "fetchFile"
+      );
+      if (!response.ok) throw new Error("Failed to fetch files");
+
+      const data = await response.json();
+      return data?.items || [];
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      return [];
+    }
+  };
+
+  const handleGetFolderId = async (loan) => {
+    try {
+      setIsLoading(true);
+      const files = await getFiles();
+      const userData = getUserData();
+      if (!userData) return;
+
+      const loansFolder = await new Promise((resolve) => {
+        const foundItems = findFolderWithName(files, "Loans");
+        resolve(foundItems);
+      });
+      let loansId = loansFolder?.id;
+
+      if (!loansId) {
+        const response = await fetchWrapper(
+          "/api/box/folders",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: "Loans",
+              boxFolderId: userData?.boxFolderId,
+            }),
+          },
+          "create-folder"
+        );
+
+        const folderData = await response.json();
+        if (!response.ok) {
+          if (folderData?.response?.status !== 409) {
+            throw new Error(
+              folderData.error || "Failed to create Loans folder"
+            );
+          } else {
+            return;
+          }
+        }
+        loansId = folderData.id;
+      }
+
+      let loanFolder = findFolderWithName(
+        loansFolder?.children || [],
+        loan?.name
+      );
+      if (!loanFolder) {
+        const res = await fetchWrapper(
+          "/api/box/folders",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: loan?.name, boxFolderId: loansId }),
+          },
+          "create-folder"
+        );
+
+        const loanFolderData = await res.json();
+        if (!res.ok)
+          throw new Error(
+            loanFolderData.error || "Failed to create loan folder"
+          );
+
+        loanFolder = loanFolderData;
+      }
+
+      setLoan((prev) => ({ ...prev, folderId: loanFolder.id }));
+      return loanFolder.id;
+    } catch (error) {
+      console.error("Error creating/getting folder:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchLoanFolder = async () => {
+      if (params?.detailId) {
+        const loans = JSON.parse(localStorage.getItem("loan")) || [];
+        const foundLoan = loans.find((d) => d.id === Number(params.detailId));
+
+        if (foundLoan) {
+          setLoan(foundLoan);
+          const folderId = await handleGetFolderId(foundLoan);
+          foundLoan.folderId = folderId;
+
+          const updatedLoans = loans.map((loan) =>
+            loan.id === foundLoan.id ? foundLoan : loan
+          );
+          localStorage.setItem("loan", JSON.stringify(updatedLoans));
+        }
+      }
+    };
+
+    fetchLoanFolder();
+  }, [params?.detailId]);
 
   if (!loan) return <p>Loading loan details...</p>;
 
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div className="border-b border-[#dee2e6] font-lato flex items-end justify-center gap-5 py-5">
-        <div className="flex items-end text-blue-600" onClick={() => router.back()}>
-          <ChevronLeft className="size-6"/> Back to Loans
+        <div
+          className="flex items-end text-blue-600"
+          onClick={() => router.back()}
+        >
+          <ChevronLeft className="size-6" /> Back to Loans
         </div>
         <h1 className="text-3xl font-lato font-light text-center">
           Loan Detail
@@ -121,10 +245,13 @@ function DetailsPage() {
           <h1 className="text-xl text-center font-lato font-light my-5">
             Loan Documents
           </h1>
-          <Documents
-            fileType={"loan"}
-            loanFolderId={loan?.folderId}
-          />
+          {loan?.folderId ? (
+            <Documents fileType={"loan"} loanFolderId={loan.folderId} />
+          ) : (
+            <div className="min-h-[50vh] flex items-center justify-center">
+              <Loader2 className="m-auto size-8 animate-spin text-blue-500" />
+            </div>
+          )}
           {/* <div className="flex items-center gap-2 p-5 bg-[#fcfcfc] border-b border-[#ced4da]">
             <input
               type="text"

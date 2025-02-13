@@ -596,12 +596,12 @@ function Documents({
     setSelectedItems && setSelectedItems(selectedBulkItems);
   }, [selectedBulkItems]);
 
-  useEffect(() => {
-    if (selectedItems?.length > 0 && isRest) {
-      setSelectedBulkItems([]);
-      setSelectedItems([]);
-    }
-  }, [isRest]);
+  // useEffect(() => {
+  //   if (selectedItems?.length > 0 && isRest) {
+  //     setSelectedBulkItems([]);
+  //     setSelectedItems([]);
+  //   }
+  // }, [isRest]);
 
   const handleBulkDelete = async () => {
     setIsDeleting(true);

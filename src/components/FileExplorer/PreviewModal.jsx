@@ -130,7 +130,7 @@ export default function PreviewModal({ isOpen, onClose, fileId }) {
             </Dialog.Title>
             <button 
               onClick={onClose}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              className="p-1 hover:bg-gray-100 rounded-full text-black"
             >
               <X className="h-5 w-5" />
             </button>

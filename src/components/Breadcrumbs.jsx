@@ -18,7 +18,7 @@ const Breadcrumbs = ({ path, setPath, setSearchQuery, user, setSelectedBulkItems
           onClick={() => handleBreadcrumbClick(-1)}
           className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato"
         >
-          {user?.email || "My Folder"}
+          {user?.email || "Shared Documents"}
         </button>
         {path &&
           path.length > 0 &&

@@ -24,7 +24,7 @@ function LoansPage() {
       name: "Auto - 635789",
       type: "Auto",
       status: "Active",
-      folderId: "306788535946",
+      // folderId: "306788535946",
       complete: 75,
       paid: "$40,225.00 Paid",
     },
@@ -34,7 +34,7 @@ function LoansPage() {
       name: "Personal - 990154",
       type: "Personal",
       status: "Fully Paid",
-      folderId: "306789263204",
+      // folderId: "306789263204",
       complete: 100,
       paid: "Fully Paid",
     },
@@ -47,12 +47,14 @@ function LoansPage() {
       name: "Mortgage - 174192",
       type: "Mortgage	",
       status: "Processing",
+      complete: 25,
+      paid: "In Process",
     },
   ];
   const router = useRouter();
   const params = useParams();
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
-  const [loanData, setLoanData] = useState([]);
+  const [loanData, setLoanData] = useState(preData);
   const [newLoan, setNewLoan] = useState(false);
 
   // console.log(loanData);
@@ -64,22 +66,17 @@ function LoansPage() {
     if (userEntered) {
       setLoanData([...dataToAdd, ...preData]);
       localStorage.setItem("loan", JSON.stringify([...dataToAdd, ...preData]));
-    }
-
-    const loans = JSON.parse(localStorage.getItem("loan"));
-    console.log("loans:", loans);
-
-    if (loans.length === 0) {
+    }else {
       localStorage.setItem("loan", JSON.stringify(preData));
-      setLoanData([...preData]);
     }
 
-    // else {
-    //   setLoanData([...loans , ...preData])
+    // const loans = JSON.parse(localStorage.getItem("loan"));
+    // console.log("loans:", loans);
+
+    // if (loans && loans.length === 0) {
+    //   localStorage.setItem("loan", JSON.stringify(preData));
+    //   setLoanData([...preData]);
     // }
-    // return () => {
-    //   localStorage.setItem("loan", JSON.stringify([]));
-    // };
   }, []);
 
   useEffect(() => {
@@ -90,7 +87,7 @@ function LoansPage() {
 
   const handleRefresh = () => {
     localStorage.setItem("newLoan", false);
-    localStorage.setItem("loan", JSON.stringify([]));
+    localStorage.setItem("loan", JSON.stringify(preData));
     setNewLoan(false);
     setLoanData([...preData]);
   };
@@ -164,7 +161,7 @@ function LoansPage() {
         {newLoan ? (
           <div
             className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl py-10 cursor-pointer"
-            onClick={() => router.push(`loans/new`)}
+            onClick={() => router.push(`loans/new?type=mortgage`)}
           >
             <List className="size-8" />
             View Application
