@@ -129,7 +129,7 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
                     </div>
 
                     {/* File Upload Section */}
-                    <div className={`py-6 flex flex-col items-center text-center border-b max-h-[350px] overflow-auto custom-scrollbar ${isDragging
+                    <div className={`py-6 flex flex-col items-center text-center border-b max-h-[350px] min-h-[200px] overflow-auto custom-scrollbar ${isDragging
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-300 bg-gray-50 hover:border-gray-400'
                         }`}

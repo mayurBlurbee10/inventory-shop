@@ -91,7 +91,7 @@ function MoveDialog({
             {/* Folder List */}
             <div>
               <p className="text-gray-500">Select a new location:</p>
-              <div className="mt-2 space-y-2 h-[400px] overflow-auto custom-scrollbar">
+              <div className="mt-2 space-y-2 h-[350px] sm:h-[400px] overflow-auto custom-scrollbar">
                 <FileExplorer
                   data={fileList}
                   selectedItem={selectedFolder}

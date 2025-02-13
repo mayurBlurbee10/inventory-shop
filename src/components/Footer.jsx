@@ -166,7 +166,7 @@ const Footer = ({ config, filterValue, user, from }) => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between flex-col md:flex-row">
+            <div className="flex items-center justify-between flex-row">
               <div className="max-w-[670px] w-full">
                 <ul className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
                   {contactInfo &&
@@ -176,8 +176,8 @@ const Footer = ({ config, filterValue, user, from }) => {
                   <span>@2025 MStrategy Portal</span>
                 </ul>
               </div>
-              <div className="flex items-end text-end mb-2 md:mb-0">
-                <div className="flex items-end gap-1">
+              <div className="mb-2 md:mb-0">
+                <div className="flex items-center gap-1">
                   <div className="text-[#6c757d]">
                     <CodeXml className="h-7 w-7" />
                   </div>

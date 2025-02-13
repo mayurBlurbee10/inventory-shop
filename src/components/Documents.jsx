@@ -119,6 +119,21 @@ function Documents({
     }
   };
 
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpenNewFolderDrawer(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const router = useRouter();
 
   const handleSliderChange = (e) => {
@@ -274,6 +289,7 @@ function Documents({
         }
         setUpladedFilePath(location);
         setIsModalOpen(true);
+        setIsOpenUploadArea(false);
       } catch (error) {
         toast.error(error.message);
         console.error("Error uploading files:", error);
@@ -402,9 +418,8 @@ function Documents({
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-            pathname.includes(href) ? "text-blue-300" : ""
-          }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-300" : ""
+            }`}
         >
           {title}
         </button>
@@ -835,7 +850,7 @@ function Documents({
 
   const getUserDetailsByEmail = async (email) => {
     try {
-      if(!email){
+      if (!email) {
         return
       }
       let url = `/api/users/loginByProvider`;
@@ -939,24 +954,21 @@ function Documents({
     // <div className="bg-white min-h-screen">
     // <Container>
     <div
-      className={`max-w-[1820px] ${
-        fileType === "loan" || fileType === "advisor"
-          ? ""
-          : "mx-auto pt-12 mt-12"
-      }`}
+      className={`max-w-[1820px] ${fileType === "loan" || fileType === "advisor"
+        ? ""
+        : "mx-auto sm:pt-12 mt-12"
+        }`}
     >
       <div>
         <div
-          className={`grid gap-7 grid-cols-5 ${
-            fileType === "loan" || fileType === "advisor" ? "" : "px-4"
-          }`}
+          className={`grid gap-7 grid-cols-5 ${fileType === "loan" || fileType === "advisor" ? "" : "px-4"
+            }`}
         >
           <div
-            className={`col-span-5 ${
-              fileType === "loan" || fileType === "advisor"
-                ? "lg:col-span-5"
-                : "lg:col-span-3"
-            }`}
+            className={`col-span-5 ${fileType === "loan" || fileType === "advisor"
+              ? "lg:col-span-5"
+              : "lg:col-span-3"
+              }`}
           >
             {fileType !== "loan" && fileType !== "advisor" && (
               <>
@@ -1094,9 +1106,8 @@ function Documents({
                         {selectedBulkItems.length} item(s) selected
                       </p>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
-                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                        } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                          } outline-none`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           handelToolbarMoveClick()
@@ -1106,9 +1117,8 @@ function Documents({
                         <FolderInput className="size-5" />
                       </button>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
-                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                        } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                          } outline-none`}
                         onClick={
                           () =>
                             selectedBulkItems.length > 0 && handleBulkDownload()
@@ -1119,9 +1129,8 @@ function Documents({
                         <Download className="size-5" />
                       </button>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
-                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                        } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                          } outline-none`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           setIsDeleteModalOpen(true)
@@ -1196,9 +1205,8 @@ function Documents({
                         <>
                           {/* Card view button */}
                           <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
-                              view === "grid" ? "hidden" : "visible"
-                            }`}
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
+                              }`}
                             onClick={() => {
                               setView("grid");
                               // setIsOpenOptionDrawer(false);
@@ -1217,9 +1225,8 @@ function Documents({
 
                           {/* List view button */}
                           <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
-                              view === "list" ? "hidden" : "visible"
-                            }`}
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
+                              }`}
                             onClick={() => {
                               setView("list");
                               // setIsOpenOptionDrawer(false);
@@ -1231,11 +1238,12 @@ function Documents({
                       )}
 
                       {/* Upload items */}
-                      <div className="relative">
+                      <div className="relative" ref={dropdownRef}>
                         <button
                           className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                          onClick={() =>
+                          onClick={() =>  {
                             setIsOpenNewFolderDrawer((prev) => !prev)
+                          }
                           }
                         >
                           <Plus />
@@ -1318,7 +1326,7 @@ function Documents({
                 setCurrentFilesList={setCurrentFilesList}
                 setSelectedItem={setSelectedItem}
                 selectedItem={selectedItem}
-                handleShareLink={() => {}}
+                handleShareLink={() => { }}
                 onFileChanges={refreshFiles}
                 listType={fileType}
                 setSearchQuery={setSearchQuery}

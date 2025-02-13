@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SettingsModal from "./Settings";
 import TechSupport from "./TechSupport";
 import {
@@ -38,6 +38,19 @@ function Navbar({ content, config, user, filterValue }) {
   const [isAdvisorViewModalOpen, setIsAdvisorViewModalOpen] = useState(false);
   const [isAdvisorViewOpen, setIsAdvisorViewOpen] = useState(false);
   // const isAdvisorViewOpen = pathname.includes("advisor");
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setAccountDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     setIsAdvisorViewOpen(pathname.includes("advisor"));
@@ -54,9 +67,8 @@ function Navbar({ content, config, user, filterValue }) {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-            pathname.includes(href) ? "text-blue-500" : ""
-          }`}
+          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+            }`}
         >
           {title}
         </button>
@@ -200,7 +212,7 @@ function Navbar({ content, config, user, filterValue }) {
               }}
             >
               {filterValue("Header Text") &&
-              filterValue("Header Text") !== "Premier Customer Portal" ? (
+                filterValue("Header Text") !== "Premier Customer Portal" ? (
                 filterValue("Header Text")
               ) : params?.portalid ? (
                 params.portalid
@@ -285,20 +297,25 @@ function Navbar({ content, config, user, filterValue }) {
             {/* Profile dropdown */}
             <div className="flex items-center space-x-8 cursor-pointer">
               <div
+                ref={dropdownRef}
                 className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
                 onClick={() => setAccountDropdown((prev) => !prev)}
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                  }`}
+                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                    }`}
                 >
-                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                  {
+                    isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
+                  }
+
                 </div>
                 <div className="flex flex-col text-sm xl:text-base">
                   <span className="text-gray-900 font-medium">
-                    {user?.name}
+                    {
+                      isAdvisorViewOpen ? "Erica Smith" : user?.name
+                    }
                   </span>
                 </div>
 
@@ -306,7 +323,7 @@ function Navbar({ content, config, user, filterValue }) {
                 {accountDropdown && (
                   <>
                     {isAdvisorViewOpen ? (
-                      <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                      <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
                         <button
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                           onClick={() =>
@@ -321,7 +338,7 @@ function Navbar({ content, config, user, filterValue }) {
                         </button>
                       </div>
                     ) : (
-                      <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                      <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
                         <button
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                           onClick={() =>
@@ -503,27 +520,32 @@ function Navbar({ content, config, user, filterValue }) {
                 )}
                 <div className="flex items-center space-x-2 cursor-pointer">
                   <div
+                    ref={dropdownRef}
                     className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
                     onClick={() => setAccountDropdown((prev) => !prev)}
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                        userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                      }`}
+                      className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                        }`}
                     >
-                      {user?.name?.charAt(0) || "U"}
+                      {
+                        isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
+                      }
                     </div>
                     <div className="flex flex-col text-sm xl:text-base">
                       <span className="text-gray-900 font-medium">
-                        {user?.name}
+                        {
+                          isAdvisorViewOpen ? "Erica Smith" : user?.name
+                        }
+
                       </span>
                     </div>
 
                     {accountDropdown && (
                       <>
                         {isAdvisorViewOpen ? (
-                          <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                          <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
                             <button
                               className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                               onClick={() =>
@@ -538,7 +560,7 @@ function Navbar({ content, config, user, filterValue }) {
                             </button>
                           </div>
                         ) : (
-                          <div className="absolute top-16 overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                          <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
                             <button
                               className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                               onClick={() =>

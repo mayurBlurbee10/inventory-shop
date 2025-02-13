@@ -24,10 +24,17 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
     };
     const handleFileSelect = (event) => {
         const files = Array.from(event.target.files);
-        setArrayOfFiles(files); // Update the selected files
+        // setArrayOfFiles(files); 
         // if (onUploadSuccess) {
             // onUploadSuccess();
         // }
+        setArrayOfFiles((prevFiles) => {
+            const existingFileNames = prevFiles.map((file) => file.name);
+            const newFiles = files.filter(
+                (file) => !existingFileNames.includes(file.name)
+            );
+            return [...prevFiles, ...newFiles];
+        });
     };
 
     useEffect(() => {

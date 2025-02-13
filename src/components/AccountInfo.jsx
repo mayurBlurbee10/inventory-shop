@@ -188,7 +188,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
       </div>
       {isChangePassModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-3 sm:p-6 w-1/4 max-w-2xl">
+          <div className="bg-white rounded-lg p-3 sm:p-6  w-[350px] max-w-2xl">
             <div className="flex justify-between items-center mb-2 pb-2 border-b text-gray-900">
               <h2 className="text-lg font-semibold">Change Password</h2>
               <button

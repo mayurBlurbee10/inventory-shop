@@ -182,7 +182,7 @@ export default function AdvisorView() {
                 <div>
                     <h2 className="text-xl font-light text-black font-lato">
                         {/* Hello, David West! Today is Wednesday, January 15th. */}
-                        {`Hello, Jhon! Today is ${dayAndDate.day}, ${dayAndDate.month
+                        {`Hello, Erica Smith! Today is ${dayAndDate.day}, ${dayAndDate.month
                             } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
                             }${dayAndDate.date === 3 ? "rd" : "th"}`}
                     </h2>

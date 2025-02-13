@@ -5,10 +5,6 @@ import MyTaskFileUploadArea from "./MyTaskFileUploadArea";
 
 
 const CompleteForms = ({ isOpen, onClose }) => {
-    const [email, setEmail] = useState("");
-    const [w2Uploaded, setW2Uploaded] = useState(false);
-    const [form1099Uploaded, setForm1099Uploaded] = useState(false);
-    const [form1040Uploaded, setForm1040Uploaded] = useState(false);
     const [additionalInfo, setAdditionalInfo] = useState("");
     const isForImport = false;
     const [filesUploadedForW2, setFilesUploadedForW2] = useState(false);
@@ -28,17 +24,16 @@ const CompleteForms = ({ isOpen, onClose }) => {
     };
     
     const isFormValid =
-        email.trim() &&
         filesUploadedForW2 &&
         filesUploadedFor1099 &&
         filesUploadedFor1040 &&
         additionalInfo.trim();
 
-
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert("Form submitted successfully!");
         onClose();
+        alert("Form submitted successfully!");
+        setAdditionalInfo("");
         console.log("form submitted successfully");
     };
 
@@ -65,21 +60,8 @@ const CompleteForms = ({ isOpen, onClose }) => {
                         </button>
                     </div>
 
-
                     <form>
                         <div className="border border-gray-300 rounded-lg p-4 max-h-[350px] sm:max-h-[500px]      overflow-auto custom-scrollbar ">
-                            <div className="flex flex-col space-y-5 text-black mb-5">
-                                <label htmlFor="email" className="font-semibold text-sm">Email address</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    className="w-1/2 rounded-md focus:outline-none placeholder:text-sm placeholder:text-gray-600 border border-gray-400 py-1 px-3"
-                                    placeholder="Enter your email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                            </div>
                             <div className="space-y-5 mb-5">
                                 <h1 className="text-black font-semibold text-xl">Upload W - 2</h1>
                                 <MyTaskFileUploadArea isForImport={isForImport} onFileChange={handleFileChangeForW2} />
@@ -101,6 +83,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
                                     className="w-full sm:w-1/2 min-h-[70px] rounded-md focus:outline-none placeholder:text-sm placeholder:text-gray-600 border border-gray-400 py-1 px-3 resize-none text-sm overflow-auto custom-scrollbar text-gray-700"
                                     placeholder="Enter a response"
                                     onChange={(e) => setAdditionalInfo(e.target.value)}
+                                    required
                                 ></textarea>
                             </div>
                         </div>
