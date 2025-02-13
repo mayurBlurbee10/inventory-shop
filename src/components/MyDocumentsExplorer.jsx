@@ -495,9 +495,10 @@ function SharedFolderExplorer({
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      console.log("click outside")
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDeleteDropdown(false);
-        seFileSelectedInGrid(false);
+        setDeleteDropdown(null);
+        seFileSelectedInGrid(null);
       }
     };
 
@@ -650,6 +651,7 @@ function SharedFolderExplorer({
 
   const handleDeleteFile = async (file) => {
     // setCurrentFilesList((prev) => prev.filter((item) => item.id !== fileId));
+    console.log("File", file)
     setIsLoading(true);
     try {
       const filterBoxUser = (collabIds) => {
@@ -1002,10 +1004,7 @@ function SharedFolderExplorer({
                                   <button
                                     className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10 ${listType === "shared" ? "hidden" : ""
                                       }`}
-                                    onClick={() => {
-                                      handleDelete(file)
-                                    }
-                                    }
+                                    onClick={() =>handleDelete(file)}
                                   >
                                     <EllipsisVertical className="h-4 w-4 text-gray-600" />
                                   </button>
@@ -1014,7 +1013,7 @@ function SharedFolderExplorer({
                                 {/* OPTION DROPDOWN DONE*/}
 
                                 {deleteDropdown?.id === file?.id && (
-                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg overflow-hidden z-20" ref={dropdownRef} >
+                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg overflow-hidden z-20">
                                     {listType !== "shared" && (
                                       <>
                                         <button
@@ -1155,7 +1154,7 @@ function SharedFolderExplorer({
                             {file?.name}
                           </h6>
 
-                          <div className="relative" ref={dropdownRef}>
+                          <div className="relative">
                             <button
                               className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10  ${file.type === "folder" && listType === "shared"
                                 ? "hidden"
