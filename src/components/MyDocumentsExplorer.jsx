@@ -1013,7 +1013,7 @@ function SharedFolderExplorer({
                                 {/* OPTION DROPDOWN DONE*/}
 
                                 {deleteDropdown?.id === file?.id && (
-                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg overflow-hidden z-20">
+                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg z-20">
                                     {listType !== "shared" && (
                                       <>
                                         <button
@@ -1168,7 +1168,7 @@ function SharedFolderExplorer({
                             {/* OPTION DROPDOWN DONE*/}
 
                             {fileSelectedInGrid?.id === file?.id && (
-                              <div className="absolute top-8 right-0 sm:left-0 shadow w-40 bg-white overflow-hidden rounded-lg z-20">
+                              <div className="absolute top-8 right-0 sm:left-0 shadow w-40 bg-white rounded-lg z-20">
                                 {file.type === "file" && (
                                   <button
                                     className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
