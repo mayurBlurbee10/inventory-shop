@@ -3,6 +3,7 @@ import { getBoxAppUserContent } from "@/lib/box"; // Updated import name
 import BoxSDK from "box-node-sdk";
 import { Readable } from "stream";
 import { logApiCall } from "@/app/lib/api-log-middleware";
+import { addCollaborator } from "../share/route";
 
 const sdk = new BoxSDK({
   clientID: process.env.BOX_CLIENT_ID,
@@ -21,77 +22,44 @@ const client = sdk.getAppAuthClient(
 
 export async function POST(req) {
   try {
-    await logApiCall(req, () => {});
-    const accessToken = await client._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
-
-    const formData = await req.formData();
-    const files = formData.getAll("file");
-
-    if (!files || files.length === 0) {
-      return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
+    // here userId is BoxUserId
+    await logApiCall(req);
+    const { items, destinationFolderId, userId } = await req.json();
+    if (!Array.isArray(items) || items.length === 0 || !destinationFolderId) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid request data: items and destinationFolderId are required.",
+        },
+        { status: 400 }
+      );
     }
 
-    const boxFolderId = formData.get("boxFolderId") || "0";
-    const email = formData.get("email") || "";
-
-    const uploadedFiles = [];
-
-    const folderItems = await newClient.folders.getItems(boxFolderId, {
-      fields: "id,name",
-    });
-
-    for (const file of files) {
-      let fileName = file.name;
-      let baseName = fileName.replace(/\.[^/.]+$/, ""); // Remove extension
-      let extension = fileName.split(".").pop();
-      let counter = 1;
-
-      console.log("FileName", file.name);
-
-      fileName = `${baseName}(${counter}).${extension}`;
-     
-      const existingFile = folderItems.entries.find(
-        (item) => item.name === fileName
-      );
-
-      if (existingFile) {
-        counter++;
+    const results = [];
+    const errors = [];
+    for (const item of items) {
+      try {
+        const movedFile = await client.files.copy(item.id, destinationFolderId);
+        await addCollaborator(movedFile.id, userId, "editor", "file");
+        results.push(movedFile);
+      } catch (error) {
+        console.error(`Failed to copy ${item.type} with ID ${item.id}:`, error);
+        errors.push({ id: item.id, type: item.type, error: error.message });
       }
-
-      counter++;
-
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const fileStream = new Readable();
-      fileStream.push(buffer);
-      fileStream.push(null);
-
-      console.log("Uploading renamed file:", fileName);
-
-      const uploadedFile = await newClient.files.uploadFile(
-        boxFolderId,
-        fileName,
-        fileStream,
-        { description: email }
-      );
-
-      uploadedFiles.push(uploadedFile.entries[0]);
     }
-
     return NextResponse.json({
-      message: "Upload completed (duplicates renamed)",
-      files: uploadedFiles,
+      message: "File uploaded successfully",
+      files: results,
+      failedItems: errors,
     });
   } catch (error) {
-    console.error("Error uploading files:", error);
+    console.error("Error file upload:", error);
     return NextResponse.json(
       {
-        error: error.response?.body.message,
-        status: error.response?.statusCode || 500,
+        error: "Failed to upload file",
+        details: error.message,
       },
-      { status: error.response?.statusCode || 500 }
+      { status: 500 }
     );
   }
 }

@@ -2,6 +2,7 @@ import { logApiCall } from "@/app/lib/api-log-middleware";
 import BoxSDK from "box-node-sdk";
 import { NextResponse } from "next/server";
 import userService from "@/services/userService";
+import { addCollaborator } from "../files/share/route";
 
 const sdk = new BoxSDK({
   clientID: process.env.BOX_CLIENT_ID,
@@ -33,7 +34,17 @@ export async function POST(req) {
       );
     }
 
-    const newClient = sdk.getAppAuthClient("user", boxUserId);
+    // const client = sdk.getAppAuthClient("user", boxUserId);
+    const newClient = client;
+    const collaborations = await client.files.getCollaborations(fileId);
+
+    const collabExistForUser = collaborations.entries?.some(
+      (collab) => collab.accessible_by?.id === boxUserId
+    );
+
+    if (!collabExistForUser) {
+      await addCollaborator(fileId, boxUserId, "editor", "file");
+    }
     let signRequests = [];
 
     if (onSameDoc) {

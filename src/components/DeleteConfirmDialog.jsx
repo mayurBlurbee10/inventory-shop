@@ -10,6 +10,7 @@ function DeleteConfirmDialog({
   title = "Delete File",
   content = "Confirm delete?",
   isLoading = false,
+  modalRef
 }) {
   return (
     <Dialog
@@ -20,7 +21,7 @@ function DeleteConfirmDialog({
       className="relative z-50"
     >
       <div className="fixed inset-0 bg-black/5" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
+      <div className="fixed inset-0 flex items-center justify-center p-4" ref={modalRef}>
         <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-md">
           <div className="flex justify-between items-center mb-4">
             <Dialog.Title className="text-xl text-gray-600 font-medium">

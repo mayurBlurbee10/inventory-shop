@@ -4,6 +4,7 @@ import { getBoxAppUserContent } from "@/lib/box"; // Updated import name
 import BoxSDK from "box-node-sdk";
 import { Readable } from "stream";
 import { logApiCall } from "@/app/lib/api-log-middleware";
+import { addCollaborator } from "./share/route";
 
 const sdk = new BoxSDK({
   clientID: process.env.BOX_CLIENT_ID,
@@ -94,6 +95,7 @@ export async function GET(request) {
 
 export async function POST(req) {
   try {
+     // here userId is BoxUserId
     await logApiCall(req, () => {});
     const accessToken = await client._session.getAccessToken();
     const newClient = sdk.getBasicClient(accessToken);
@@ -107,6 +109,7 @@ export async function POST(req) {
 
     const boxFolderId = formData.get("boxFolderId") || "0";
     const email = formData.get("email") || "";
+    const userId = formData.get("userId") || "";
 
     const uploadedFiles = [];
     const duplicateFiles = [];
@@ -121,11 +124,17 @@ export async function POST(req) {
         const arrayBuffer = await file.arrayBuffer();
         const base64File = Buffer.from(arrayBuffer).toString("base64");
 
-        duplicateFiles.push({
+        let streamObj = {
           name: file.name,
           type: file.type,
           size: file.size,
           base64: base64File, // This allows the frontend to reconstruct the file
+        };
+        duplicateFiles.push({
+          id: existingFile.id,
+          name: existingFile.name,
+          type: existingFile.type,
+          stream: streamObj,
         });
         continue;
       }
@@ -139,14 +148,23 @@ export async function POST(req) {
 
       console.log("Uploading unique file:", file.name);
 
-      const uploadedFile = await newClient.files.uploadFile(
+      const uploadedFileRes = await newClient.files.uploadFile(
         boxFolderId,
         file.name,
         fileStream,
         { description: email }
       );
 
-      uploadedFiles.push(uploadedFile.entries[0]);
+      const uploadedFile = uploadedFileRes.entries[0];
+
+      //Added user itself as collaborator for file with editor role
+      await addCollaborator(
+        uploadedFile.id,
+        userId,
+        "editor",
+        "file"
+      );
+      uploadedFiles.push(uploadedFile);
     }
 
     return NextResponse.json({

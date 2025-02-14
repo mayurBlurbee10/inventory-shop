@@ -33,6 +33,7 @@ const updatePage = async (pageId, updatedData) => {
     page.title = updatedData.title;
     page.description = updatedData.description;
     await pageRepository.save(page);
+    return page;
   } catch (error) {
     throw new Error("Failed to update page.");
   }

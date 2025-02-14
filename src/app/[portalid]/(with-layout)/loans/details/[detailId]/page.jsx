@@ -176,7 +176,7 @@ function DetailsPage() {
   if (!loan) return <p>Loading loan details...</p>;
 
   return (
-    <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
+    <div className="bg-white rounded-lg flex flex-col relative w-full lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div className="border-b border-[#dee2e6] font-lato flex items-end justify-center gap-5 py-5">
         <div
           className="flex items-end text-blue-600"
@@ -189,7 +189,7 @@ function DetailsPage() {
         </h1>
         <p className="italic text-gray-500 text-base">ID:{loan?.id}</p>
       </div>
-      <div className="grid grid-cols-2 gap-x-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10">
         <div className="space-y-3 font-lato p-5">
           <h1 className="text-6xl font-light italic">{loan?.name}</h1>
           <div className="w-full bg-gray-200 h-5 rounded">

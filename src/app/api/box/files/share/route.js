@@ -161,7 +161,7 @@ export async function DELETE(request) {
  * @param role // 'viewer', 'editor', 'uploader', 'co-owner'
  *
  */
-async function addCollaborator(itemId, userID, role, type) {
+export async function addCollaborator(itemId, userID, role, type) {
   const collaboration = await client.collaborations.create(
     { id: userID, type: "user" },
     itemId,
@@ -206,7 +206,7 @@ async function pendingCollaboration() {
   return await client.collaborations.getPending();
 }
 
-async function addCollaboratorId(folderId, userId, role, type) {
+export async function addCollaboratorId(folderId, userId, role, type) {
   // const dataFilePath = path.join(process.cwd(), 'data', 'users.json');
   // const users = await readJsonFile(dataFilePath);
   // const index = users.findIndex(element => element.boxUserId == userId);

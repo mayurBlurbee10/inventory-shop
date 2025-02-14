@@ -27,7 +27,8 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [onPageCreated, setOnPageCreated] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [pageSelected, setPageSelected] = useState(null);
   const [pluginData, setPluginData] = useState({
     type: PluginType.PAGES,
     pageId: [],
@@ -103,20 +104,22 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
       if (!response.ok) {
         throw new Error(data.error || "Failed to delete page");
       }
+      setIsDeleteModalOpen(false);
+      setPageSelected(null);
       fetchPlugin();
       toast.success("Page deleted successfully");
     } catch (error) {
       toast.error(error.message);
       setError("Failed to delete Page. Please try again.");
     } finally {
-      setDeleteLoading(null);
+      setDeleteLoading(false);
     }
   };
 
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center">
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center mt-0">
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
             <div className="flex -items-center justify-between border-b border-solid">
               <label className="text-xl font-semibold text-gray-700 mb-3">
@@ -155,19 +158,24 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
                       <button
                         type="button"
                         className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setIsDeleteModalOpen(page)}
+                        onClick={() => {
+                          setIsDeleteModalOpen((prev) => !prev);
+                          setPageSelected(page);
+                        }}
                       >
                         {/* {deleteLoading === page?.id ? "Deleting" : "Delete"} */}
                         <Trash2 className="size-5 text-red-700" />
                       </button>
                     </div>
-                    <DeleteConfirmDialog
-                      isModalOpen={isDeleteModalOpen?.id === page?.id}
-                      onClose={() => setIsDeleteModalOpen(null)}
-                      handleDelete={() => handleDeletePage(page)}
-                      title="Delete Page"
-                      deleteLoading={deleteLoading === page?.id}
-                    />
+                    {pageSelected?.id === page?.id && (
+                      <DeleteConfirmDialog
+                        isModalOpen={isDeleteModalOpen}
+                        setIsModalOpen={setIsDeleteModalOpen}
+                        handleDelete={() => handleDeletePage(page)}
+                        title="Delete Page"
+                        isLoading={deleteLoading}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -235,13 +243,14 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
   const params = useParams();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [isOpenAddPageModal, setIsOpenAddPageModal] = useState(false);
   const [pages, setPages] = useState([]);
   const [editData, setEditData] = useState(null);
   const [onPageCreated, setOnPageCreated] = useState(false);
   const [pageCreated, setPageCreated] = useState([]);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [pageSelected, setPageSelected] = useState(null);
   const [pluginData, setPluginData] = useState({
     type: "",
     pageId: [],
@@ -352,7 +361,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
 
   const handleDeletePage = async (page) => {
     try {
-      setDeleteLoading(page?.id);
+      setDeleteLoading(true);
 
       const response = await fetchWrapper(
         "/api/pages",
@@ -371,13 +380,20 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
       if (!response.ok) {
         throw new Error(data.error || "Failed to delete page");
       }
+      setPageCreated((prev) => prev.filter((item) => item?.id !== page?.id));
+      setPluginData((prev) => ({
+        ...prev,
+        pageId: prev.pageId.filter((id) => id !== page?.id),
+      }));
+      setIsDeleteModalOpen(false);
+      setPageSelected(null);
       fetchPlugin();
       toast.success("Page deleted successfully");
     } catch (error) {
       toast.error(error.message);
       setError("Failed to delete Page. Please try again.");
     } finally {
-      setDeleteLoading(null);
+      setDeleteLoading(false);
     }
   };
 
@@ -480,7 +496,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center">
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center mt-0">
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
             <div className="flex -items-center justify-between border-b border-solid">
               <label className="text-xl font-semibold text-gray-700 mb-3">
@@ -563,19 +579,24 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
                         <button
                           type="button"
                           className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => setIsDeleteModalOpen(page)}
+                          onClick={() => {
+                            setIsDeleteModalOpen((prev) => !prev);
+                            setPageSelected(page);
+                          }}
                         >
                           {/* {deleteLoading === page?.id ? "Deleting" : "Delete"} */}
                           <Trash2 className="size-5 text-red-700" />
                         </button>
                       </div>
-                      <DeleteConfirmDialog
-                        isModalOpen={isDeleteModalOpen?.id === page?.id}
-                        onClose={() => setIsDeleteModalOpen(null)}
-                        handleDelete={() => handleDeletePage(page)}
-                        title="Delete Page"
-                        deleteLoading={deleteLoading === page?.id}
-                      />
+                      {pageSelected?.id === page?.id && (
+                        <DeleteConfirmDialog
+                          isModalOpen={isDeleteModalOpen}
+                          setIsModalOpen={setIsDeleteModalOpen}
+                          handleDelete={() => handleDeletePage(page)}
+                          title="Delete Page"
+                          isLoading={deleteLoading}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>

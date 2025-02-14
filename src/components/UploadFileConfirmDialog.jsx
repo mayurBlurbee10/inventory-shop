@@ -43,11 +43,11 @@ const UploadFileConfirmDialog = ({
         setIsReplaceLoading(true);
         const uploadData = new FormData();
         const userData = getUserData();
-        duplicateFiles.forEach((fileData) => {
+        duplicateFiles.forEach(({ stream }) => {
           const file = base64ToFile(
-            fileData.base64,
-            fileData.name,
-            fileData.type
+            stream.base64,
+            stream.name,
+            stream.type
           );
           uploadData.append("file", file);
         });
@@ -58,6 +58,7 @@ const UploadFileConfirmDialog = ({
         }
 
         uploadData.append("email", userData.email);
+        uploadData.append("userId", userData.boxUserId);
 
         const requestOptions = {
           method: "POST",
@@ -91,27 +92,21 @@ const UploadFileConfirmDialog = ({
     if (duplicateFiles.length > 0) {
       try {
         setIsLoading(true);
-        const uploadData = new FormData();
         const userData = getUserData();
-        duplicateFiles.forEach((fileData) => {
-          const file = base64ToFile(
-            fileData.base64,
-            fileData.name,
-            fileData.type
-          );
-          uploadData.append("file", file);
-        });
+        let destinationFolder;
         if (!!selectedItem && selectedItem.type == "folder") {
-          uploadData.append("boxFolderId", selectedItem.id);
+          destinationFolder = selectedItem.id;
         } else {
-          uploadData.append("boxFolderId", userData.boxFolderId);
+          destinationFolder = userData.boxFolderId;
         }
-
-        uploadData.append("email", userData.email);
 
         const requestOptions = {
           method: "POST",
-          body: uploadData,
+          body: JSON.stringify({
+            items: duplicateFiles,
+            destinationFolderId: destinationFolder,
+            userId : userData.boxUserId
+          }),
         };
 
         const response = await fetchWrapper(

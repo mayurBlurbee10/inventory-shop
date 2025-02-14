@@ -25,7 +25,8 @@ const ProductsContent = () => {
   const [loading, setLoading] = useState(false);
   const [plugins, setPlugins] = useState(null);
   const [pluginEdit, setPluginEdit] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [pluginSelected, setPluginSelected] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchPlugins = async () => {
@@ -69,6 +70,8 @@ const ProductsContent = () => {
       if (!response.ok) {
         throw new Error(data.error || "Failed to delete page");
       }
+      setIsDeleteModalOpen(false);
+      setPluginSelected(null);
       fetchPlugins();
       toast.success("Plugin deleted successfully");
     } catch (error) {
@@ -197,7 +200,10 @@ const ProductsContent = () => {
                   </div>
                   <div
                     className={`px-2 py-1 cursor-pointer`}
-                    onClick={() => setIsDeleteModalOpen(plugin)}
+                    onClick={() => {
+                      setIsDeleteModalOpen((prev) => !prev);
+                      setPluginSelected(plugin);
+                    }}
                   >
                     <Trash2 className="size-4 text-red-700" />
                   </div>
@@ -211,13 +217,15 @@ const ProductsContent = () => {
                   Documentation
                 </button>
               </div>
-              <DeleteConfirmDialog
-                isModalOpen={isDeleteModalOpen?.id === plugin?.id}
-                onClose={() => setIsDeleteModalOpen(null)}
-                handleDelete={() => handleDeletePlugin(plugin)}
-                title="Delete Plugin"
-                deleteLoading={deleteLoading}
-              />
+              {pluginSelected?.id === plugin?.id && (
+                <DeleteConfirmDialog
+                  isModalOpen={isDeleteModalOpen}
+                  setIsModalOpen={setIsDeleteModalOpen}
+                  handleDelete={() => handleDeletePlugin(plugin)}
+                  title="Delete Plugin"
+                  isLoading={deleteLoading}
+                />
+              )}
             </div>
           ))}
       </div>

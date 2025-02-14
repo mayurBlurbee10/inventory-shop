@@ -405,6 +405,7 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
       uploadData.append("boxFolderId", loanFolderId);
       const userData = getUserData();
       uploadData.append("email", userData.email);
+      uploadData.append("userId", userData.boxUserId);
       const requestOptions = {
         method: "POST",
         body: uploadData,

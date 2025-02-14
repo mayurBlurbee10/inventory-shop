@@ -227,6 +227,7 @@ export default function AdvisorView() {
          }
  
          uploadData.append("email", userData.email);
+         uploadData.append("userId", userData.boxUserId);
  
          const requestOptions = {
            method: "POST",

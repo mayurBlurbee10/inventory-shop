@@ -93,8 +93,6 @@ const ShareModal = ({
     const filteredUsers = users.filter((user) => user.value !== loggedInUserId);
 
     setUserList(filteredUsers);
-    console.log("Filtered userList:", filteredUsers);
-    console.log("loggedInUser:", loggedInUser);
   }, [usersList]);
 
   if (!isOpen) return null;
@@ -491,15 +489,31 @@ function SharedFolderExplorer({
   const [fileSelectedInGrid, seFileSelectedInGrid] = useState(null);
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
+  const [isSignLoading, setIsSignLoading] = useState(false)
   const dropdownRef = useRef(null);
+  const deleteModalRef = useRef(null);
+  const nestedDropdownRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      console.log("click outside")
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDeleteDropdown(null);
-        seFileSelectedInGrid(null);
+      if (dropdownRef.current && dropdownRef.current.contains(event.target)) {
+        return;
       }
+      if (
+        deleteModalRef.current &&
+        deleteModalRef.current.contains(event.target)
+      ) {
+        return;
+      }
+      if (
+        nestedDropdownRef.current &&
+        nestedDropdownRef.current.contains(event.target)
+      ) {
+        return;
+      }
+      setDeleteDropdown(null);
+      setIsDeleteModalOpen(false);
+      seFileSelectedInGrid(null);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -507,6 +521,7 @@ function SharedFolderExplorer({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   const handleFolderClick = (folder) => {
     setSelectedBulkItems([]);
     setSearchQuery("");
@@ -748,7 +763,7 @@ function SharedFolderExplorer({
 
   const handleSelfSign = async (file) => {
     try {
-      setIsLoading(true);
+      setIsSignLoading(true);
       const response = await fetchWrapper(
         "/api/box/e-sign",
         {
@@ -766,7 +781,7 @@ function SharedFolderExplorer({
             ],
             boxUserId: user.boxUserId,
             portal: params.portalid,
-            onSameDoc: false,
+            onSameDoc: false
           }),
         },
         "self-esign-request"
@@ -784,11 +799,11 @@ function SharedFolderExplorer({
         setTimeout(() => {
           setSelectedSignUrl(currentUserReq.iframeable_embed_url);
           setIsSignModalOpen(true);
-          setIsLoading(false);
+          setIsSignLoading(false);
         }, 2500);
       }
     } catch (error) {
-      setIsLoading(false);
+      setIsSignLoading(false);
       toast.error(error.message);
     }
   };
@@ -1013,12 +1028,13 @@ function SharedFolderExplorer({
                                 {/* OPTION DROPDOWN DONE*/}
 
                                 {deleteDropdown?.id === file?.id && (
-                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg z-20">
+                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg z-20" ref={dropdownRef}>
                                     {listType !== "shared" && (
                                       <>
                                         <button
-                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
-                                          onClick={() => {
+                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             setIsMoveModalOpen((prev) => !prev);
                                             setMoveItem(file);
                                             setSelectedBulkItems([]);
@@ -1029,14 +1045,21 @@ function SharedFolderExplorer({
                                         </button>
                                         {file.type === "file" && (
                                           <div className="relative group/sign text-gray-600">
-                                            <button className="group/sign hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 ">
+                                            <button className="group/sign hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 rounded-lg">
                                               <Signature className="h-4 w-4 text-gray-600" />{" "}
-                                              Sign
+                                              {isSignLoading ? (
+                                                <>
+                                                  Signing <Loader2 className="ml-auto size-5 animate-spin text-gray-600" />
+                                                </>
+                                              ) : (
+                                                "Sign"
+                                              )}
                                             </button>
-                                            <div className="absolute top-0 right-full bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/sign:opacity-100 group-hover/sign:scale-100 w-48">
+                                            <div ref={nestedDropdownRef} className="absolute top-0 right-full bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/sign:opacity-100 group-hover/sign:scale-100 w-48">
                                               <button
-                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1"
-                                                onClick={() => {
+                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-lg"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
                                                   setIsSignatureModalOpen(
                                                     (prev) => !prev
                                                   );
@@ -1049,19 +1072,20 @@ function SharedFolderExplorer({
                                               </button>
 
                                               <button
-                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1"
-                                                onClick={() =>
+                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-lg"
+                                                onClick={(e) =>{
+                                                  e.stopPropagation();
                                                   handleSelfSign(file)
-                                                }
+                                                }}
                                               >
                                                 <UserRound className="h-4 w-4 mr-2" />
-                                                Sign Myself
+                                               Sign Myself
                                               </button>
                                             </div>
                                           </div>
                                         )}
                                         <button
-                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
                                           // onClick={() => {
                                           //   if (file.type === "folder") {
                                           //     handleDeleteFolder(file?.id);
@@ -1069,7 +1093,8 @@ function SharedFolderExplorer({
                                           //     handleDeleteFile(file?.id);
                                           //   }
                                           // }}
-                                          onClick={() => {
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             setIsDeleteModalOpen(
                                               (prev) => !prev
                                             );
@@ -1092,6 +1117,7 @@ function SharedFolderExplorer({
                                       ? () => handleDeleteFile(deleteDropdown)
                                       : () => handleDeleteFolder(deleteDropdown)
                                   }
+                                  modalRef={deleteModalRef}
                                 />
                               </div>
                             </div>
@@ -1168,7 +1194,7 @@ function SharedFolderExplorer({
                             {/* OPTION DROPDOWN DONE*/}
 
                             {fileSelectedInGrid?.id === file?.id && (
-                              <div className="absolute top-8 right-0 sm:left-0 shadow w-40 bg-white rounded-lg z-20">
+                              <div className="absolute top-8 right-0 sm:left-0 shadow w-40 bg-white rounded-lg z-20" ref={dropdownRef}>
                                 {file.type === "file" && (
                                   <button
                                     className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
@@ -1221,7 +1247,8 @@ function SharedFolderExplorer({
                                   <button
                                     className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
                                       }`}
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       setIsMoveModalOpen((prev) => !prev);
                                       setMoveItem(file);
                                       setSelectedBulkItems([]);
@@ -1236,12 +1263,19 @@ function SharedFolderExplorer({
                                     <div className="relative group/signGrid text-gray-600">
                                       <button className="group/signGrid hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 ">
                                         <Signature className="h-4 w-4 text-gray-600" />{" "}
-                                        Sign
+                                        {isSignLoading ? (
+                                            <>
+                                              Signing <Loader2 className="ml-auto size-5 animate-spin text-gray-600" />
+                                            </>
+                                          ) : (
+                                            "Sign"
+                                        )}
                                       </button>
-                                      <div className="absolute top-0 left-full bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/signGrid:opacity-100 group-hover/signGrid:scale-100 w-48">
+                                      <div ref={nestedDropdownRef} className="absolute top-0 left-full bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/signGrid:opacity-100 group-hover/signGrid:scale-100 w-48">
                                         <button
                                           className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-t-md"
-                                          onClick={() => {
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             setIsSignatureModalOpen(
                                               (prev) => !prev
                                             );
@@ -1250,12 +1284,15 @@ function SharedFolderExplorer({
                                           }}
                                         >
                                           <UsersRoundIcon className="h-4 w-4 mr-2" />
-                                          Request Signature
+                                         Request Signature
                                         </button>
 
                                         <button
                                           className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-b-md"
-                                          onClick={() => handleSelfSign(file)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSelfSign(file)
+                                          }}
                                         >
                                           <UserRound className="h-4 w-4 mr-2" />
                                           Sign Myself
@@ -1273,7 +1310,8 @@ function SharedFolderExplorer({
                                   //     handleDeleteFile(file?.id);
                                   //   }
                                   // }}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setIsDeleteModalOpen((prev) => !prev);
                                     setDeleteDropdown(file);
                                   }}
@@ -1293,6 +1331,7 @@ function SharedFolderExplorer({
                                   : () => handleDeleteFolder(deleteDropdown)
                               }
                               isLoading={isLoading}
+                              modalRef={deleteModalRef}
                             />
                           </div>
                         </div>

@@ -186,6 +186,7 @@ export default function SharedDocsPage() {
         }
 
         uploadData.append("email", userData.email);
+        uploadData.append("userId", userData.boxUserId);
 
         const requestOptions = {
           method: "POST",

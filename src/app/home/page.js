@@ -300,6 +300,7 @@ export default function HomePage() {
         } else {
           const userData = getUserData();
           uploadData.append("boxFolderId", userData.boxFolderId);
+          uploadData.append("userId", userData.boxUserId);
         }
 
         const requestOptions = {
