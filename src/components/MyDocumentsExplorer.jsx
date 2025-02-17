@@ -39,6 +39,7 @@ import { getUserData } from "@/app/lib/auth";
 import { UserRole } from "@/config/constants";
 import SignRequestModal from "./SignRequestModal";
 import { Menu, MenuItem, MenuItems, MenuButton } from "@headlessui/react";
+import { useSelector } from "react-redux";
 
 const ShareModal = ({
   isOpen,
@@ -493,6 +494,7 @@ function SharedFolderExplorer({
   const dropdownRef = useRef(null);
   const deleteModalRef = useRef(null);
   const nestedDropdownRef = useRef(null);
+  const {loading : isFilesLoading} = useSelector((state)=>state.files)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -868,7 +870,7 @@ function SharedFolderExplorer({
               <thead>
                 <tr>
                   <th>
-                    <EmptyState checkLoading={loading} />
+                    <EmptyState checkLoading={isFilesLoading} />
                   </th>
                 </tr>
               </thead>
@@ -1086,13 +1088,6 @@ function SharedFolderExplorer({
                                         )}
                                         <button
                                           className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
-                                          // onClick={() => {
-                                          //   if (file.type === "folder") {
-                                          //     handleDeleteFolder(file?.id);
-                                          //   } else {
-                                          //     handleDeleteFile(file?.id);
-                                          //   }
-                                          // }}
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             setIsDeleteModalOpen(
@@ -1113,7 +1108,7 @@ function SharedFolderExplorer({
                                   isModalOpen={isDeleteModalOpen}
                                   setIsModalOpen={setIsDeleteModalOpen}
                                   handleDelete={
-                                    file?.type === "file"
+                                    deleteDropdown?.type === "file"
                                       ? () => handleDeleteFile(deleteDropdown)
                                       : () => handleDeleteFolder(deleteDropdown)
                                   }
@@ -1303,13 +1298,6 @@ function SharedFolderExplorer({
                                 <button
                                   className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
                                     }`}
-                                  // onClick={() => {
-                                  //   if (file.type === "folder") {
-                                  //     handleDeleteFolder(file?.id);
-                                  //   } else {
-                                  //     handleDeleteFile(file?.id);
-                                  //   }
-                                  // }}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setIsDeleteModalOpen((prev) => !prev);
@@ -1326,7 +1314,7 @@ function SharedFolderExplorer({
                               isModalOpen={isDeleteModalOpen}
                               setIsModalOpen={setIsDeleteModalOpen}
                               handleDelete={
-                                file?.type === "file"
+                                deleteDropdown?.type === "file"
                                   ? () => handleDeleteFile(deleteDropdown)
                                   : () => handleDeleteFolder(deleteDropdown)
                               }

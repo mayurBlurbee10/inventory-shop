@@ -1,0 +1,12 @@
+export const SET_RES_ERROR = "SET_RES_ERROR";
+export const SET_RES_SUCCESS = "SET_RES_SUCCESS";
+export const CLEAR_RES_MSG = "CLEAR_RES_MSG";
+
+// export const FETCH_FILES_FAILURE = "FETCH_FILES_FAILURE";
+
+export const FETCH_FILES_SUCCESS = "FETCH_FILES_SUCCESS";
+export const FETCH_FILES_REQUEST = "FETCH_FILES_REQUEST";
+
+export const UPLOAD_FILES = "UPLOAD_FILES";
+export const FETCH_PORTAL = "FETCH_PORTAL";
+export const FETCH_USER = "FETCH_USER";

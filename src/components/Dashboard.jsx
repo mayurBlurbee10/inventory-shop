@@ -30,6 +30,8 @@ import { setUserData } from "@/lib/auth";
 import { toast } from "react-toastify";
 import MoveDialog from "./MoveDialog";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -119,7 +121,7 @@ const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
 function Dashboard({ fileType }) {
   const router = useRouter();
   const params = useParams();
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const fileInputRef = useRef(null);
   const [user, setUser] = useState(null);
   const [filesList, setFilesList] = useState([]);
@@ -143,6 +145,9 @@ function Dashboard({ fileType }) {
   const [selectedBulkItems, setSelectedBulkItems] = useState([]);
   const [isToolbarVisible, setIsToolbarVisible] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -367,22 +372,21 @@ function Dashboard({ fileType }) {
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid}`,
-        {},
-        "portal-login"
-      );
-      const data = await response.json();
-      if (!data.data && response.status === 404) {
-        router.push(`/${params.portalid}/not-found`);
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
+      // const response = await fetchWrapper(
+      //   `/api/portal?portalid=${params.portalid}`,
+      //   {},
+      //   "portal-login"
+      // );
+      // const data = await response.json();
+      // if (!data.data && response.status === 404) {
+      //   router.push(`/${params.portalid}/not-found`);
+      //   return;
+      // }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch users");
+      // }
 
-      setConfig(data.data);
-      
+      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     }

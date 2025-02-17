@@ -21,7 +21,7 @@ const ContentManagementContent = ({
     title: "",
     type: "",
     value: "",
-    fontSize:"",
+    fontSize:"30px",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -128,19 +128,19 @@ const ContentManagementContent = ({
       const obj = imageUrl
         ? {
           ...newContent,
-          fontSize: newContent.fontSize || null, // Add fontSize here
+          fontSize: newContent.fontSize, // Add fontSize here
           portalId: params.portalid ?? "default",
         }
         : newContent.type === "Links"
           ? {
             ...newContent,
             value: JSON.stringify(linkFields),
-            fontSize: newContent.fontSize || null, // Add fontSize here
+            fontSize: newContent.fontSize, // Add fontSize here
             portalId: params.portalid ?? "default",
           }
           : {
             ...newContent,
-            fontSize: newContent.fontSize || null, // Add fontSize here
+            fontSize: newContent.fontSize, // Add fontSize here
             portalId: params.portalid ?? "default",
           };
 
@@ -164,7 +164,7 @@ const ContentManagementContent = ({
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error("Content length is too long");
+        throw new Error(data.error || "Content length is too long");
       }
 
       // Refresh data and close the modal
@@ -189,7 +189,7 @@ const ContentManagementContent = ({
 
   const handleModalOpenForEdit = (contentId) => {
     const contentToEdit = content.find((item) => item.id === contentId);
-    setNewContent(contentToEdit);
+    setNewContent({...contentToEdit, fontSize : contentToEdit.fontSize || "30px"});
     setIsEditMode(true);
     setIsDialogOpen(true);
     setFile(null);
@@ -208,6 +208,7 @@ const ContentManagementContent = ({
       title: "",
       type: "",
       value: "",
+      fontSize:"30px"
     });
     setLinkFields([{ label: "", link: "" }]);
     setIsEditMode(false);
@@ -226,6 +227,7 @@ const ContentManagementContent = ({
         ...prev,
         title: "",
         type: "",
+        fontSize:"30px"
       }));
     } else {
       const selectedType =
@@ -234,6 +236,7 @@ const ContentManagementContent = ({
         ...prev,
         title: selectedTitle,
         type: selectedType,
+        fontSize : newContent.fontSize
       }));
       setPreviewUrl("");
       setFile(null);
@@ -461,7 +464,7 @@ const ContentManagementContent = ({
               </div> */}
 
               {
-                newContent.title === "Header Text" && (
+                newContent?.title === "Header Text" && (
                   <div className="mb-4">
                     <label
                       htmlFor="fontSize"
@@ -473,7 +476,7 @@ const ContentManagementContent = ({
                       id="fontSize"
                       name="fontSize"
                       className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                      value={newContent.fontSize || "30px"} // Default value
+                      value={newContent?.fontSize} // Default value
                       onChange={(e) =>
                         setNewContent((prev) => ({
                           ...prev,

@@ -58,7 +58,8 @@ export async function GET(req) {
   try {
     await logApiCall(req);
     const folderId = req.nextUrl.searchParams.get("folderId") || "0";
-    const items = await fetchNestedItems(folderId);
+    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100", 10);
+    const items = await fetchNestedItems(folderId, limit);
     return Response.json({
       message: "Folder items fetched successfully",
       items,
@@ -72,40 +73,73 @@ export async function GET(req) {
   }
 }
 
-async function fetchNestedItems(folderId) {
-  const result = [];
+// async function fetchNestedItems(folderId) {
+//   const result = [];
+//   try {
+//     const folderItems = await client.folders.getItems(folderId, {
+//       fields:
+//         "id,name,type,shared_link,created_at,modified_at,collaborators,size",
+//       limit: 5,
+//     });
+
+//     for (const item of folderItems.entries) {
+//       let collaborators = [];
+//       if (item.type == "folder") {
+//         collaborators = await fetchFolderCollaborators(item.id);
+//       } else {
+//         collaborators = await fetchFileCollaborators(item.id);
+//       }
+//       if (item.type === "folder") {
+//         // Recursively fetch items inside subfolder
+//         const nestedItems = await fetchNestedItems(item.id);
+//         result.push({ ...item, collaborators, children: nestedItems });
+//       } else {
+//         // File, directly push to the result
+//         const reverseCollaborator = collaborators?.reverse();
+//         result.push({ ...item, collaborators: reverseCollaborator });
+//       }
+//     }
+//   } catch (error) {
+//     console.error(
+//       `Error fetching items for folder ${folderId}:`,
+//       error.message
+//     );
+//   }
+
+//   return result;
+// }
+
+async function fetchNestedItems(folderId, limit) {
   try {
     const folderItems = await client.folders.getItems(folderId, {
       fields:
         "id,name,type,shared_link,created_at,modified_at,collaborators,size",
-      limit: 100,
+      limit : limit, 
     });
 
-    for (const item of folderItems.entries) {
-      let collaborators = [];
-      if (item.type == "folder") {
-        collaborators = await fetchFolderCollaborators(item.id);
-      } else {
-        collaborators = await fetchFileCollaborators(item.id);
-      }
-      if (item.type === "folder") {
-        // Recursively fetch items inside subfolder
-        const nestedItems = await fetchNestedItems(item.id);
-        result.push({ ...item, collaborators, children: nestedItems });
-      } else {
-        // File, directly push to the result
-        const reverseCollaborator = collaborators?.reverse();
-        result.push({ ...item, collaborators: reverseCollaborator });
-      }
-    }
-  } catch (error) {
-    console.error(
-      `Error fetching items for folder ${folderId}:`,
-      error.message
-    );
-  }
+    const itemsWithCollaborators = await Promise.all(
+      folderItems.entries.map(async (item) => {
+        const collaborators =
+          item.type === "folder"
+            ? await fetchFolderCollaborators(item.id)
+            : await fetchFileCollaborators(item.id);
 
-  return result;
+        return {
+          ...item,
+          collaborators,
+          children:
+            item.type === "folder"
+              ? await fetchNestedItems(item.id) 
+              : [],
+        };
+      })
+    );
+
+    return itemsWithCollaborators;
+  } catch (error) {
+    console.error(`Error fetching items for folder ${folderId}:`, error);
+    return [];
+  }
 }
 
 async function fetchFolderCollaborators(itemId) {

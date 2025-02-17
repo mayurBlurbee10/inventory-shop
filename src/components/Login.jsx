@@ -12,6 +12,8 @@ import { getSession, signIn } from "next-auth/react";
 import { getUserData } from "@/lib/auth";
 import TNCModal from "./TNCModal";
 import { UserRole } from "@/config/constants";
+import { useDispatch, useSelector } from "react-redux";
+import { setPortal } from "@/store/services/portalService";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500 ">
@@ -33,13 +35,16 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [content, setContent] = useState(null);
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isLoadingOkta, setIsLoadingOkta] = useState(false);
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [isTNCOpen, setIsTNCOpen] = useState(false);
   const [page, setPage] = useState(null);
+  const { data: config } = useSelector((state) => state.portal);
+
+  const dispatch = useDispatch()
 
   const fetchPage = async () => {
     try {
@@ -152,20 +157,21 @@ function Login() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch portal config");
-        }
-        setConfig(data.data);
+        // const response = await fetchWrapper(
+        //   `/api/portal?portalid=${params.portalid || "default"}`,
+        //   {},
+        //   "portal-login"
+        // );
+        // const data = await response.json();
+        // if (!data.data && response.status === 404) {
+        //   router.push(`/${params.portalid}/not-found`);
+        //   return;
+        // }
+        // if (!response.ok) {
+        //   throw new Error(data.error || "Failed to fetch portal config");
+        // }
+        // setConfig(data.data);
+        dispatch(setPortal(params.portalid || "default"))
       } catch (error) {
         console.log("error: ", error);
       } finally {

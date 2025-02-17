@@ -7,37 +7,55 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
+import { setFiles } from "@/store/services/fileService";
 
 function Container({ children }) {
   const params = useParams();
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
 
   const fetchConfig = async () => {
     try {
-        console.log("From container")
       if (!params?.portalid) return;
-      const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid || "default"}`,
-        {},
-        "portal-login"
-      );
-      const data = await response.json();
-      if (!data.data && response.status === 404) {
-        router.push(`/${params.portalid}/not-found`);
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
+      // const response = await fetchWrapper(
+      //   `/api/portal?portalid=${params.portalid || "default"}`,
+      //   {},
+      //   "portal-login"
+      // );
+      // const data = await response.json();
+      // if (!data.data && response.status === 404) {
+      //   router.push(`/${params.portalid}/not-found`);
+      //   return;
+      // }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch users");
+      // }
 
-      setConfig(data.data);
+      // setConfig(data.data);
+      dispatch(setPortal(params.portalid))
     } catch (error) {
       console.log("error: ", error);
     }
   };
+
+  
+  // const getFiles = async () => {
+  //   try {
+  //     const userData = getUserData();
+  //     if (!userData) return;
+  //     dispatch(setFiles(userData?.boxFolderId))
+  //   } catch (error) {
+  //     console.error("Error fetching files:", error);
+  //     return [];
+  //   }
+  // };
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
@@ -106,8 +124,9 @@ function Container({ children }) {
       setUser(userData);
       fetchConfig();
       fetchContent();
+      // getFiles()
     });
-  }, []);
+  }, [router]);
 
   return (
     <div

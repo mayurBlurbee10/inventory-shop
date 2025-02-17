@@ -39,6 +39,12 @@ function Navbar({ content, config, user, filterValue }) {
   const [isAdvisorViewOpen, setIsAdvisorViewOpen] = useState(false);
   // const isAdvisorViewOpen = pathname.includes("advisor");
   const dropdownRef = useRef(null);
+  const [logo, setLogo] = useState(null);
+
+  useEffect(() => {
+    setLogo(user?.company?.logo || config?.logo || null);
+  }, [user, config]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -55,8 +61,6 @@ function Navbar({ content, config, user, filterValue }) {
   useEffect(() => {
     setIsAdvisorViewOpen(pathname.includes("advisor"));
   }, [pathname]);
-
-  console.log("portalid", params.portalid);
 
   const NavBarItem = ({ title, href }) => {
     if (!href) {
@@ -180,27 +184,21 @@ function Navbar({ content, config, user, filterValue }) {
     // fetchContent();
     setUserIsAdmin(isAdmin());
   }, []);
-  console.log("content:", content);
 
   return (
     <div className="border-b border-[#0000001a]">
       <div className="lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto px-3">
         <nav className="flex justify-between items-center bg-secondary py-2">
           <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
-            {/* {user?.company?.logo || config?.logo ? ( */}
-            <img
-              src={
-                user?.company?.logo
-                  ? user.company.logo.replace("/api/upload", "/uploads")
-                  : config?.logo || "/logo.png"
-              }
-              alt={params.portalid}
-              className="mr-2 max-h-[60px] max-w-[150px]"
-            />
-            {/* ) : (
-              // Skeleton for logo
+            {logo ? (
+              <img
+                src={logo.replace("/api/upload", "/uploads")}
+                alt={params.portalid}
+                className="mr-2 max-h-[60px] max-w-[150px]"
+              />
+            ) : (
               <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
-            )} */}
+            )}
 
             <span
               className="text-3xl text-[#000000e6] mb-1 font-lato"

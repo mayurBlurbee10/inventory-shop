@@ -95,7 +95,7 @@ export async function GET(request) {
 
 export async function POST(req) {
   try {
-     // here userId is BoxUserId
+    // here userId is BoxUserId
     await logApiCall(req, () => {});
     const accessToken = await client._session.getAccessToken();
     const newClient = sdk.getBasicClient(accessToken);
@@ -114,10 +114,14 @@ export async function POST(req) {
     const uploadedFiles = [];
     const duplicateFiles = [];
 
-    const folderItems = await newClient.folders.getItems(boxFolderId, { fields: "id,name" });
+    const folderItems = await newClient.folders.getItems(boxFolderId, {
+      fields: "id,name",
+    });
 
     for (const file of files) {
-      const existingFile = folderItems.entries.find((item) => item.name === file.name);
+      const existingFile = folderItems.entries.find(
+        (item) => item.name === file.name
+      );
 
       if (existingFile) {
         console.log(`File "${file}" already exists, skipping upload.`);
@@ -158,12 +162,17 @@ export async function POST(req) {
       const uploadedFile = uploadedFileRes.entries[0];
 
       //Added user itself as collaborator for file with editor role
-      await addCollaborator(
-        uploadedFile.id,
-        userId,
-        "editor",
-        "file"
+      const collaborations = await newClient.files.getCollaborations(
+        uploadedFile.id
       );
+      const isAlreadyCollaborator = collaborations.entries.some(
+        (collab) => collab.accessible_by && collab.accessible_by.id === userId
+      );
+      if (!isAlreadyCollaborator) {
+        await addCollaborator(uploadedFile.id, userId, "editor", "file");
+      } else {
+        console.log("User is already a collaborator");
+      }
       uploadedFiles.push(uploadedFile);
     }
 

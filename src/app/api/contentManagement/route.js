@@ -29,7 +29,8 @@ export async function POST(request) {
       !contentData.title ||
       !contentData.type ||
       !contentData.value ||
-      !contentData.portalId
+      !contentData.portalId ||
+      !contentData.fontSize
     ) {
       return NextResponse.json(
         { error: "Missing required fields: title, type, value" },
@@ -164,11 +165,11 @@ export async function PUT(request) {
       !contentData.fontSize
     ) {
       return NextResponse.json(
-        { error: "Missing required fields: id, title, type, value" },
+        { error: "Missing required fields: id, title, type, value, fontSize" },
         { status: 400 }
       );
     }
-    await ensureDirectory(dir);
+    // await ensureDirectory(dir);
     // const contentItems = await readJsonFile(filePath);
     const contentItems = await contentManagementService.getContentManagement(
       contentData.portalId
@@ -212,7 +213,7 @@ export async function PUT(request) {
     // const data = { ...contentItems[portalexist]["value"][existingIndex] };
     const contentUpdated = await contentManagementService.updateContentManagement({
       ...contentData,
-      fontSize: contentData.fontSize || null, // Include fontSize
+      fontSize: contentData.fontSize, // Include fontSize
     });
     return NextResponse.json(contentUpdated, { status: 200 });
   } catch (error) {

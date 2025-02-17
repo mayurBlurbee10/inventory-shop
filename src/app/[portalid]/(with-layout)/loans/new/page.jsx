@@ -120,7 +120,7 @@ const ApplicationStep = ({
 
   const findFolderWithName = (data, targetName) => {
     for (const item of data) {
-      if (item.type === "folder" && item.name === targetName) {
+      if (item.type === "folder" && item.name.toLowerCase() === targetName.toLowerCase()) {
         return item;
       }
       if (item.children) {

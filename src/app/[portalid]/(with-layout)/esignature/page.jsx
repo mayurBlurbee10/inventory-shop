@@ -6,15 +6,17 @@ import Sidepanel from "@/components/Sidepanel";
 import SignRequestModal from "@/components/SignRequestModal";
 import { Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 function ESignature() {
   const router = useRouter();
   const params = useParams();
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const [user, setUser] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -27,24 +29,27 @@ function ESignature() {
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
 
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
+
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid}`,
-        {},
-        "portal-login"
-      );
-      const data = await response.json();
-      if (!data.data && response.status === 404) {
-        router.push(`/${params.portalid}/not-found`);
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
+      // const response = await fetchWrapper(
+      //   `/api/portal?portalid=${params.portalid}`,
+      //   {},
+      //   "portal-login"
+      // );
+      // const data = await response.json();
+      // if (!data.data && response.status === 404) {
+      //   router.push(`/${params.portalid}/not-found`);
+      //   return;
+      // }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch users");
+      // }
 
-      setConfig(data.data);
+      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     }
@@ -97,7 +102,7 @@ function ESignature() {
     setUser(userData);
     fetchConfig();
     fetchSignRequests(userData);
-  }, []);
+  }, [router]);
 
   return (
     <div className="bg-white rounded-lg flex relative w-full h-[80vh] max-w-[1140px] mx-auto">
@@ -150,20 +155,24 @@ function ESignature() {
                 {pendingRequests?.length > 0 ? (
                   <ul className="space-y-2 overflow-y-auto h-[64vh]">
                     {pendingRequests.map((req) => (
-                      <li
-                        key={req.id}
-                        className="p-3 border rounded-lg shadow-sm flex justify-between items-center"
-                      >
-                        <span className="text-gray-800 font-semibold">
-                          {req.source_files[0].name}
-                        </span>
-                        <button
-                          className="text-blue-500 px-4 py-2 rounded-lg hover:text-blue-600"
-                          onClick={() => handleSignClick(req)}
-                        >
-                          Sign
-                        </button>
-                      </li>
+                      <React.Fragment key={req.id}>
+                        {req.source_files.length > 0 && (
+                          <li
+                            key={req.id}
+                            className="p-3 border rounded-lg shadow-sm flex justify-between items-center"
+                          >
+                            <span className="text-gray-800 font-semibold">
+                              {req?.source_files[0]?.name}
+                            </span>
+                            <button
+                              className="text-blue-500 px-4 py-2 rounded-lg hover:text-blue-600"
+                              onClick={() => handleSignClick(req)}
+                            >
+                              Sign
+                            </button>
+                          </li>
+                        )}
+                      </React.Fragment>
                     ))}
                   </ul>
                 ) : (
@@ -178,13 +187,13 @@ function ESignature() {
               <div>
                 {completedRequests?.length > 0 ? (
                   <ul className="space-y-2">
-                    {completedRequests.map((req) => (
+                    {completedRequests?.map((req) => (
                       <li
                         key={req.id}
                         className="p-3 border rounded-lg shadow-sm"
                       >
                         <span className="text-gray-800 font-semibold">
-                          {req.source_files[0].name}
+                          {req?.sign_files.files[0]?.name}
                         </span>
                       </li>
                     ))}

@@ -23,9 +23,6 @@ const UploadFileConfirmDialog = ({
   const [isReplaceLoading, setIsReplaceLoading] = useState(false);
   const [location, setLocation] = useState([]);
 
-  console.log("fileLocation", fileLocation);
-  console.log("location", location);
-
   function base64ToFile(base64, fileName, mimeType) {
     const byteCharacters = atob(base64);
     const byteNumbers = new Array(byteCharacters.length);

@@ -30,6 +30,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
 import Documents from "@/components/Documents";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 
 
@@ -38,7 +40,7 @@ export default function AdvisorView() {
     const [filesList, setFilesList] = useState(null);
     const [filteredFilesList, setFilteredFilesList] = useState(filesList);
     const [searchQuery, setSearchQuery] = useState("");
-    const [config, setConfig] = useState(null);
+    // const [config, setConfig] = useState(null);
     const [suggestions, setSuggestions] = useState([]);
     const [content, setContent] = useState(null);
     const params = useParams();
@@ -62,7 +64,10 @@ export default function AdvisorView() {
     const [uploadedfilePath, setUpladedFilePath] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [duplicateFiles, setDuplicateFiles] = useState([]);
-    const [isDeleting, setIsDeleting] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const { data: config } = useSelector((state) => state.portal);
+    const dispatch = useDispatch()
 
     const router = useRouter();
 
@@ -105,20 +110,21 @@ export default function AdvisorView() {
     }, []);
     const fetchConfig = async () => {
         try {
-            const response = await fetchWrapper(
-                `/api/portal?portalid=${params.portalid || "default"}`,
-                {},
-                "portal-login"
-            );
-            const data = await response.json();
-            if (!data.data && response.status === 404) {
-                router.push(`/${params.portalid}/not-found`);
-                return;
-            }
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to fetch portal config");
-            }
-            setConfig(data.data);
+            if(!params.portalid) return;
+            // const response = await fetchWrapper(
+            //     `/api/portal?portalid=${params.portalid || "default"}`,
+            //     {},
+            //     "portal-login"
+            // );
+            // const data = await response.json();
+            // if (!data.data && response.status === 404) {
+            //     router.push(`/${params.portalid}/not-found`);
+            //     return;
+            // }
+            // if (!response.ok) {
+            //     throw new Error(data.error || "Failed to fetch portal config");
+            // }
+            // setConfig(data.data);
         } catch (error) {
             console.log("error: ", error);
         } finally {

@@ -191,7 +191,7 @@ function AddPageModal({
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/10 bg-opacity-80 flex items-center justify-center">
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/10 bg-opacity-80 flex items-center justify-center" style={{marginTop : 0}}>
           <div className="bg-white rounded-lg w-[80%] flex flex-col relative">
             <button
               onClick={onClose}

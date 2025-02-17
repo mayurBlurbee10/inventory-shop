@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const Footer = ({ config, filterValue, user, from }) => {
-  console.log("config:", config);
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

@@ -6,6 +6,8 @@ import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function CreateFolder({
   onFolderCreated,
@@ -17,28 +19,31 @@ export default function CreateFolder({
   const [folderName, setFolderName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const params = useParams();
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         if (!params?.portalid) return;
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
+        // const response = await fetchWrapper(
+        //   `/api/portal?portalid=${params.portalid}`,
+        //   {},
+        //   "portal-login"
+        // );
+        // const data = await response.json();
+        // if (!data.data && response.status === 404) {
+        //   router.push(`/${params.portalid}/not-found`);
+        //   return;
+        // }
+        // if (!response.ok) {
+        //   throw new Error("Failed to fetch users");
+        // }
 
-        setConfig(data.data);
+        // setConfig(data.data);
       } catch (error) {
         console.log("error: ", error);
       }

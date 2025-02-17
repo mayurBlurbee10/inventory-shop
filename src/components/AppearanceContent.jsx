@@ -3,6 +3,8 @@ import { Sun, Moon, Palette } from "lucide-react";
 import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 const AppearanceContent = () => {
   const params = useParams();
@@ -13,41 +15,45 @@ const AppearanceContent = () => {
     secondaryColor: "#6B7280",
     accentColor: "#8B5CF6",
   });
-  const [config, setConfig] = useState();
+  // const [config, setConfig] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
+
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) {
         return;
       }
 
-      const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid}`,
-        {},
-        "portal-config"
-      );
+      // const response = await fetchWrapper(
+      //   `/api/portal?portalid=${params.portalid}`,
+      //   {},
+      //   "portal-config"
+      // );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch portal");
-      }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch portal");
+      // }
 
-      const data = await response.json();
-      const updatedData = { ...data.data };
+      // const data = await response.json();
+      // const updatedData = { ...data.data };
 
-      setConfig(updatedData);
+      // setConfig(updatedData);
       setSelectedTheme((prev) => ({
         ...prev,
-        theme: updatedData?.theme,
-        logo: updatedData?.logo,
-        primaryColor: updatedData?.primaryColor || prev.primaryColor,
-        secondaryColor: updatedData?.secondaryColor || prev.secondaryColor,
-        accentColor: updatedData?.accentColor || prev.accentColor,
+        theme: config?.theme,
+        logo: config?.logo,
+        primaryColor: config?.primaryColor || prev.primaryColor,
+        secondaryColor: config?.secondaryColor || prev.secondaryColor,
+        accentColor: config?.accentColor || prev.accentColor,
       }));
       setPreviewUrl(
-        updatedData.logo.includes("/api")
-          ? updatedData.logo.replace("/api/upload", "/uploads")
-          : updatedData.logo
+        config?.logo.includes("/api")
+          ? config?.logo.replace("/api/upload", "/uploads")
+          : config?.logo
       );
     } catch (error) {
       console.error("Error fetching config:", error);
@@ -56,7 +62,7 @@ const AppearanceContent = () => {
 
   useEffect(() => {
     fetchConfig();
-  }, [params?.portalid]);
+  }, [params?.portalid, config]);
 
   const handleResetTheme = () => {
     fetchConfig();
@@ -131,6 +137,7 @@ const AppearanceContent = () => {
         if (!response.ok) throw new Error("Failed to update portal theme");
       };
       updatePortalTheme().then(() => {
+        dispatch(setPortal(params.portalid));
         toast.success("Portal Theme updated successfully");
       });
     } catch (error) {

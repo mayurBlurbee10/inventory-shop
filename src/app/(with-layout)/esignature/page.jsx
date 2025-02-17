@@ -10,11 +10,13 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 function ESignature() {
   const router = useRouter();
   const params = useParams();
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const [user, setUser] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -27,24 +29,27 @@ function ESignature() {
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
 
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
+
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid}`,
-        {},
-        "portal-login"
-      );
-      const data = await response.json();
-      if (!data.data && response.status === 404) {
-        router.push(`/${params.portalid}/not-found`);
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
+      // const response = await fetchWrapper(
+      //   `/api/portal?portalid=${params.portalid}`,
+      //   {},
+      //   "portal-login"
+      // );
+      // const data = await response.json();
+      // if (!data.data && response.status === 404) {
+      //   router.push(`/${params.portalid}/not-found`);
+      //   return;
+      // }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch users");
+      // }
 
-      setConfig(data.data);
+      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     }
@@ -90,7 +95,7 @@ function ESignature() {
     setUser(userData);
     fetchConfig();
     fetchSignRequests(userData);
-  }, []);
+  }, [router]);
 
   return (
     <div className="bg-white rounded-lg flex relative w-full h-[80vh] max-w-[1140px] mx-auto">

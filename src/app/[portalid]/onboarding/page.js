@@ -5,9 +5,11 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Footer from "@/components/Footer";
 import ContentManagementContent from "@/components/Settings/ContentManagementContent";
 import UsersContent from "@/components/Settings/UsersContent";
+import { setPortal } from "@/store/services/portalService";
 import { ChevronRight, Check, IdCard, LockKeyhole, User, Building } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 const WizardStep = ({ step, currentStep }) => {
@@ -50,7 +52,7 @@ export default function OnBoardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [contentLength, setContentLength] = useState(0);
   const [errors, setErrors] = useState({});
-  const [config, setConfig] = useState([]);
+  // const [config, setConfig] = useState([]);
   const [content, setContent] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,9 @@ export default function OnBoardingPage() {
     { component: UsersContent },
   ];
   const CurrentStepComponent = steps[currentStep].component;
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const userData = getUserData();
@@ -91,20 +96,21 @@ export default function OnBoardingPage() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch portal config");
-        }
-        setConfig(data.data);
+        // const response = await fetchWrapper(
+        //   `/api/portal?portalid=${params.portalid || "default"}`,
+        //   {},
+        //   "portal-login"
+        // );
+        // const data = await response.json();
+        // if (!data.data && response.status === 404) {
+        //   router.push(`/${params.portalid}/not-found`);
+        //   return;
+        // }
+        // if (!response.ok) {
+        //   throw new Error(data.error || "Failed to fetch portal config");
+        // }
+        // setConfig(data.data);
+        dispatch(setPortal(params.portalid || 'default'))
       } catch (error) {
         console.log("error: ", error);
       } finally {

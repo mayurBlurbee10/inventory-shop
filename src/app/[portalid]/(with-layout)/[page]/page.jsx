@@ -10,6 +10,8 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import "../../../../components/Plugins/RTE/tiptap-style.css";
 import TNCModal from "@/components/TNCModal";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -23,13 +25,16 @@ function Page() {
   const [pages, setPages] = useState([]);
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
   const [showUploadArea, setShowUploadArea] = useState(false);
   const [sidepanelDropdown, setSidepanelDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
 
   const fetchPlugins = async () => {
     try {
@@ -61,21 +66,21 @@ function Page() {
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid}`,
-        {},
-        "portal-login"
-      );
-      const data = await response.json();
-      if (!data.data && response.status === 404) {
-        router.push(`/${params.portalid}/not-found`);
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
+      // const response = await fetchWrapper(
+      //   `/api/portal?portalid=${params.portalid}`,
+      //   {},
+      //   "portal-login"
+      // );
+      // const data = await response.json();
+      // if (!data.data && response.status === 404) {
+      //   router.push(`/${params.portalid}/not-found`);
+      //   return;
+      // }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch users");
+      // }
 
-      setConfig(data.data);
+      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     }

@@ -119,7 +119,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center mt-0">
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center" style={{marginTop : 0}}>
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
             <div className="flex -items-center justify-between border-b border-solid">
               <label className="text-xl font-semibold text-gray-700 mb-3">
@@ -496,7 +496,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center mt-0">
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center" style={{marginTop : 0}}>
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
             <div className="flex -items-center justify-between border-b border-solid">
               <label className="text-xl font-semibold text-gray-700 mb-3">

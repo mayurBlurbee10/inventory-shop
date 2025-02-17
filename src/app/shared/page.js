@@ -53,6 +53,8 @@ import { signOut } from "next-auth/react";
 import Link from 'next/link';
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 
 
@@ -86,13 +88,16 @@ export default function SharedPage() {
   const [moveItem, setMoveItem] = useState(null);
   const [uploadedfilePath, setUpladedFilePath] = useState("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
   const params = useParams();
   const [footerLoading, setFooterLoading] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const pathname = usePathname();
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
 
 
   const handleBrowse = (event) => {
@@ -753,20 +758,20 @@ export default function SharedPage() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
-          {},
-          "portal-login"
-        );
-        const data = await response.json();
-        if (!data.data && response.status === 404) {
-          router.push(`/${params.portalid}/not-found`);
-          return;
-        }
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch portal config");
-        }
-        setConfig(data.data);
+        // const response = await fetchWrapper(
+        //   `/api/portal?portalid=${params.portalid || "default"}`,
+        //   {},
+        //   "portal-login"
+        // );
+        // const data = await response.json();
+        // if (!data.data && response.status === 404) {
+        //   router.push(`/${params.portalid}/not-found`);
+        //   return;
+        // }
+        // if (!response.ok) {
+        //   throw new Error(data.error || "Failed to fetch portal config");
+        // }
+        // setConfig(data.data);
       } catch (error) {
         console.log("error: ", error);
       } finally {

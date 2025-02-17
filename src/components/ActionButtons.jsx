@@ -5,6 +5,8 @@ import { FolderPlus, Upload, Share2, X, Loader2 } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function ActionButtons({
   onFolderCreated,
@@ -16,7 +18,10 @@ export default function ActionButtons({
   const [folderName, setFolderName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
+
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -24,16 +29,17 @@ export default function ActionButtons({
         setIsLoading(true);
         const portalId = localStorage.getItem("portal");
 
-        const response = await fetchWrapper(
-          `/api/portal?portalid=${portalId || "default"}`,
-          {},
-          "portal-config"
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const data = await response.json();
-        setConfig(data.data);
+        // const response = await fetchWrapper(
+        //   `/api/portal?portalid=${portalId || "default"}`,
+        //   {},
+        //   "portal-config"
+        // );
+        // if (!response.ok) {
+        //   throw new Error("Failed to fetch users");
+        // }
+        // const data = await response.json();
+        // setConfig(data.data);
+        dispatch(setPortal(portalId || "default"))
       } catch (error) {
         console.log("error: ", error);
         setIsLoading(false);

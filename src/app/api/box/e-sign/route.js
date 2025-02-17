@@ -184,7 +184,7 @@ export async function GET(req) {
 
       const statusMapping = {
         pending: ["created", "sent", "converting", "viewed"],
-        completed: ["signed", "completed"],
+        completed: ["signed", "completed", "finalizing"],
         rejected: ["declined", "expired", "canceled", "failed"],
       };
 

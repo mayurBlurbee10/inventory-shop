@@ -47,6 +47,9 @@ import MyTaskPopupBox from "./MyTaskPopupBox";
 import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
 import CompleteForms from "./CompleteForms";
 import SignRequestModal from "./SignRequestModal";
+import { setPortal } from "@/store/services/portalService";
+import { useDispatch, useSelector } from "react-redux";
+import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
 
 function Documents({
   fileType,
@@ -59,8 +62,7 @@ function Documents({
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
-  const [filesList, setFilesList] = useState(null);
-  const [filteredFilesList, setFilteredFilesList] = useState(filesList);
+  // const [filesList, setFilesList] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [path, setPath] = useState([]);
@@ -69,7 +71,6 @@ function Documents({
   const [cols, setCols] = useState(1);
   const [view, setView] = useState("list");
   const [suggestions, setSuggestions] = useState([]);
-  const [currentFilesList, setCurrentFilesList] = useState(filesList);
   const [isSearching, setIsSearching] = useState(false);
   const [showUploadArea, setShowUploadArea] = useState(false);
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
@@ -83,7 +84,7 @@ function Documents({
   const [moveItem, setMoveItem] = useState(null);
   const [uploadedfilePath, setUpladedFilePath] = useState([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [config, setConfig] = useState(null);
+  // const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
   const params = useParams();
   const [footerLoading, setFooterLoading] = useState(false);
@@ -110,6 +111,12 @@ function Documents({
     autoLoan: false,
   });
   const pathname = usePathname();
+
+  const { data: config } = useSelector((state) => state.portal);
+  const { data: filesList, loading : isFilesLoading } = useSelector((state) => state.files);
+  const [filteredFilesList, setFilteredFilesList] = useState(filesList);
+  const [currentFilesList, setCurrentFilesList] = useState(filesList);
+  const dispatch = useDispatch();
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -302,73 +309,77 @@ function Documents({
 
   const refreshFiles = async () => {
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       const userData = getUserData();
       const requestOptions = {
         method: "GET",
       };
       if (fileType == "shared" || fileType == "loan") {
         if (loanFolderId) {
-          const response = await fetchWrapper(
-            `/api/box/folders?folderId=${loanFolderId}`,
-            requestOptions,
-            "fetchFile"
-          );
-          if (!response.ok) throw new Error("Failed to fetch files");
-          const data = await response.json();
-          const newFilesList = data?.items || [];
-          setFilesList(newFilesList);
+          // const response = await fetchWrapper(
+          //   `/api/box/folders?folderId=${loanFolderId}`,
+          //   requestOptions,
+          //   "fetchFile"
+          // );
+          // if (!response.ok) throw new Error("Failed to fetch files");
+          // const data = await response.json();
+          // const newFilesList = data?.items || [];
+          // setFilesList(newFilesList)
+          dispatch(setFiles(loanFolderId));
           setSelectedItem({ type: "folder", id: loanFolderId });
         } else if (
           userData?.collaborationIds &&
-          userData.collaborationIds.length > 0
+          userData.collaborationIds.length > 0 && fileType == 'shared'
         ) {
-          const requestOptions = {
-            method: "POST",
-            body: JSON.stringify({ collaborated: userData.collaborationIds }),
-          };
-          const response = await fetchWrapper(
-            `/api/box/collaborations`,
-            requestOptions,
-            "fetchCollaboratedFolder"
-          );
-          if (!response.ok)
-            throw new Error("Failed to get collaborated folder");
-          const data = await response.json();
-          const newFilesList = data?.items;
-          setFilesList(newFilesList);
+          // const requestOptions = {
+          //   method: "POST",
+          //   body: JSON.stringify({ collaborated: userData.collaborationIds }),
+          // };
+          // const response = await fetchWrapper(
+          //   `/api/box/collaborations`,
+          //   requestOptions,
+          //   "fetchCollaboratedFolder"
+          // );
+          // if (!response.ok)
+          //   throw new Error("Failed to get collaborated folder");
+          // const data = await response.json();
+          // const newFilesList = data?.items;
+          // setFilesList(newFilesList)
+          dispatch(setCollaboratedFiles(userData?.collaborationIds));
         } else {
           if (!userData?.boxFolderId) {
             return;
           }
-          const response = await fetchWrapper(
-            `/api/box/folders?folderId=${userData?.boxFolderId}`,
-            requestOptions,
-            "fetchFile"
-          );
-          if (!response.ok) throw new Error("Failed to fetch files");
-          const data = await response.json();
-          const newFilesList = data?.items || [];
-          setFilesList(newFilesList);
+          // const response = await fetchWrapper(
+          //   `/api/box/folders?folderId=${userData?.boxFolderId}`,
+          //   requestOptions,
+          //   "fetchFile"
+          // );
+          // if (!response.ok) throw new Error("Failed to fetch files");
+          // const data = await response.json();
+          // const newFilesList = data?.items || [];
+          // setFilesList(newFilesList)
+          dispatch(setFiles(userData?.boxFolderId));
         }
       } else {
         if (!userData?.boxFolderId) {
           return;
         }
-        const response = await fetchWrapper(
-          `/api/box/folders?folderId=${userData?.boxFolderId}`,
-          requestOptions,
-          "fetchFile"
-        );
-        if (!response.ok) throw new Error("Failed to fetch files");
-        const data = await response.json();
-        const newFilesList = data?.items || [];
-        setFilesList(newFilesList);
+        // const response = await fetchWrapper(
+        //   `/api/box/folders?folderId=${userData?.boxFolderId}`,
+        //   requestOptions,
+        //   "fetchFile"
+        // );
+        // if (!response.ok) throw new Error("Failed to fetch files");
+        // const data = await response.json();
+        // const newFilesList = data?.items || [];
+        // setFilesList(newFilesList)
+        dispatch(setFiles(userData?.boxFolderId));
       }
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 
@@ -419,8 +430,9 @@ function Documents({
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-300" : ""
-            }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+            pathname.includes(href) ? "text-blue-300" : ""
+          }`}
         >
           {title}
         </button>
@@ -520,7 +532,7 @@ function Documents({
       let results = [];
       files.forEach((file) => {
         // If file name starts with the search query (case-insensitive), add it to results
-        if (file?.name?.toLowerCase().startsWith(searchQuery.toLowerCase())) {
+        if (file?.name?.toLowerCase().includes(searchQuery.toLowerCase())) {
           results.push(file);
         }
 
@@ -794,20 +806,20 @@ function Documents({
 
   const fetchConfig = async () => {
     try {
-      const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid || "default"}`,
-        {},
-        "portal-login"
-      );
-      const data = await response.json();
-      if (!data.data && response.status === 404) {
-        router.push(`/${params.portalid}/not-found`);
-        return;
-      }
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch portal config");
-      }
-      setConfig(data.data);
+      // const response = await fetchWrapper(
+      //   `/api/portal?portalid=${params.portalid || "default"}`,
+      //   {},
+      //   "portal-login"
+      // );
+      // const data = await response.json();
+      // if (!data.data && response.status === 404) {
+      //   router.push(`/${params.portalid}/not-found`);
+      //   return;
+      // }
+      // if (!response.ok) {
+      //   throw new Error(data.error || "Failed to fetch portal config");
+      // }
+      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     } finally {
@@ -852,7 +864,7 @@ function Documents({
   const getUserDetailsByEmail = async (email) => {
     try {
       if (!email) {
-        return
+        return;
       }
       let url = `/api/users/loginByProvider`;
       const body = {
@@ -955,21 +967,24 @@ function Documents({
     // <div className="bg-white min-h-screen">
     // <Container>
     <div
-      className={`max-w-[1820px] ${fileType === "loan" || fileType === "advisor"
-        ? ""
-        : "mx-auto sm:pt-12 mt-12"
-        }`}
+      className={`max-w-[1820px] ${
+        fileType === "loan" || fileType === "advisor"
+          ? ""
+          : "mx-auto sm:pt-12 mt-12"
+      }`}
     >
       <div>
         <div
-          className={`grid gap-7 grid-cols-5 ${fileType === "loan" || fileType === "advisor" ? "" : "px-4"
-            }`}
+          className={`grid gap-7 grid-cols-5 ${
+            fileType === "loan" || fileType === "advisor" ? "" : "px-4"
+          }`}
         >
           <div
-            className={`col-span-5 ${fileType === "loan" || fileType === "advisor"
-              ? "lg:col-span-5"
-              : "lg:col-span-3"
-              }`}
+            className={`col-span-5 ${
+              fileType === "loan" || fileType === "advisor"
+                ? "lg:col-span-5"
+                : "lg:col-span-3"
+            }`}
           >
             {fileType !== "loan" && fileType !== "advisor" && (
               <>
@@ -978,7 +993,7 @@ function Documents({
                     {/* {fileType === "shared"
                       ? "Shared Documents"
                       : "My Documents"} */}
-                      Shared Documents
+                    Shared Documents
                   </span>
                   <span className="text-black font-lato font-normal text-sm">
                     Securely share content with your advisor and trusted
@@ -1107,8 +1122,9 @@ function Documents({
                         {selectedBulkItems.length} item(s) selected
                       </p>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                          } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                        } outline-none`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           handelToolbarMoveClick()
@@ -1118,8 +1134,9 @@ function Documents({
                         <FolderInput className="size-5" />
                       </button>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                          } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                        } outline-none`}
                         onClick={
                           () =>
                             selectedBulkItems.length > 0 && handleBulkDownload()
@@ -1130,8 +1147,9 @@ function Documents({
                         <Download className="size-5" />
                       </button>
                       <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                          } outline-none`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                          fileType === "shared" ? "hidden" : "hover:bg-gray-200"
+                        } outline-none`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           setIsDeleteModalOpen(true)
@@ -1206,8 +1224,9 @@ function Documents({
                         <>
                           {/* Card view button */}
                           <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${view === "grid" ? "hidden" : "visible"
-                              }`}
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
+                              view === "grid" ? "hidden" : "visible"
+                            }`}
                             onClick={() => {
                               setView("grid");
                               // setIsOpenOptionDrawer(false);
@@ -1226,8 +1245,9 @@ function Documents({
 
                           {/* List view button */}
                           <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${view === "list" ? "hidden" : "visible"
-                              }`}
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
+                              view === "list" ? "hidden" : "visible"
+                            }`}
                             onClick={() => {
                               setView("list");
                               // setIsOpenOptionDrawer(false);
@@ -1242,10 +1262,9 @@ function Documents({
                       <div className="relative" ref={dropdownRef}>
                         <button
                           className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                          onClick={() =>  {
-                            setIsOpenNewFolderDrawer((prev) => !prev)
-                          }
-                          }
+                          onClick={() => {
+                            setIsOpenNewFolderDrawer((prev) => !prev);
+                          }}
                         >
                           <Plus />
                         </button>
@@ -1313,7 +1332,7 @@ function Documents({
                 multiple
               />
 
-              <div className={` ${isLoading == true ? "visible" : "hidden"}`}>
+              <div className={` ${isFilesLoading === true ? "visible" : "hidden"}`}>
                 <LinearProgress />
               </div>
 
@@ -1327,7 +1346,7 @@ function Documents({
                 setCurrentFilesList={setCurrentFilesList}
                 setSelectedItem={setSelectedItem}
                 selectedItem={selectedItem}
-                handleShareLink={() => { }}
+                handleShareLink={() => {}}
                 onFileChanges={refreshFiles}
                 listType={fileType}
                 setSearchQuery={setSearchQuery}

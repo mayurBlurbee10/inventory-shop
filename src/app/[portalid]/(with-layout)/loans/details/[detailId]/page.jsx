@@ -43,12 +43,11 @@ function DetailsPage() {
   const params = useParams();
   const router = useRouter();
   const [loan, setLoan] = useState(null);
-  const [filesList, setFilesList] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const findFolderWithName = (data, targetName) => {
     for (const item of data) {
-      if (item.type === "folder" && item.name === targetName) {
+      if (item.type === "folder" && item.name.toLowerCase() === targetName.toLowerCase()) {
         return item;
       }
       if (item.children) {
@@ -83,7 +82,7 @@ function DetailsPage() {
       setIsLoading(true);
       const files = await getFiles();
       const userData = getUserData();
-      if (!userData) return;
+      if (!userData || !files) return;
 
       const loansFolder = await new Promise((resolve) => {
         const foundItems = findFolderWithName(files, "Loans");
@@ -118,10 +117,14 @@ function DetailsPage() {
         loansId = folderData.id;
       }
 
-      let loanFolder = findFolderWithName(
-        loansFolder?.children || [],
-        loan?.name
-      );
+      let loanFolder = await new Promise((resolve) => {
+        const foundItems = findFolderWithName(
+          loansFolder?.children || [],
+          loan?.name
+        );
+        resolve(foundItems);
+      });
+      console.log("loanFolder", loanFolder);
       if (!loanFolder) {
         const res = await fetchWrapper(
           "/api/box/folders",
