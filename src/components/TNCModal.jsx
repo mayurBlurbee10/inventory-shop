@@ -6,12 +6,15 @@ import React, { useEffect, useState } from "react";
 import "./Plugins/RTE/tiptap-style.css";
 import { setUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
+import { setCurrentUser } from "@/store/services/userService";
+import { useDispatch } from "react-redux";
 
 function TNCModal({ onClose, user, email, password, page }) {
   const params = useParams();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
+  const dispatch = useDispatch()
 
   const handleClose = async () => {
     try {
@@ -61,8 +64,9 @@ function TNCModal({ onClose, user, email, password, page }) {
       const data = await loginResponse.json();
       // Store user data using auth utility
       const userData = data.user;
-      setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData))
+      // localStorage.setItem("portal", params.portalid);
       localStorage.setItem("accessToken", data.accessToken);
 
       console.log("Redirecting to home");

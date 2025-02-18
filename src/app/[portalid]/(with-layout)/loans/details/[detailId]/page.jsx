@@ -2,9 +2,11 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Documents from "@/components/Documents";
 import { getUserData } from "@/lib/auth";
+import { setLoans } from "@/store/services/loanService";
 import { ArrowDownUp, ChevronLeft, Folder, Loader2, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 const data = [
   {
     id: 635789,
@@ -44,10 +46,15 @@ function DetailsPage() {
   const router = useRouter();
   const [loan, setLoan] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { data: loanData } = useSelector((state) => state.loans);
+  const dispatch = useDispatch();
 
   const findFolderWithName = (data, targetName) => {
     for (const item of data) {
-      if (item.type === "folder" && item.name.toLowerCase() === targetName.toLowerCase()) {
+      if (
+        item.type === "folder" &&
+        item.name.toLowerCase() === targetName.toLowerCase()
+      ) {
         return item;
       }
       if (item.children) {
@@ -157,18 +164,17 @@ function DetailsPage() {
   useEffect(() => {
     const fetchLoanFolder = async () => {
       if (params?.detailId) {
-        const loans = JSON.parse(localStorage.getItem("loan")) || [];
-        const foundLoan = loans.find((d) => d.id === Number(params.detailId));
+        const foundLoan = loanData.find((d) => d.id === Number(params.detailId));
 
         if (foundLoan) {
           setLoan(foundLoan);
           const folderId = await handleGetFolderId(foundLoan);
           foundLoan.folderId = folderId;
 
-          const updatedLoans = loans.map((loan) =>
+          const updatedLoans = loanData.map((loan) =>
             loan.id === foundLoan.id ? foundLoan : loan
           );
-          localStorage.setItem("loan", JSON.stringify(updatedLoans));
+          dispatch(setLoans(updatedLoans));
         }
       }
     };

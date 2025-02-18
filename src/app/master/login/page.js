@@ -2,8 +2,10 @@
 import { setUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
+import { setCurrentUser } from "@/store/services/userService";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 
 export default function MasterLoginPage() {
   const router = useRouter();
@@ -11,6 +13,7 @@ export default function MasterLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -37,7 +40,8 @@ export default function MasterLoginPage() {
         if (!response.ok) {
           throw new Error(data.error || "Login failed");
         }
-        setUserData(data.user);
+        // setUserData(data.user);
+        dispatch(setCurrentUser(userData))
         localStorage.setItem("portal", "master");
         localStorage.setItem("accessToken", data.accessToken);
         router.push("/master/dashboard");

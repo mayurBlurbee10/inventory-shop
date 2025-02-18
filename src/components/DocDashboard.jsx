@@ -17,6 +17,8 @@ import TechSupport from "@/components/TechSupport";
 import Image from "next/image";
 import Navbar from "./Navbar";
 import Container from "./Container";
+import { setCurrentUser } from "@/store/services/userService";
+import { useDispatch, useSelector } from "react-redux";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -40,7 +42,7 @@ export default function DocDashboard() {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const router = useRouter();
   const [session, setSession] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
@@ -51,6 +53,8 @@ export default function DocDashboard() {
     date: "",
     month: "",
   });
+  const {data : user } = useSelector((state)=>state.user);
+  const dispatch = useDispatch();
   const NavBarItem = ({ title, href }) => {
     if (!href) {
       console.error("href prop is required for NavBarItem.");
@@ -107,8 +111,9 @@ export default function DocDashboard() {
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
-      setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData))
+      // localStorage.setItem("portal", params.portalid);
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
@@ -131,7 +136,7 @@ export default function DocDashboard() {
         return;
       }
 
-      setUser(userData);
+      // setUser(userData);
     });
   }, [router]);
 

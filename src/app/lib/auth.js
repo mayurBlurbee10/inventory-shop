@@ -35,7 +35,7 @@ export const getUserData = () => {
       }
       const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
       // Sync back to localStorage
-      localStorage.setItem('user', JSON.stringify(userData));
+      // localStorage.setItem('user', JSON.stringify(userData));
       return userData;
     }
 

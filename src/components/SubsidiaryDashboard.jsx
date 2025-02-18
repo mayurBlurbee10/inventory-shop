@@ -23,6 +23,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 // Mock data - in real app, this would come from an API
 const subsidiariesData = [
@@ -269,8 +270,10 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
   const [apiCalls, setApiCalls] = useState(0);
   const [config, setConfig] = useState(null);
   const [activeUsers, setActiveUsers] = useState(0);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [portalToDelete, setPortalToDelete] = useState(null);
+
+  const { data: user } = useSelector((state) => state.user);
 
   const apiCallThisMonth = () => {
     const currentMonth = new Date().getMonth();
@@ -360,7 +363,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
       return;
     }
 
-    setUser(userData);
+    // setUser(userData);
   }, [router]);
 
   useEffect(() => {

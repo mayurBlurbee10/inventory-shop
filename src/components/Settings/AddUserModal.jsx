@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";

@@ -14,6 +14,7 @@ import TNCModal from "./TNCModal";
 import { UserRole } from "@/config/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
+import { setCurrentUser } from "@/store/services/userService";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500 ">
@@ -39,11 +40,12 @@ function Login() {
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isLoadingOkta, setIsLoadingOkta] = useState(false);
   const [session, setSession] = useState(null);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [isTNCOpen, setIsTNCOpen] = useState(false);
   const [page, setPage] = useState(null);
-  const { data: config } = useSelector((state) => state.portal);
 
+  const { data: config } = useSelector((state) => state.portal);
+  const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch()
 
   const fetchPage = async () => {
@@ -233,8 +235,9 @@ function Login() {
       // Store user data using auth utility
       const userData = data.user;
       console.log("Storing user data:", userData);
-      setUserData(userData);
-      localStorage.setItem("portal", params?.portalid);
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData))
+      // localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
       console.log("Redirecting to dashboard");
       toast.success("Redirecting to dashboard");
@@ -292,8 +295,9 @@ function Login() {
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
-      setUserData(userData);
-      localStorage.setItem("portal", params?.portalid || "default");
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData))
+      // localStorage.setItem("portal", params?.portalid || "default");
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
@@ -316,7 +320,7 @@ function Login() {
         return;
       }
 
-      setUser(userData);
+      // setUser(userData);
     });
   }, [router]);
 

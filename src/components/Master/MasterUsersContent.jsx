@@ -1,28 +1,37 @@
+"use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import AddSuperUserModal from "./AddSuperUserModal";
 import { getUserData } from "@/app/lib/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { setSuperUsers } from "@/store/services/portalService";
 
-export default function MasterUsersContent({setCurrentPageCount}) {
-  const [users, setUsers] = useState([]);
+export default function MasterUsersContent() {
+  // const [users, setUsers] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const { adminSuperUsers: users } = useSelector((state) => state.portal);
+
+  const dispatch = useDispatch();
 
   const fetchUsers = async () => {
     try {
+      setLoading(true)
       const user = getUserData();
-      const url = user.role === UserRole.MASTER
-        ? `/api/users?role=${UserRole.SUPER_ADMIN}`
-        :`/api/users?role=${UserRole.SUPER_ADMIN}&userId=${user.id}`;
+      const url =
+        user.role === UserRole.MASTER
+          ? `/api/users?role=${UserRole.SUPER_ADMIN}`
+          : `/api/users?role=${UserRole.SUPER_ADMIN}&userId=${user.id}`;
       const response = await fetchWrapper(url, {}, "fetch-super-user");
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
       const data = await response.json();
-      setUsers(data);
-      setCurrentPageCount(data.length);
+      // setUsers(data);
+      // setCurrentPageCount(data.length);
+      dispatch(setSuperUsers(data));
     } catch (error) {
       //   setError("Failed to load users");
       console.error("Error fetching users:", error);
@@ -32,12 +41,13 @@ export default function MasterUsersContent({setCurrentPageCount}) {
   };
 
   const handleAddUser = (newUser) => {
-    setUsers((prev) => [...prev, newUser]);
+    dispatch(setSuperUsers([...users, newUser]))
   };
 
   useEffect(() => {
-    console.log("fetchUsers: ");
-    fetchUsers();
+    if (!users || users?.length === 0) {
+      fetchUsers();
+    }
   }, []);
 
   return (
@@ -70,7 +80,7 @@ export default function MasterUsersContent({setCurrentPageCount}) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users.map((user) => (
+              {users?.map((user) => (
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -104,7 +114,7 @@ export default function MasterUsersContent({setCurrentPageCount}) {
 
       {showAddModal && (
         <AddSuperUserModal
-          onClose={() => setShowAddModal(false)}
+          onClose={() => {setShowAddModal(false); fetchUsers()}}
           onAdd={handleAddUser}
         />
       )}

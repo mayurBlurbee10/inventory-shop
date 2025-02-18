@@ -15,18 +15,18 @@ export async function POST(request) {
       );
     }
     const userPermission =
-    Array.isArray(user.permissions) &&
-    user.permissions.find(
-      (permission) => permission.portalId === data.portalid
-    );
+      Array.isArray(user.permissions) &&
+      user.permissions.find(
+        (permission) => permission.portalId === data.portalid
+      );
 
-  if (!userPermission) {
-    return NextResponse.json(
-      { error: "This user does not have access to this portal" },
-      { status: 403 }
-    );
-  }
-  const userRole = userPermission?.role;
+    if (!userPermission) {
+      return NextResponse.json(
+        { error: "This user does not have access to this portal" },
+        { status: 403 }
+      );
+    }
+    const userRole = userPermission?.role;
     const userData = {
       id: user.id,
       email: user.email,
@@ -37,10 +37,12 @@ export async function POST(request) {
       boxUserId: user.boxUserId,
       boxFolderId: user.folderId,
       collaborationIds: user.collaborationIds,
+      signRequestsIds: user.signRequestsId,
+      permissions: user.permissions,
     };
 
     const accessToken = await generateToken(userData, "168h");
-    await userService.setUserAccessToken(data.email, accessToken, 'okta');
+    await userService.setUserAccessToken(data.email, accessToken, "okta");
     const response = NextResponse.json({
       success: true,
       user: userData,

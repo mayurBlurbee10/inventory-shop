@@ -4,7 +4,11 @@ import {
   setResponseErrorMsg,
   setResponseSuccessMsg,
 } from "../actions/messageAction";
-import { setPortalConfig } from "../actions/portalAction";
+import {
+  setActiveUsersData,
+  setPortalConfig,
+  setSuperUsersData,
+} from "../actions/portalAction";
 
 const getPortal = async (portalid) => {
   const response = await fetchWrapper(
@@ -25,6 +29,48 @@ export const setPortal = (portalid) => async (dispatch) => {
     const data = await getPortal(portalid);
     dispatch(setPortalConfig(data));
     dispatch(setResponseSuccessMsg("Portal fetched successfully!"));
+  } catch (error) {
+    dispatch(
+      setResponseErrorMsg(
+        (error?.data && error.data.response.message) || error.message
+      )
+    );
+  }
+};
+
+export const setPortals = (portals) => async (dispatch) => {
+  dispatch(clearResponseMsg());
+  try {
+    dispatch(setPortalConfig(portals));
+    dispatch(setResponseSuccessMsg("Portal fetched successfully!"));
+  } catch (error) {
+    dispatch(
+      setResponseErrorMsg(
+        (error?.data && error.data.response.message) || error.message
+      )
+    );
+  }
+};
+
+export const setActiveUsers = (activeUsers) => async (dispatch) => {
+  dispatch(clearResponseMsg());
+  try {
+    dispatch(setActiveUsersData(activeUsers));
+    dispatch(setResponseSuccessMsg("Active users fetched successfully!"));
+  } catch (error) {
+    dispatch(
+      setResponseErrorMsg(
+        (error?.data && error.data.response.message) || error.message
+      )
+    );
+  }
+};
+
+export const setSuperUsers = (superUsers) => async (dispatch) => {
+  dispatch(clearResponseMsg());
+  try {
+    dispatch(setSuperUsersData(superUsers));
+    dispatch(setResponseSuccessMsg("Super admins fetched successfully!"));
   } catch (error) {
     dispatch(
       setResponseErrorMsg(

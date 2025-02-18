@@ -10,6 +10,7 @@ import Footer from "./Footer";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setFiles } from "@/store/services/fileService";
+import { setCurrentUser } from "@/store/services/userService";
 
 function Container({ children }) {
   const params = useParams();
@@ -98,8 +99,9 @@ function Container({ children }) {
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
-      setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData))
+      // localStorage.setItem("portal", params.portalid);
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);

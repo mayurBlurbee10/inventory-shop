@@ -107,10 +107,12 @@ const DashboardHeader = ({
 
 export default function MasterDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [currentPageCount, setCurrentPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState("Super User");
+
+  const { data: user } = useSelector((state) => state.user);
 
   const handleLogout = () => {
     setAccountDropdown(false);
@@ -125,7 +127,7 @@ export default function MasterDashboard() {
       return;
     }
 
-    setUser(userData);
+    // setUser(userData);
   }, [router]);
 
     useEffect(()=>{

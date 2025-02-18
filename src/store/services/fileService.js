@@ -1,4 +1,4 @@
-import { fetchFiles, setFileList } from "../actions/fileAction";
+import { setFilesLoading, setFileList } from "../actions/fileAction";
 import {
   clearResponseMsg,
   setResponseErrorMsg,
@@ -25,7 +25,7 @@ export const setFiles = (boxFolderId) => async (dispatch) => {
     return dispatch(setFileList(null));
   }
   dispatch(clearResponseMsg());
-  dispatch(fetchFiles())
+  dispatch(setFilesLoading())
   try {
     const data = await getAllFiles(boxFolderId);
     dispatch(setFileList(data));

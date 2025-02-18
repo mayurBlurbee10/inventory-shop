@@ -29,6 +29,8 @@ export async function POST(request) {
       fields: "id,name,login",
     });
 
+    console.log("user", user)
+
     if (user?.entries.length > 0) {
       const folder = await client.search.query(`"${userName}'s Files"`, {
         type: "folder",

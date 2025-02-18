@@ -32,6 +32,7 @@ import MoveDialog from "./MoveDialog";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
+import { setCurrentUser } from "@/store/services/userService";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -403,8 +404,9 @@ function Dashboard({ fileType }) {
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
-      setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData))
+      // localStorage.setItem("portal", params.portalid);
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);

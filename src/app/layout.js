@@ -2,6 +2,7 @@ import { Bounce, ToastContainer } from "react-toastify";
 import localFont from "next/font/local";
 import "./globals.css";
 import ReduxProvider from "@/components/ReduxProvider";
+import StoreProvider from "@/components/ReduxProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,7 +27,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <ReduxProvider>
+        <StoreProvider>
           {children}
           <ToastContainer
             position="top-right"
@@ -41,7 +42,7 @@ export default function RootLayout({ children }) {
             theme="light"
             transition={Bounce}
           />
-        </ReduxProvider>
+        </StoreProvider>
       </body>
     </html>
   );

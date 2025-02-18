@@ -12,6 +12,7 @@ import "../../../../components/Plugins/RTE/tiptap-style.css";
 import TNCModal from "@/components/TNCModal";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
+import { setCurrentUser } from "@/store/services/userService";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -23,7 +24,7 @@ function Page() {
   const router = useRouter();
   const [page, setPage] = useState(null);
   const [pages, setPages] = useState([]);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   // const [config, setConfig] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
@@ -34,6 +35,7 @@ function Page() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: config } = useSelector((state) => state.portal);
+  const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch()
 
   const fetchPlugins = async () => {
@@ -97,9 +99,10 @@ function Page() {
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
-      setUserData(userData);
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData))
       if (typeof window !== "undefined") {
-        localStorage.setItem("portal", params.portalid);
+        // localStorage.setItem("portal", params.portalid);
         localStorage.setItem("accessToken", data.accessToken);
       }
     } catch (error) {
@@ -123,7 +126,7 @@ function Page() {
         return;
       }
 
-      setUser(userData);
+      // setUser(userData);
       fetchConfig();
     });
   }, [router]);

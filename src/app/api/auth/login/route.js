@@ -245,7 +245,8 @@ export async function POST(request) {
       boxUserId: user.boxUserId,
       boxFolderId: user.folderId,
       collaborationIds: user.collaborationIds,
-      signRequestsIds: user.signRequestsId
+      signRequestsIds: user.signRequestsId,
+      permissions : user.permissions
     };
 
     if (user.role != UserRole.SUPER_ADMIN) {

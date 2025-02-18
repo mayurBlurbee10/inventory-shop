@@ -6,6 +6,9 @@ import { UserRole } from '@/config/constants';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
 import { setUserData } from '@/app/lib/auth';
 import { toast } from 'react-toastify';
+import { setCurrentUser } from '@/store/services/userService';
+import { useDispatch } from 'react-redux';
+import { setPortals } from '@/store/services/portalService';
 
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
@@ -20,6 +23,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch()
   useEffect(() => {
     
   console.log('env variables', process.env)
@@ -53,7 +57,9 @@ export default function AdminLoginPage() {
           }
 
           // Store user data using auth utility
-          setUserData(data.user);
+          // setUserData(data.user);
+          dispatch(setCurrentUser(data.user));
+          dispatch(setPortals([]))
           localStorage.setItem("portal", 'admin');
           localStorage.setItem('accessToken', data.accessToken);
         // Store complete user data including role

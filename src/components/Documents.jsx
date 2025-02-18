@@ -50,6 +50,7 @@ import SignRequestModal from "./SignRequestModal";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
+import { setCurrentUser } from "@/store/services/userService";
 
 function Documents({
   fileType,
@@ -63,7 +64,7 @@ function Documents({
   const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
   // const [filesList, setFilesList] = useState(null);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [path, setPath] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -113,9 +114,13 @@ function Documents({
   const pathname = usePathname();
 
   const { data: config } = useSelector((state) => state.portal);
-  const { data: filesList, loading : isFilesLoading } = useSelector((state) => state.files);
+  const { data: filesList, loading: isFilesLoading } = useSelector(
+    (state) => state.files
+  );
   const [filteredFilesList, setFilteredFilesList] = useState(filesList);
   const [currentFilesList, setCurrentFilesList] = useState(filesList);
+
+  const {data : user } = useSelector((state)=>state.user);
   const dispatch = useDispatch();
 
   const handleBrowse = (event) => {
@@ -329,7 +334,8 @@ function Documents({
           setSelectedItem({ type: "folder", id: loanFolderId });
         } else if (
           userData?.collaborationIds &&
-          userData.collaborationIds.length > 0 && fileType == 'shared'
+          userData.collaborationIds.length > 0 &&
+          fileType == "shared"
         ) {
           // const requestOptions = {
           //   method: "POST",
@@ -875,8 +881,9 @@ function Documents({
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
-      setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      // setUserData(userData);
+      dispatch(setCurrentUser(userData));
+      // localStorage.setItem("portal", params.portalid);
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
@@ -892,14 +899,12 @@ function Documents({
       if (sessionData) {
         await getUserDetailsByEmail(sessionData.user.email);
       } else {
-        const userData = getUserData();
+        if (!userData) {
+          router.push("login");
+          return;
+        }
         await getUserDetailsByEmail(userData?.email);
       }
-      if (!userData) {
-        router.push("login");
-        return;
-      }
-      await getUserDetailsByEmail(userData?.email);
     };
     fetchSession().then(() => {
       const userData = getUserData();
@@ -907,7 +912,7 @@ function Documents({
         router.push("login");
         return;
       }
-      setUser(userData);
+      // setUser(userData);
       // refreshFiles();
     });
   }, [router]);

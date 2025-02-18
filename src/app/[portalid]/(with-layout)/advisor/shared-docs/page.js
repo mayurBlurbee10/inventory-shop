@@ -32,6 +32,7 @@ import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
 import Documents from "@/components/Documents";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
+import { setCurrentUser } from "@/store/services/userService";
 
 
 
@@ -132,9 +133,9 @@ export default function AdvisorView() {
         }
     };
     useEffect(() => {
-        fetchConfig();
-        fetchContent();
-        refreshFiles();
+        // fetchConfig();
+        // fetchContent();
+        // refreshFiles();
     }, []);
 
     const fetchContent = async () => {
@@ -547,33 +548,31 @@ export default function AdvisorView() {
         setIsToolbarVisible(selectedBulkItems.length > 0);
     }, [selectedBulkItems]);
 
-    useEffect(() => {
-        const fetchSession = async () => {
-            const sessionData = await getSession();
-            const userData = getUserData();
-            setSession(sessionData);
-            if (sessionData) {
-                await getUserDetailsByEmail(sessionData.user.email);
-            } else {
-                const userData = getUserData();
-                await getUserDetailsByEmail(userData.email);
-            }
-            if (!userData) {
-                router.push("login");
-                return;
-            }
-            await getUserDetailsByEmail(userData.email);
-        };
-        fetchSession().then(() => {
-            const userData = getUserData();
-            if (!userData) {
-                router.push("login");
-                return;
-            }
-            setUser(userData);
-            refreshFiles();
-        });
-    }, [router]);
+    // useEffect(() => {
+    //     const fetchSession = async () => {
+    //         const sessionData = await getSession();
+    //         const userData = getUserData();
+    //         setSession(sessionData);
+    //         if (sessionData) {
+    //             await getUserDetailsByEmail(sessionData.user.email);
+    //         } else {
+    //             if (!userData) {
+    //                 router.push("login");
+    //                 return;
+    //             }
+    //             await getUserDetailsByEmail(userData.email);
+    //         }
+    //     };
+    //     fetchSession().then(() => {
+    //         const userData = getUserData();
+    //         if (!userData) {
+    //             router.push("login");
+    //             return;
+    //         }
+    //         setUser(userData);
+    //         refreshFiles();
+    //     });
+    // }, [router]);
 
     const clearBulkItem = () => {
         setSelectedBulkItems([]);
@@ -590,8 +589,9 @@ export default function AdvisorView() {
             if (!response.ok) throw new Error("Failed to get user from email");
             const data = await response.json();
             const userData = data.user;
-            setUserData(userData);
-            localStorage.setItem("portal", params.portalid);
+            // setUserData(userData);
+            dispatch(setCurrentUser(userData))
+            // localStorage.setItem("portal", params.portalid);
             localStorage.setItem("accessToken", data.accessToken);
         } catch (error) {
             console.error("Failed to get user from email:", error);

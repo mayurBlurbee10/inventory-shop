@@ -1,8 +1,10 @@
 "use client";
 import { getUserData } from "@/app/lib/auth";
+import { newLoanData } from "@/app/lib/data/loan-data";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Documents from "@/components/Documents";
 import SignRequestModal from "@/components/SignRequestModal";
+import { setNewLoan } from "@/store/services/loanService";
 import {
   ArrowDownUp,
   CircleCheckBig,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 const ApplicationStep = ({
@@ -23,11 +26,9 @@ const ApplicationStep = ({
   type,
   setLoanFolderId,
   loanFolderId,
-  filesList,
   userData,
   setUserData,
   uniqueNo,
-  fileListLoading,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const preUserData = {
@@ -43,6 +44,9 @@ const ApplicationStep = ({
     mortgageAmount: "565,000.00",
     propertyLocation: "CA",
   };
+  const { data: filesList, loading: fileListLoading } = useSelector(
+    (state) => state.files
+  );
 
   const handelNext = async () => {
     try {
@@ -120,7 +124,10 @@ const ApplicationStep = ({
 
   const findFolderWithName = (data, targetName) => {
     for (const item of data) {
-      if (item.type === "folder" && item.name.toLowerCase() === targetName.toLowerCase()) {
+      if (
+        item.type === "folder" &&
+        item.name.toLowerCase() === targetName.toLowerCase()
+      ) {
         return item;
       }
       if (item.children) {
@@ -779,12 +786,14 @@ function NewLoanPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
+  const { data: loanData } = useSelector((state) => state.loans);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const uniqueNo = Math.floor(Date.now() % 1000000);
     setUniqueNo(uniqueNo);
     getFile();
-    getShareFile();
+    // getShareFile();
   }, []);
 
   const getFile = async () => {
@@ -837,22 +846,7 @@ function NewLoanPage() {
   };
 
   const finalStep = () => {
-    localStorage.setItem("newLoan", true);
-    // const loans = JSON.parse(localStorage.getItem("loan") || "[]");
-    // const obj = {
-    //   id: uniqueNo,
-    //   icon: type == 'personal' ? 'User' : (type == 'auto' ? 'CarFront' : 'Home'),
-    //   name: `${type} - ${uniqueNo}`,
-    //   type: type,
-    //   status: "Processing",
-    //   folderId: loanFolderId,
-    //   complete: 30,
-    //   paid: "In process"
-    // }
-    // if(loans.length < 3){
-    //   loans.push(obj)
-    // }
-    // localStorage.setItem("loan", JSON.stringify(loans));
+    dispatch(setNewLoan(newLoanData));
   };
 
   const getActiveStepContent = () => {
@@ -864,11 +858,9 @@ function NewLoanPage() {
             type={type}
             setLoanFolderId={setLoanFolderId}
             loanFolderId={loanFolderId}
-            filesList={filesList}
             userData={userData}
             setUserData={setUserData}
             uniqueNo={uniqueNo}
-            fileListLoading={isLoading}
           />
         );
       case "documents":

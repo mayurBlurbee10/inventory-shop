@@ -21,6 +21,11 @@ import { getSession, signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import AccountInfo from "./AccountInfo";
+import { useDispatch, useSelector } from "react-redux";
+import { setFileList } from "@/store/actions/fileAction";
+import { setLoans } from "@/store/services/loanService";
+import { setPortal } from "@/store/services/portalService";
+import { setCurrentUser } from "@/store/services/userService";
 
 function Navbar({ content, config, user, filterValue }) {
   const pathname = usePathname();
@@ -40,6 +45,9 @@ function Navbar({ content, config, user, filterValue }) {
   // const isAdvisorViewOpen = pathname.includes("advisor");
   const dropdownRef = useRef(null);
   const [logo, setLogo] = useState(null);
+
+  const { data: loanData } = useSelector((state) => state.loans);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setLogo(user?.company?.logo || config?.logo || null);
@@ -79,8 +87,15 @@ function Navbar({ content, config, user, filterValue }) {
       </Link>
     );
   };
+  const clearStoreData = ()=>{
+    dispatch(setFileList(null));
+    dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
+    dispatch(setPortal(null));
+    dispatch(setCurrentUser(null));
+  }
   const handleLogout = async () => {
     clearUserData();
+    clearStoreData();
     await signOut();
     toast.success("User signout successfully");
     document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";

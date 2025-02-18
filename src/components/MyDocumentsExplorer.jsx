@@ -76,8 +76,8 @@ const ShareModal = ({
     setCollaborator(
       item?.collaborators
         ? item.collaborators?.filter(
-          (collab) => collab?.user.id !== user.boxUserId
-        )
+            (collab) => collab?.user.id !== user.boxUserId
+          )
         : []
     );
   }, [item]);
@@ -88,8 +88,8 @@ const ShareModal = ({
       label: `${user.name} (${user.email})`,
     }));
 
-    const loggedInUser = JSON.parse(localStorage.getItem("user"));
-    const loggedInUserId = loggedInUser?.boxUserId;
+    // const loggedInUser = JSON.parse(localStorage.getItem("user"));
+    const loggedInUserId = user?.boxUserId;
 
     const filteredUsers = users.filter((user) => user.value !== loggedInUserId);
 
@@ -152,8 +152,8 @@ const ShareModal = ({
         sharedLink !== null
           ? null
           : params.portalid
-            ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
-            : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
+          ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-file/${item?.id}`
+          : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
       // : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-file/${item?.id}`;
       setSharedLink(newSharedLink);
       if (onShareLinkToggle) {
@@ -215,7 +215,7 @@ const ShareModal = ({
 
   const onAddCollaborator = (collab) => {
     if (collab.isForAdd) {
-      const user = usersList.find((user) => user.boxUserId == collab.userID);
+      const user = usersList?.find((user) => user.boxUserId == collab.userID);
       const collabIndex = collaborator.findIndex(
         (collabs) => collabs.id == collab.id
       );
@@ -312,18 +312,18 @@ const ShareModal = ({
                     className={`
                                         relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                                         ${sharedLink !== null
-                        ? "bg-blue-600"
-                        : "bg-gray-200"
-                      }
+                                            ? "bg-blue-600"
+                                            : "bg-gray-200"
+                                        }
                                         `}
                   >
                     <span
                       className={`
                                             pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
                                             ${sharedLink !== null
-                          ? "translate-x-5"
-                          : "translate-x-0"
-                        }
+                                                ? "translate-x-5"
+                                                : "translate-x-0"
+                                            }
                                             `}
                     />
                   </button>
@@ -379,9 +379,9 @@ const ShareModal = ({
                 disabled={!userID}
                 className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
                                     ${userID
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  }`}
+                                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    }`}
               >
                 <Send size={16} />
                 <span>Send</span>
@@ -477,7 +477,7 @@ function SharedFolderExplorer({
   const pathName = usePathname();
   const router = useRouter();
   const [previewFileId, setPreviewFileId] = useState("");
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -490,11 +490,12 @@ function SharedFolderExplorer({
   const [fileSelectedInGrid, seFileSelectedInGrid] = useState(null);
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
-  const [isSignLoading, setIsSignLoading] = useState(false)
+  const [isSignLoading, setIsSignLoading] = useState(false);
   const dropdownRef = useRef(null);
   const deleteModalRef = useRef(null);
   const nestedDropdownRef = useRef(null);
-  const {loading : isFilesLoading} = useSelector((state)=>state.files)
+  const { loading: isFilesLoading } = useSelector((state) => state.files);
+  const { data: user } = useSelector((state) => state.user);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -838,16 +839,13 @@ function SharedFolderExplorer({
   };
 
   useEffect(() => {
-    const loggedInUser = JSON.parse(localStorage.getItem("user"));
-    if (loggedInUser) {
-      fetchUser();
-    }
     const userData = getUserData();
     if (!userData) {
       router.push("login");
       return;
     }
-    setUser(userData);
+    fetchUser();
+    // setUser(userData);
   }, []);
 
   if (isLoading) {
@@ -985,9 +983,9 @@ function SharedFolderExplorer({
                                     <button
                                       className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center ${listType === "shared" &&
                                         file.currentUserRole === "viewer"
-                                        ? "hidden"
-                                        : ""
-                                        }`}
+                                          ? "hidden"
+                                          : ""
+                                      }`}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDownload(file.id, file.name);
@@ -1002,7 +1000,7 @@ function SharedFolderExplorer({
                                   {!fromAdvisor && (
                                     <button
                                       className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center ${listType === "shared" ? "hidden" : ""
-                                        } `}
+                                      } `}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleShare(file);
@@ -1020,8 +1018,8 @@ function SharedFolderExplorer({
                                 {!fromAdvisor && (
                                   <button
                                     className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10 ${listType === "shared" ? "hidden" : ""
-                                      }`}
-                                    onClick={() =>handleDelete(file)}
+                                    }`}
+                                    onClick={() => handleDelete(file)}
                                   >
                                     <EllipsisVertical className="h-4 w-4 text-gray-600" />
                                   </button>
@@ -1081,7 +1079,7 @@ function SharedFolderExplorer({
                                                 }}
                                               >
                                                 <UserRound className="h-4 w-4 mr-2" />
-                                               Sign Myself
+                                                Sign Myself
                                               </button>
                                             </div>
                                           </div>
@@ -1136,7 +1134,7 @@ function SharedFolderExplorer({
           ) : (
             <div
               className={`grid ${cols === 2 ? `grid-cols-4` : `grid-cols-${6 - cols}`
-                } gap-5 p-5`}
+              } gap-5 p-5`}
             >
               {currentFilesList &&
                 currentFilesList.length > 0 &&
@@ -1150,7 +1148,7 @@ function SharedFolderExplorer({
                       className={`border border-[#e8e8e8] card-shadow hover:border-sky-500`}
                     >
                       <div
-                        className="min-h-48 flex items-center justify-center bg-[#fbfbfb]"
+                        className="min-h-48 flex items-center justify-center bg-[#fbfbfb] cursor-pointer"
                         onClick={() =>
                           file?.type === "folder" && handleFolderClick(file)
                         }
@@ -1164,13 +1162,13 @@ function SharedFolderExplorer({
                           )}
                         </div>
                       </div>
-                      <div className="py-2 px-2.5 cursor-pointer">
+                      <div className="py-2 px-2.5">
                         <div className="flex items-center justify-between">
                           <h6
                             className="text-sm font-medium text-black font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full"
-                          // onClick={() =>
-                          //     file?.type === "folder" && handleFolderClick(file)
-                          // }
+                            // onClick={() =>
+                            //     file?.type === "folder" && handleFolderClick(file)
+                            // }
                           >
                             {file?.name}
                           </h6>
@@ -1178,9 +1176,9 @@ function SharedFolderExplorer({
                           <div className="relative">
                             <button
                               className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10  ${file.type === "folder" && listType === "shared"
-                                ? "hidden"
-                                : ""
-                                }`}
+                                  ? "hidden"
+                                  : ""
+                              }`}
                               onClick={() => handleSelect(file)}
                             >
                               <Ellipsis className="h-4 w-4 text-gray-600" />
@@ -1223,9 +1221,9 @@ function SharedFolderExplorer({
                                 {listType !== "shared" && (
                                   <button
                                     className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${file.currentUserRole === "viewer"
-                                      ? "hidden"
-                                      : ""
-                                      }`}
+                                        ? "hidden"
+                                        : ""
+                                    }`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleShare(file);
@@ -1241,7 +1239,7 @@ function SharedFolderExplorer({
                                 {listType !== "shared" && (
                                   <button
                                     className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
-                                      }`}
+                                    }`}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setIsMoveModalOpen((prev) => !prev);
@@ -1259,11 +1257,11 @@ function SharedFolderExplorer({
                                       <button className="group/signGrid hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 ">
                                         <Signature className="h-4 w-4 text-gray-600" />{" "}
                                         {isSignLoading ? (
-                                            <>
+                                          <>
                                               Signing <Loader2 className="ml-auto size-5 animate-spin text-gray-600" />
-                                            </>
-                                          ) : (
-                                            "Sign"
+                                          </>
+                                        ) : (
+                                          "Sign"
                                         )}
                                       </button>
                                       <div ref={nestedDropdownRef} className="absolute top-0 left-full bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/signGrid:opacity-100 group-hover/signGrid:scale-100 w-48">
@@ -1279,7 +1277,7 @@ function SharedFolderExplorer({
                                           }}
                                         >
                                           <UsersRoundIcon className="h-4 w-4 mr-2" />
-                                         Request Signature
+                                          Request Signature
                                         </button>
 
                                         <button
@@ -1297,7 +1295,7 @@ function SharedFolderExplorer({
                                   )}
                                 <button
                                   className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
-                                    }`}
+                                  }`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setIsDeleteModalOpen((prev) => !prev);

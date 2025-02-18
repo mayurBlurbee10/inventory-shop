@@ -1,4 +1,6 @@
 "use client";
+import { defaultLoanData } from "@/app/lib/data/loan-data";
+import { setLoans } from "@/store/services/loanService";
 import {
   ArrowDownUp,
   CarFront,
@@ -15,81 +17,21 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 function LoansPage() {
-  const preData = [
-    {
-      id: 635789,
-      icon: "CarFront",
-      name: "Auto - 635789",
-      type: "Auto",
-      status: "Active",
-      // folderId: "306788535946",
-      complete: 75,
-      paid: "$40,225.00 Paid",
-    },
-    {
-      id: 990154,
-      icon: "User",
-      name: "Personal - 990154",
-      type: "Personal",
-      status: "Fully Paid",
-      // folderId: "306789263204",
-      complete: 100,
-      paid: "Fully Paid",
-    },
-  ];
-
-  const dataToAdd = [
-    {
-      id: 174192,
-      icon: "Home",
-      name: "Mortgage - 174192",
-      type: "Mortgage	",
-      status: "Processing",
-      complete: 25,
-      paid: "In Process",
-    },
-  ];
   const router = useRouter();
   const params = useParams();
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
-  const [loanData, setLoanData] = useState(preData);
-  const [newLoan, setNewLoan] = useState(false);
-
-  // console.log(loanData);
+  const { data: loanData } = useSelector((state) => state.loans);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const userEntered = JSON.parse(localStorage.getItem("newLoan"));
-    setNewLoan(userEntered);
-
-    if (userEntered) {
-      setLoanData([...dataToAdd, ...preData]);
-      localStorage.setItem("loan", JSON.stringify([...dataToAdd, ...preData]));
-    }else {
-      localStorage.setItem("loan", JSON.stringify(preData));
-    }
-
-    // const loans = JSON.parse(localStorage.getItem("loan"));
-    // console.log("loans:", loans);
-
-    // if (loans && loans.length === 0) {
-    //   localStorage.setItem("loan", JSON.stringify(preData));
-    //   setLoanData([...preData]);
-    // }
+    dispatch(setLoans(loanData?.length < 3 ? defaultLoanData : loanData));
   }, []);
 
-  useEffect(() => {
-    if (newLoan) {
-      localStorage.setItem("loan", JSON.stringify([...dataToAdd, ...preData]));
-    }
-  }, [newLoan]);
-
   const handleRefresh = () => {
-    localStorage.setItem("newLoan", false);
-    localStorage.setItem("loan", JSON.stringify(preData));
-    setNewLoan(false);
-    setLoanData([...preData]);
+    dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
   };
 
   return (
@@ -127,7 +69,7 @@ function LoansPage() {
               </tr>
             </thead>
             <tbody>
-              {loanData.length > 0 &&
+              {loanData?.length > 0 &&
                 loanData?.map(({ id, icon, name, type, status }) => (
                   <tr key={id} className="border border-[#dee2e6] text-center">
                     <td className="py-5 flex items-center justify-center">
@@ -158,7 +100,7 @@ function LoansPage() {
             </tbody>
           </table>
         </div>
-        {newLoan ? (
+        {loanData?.length === 3 ? (
           <div
             className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl py-10 cursor-pointer"
             onClick={() => router.push(`loans/new?type=mortgage`)}

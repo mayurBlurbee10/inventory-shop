@@ -17,7 +17,7 @@ function ESignature() {
   const router = useRouter();
   const params = useParams();
   // const [config, setConfig] = useState(null);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -30,6 +30,7 @@ function ESignature() {
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
 
   const { data: config } = useSelector((state) => state.portal);
+  const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch()
 
   const fetchConfig = async () => {
@@ -92,7 +93,7 @@ function ESignature() {
 
   useEffect(() => {
     const userData = getUserData();
-    setUser(userData);
+    // setUser(userData);
     fetchConfig();
     fetchSignRequests(userData);
   }, [router]);

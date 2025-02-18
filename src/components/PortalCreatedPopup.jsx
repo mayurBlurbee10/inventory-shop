@@ -1,3 +1,4 @@
+'use client'
 import { clearUserData } from "@/app/lib/auth";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { X } from "lucide-react";

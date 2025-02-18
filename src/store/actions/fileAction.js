@@ -2,14 +2,14 @@ import * as actions from "./type";
 
 export const setFileList = (payload) => {
   return {
-    type: actions.FETCH_FILES_SUCCESS,
+    type: actions.SET_FILES_LIST,
     payload,
   };
 };
 
-export const fetchFiles = () => {
+export const setFilesLoading = () => {
   return {
-    type: actions.FETCH_FILES_REQUEST,
+    type: actions.SET_FILES_LOADING,
   };
 };
 
