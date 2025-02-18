@@ -146,6 +146,7 @@ export default function AdvisorView() {
         const dayIndex = date.getDay();
         const monthIndex = date.getMonth();
         const days = [
+            "Sunday",
             "Monday",
             "Tuesday",
             "Wednesday",
@@ -200,7 +201,7 @@ export default function AdvisorView() {
                             <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
                                 <Link href="shared-docs" passHref>
                                     <img
-                                        src="/profile-3.jpg"
+                                        src="/images (1).jpg"
                                         alt="User"
                                         className="w-full h-[100px] sm:h-[150px] object-cover border"
                                     />
@@ -214,7 +215,7 @@ export default function AdvisorView() {
                             <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
                                 <Link href="shared-docs" passHref>
                                     <img
-                                        src="/images (1).jpg"
+                                         src="/profile-3.jpg"
                                         alt="User"
                                         className="w-full h-[100px] sm:h-[150px] object-cover border"
                                     />

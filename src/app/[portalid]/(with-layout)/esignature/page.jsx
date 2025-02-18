@@ -52,7 +52,7 @@ function ESignature() {
 
   const fetchSignRequests = async (userData) => {
     try {
-      if(!userData) return;
+      if (!userData) return;
       setIsLoading(true);
       const response = await fetch(`/api/box/e-sign?userId=${userData?.id}`);
       const data = await response.json();
@@ -150,20 +150,24 @@ function ESignature() {
                 {pendingRequests?.length > 0 ? (
                   <ul className="space-y-2 overflow-y-auto h-[64vh]">
                     {pendingRequests.map((req) => (
-                      <li
-                        key={req.id}
-                        className="p-3 border rounded-lg shadow-sm flex justify-between items-center"
-                      >
-                        <span className="text-gray-800 font-semibold">
-                          {req.source_files[0].name}
-                        </span>
-                        <button
-                          className="text-blue-500 px-4 py-2 rounded-lg hover:text-blue-600"
-                          onClick={() => handleSignClick(req)}
-                        >
-                          Sign
-                        </button>
-                      </li>
+                      <React.Fragment key={req.id}>
+                        {req.source_files.length > 0 && (
+                          <li
+                            key={req.id}
+                            className="p-3 border rounded-lg shadow-sm flex justify-between items-center"
+                          >
+                            <span className="text-gray-800 font-semibold">
+                              {req?.source_files[0]?.name}
+                            </span>
+                            <button
+                              className="text-blue-500 px-4 py-2 rounded-lg hover:text-blue-600"
+                              onClick={() => handleSignClick(req)}
+                            >
+                              Sign
+                            </button>
+                          </li>
+                        )}
+                      </React.Fragment>
                     ))}
                   </ul>
                 ) : (
@@ -178,13 +182,13 @@ function ESignature() {
               <div>
                 {completedRequests?.length > 0 ? (
                   <ul className="space-y-2">
-                    {completedRequests.map((req) => (
+                    {completedRequests?.map((req) => (
                       <li
                         key={req.id}
                         className="p-3 border rounded-lg shadow-sm"
                       >
                         <span className="text-gray-800 font-semibold">
-                          {req.source_files[0].name}
+                          {req?.sign_files.files[0]?.name}
                         </span>
                       </li>
                     ))}

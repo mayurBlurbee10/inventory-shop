@@ -209,6 +209,7 @@ export default function DocDashboard() {
     const dayIndex = date.getDay();
     const monthIndex = date.getMonth();
     const days = [
+      "Sunday",
       "Monday",
       "Tuesday",
       "Wednesday",

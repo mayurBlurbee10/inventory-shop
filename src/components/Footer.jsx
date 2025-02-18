@@ -133,7 +133,7 @@ const Footer = ({ config, filterValue, user, from }) => {
                 : config?.logo || "/logo.png"
             }
             alt={config?.legalName}
-            className="mr-2 max-h-[60px] max-w-[150px]"
+            className="mr-2 mb-5 max-h-[60px] max-w-[150px]"
           />
 
           <div>

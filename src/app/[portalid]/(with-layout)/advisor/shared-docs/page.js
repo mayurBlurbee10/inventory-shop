@@ -604,7 +604,7 @@ export default function AdvisorView() {
                     <div className="w-[250px] flex justify-center flex-wrap gap-5 border">
                         <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
                             <img
-                                src="/profile-3.jpg"
+                                src="/images (1).jpg"
                                 alt="User"
                                 className="w-full h-[100px] sm:h-[150px] object-cover border"
                             />
