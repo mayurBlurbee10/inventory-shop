@@ -901,6 +901,7 @@ function Documents({
   }, [router]);
 
   const addCollaborator = ({ email, role }) => {
+    if(!email) return;
     const collaborators =
       JSON.parse(localStorage.getItem("collaborators")) || [];
     const collabExist = collaborators.find((collab) => collab.email === email);

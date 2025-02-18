@@ -171,13 +171,13 @@ function ESignature() {
               <div>
                 {completedRequests?.length > 0 ? (
                   <ul className="space-y-2">
-                    {completedRequests.map((req) => (
+                    {completedRequests?.map((req) => (
                       <li
                         key={req.id}
                         className="p-3 border rounded-lg shadow-sm"
                       >
                         <span className="text-gray-800 font-semibold">
-                          {req.source_files[0].name}
+                          {req?.sign_files.files[0]?.name}
                         </span>
                       </li>
                     ))}
