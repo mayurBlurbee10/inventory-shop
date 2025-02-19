@@ -957,8 +957,8 @@ function Documents({
     // <Container>
     <div
       className={`max-w-[1820px] ${fileType === "loan" || fileType === "advisor"
-        ? ""
-        : "mx-auto sm:pt-12 mt-12"
+          ? ""
+          : "mx-auto sm:mt-14 mt-14 sm:mt-0"
         }`}
     >
       <div>
@@ -968,25 +968,23 @@ function Documents({
         >
           <div
             className={`col-span-5 ${fileType === "loan" || fileType === "advisor"
-              ? "lg:col-span-5"
-              : "lg:col-span-3"
+                ? "lg:col-span-5"
+                : "lg:col-span-3"
               }`}
           >
             {fileType !== "loan" && fileType !== "advisor" && (
               <>
                 <div className="flex items-center gap-10">
-                  <span className="text-xl font-light text-[#212529] font-lato">
-                    {/* {fileType === "shared"
-                      ? "Shared Documents"
-                      : "My Documents"} */}
-                      Shared Documents
-                  </span>
-                  <span className="text-black font-lato font-normal text-sm">
-                    Securely share content with your advisor and trusted
-                    collaborators
-                  </span>
+                  <p className="text-sm font-lato">
+                    <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
+                    Shared Documents
+                    </span>
+                    <span className="text-sm font-normal text-black font-lato block md:inline">
+                    Securely share content with your advisor and trusted collaborators
+                    </span>
+                  </p>
                 </div>
-                <hr className="my-4" />
+                <hr className="my-5" />
               </>
             )}
             <div className="border border-solid border-[#0000001a] rounded-sm relative">
