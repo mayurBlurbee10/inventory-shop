@@ -1,156 +1,3 @@
-// "use client";
-// import { fetchWrapper } from "@/app/lib/fetchWrapper";
-// import { Dialog, DialogPanel } from "@headlessui/react";
-// import {
-//   DocumentEditorContainerComponent,
-//   Toolbar,
-// } from "@syncfusion/ej2-react-documenteditor";
-// import { Loader2, Save, X } from "lucide-react";
-// import { useEffect, useRef, useState } from "react";
-// DocumentEditorContainerComponent.Inject(Toolbar);
-
-// function Editor({ isModalOpen, setIsModalOpen, item }) {
-//   const containerRef = useRef(null);
-
-//   const [isLoading, setIsLoading] = useState(false);
-
-//   const handleSave = () => {
-//     if (containerRef.current && containerRef.current.documentEditor) {
-//       containerRef.current.documentEditor.save(`Edited-${item.name}`, "Docx");
-//     }
-//   };
-
-//   const getFile = async (fileId) => {
-//     try {
-//       setIsLoading(true);
-
-//       const response = await fetchWrapper(
-//         `/api/box/editor?fileId=${fileId}`,
-//         { method: "GET" },
-//         "fetchFileData"
-//       );
-
-//       if (!response || !response.ok) {
-//         throw new Error("Failed to fetch shared files");
-//       }
-
-//       // const data = await response.json();
-//       // console.log("data: ", data);
-//       // setTimeout(() => {
-//       //   containerRef.current.documentEditor.open(data.content);
-//       // }, 1000);
-
-//       const blob = await response.blob();
-//       console.log('blob: ', blob)
-//       // const url = window.URL.createObjectURL(blob);
-//       // console.log('url: ', url)
-//       setTimeout(() => {
-//         containerRef.current.documentEditor.openAsync(blob);
-//       }, 1000);
-
-//       // const reader = new FileReader();
-//       // reader.onload = (e) => {
-//       //   const arrayBuffer = e.target.result;
-//       //   if (containerRef.current && containerRef.current.documentEditor) {
-//       //     console.log("Opening document in editor...");
-//       //     setTimeout(() => {
-//       //       containerRef.current.documentEditor.open(arrayBuffer, "Docx");
-//       //     }, 1000);
-//       //   } else {
-//       //     console.warn("DocumentEditor is not initialized.");
-//       //   }
-//       // };
-//     } catch (error) {
-//       console.error("Error getting file:", error);
-//       alert("Failed to load the file: " + error.message);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     if (item?.id) {
-//       // setTimeout(()=>{
-//       getFile(item.id);
-//       // },1500)
-//     }
-//   }, [item]);
-
-//   return (
-//     <Dialog
-//       open={isModalOpen}
-//       onClose={() => setIsModalOpen(false)}
-//       className="relative z-50 text-gray-600"
-//     >
-//       <div className="fixed inset-0 bg-black/10" aria-hidden="true" />
-
-//       <div className="fixed inset-0 flex items-center justify-center p-4">
-//         <DialogPanel className="w-full max-w-3xl rounded-lg bg-white shadow-lg">
-//           {/* Header */}
-//           <div className="flex justify-between items-center border-b px-4 py-3">
-//             <h2 className="text-lg font-semibold">Edit “{item?.name}”</h2>
-//             <button
-//               onClick={() => setIsModalOpen(false)}
-//               className="text-gray-400 hover:text-gray-600"
-//             >
-//               <X className="w-5 h-5" />
-//             </button>
-//           </div>
-
-//           {/* Editor */}
-//           <div className="p-4 space-y-4">
-//             {isLoading ? (
-//               <div className="flex items-center justify-center h-60">
-//                 <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-//               </div>
-//             ) : (
-//               <DocumentEditorContainerComponent
-//                 id="document-editor"
-//                 ref={containerRef}
-//                 enableToolbar={true}
-//                 height={"690px"}
-//                 style={{
-//                   width: "100%",
-//                   border: "1px solid #ccc",
-//                   marginTop: "10px",
-//                 }}
-//               />
-//             )}
-//           </div>
-
-//           {/* Footer Buttons */}
-//           <div className="flex justify-end border-t px-4 py-3 space-x-2">
-//             <button
-//               onClick={() => setIsModalOpen(false)}
-//               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-//             >
-//               Cancel
-//             </button>
-//             <button
-//               onClick={() => {
-//                 handleSave();
-//                 setIsLoading(true);
-//                 setTimeout(() => setIsLoading(false), 2000); // Simulate save delay
-//               }}
-//               disabled={isLoading}
-//               className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-//             >
-//               {isLoading ? (
-//                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-//               ) : (
-//                 <Save className="w-4 h-4 mr-2" />
-//               )}
-//               Save
-//             </button>
-//           </div>
-//         </DialogPanel>
-//       </div>
-//     </Dialog>
-//   );
-// }
-
-// export default Editor;
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Loader2, Save, X } from "lucide-react";
@@ -163,6 +10,7 @@ import { toast } from "react-toastify";
 function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const viewer = useRef({ instance: null });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const getFile = useCallback(
     async (fileId) => {
@@ -183,17 +31,18 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         const myBlob = await response.blob();
 
         if (!viewer.current.instance) {
-          WebViewer(
+          new WebViewer(
             {
               path: "/webviewer/lib",
-              licenseKey: "your-license-key-here",
+              licenseKey: "demo:1739516544560:617db83d0300000000ca222df66536ec5d40f563fac11f8a720f5da897",
               enableOfficeEditing: true,
             },
             viewer.current
           ).then((instance) => {
+            instance.UI.enableFeatures([instance.UI.Feature.ContentEdit]);
             const { documentViewer, annotationManager } = instance.Core;
-            viewer.current.instance = instance;
             instance.UI.loadDocument(myBlob, { filename });
+            viewer.current.instance = instance;
             instance.UI.disableElements([
               "newDocumentButton",
               "saveAsButton",
@@ -204,6 +53,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
               .getElementById("save-editor")
               .addEventListener("click", async (event) => {
                 event.preventDefault();
+                setIsSaveLoading(true);
                 const doc = documentViewer.getDocument();
                 const xfdfString = await annotationManager.exportAnnotations();
                 const data = await doc.getFileData({ xfdfString });
@@ -312,6 +162,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
           <div className="flex justify-end border-t px-4 py-3 space-x-2">
             <button
               onClick={() => setIsModalOpen(false)}
+              disabled={isSaveLoading}
               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
             >
               Cancel
@@ -323,10 +174,10 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
               //   setIsLoading(true);
               //   setTimeout(() => setIsLoading(false), 2000);
               // }}
-              disabled={isLoading}
+              disabled={isSaveLoading}
               className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {isLoading ? (
+              {isSaveLoading ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Save className="w-4 h-4 mr-2" />
