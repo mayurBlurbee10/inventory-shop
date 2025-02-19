@@ -832,6 +832,13 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@onlyoffice/document-editor-react@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@onlyoffice/document-editor-react/-/document-editor-react-1.6.0.tgz#ceb5125ae6e430fa0b928a1dd278f8d8b07d8fdd"
+  integrity sha512-mBdWPjhpfLAgGtYYWmnkgOpuCkK9fHqHxVwzt5xwtnwV0luxbaM3/SvPGx2PM9GqfCNnV0uggLHlFZS81tR7fQ==
+  dependencies:
+    lodash "4.17.21"
+
 "@panva/hkdf@^1.0.2":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@panva/hkdf/-/hkdf-1.2.1.tgz#cb0d111ef700136f4580349ff0226bf25c853f23"
@@ -2746,7 +2753,7 @@ lodash.once@^4.0.0:
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
   integrity sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==
 
-lodash@^4.0.1, lodash@^4.17.15, lodash@^4.17.21:
+lodash@4.17.21, lodash@^4.0.1, lodash@^4.17.15, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
