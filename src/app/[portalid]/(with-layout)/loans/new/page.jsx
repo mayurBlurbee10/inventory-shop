@@ -5,6 +5,8 @@ import Documents from "@/components/Documents";
 import SignRequestModal from "@/components/SignRequestModal";
 import {
   ArrowDownUp,
+  Check,
+  ChevronRight,
   CircleCheckBig,
   Folder,
   ListChecks,
@@ -132,8 +134,8 @@ const ApplicationStep = ({
   };
 
   return (
-    <div className="flex flex-col justify-center w-full font-lato sm:border-l overflow-hidden border-l border-[#dee2e6]">
-      <h1 className="text-center text-3xl text-black p-10">Application</h1>
+    <div className="flex flex-col justify-center w-full font-lato overflow-hidden">
+      <h1 className="text-3xl text-black p-10">Application</h1>
       <form className="space-y-3">
         <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
           <label htmlFor="firstName" className="w-2/5">
@@ -305,7 +307,7 @@ const ApplicationStep = ({
           <ListChecks className="size-5" />
         </div>
         <button
-          className="px-3 py-2 border border-black rounded flex gap-2"
+          className={`px-3 py-2 border border-gray-500 rounded-lg disabled:cursor-not-allowed disabled:opacity-50 ${!isLoading && !fileListLoading && 'transition-colors duration-300 ease-in-out hover:bg-[#0061D5] hover:text-white hover:border-white'} `}
           disabled={isLoading || fileListLoading}
           onClick={handelNext}
         >
@@ -443,9 +445,9 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
   }, [selectedItems]);
 
   return (
-    <div className="flex flex-col justify-center w-full font-lato px-5 sm:px-10 border-l border-[#dee2e6]">
-      <h1 className="text-center text-3xl text-black pt-10 pb-3">Documents</h1>
-      <p className="font-light text-xl text-center">
+    <div className="flex flex-col justify-center w-full font-lato px-5 sm:px-10">
+      <h1 className="text-3xl text-black pt-10 pb-3">Documents</h1>
+      <p className="font-light text-xl">
         We need the <span className="font-normal">most recent</span> versions of
         these documents to proceed with your application:
       </p>
@@ -513,9 +515,8 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
               </div>
             ) : (
               <div
-                className={`p-6 flex flex-col min-h-[200px] flex-1 justify-center items-center text-center text-sm ${
-                  isDragging ? "bg-blue-50" : "bg-gray-50"
-                } ${files.length > 0 ? "hidden" : ""}`}
+                className={`p-6 flex flex-col min-h-[200px] flex-1 justify-center items-center text-center text-sm ${isDragging ? "bg-blue-50" : "bg-gray-50"
+                  } ${files.length > 0 ? "hidden" : ""}`}
                 onDragEnter={(e) => handleDragEvent(e, true)}
                 onDragLeave={(e) => handleDragEvent(e, false)}
                 onDragOver={(e) => handleDragEvent(e, true)}
@@ -592,9 +593,15 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-end py-10">
+      <div className="flex items-center justify-end py-10 gap-5">
         <button
-          className="px-3 py-2 border border-black rounded"
+          className="px-3 py-2 border border-gray-500 rounded-lg hover:bg-gray-100"
+          onClick={() => setActiveStep("application")}
+        >
+          Back
+        </button>
+        <button
+          className="px-3 py-2 border border-gray-500 rounded-lg transition-colors duration-300 ease-in-out hover:bg-[#0061D5] hover:text-white hover:border-white"
           disabled={isLoading || isUploadLoading}
           onClick={() => setActiveStep("loanestimate")}
         >
@@ -605,7 +612,7 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
   );
 };
 
-const LoanEstimateStep = ({ finalStep, params, loanFolderId }) => {
+const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) => {
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
   const [filesToSign, setFilesToSign] = useState([]);
@@ -689,7 +696,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId }) => {
   };
 
   const LoadingSpinner = () => (
-    <div className="w-full inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
+    <div className="w-full inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
       <div className="text-center space-y-3">
         <div className="mx-auto h-8 w-8 animate-spin">
           <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
@@ -704,12 +711,12 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId }) => {
   }, [loanFolderId]);
 
   return (
-    <div className="w-full font-lato px-10 border-l border-[#dee2e6]">
+    <div className="w-full font-lato px-10">
       <div className="w-full">
-        <h1 className="text-center text-3xl text-black pt-10 pb-3">
+        <h1 className="text-3xl text-black pt-10 pb-3">
           Loan Terms
         </h1>
-        <p className="font-light text-xl text-center">
+        <p className="font-light text-xl">
           Your Loan Term Form is ready! Please follow the below link to proceed.
         </p>
       </div>
@@ -750,7 +757,15 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId }) => {
         signUrl={selectedSignUrl}
         redirect_url={`/${params?.portalid}/loans`}
       />
-    </div>
+      <div className="flex w-full justify-end mt-5">
+        <button
+         className="px-3 py-2 border border-gray-500 rounded-lg hover:bg-gray-100"
+          onClick={() => setActiveStep("documents")}
+        >
+          Back
+        </button>
+      </div>
+    </div >
   );
 };
 
@@ -760,6 +775,7 @@ function NewLoanPage() {
   const [filesList, setFilesList] = useState([]);
   const [shareFilesList, setShareFilesList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -882,6 +898,7 @@ function NewLoanPage() {
       case "loanestimate":
         return (
           <LoanEstimateStep
+            setActiveStep={setActiveStep}
             finalStep={finalStep}
             params={params}
             loanFolderId={loanFolderId}
@@ -892,53 +909,67 @@ function NewLoanPage() {
     }
   };
 
-  // if (isLoading)
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-  //       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-  //     </div>
-  //   );
+  const WizardStep = ({ step, currentStep }) => {
+    const isCompleted = currentStep > step;
+    const isActive = currentStep === step;
+
+    return (
+      <div className="flex items-center">
+        <div
+          className={`
+          w-8 h-8 rounded-full flex items-center justify-center border
+          ${isCompleted
+              ? "bg-[#0061D5]"
+              : isActive
+                ? "bg-white border-[#0061D5] text-[#0061D5]"
+                : "bg-white border-gray-300"
+            }
+          ${isCompleted || isActive ? "text-white" : "text-[#0061D5]"}
+        `}
+        >
+          {isCompleted ? (
+            <Check size={16} className="text-white" />
+          ) : (
+            <span className={isActive ? "text-[#0061D5]" : "text-gray-500"}>
+              {step + 1}
+            </span>
+          )}
+        </div>
+        <div className={`ml-3 ${isActive ? "text-[#0061D5]" : "text-gray-500"}`}>
+          {["Application", "Documents", "Loan Estimate"][step]}
+        </div>
+      </div>
+    );
+  };
+  const steps = ["application", "documents", "loanestimate"];
+  const activeStepIndex = steps.indexOf(activeStep);
+
   return (
-    <div className="bg-white rounded-lg flex flex-col relative w-full min-h-[70vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
-      <div className="flex flex-col sm:flex-row justify-between font-lato">
-        <div className="w-full sm:w-64 h-full pb-5 sm:pb-0 border-b sm:border-b-0 pt-5 px-2 bg-white text-gray-700 ">
-          <h1 className="text-2xl sm:text-3xl text-black mb-5">
-            New {type} Loan
-          </h1>
-          <div className="flex sm:items-start justify-around sm:flex-col sm:gap-4 gap-2">
-            <button
-              onClick={() => setActiveStep("application")}
-              className={`text-[#107fff] text-sm sm:text-lg md:text-xl ${
-                activeStep === "application"
-                  ? "font-bold scale-[1.1] transition-all ease-in-out"
-                  : ""
-              }`}
-            >
-              1. Application
-            </button>
-            <button
-              onClick={() => setActiveStep("documents")}
-              className={`text-[#107fff] text-sm sm:text-lg md:text-xl ${
-                activeStep === "documents"
-                  ? "font-bold scale-[1.1] transition-all ease-in-out"
-                  : ""
-              }`}
-            >
-              2. Documents
-            </button>
-            <button
-              onClick={() => setActiveStep("loanestimate")}
-              className={`text-[#107fff] text-sm sm:text-lg md:text-xl ${
-                activeStep === "loanestimate"
-                  ? "font-bold scale-[1.1] transition-all ease-in-out"
-                  : ""
-              }`}
-            >
-              3. Loan Estimate
-            </button>
+    <div className="bg-white flex flex-col relative w-full min-h-[70vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
+      <div className="flex flex-col justify-between font-lato">
+        <div className="w-full h-full pb-5 sm:pb-0 px-2 bg-white text-gray-700 flex flex-col justify-start">
+          <div className="border-b border-[#dee2e6] pt-12 pb-5">
+            <p className="text-sm font-lato">
+              <span className="block md:inline text-xl font-light sm:text-center text-[#212529] mr-10 font-lato mb-2 md:mb-0">
+                New {type.charAt(0).toUpperCase() + type.slice(1)} Loan
+              </span>
+            </p>
+          </div>
+
+          <div className="px-6 py-4 overflow-auto flex w-full justify-center">
+            <div className="flex justify-between items-center space-x-8">
+              {[0, 1, 2].map((step) => (
+                <div key={step} className="flex items-center">
+                  <WizardStep step={step} currentStep={activeStepIndex} />
+                  {step < 2 && (
+                    <ChevronRight size={16} className="mx-2 text-gray-300" />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="w-full">{getActiveStepContent()}</div>
+        <div className="w-full ">{getActiveStepContent()}</div>
       </div>
     </div>
   );

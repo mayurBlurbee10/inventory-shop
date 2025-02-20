@@ -4,12 +4,14 @@ import Header from "@/components/Header";
 import SettingsModal from "@/components/Settings";
 import Sidepanel from "@/components/Sidepanel";
 import SignRequestModal from "@/components/SignRequestModal";
-import { Loader2 } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import PreviewModal from "@/components/FileExplorer/PreviewModal";
+
 
 function ESignature() {
   const router = useRouter();
@@ -20,12 +22,19 @@ function ESignature() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [completedRequests, setCompletedRequests] = useState([]);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewFileId, setPreviewFileId] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
   const userIsAdmin = isAdmin();
 
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
+
+  const handlePreview = (fileId) => {
+    setPreviewFileId(fileId);
+    setIsPreviewModalOpen(true);
+  };
 
   const fetchConfig = async () => {
     try {
@@ -52,7 +61,7 @@ function ESignature() {
 
   const fetchSignRequests = async (userData) => {
     try {
-      if(!userData) return;
+      if (!userData) return;
       setIsLoading(true);
       const response = await fetch(`/api/box/e-sign?userId=${userData?.id}`);
       const data = await response.json();
@@ -109,21 +118,19 @@ function ESignature() {
         {/* Tabs */}
         <div className="flex border-b">
           <button
-            className={`px-4 py-2 text-lg ${
-              activeTab === "pending"
-                ? "border-b-2 border-blue-500 text-blue-600"
-                : "text-gray-600"
-            }`}
+            className={`px-4 py-2 text-lg ${activeTab === "pending"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600"
+              }`}
             onClick={() => setActiveTab("pending")}
           >
             Pending Requests ({pendingRequests?.length || 0})
           </button>
           <button
-            className={`px-4 py-2 text-lg ${
-              activeTab === "completed"
-                ? "border-b-2 border-blue-500 text-blue-600"
-                : "text-gray-600"
-            }`}
+            className={`px-4 py-2 text-lg ${activeTab === "completed"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600"
+              }`}
             onClick={() => setActiveTab("completed")}
           >
             Completed Requests ({completedRequests?.length || 0})
@@ -171,14 +178,17 @@ function ESignature() {
               <div>
                 {completedRequests?.length > 0 ? (
                   <ul className="space-y-2">
-                    {completedRequests.map((req) => (
+                    {completedRequests?.map((req) => (
                       <li
                         key={req.id}
-                        className="p-3 border rounded-lg shadow-sm"
+                        className="p-3 border rounded-lg shadow-sm flex items-center justify-between"
                       >
                         <span className="text-gray-800 font-semibold">
-                          {req.source_files[0].name}
+                          {req?.sign_files.files[0]?.name}
                         </span>
+                        <button onClick={() => handlePreview(req?.sign_files.files[0]?.id)} className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center">
+                          <Eye className="text-gray-600 size-4" />
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -203,6 +213,11 @@ function ESignature() {
           fetchSignRequests(user);
         }}
         signUrl={selectedSignUrl}
+      />
+      <PreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        fileId={previewFileId}
       />
     </div>
   );

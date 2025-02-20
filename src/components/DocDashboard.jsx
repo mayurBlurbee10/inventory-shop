@@ -209,6 +209,7 @@ export default function DocDashboard() {
     const dayIndex = date.getDay();
     const monthIndex = date.getMonth();
     const days = [
+      "Sunday",
       "Monday",
       "Tuesday",
       "Wednesday",
@@ -240,7 +241,7 @@ export default function DocDashboard() {
   return (
     // <Container>
       <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 pt-12 pb-4 border-b">
+        <div className="flex items-center gap-10 pt-12 pb-4 border-b mt-1 ">
           <div>
             <h2 className="text-xl font-light text-black font-lato">
               {/* Hello, David West! Today is Wednesday, January 15th. */}
