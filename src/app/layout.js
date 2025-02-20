@@ -21,7 +21,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <script type="text/javascript" src="https://0705d950.docs.onlyoffice.com/web-apps/apps/api/documents/api.js"></script>
+      <head>
+        <script type="text/javascript" src="https://0705d950.docs.onlyoffice.com/web-apps/apps/api/documents/api.js" strategy="lazyOnload"></script>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning={true}
       >

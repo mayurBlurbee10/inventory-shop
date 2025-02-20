@@ -11,6 +11,9 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const editorRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [fileUrl, setFileUrl] = useState("");
+  const [token, setToken] = useState("");
+  const [fileType, setFileType] = useState("");
 
   const getDocumentType = (fileType) => {
     const fileMappings = {
@@ -36,11 +39,13 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
       if (!response || !response.ok) throw new Error("Failed to fetch file");
 
-      const clonedResponse = response.clone();
-      const fileType = await fileTypeFromStream(clonedResponse.body);
-      const fileBlob = await response.blob();
-      const fileUrl = URL.createObjectURL(fileBlob);
-
+      // const clonedResponse = response.clone();
+      // const fileType = await fileTypeFromStream(clonedResponse.body);
+      // const fileBlob = await response.blob();
+      // const fileUrl = URL.createObjectURL(fileBlob);
+      const { fileUrl, fileType } = await response.json();
+      setFileUrl(fileUrl)
+      setFileType(fileType)
       const userData = getUserData();
       const secretKey = new TextEncoder().encode(
         "9bce206dc17d48548d37a329732a3c88"
@@ -48,14 +53,16 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
       const tokenPayload = {
         document: {
-          fileType: fileType.ext,
+          fileType: fileType,
           key: item.id,
           title: item.name,
           url: fileUrl,
           permissions: { edit: true, download: true },
         },
-        documentType: getDocumentType(fileType.ext),
-        editorConfig: { user: { id: userData.id, name: userData.name } },
+        documentType: getDocumentType(fileType),
+        editorConfig: {
+          user: { id: userData.id, name: userData.name },
+        },
       };
 
       const token = await new SignJWT(tokenPayload)
@@ -63,7 +70,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         .setIssuedAt()
         .setExpirationTime("1h")
         .sign(secretKey);
-
+      setToken(token)
       editorRef.current = new window.DocsAPI.DocEditor("onlyoffice-editor", {
         ...tokenPayload,
         token,
@@ -78,6 +85,38 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     }
   }, [item, isLoading]);
 
+  // const uploadFileToBox = async () => {
+  //   if (!editorRef.current) {
+  //     toast.error("Editor instance not found.");
+  //     return;
+  //   }
+
+  //   setIsSaveLoading(true);
+  //   try {
+  //     editorRef.current.saveAs(async (blob) => {
+  //       const uploadData = new FormData();
+  //       uploadData.append("file", blob, item.name);
+  //       uploadData.append("boxFolderId", selectedItem.id);
+  //       uploadData.append("email", getUserData().email);
+
+  //       const response = await fetchWrapper("/api/box/files/replace", {
+  //         method: "POST",
+  //         body: uploadData,
+  //       });
+
+  //       if (!response.ok) throw new Error("Failed to upload file");
+
+  //       toast.success("File saved successfully");
+  //       setIsModalOpen(false);
+  //     }, "blob");
+  //   } catch (error) {
+  //     toast.error(error.message);
+  //     console.error("Error uploading file:", error);
+  //   } finally {
+  //     setIsSaveLoading(false);
+  //   }
+  // };
+
   const uploadFileToBox = async () => {
     if (!editorRef.current) {
       toast.error("Editor instance not found.");
@@ -86,26 +125,56 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
     setIsSaveLoading(true);
     try {
-      editorRef.current.saveAs(async (blob) => {
-        const uploadData = new FormData();
-        uploadData.append("file", blob, item.name);
-        uploadData.append("boxFolderId", selectedItem.id);
-        uploadData.append("email", getUserData().email);
+      // Use `downloadAs` to get the file Blob
+      console.log("editorRef.current", editorRef.current);
 
-        const response = await fetchWrapper("/api/box/files/replace", {
-          method: "POST",
-          body: uploadData,
-        });
+      // editorRef.current.downloadAs(async (blob) => {
+      //   if (!blob) {
+      //     throw new Error("Failed to retrieve saved document.");
+      //   }
 
-        if (!response.ok) throw new Error("Failed to upload file");
+      //   console.log("Blob generated successfully", blob);
 
-        toast.success("File saved successfully");
-        setIsModalOpen(false);
-      }, "blob");
+      //   const file = new File([blob], item.name, { type: blob.type });
+
+      //   const userData = getUserData();
+
+      //   const uploadData = new FormData();
+      //   uploadData.append("file", file);
+      //   uploadData.append("boxFolderId", selectedItem.id);
+      //   uploadData.append("email", userData.email);
+      //   uploadData.append("userId", userData.boxUserId);
+
+      //   try {
+      //     // 🔥 Call the replace API to upload the file to Box
+      //     const response = await fetchWrapper("/api/box/files/replace", {
+      //       method: "POST",
+      //       body: uploadData,
+      //     });
+
+      //     if (!response.ok) {
+      //       throw new Error("Failed to upload file");
+      //     }
+
+      //     toast.success("File saved successfully");
+      //     setIsModalOpen(false);
+      //   } catch (uploadError) {
+      //     toast.error(uploadError.message);
+      //     console.error("Error uploading file:", uploadError);
+      //   } finally {
+      //     setIsSaveLoading(false);
+      //   }
+      // });
+      editorRef.current.setRequestedDocument({
+        c: "compare",
+        fileType: fileType,
+        url: fileUrl,
+        token: token,
+      });
+      
     } catch (error) {
       toast.error(error.message);
-      console.error("Error uploading file:", error);
-    } finally {
+      console.error("Error processing file:", error);
       setIsSaveLoading(false);
     }
   };
@@ -117,7 +186,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   useEffect(() => {
     return () => {
       if (editorRef.current) {
-        editorRef.current.destroy();
+        editorRef.current.destroyEditor()
         editorRef.current = null;
       }
     };
