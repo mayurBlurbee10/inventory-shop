@@ -5,7 +5,6 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { SignJWT } from "jose";
-import { fileTypeFromStream } from "file-type";
 
 function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const editorRef = useRef(null);
@@ -14,6 +13,8 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const [fileUrl, setFileUrl] = useState("");
   const [token, setToken] = useState("");
   const [fileType, setFileType] = useState("");
+  const [blobReq, setBlobReq] = useState(false);
+  const [replaceReq, setReplaceReq] = useState(false);
 
   const getDocumentType = (fileType) => {
     const fileMappings = {
@@ -28,6 +29,36 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     );
   };
 
+  const getBlobFromUrl = async (url, fileType) => {
+    try {
+      if (blobReq) {
+        return;
+      } else {
+        setBlobReq(true);
+      }
+      const userData = getUserData();
+      console.log("FileType", fileType)
+      const response = await fetchWrapper(
+        `/api/box/files/proxy-file?url=${encodeURIComponent(
+          url
+        )}&&fileType=${fileType}&&token=${token}`,
+        { responseType: "blob" }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file. Status: ${response.status}`);
+      }
+
+      const blob = await response.blob(); // ✅ Convert response to Blob
+      console.log("✅ Blob received:", blob);
+
+      return blob;
+    } catch (error) {
+      console.error("❌ Error fetching blob:", error);
+      return null;
+    }
+  };
+
   const getFile = useCallback(async () => {
     if (!item?.id || isLoading) return;
     setIsLoading(true);
@@ -39,13 +70,9 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
       if (!response || !response.ok) throw new Error("Failed to fetch file");
 
-      // const clonedResponse = response.clone();
-      // const fileType = await fileTypeFromStream(clonedResponse.body);
-      // const fileBlob = await response.blob();
-      // const fileUrl = URL.createObjectURL(fileBlob);
       const { fileUrl, fileType } = await response.json();
-      setFileUrl(fileUrl)
-      setFileType(fileType)
+      setFileUrl(fileUrl);
+      setFileType(fileType);
       const userData = getUserData();
       const secretKey = new TextEncoder().encode(
         "9bce206dc17d48548d37a329732a3c88"
@@ -62,6 +89,41 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         documentType: getDocumentType(fileType),
         editorConfig: {
           user: { id: userData.id, name: userData.name },
+          customization: { autoSave: true },
+        },
+        events: {
+          onRequestSaveAs: async function (event) {
+            console.log("Saving document...");
+            try {
+              const data = event.data; // Get file data from ONLYOFFICE
+              console.log("fileData", event);
+              const blob = await getBlobFromUrl(data.url, fileType);
+              console.log("blob", blob);
+              await uploadFileToBox(blob);
+            } catch (error) {
+              console.error("Error updating file:", error);
+              toast.error("Failed to save document.");
+            }
+          },
+          onRequestClose: function () {
+            console.log("Editor closed");
+            if (editorRef.current && editorRef.current.destroyEditor) {
+              editorRef.current.destroyEditor();
+            }
+          },
+          onDownloadAs: async function (event) {
+            console.log("Saving document...");
+            try {
+              const data = event.data; // Get file data from ONLYOFFICE
+              console.log("fileData", event);
+              const blob = await getBlobFromUrl(data.url, fileType);
+              console.log("blob", blob);
+              await uploadFileToBox(blob);
+            } catch (error) {
+              console.error("Error updating file:", error);
+              toast.error("Failed to save document.");
+            }
+          },
         },
       };
 
@@ -70,7 +132,16 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         .setIssuedAt()
         .setExpirationTime("1h")
         .sign(secretKey);
-      setToken(token)
+      setToken(token);
+
+      if (
+        editorRef.current &&
+        typeof editorRef.current.destroyEditor === "function"
+      ) {
+        console.log("🔹 Destroying old editor instance...", editorRef.current);
+        editorRef.current.destroyEditor();
+      }
+
       editorRef.current = new window.DocsAPI.DocEditor("onlyoffice-editor", {
         ...tokenPayload,
         token,
@@ -85,99 +156,57 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     }
   }, [item, isLoading]);
 
-  // const uploadFileToBox = async () => {
-  //   if (!editorRef.current) {
-  //     toast.error("Editor instance not found.");
-  //     return;
-  //   }
-
-  //   setIsSaveLoading(true);
-  //   try {
-  //     editorRef.current.saveAs(async (blob) => {
-  //       const uploadData = new FormData();
-  //       uploadData.append("file", blob, item.name);
-  //       uploadData.append("boxFolderId", selectedItem.id);
-  //       uploadData.append("email", getUserData().email);
-
-  //       const response = await fetchWrapper("/api/box/files/replace", {
-  //         method: "POST",
-  //         body: uploadData,
-  //       });
-
-  //       if (!response.ok) throw new Error("Failed to upload file");
-
-  //       toast.success("File saved successfully");
-  //       setIsModalOpen(false);
-  //     }, "blob");
-  //   } catch (error) {
-  //     toast.error(error.message);
-  //     console.error("Error uploading file:", error);
-  //   } finally {
-  //     setIsSaveLoading(false);
-  //   }
-  // };
-
-  const uploadFileToBox = async () => {
-    if (!editorRef.current) {
-      toast.error("Editor instance not found.");
+  const uploadFileToBox = async (blob) => {
+    if (replaceReq) {
+      return;
+    } else {
+      setReplaceReq(true);
+    }
+    if (!blob) {
+      console.log("No blob");
       return;
     }
-
-    setIsSaveLoading(true);
     try {
-      // Use `downloadAs` to get the file Blob
-      console.log("editorRef.current", editorRef.current);
+      const userData = getUserData();
+      const formData = new FormData();
+      formData.append("file", blob, item.name);
+      if (!!selectedItem && selectedItem.type == "folder") {
+        formData.append("boxFolderId", selectedItem.id);
+      } else {
+        formData.append("boxFolderId", userData.boxFolderId);
+      }
+      formData.append("email", userData.email);
 
-      // editorRef.current.downloadAs(async (blob) => {
-      //   if (!blob) {
-      //     throw new Error("Failed to retrieve saved document.");
-      //   }
-
-      //   console.log("Blob generated successfully", blob);
-
-      //   const file = new File([blob], item.name, { type: blob.type });
-
-      //   const userData = getUserData();
-
-      //   const uploadData = new FormData();
-      //   uploadData.append("file", file);
-      //   uploadData.append("boxFolderId", selectedItem.id);
-      //   uploadData.append("email", userData.email);
-      //   uploadData.append("userId", userData.boxUserId);
-
-      //   try {
-      //     // 🔥 Call the replace API to upload the file to Box
-      //     const response = await fetchWrapper("/api/box/files/replace", {
-      //       method: "POST",
-      //       body: uploadData,
-      //     });
-
-      //     if (!response.ok) {
-      //       throw new Error("Failed to upload file");
-      //     }
-
-      //     toast.success("File saved successfully");
-      //     setIsModalOpen(false);
-      //   } catch (uploadError) {
-      //     toast.error(uploadError.message);
-      //     console.error("Error uploading file:", uploadError);
-      //   } finally {
-      //     setIsSaveLoading(false);
-      //   }
-      // });
-      editorRef.current.setRequestedDocument({
-        c: "compare",
-        fileType: fileType,
-        url: fileUrl,
-        token: token,
+      const response = await fetchWrapper("/api/box/files/replace", {
+        method: "POST",
+        body: formData,
       });
-      
+
+      if (!response.ok) throw new Error("Failed to upload file");
+
+      toast.success("File saved successfully");
+      editorRef.current.destroyEditor();
+      setIsModalOpen(false);
     } catch (error) {
       toast.error(error.message);
       console.error("Error processing file:", error);
+      setIsModalOpen(false);
       setIsSaveLoading(false);
     }
   };
+
+  async function handleSaveFile() {
+    if (!editorRef.current) return;
+    setIsSaveLoading(true);
+
+    try {
+      console.log("editor.current", editorRef.current);
+      editorRef.current.downloadAs();
+    } catch (error) {
+      console.error("Error saving document:", error);
+      toast.error("Failed to save document.");
+    }
+  }
 
   useEffect(() => {
     if (isModalOpen) getFile();
@@ -186,7 +215,8 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   useEffect(() => {
     return () => {
       if (editorRef.current) {
-        editorRef.current.destroyEditor()
+        console.log("Destroy", editorRef.current);
+        editorRef.current.destroyEditor();
         editorRef.current = null;
       }
     };
@@ -204,7 +234,19 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
           <div className="flex justify-between items-center border-b px-4 py-3">
             <h2 className="text-lg font-semibold">Edit “{item?.name}”</h2>
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                if (
+                  editorRef.current &&
+                  typeof editorRef.current.destroyEditor === "function"
+                ) {
+                  console.log(
+                    "🔹 Destroying old editor instance...",
+                    editorRef.current
+                  );
+                  editorRef.current.destroyEditor();
+                }
+                setIsModalOpen(false);
+              }}
               className="text-gray-400 hover:text-gray-600"
             >
               <X className="w-5 h-5" />
@@ -225,14 +267,26 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
           </div>
           <div className="flex justify-end border-t px-4 py-3 space-x-2">
             <button
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                if (
+                  editorRef.current &&
+                  typeof editorRef.current.destroyEditor === "function"
+                ) {
+                  console.log(
+                    "🔹 Destroying old editor instance...",
+                    editorRef.current
+                  );
+                  editorRef.current.destroyEditor();
+                }
+                setIsModalOpen(false);
+              }}
               disabled={isSaveLoading}
               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
             >
               Cancel
             </button>
             <button
-              onClick={uploadFileToBox}
+              onClick={handleSaveFile}
               disabled={isSaveLoading}
               className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
