@@ -2,6 +2,7 @@ import { Dialog, DialogPanel } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { ChevronRight, FolderInput, Loader2, X } from "lucide-react";
 import FileExplorer from "./FileExplorer";
+import Button from "./Common/Elements/Button";
 
 function MoveDialog({
   item,
@@ -120,13 +121,19 @@ function MoveDialog({
 
           {/* Actions */}
           <div className="flex justify-end border-t px-4 py-3 space-x-2">
-            <button
+            {/* <button
               onClick={() => setIsModalOpen(false)}
               className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
             >
               Cancel
-            </button>
-            <button
+            </button> */}
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              disabled={isLoading}
+              type="Secondary"
+              label="Cancel"
+            />
+            {/* <button
               onClick={() => {
                 handleMove(selectedFolder);
                 setIsLoading(true);
@@ -150,7 +157,27 @@ function MoveDialog({
                 <FolderInput className="w-4 h-4 mr-2" />
               )}
               Move
-            </button>
+            </button> */}
+            <Button
+            onClick={() => {
+              handleMove(selectedFolder);
+              setIsLoading(true);
+              setTimeout(() => {
+                setIsLoading(false);
+            }, 2000); 
+            }}
+            disabled={
+              isLoading ||
+              !selectedFolder ||
+              selectedFolder?.id ==
+                currentLocation[currentLocation.length - 1]?.id ||
+              selectedFolder?.id == item?.id
+            }
+            isLoading={isLoading}
+            icon={FolderInput}
+            type="Primary"
+            label ="Move"
+            />
           </div>
         </DialogPanel>
       </div>

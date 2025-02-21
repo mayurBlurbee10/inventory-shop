@@ -1,6 +1,7 @@
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { useEffect, useState } from "react";
 import { Share2, X } from "lucide-react";
+import Button from "./Common/Elements/Button";
 
 const DialogBox = ({ title, message, fileLocation, isModalOpen, setIsModalOpen , config}) => {
 
@@ -37,7 +38,7 @@ console.log('dialog:', config)
               ></div>
             )}
             <div className="flex justify-center space-x-3">
-              <button
+              {/* <button
                 onClick={() => setIsModalOpen(false)}
                 className={`px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md  ${isLoading
                     ? "text-gray-400 cursor-not-allowed"
@@ -50,7 +51,13 @@ console.log('dialog:', config)
                 ) : (
                   "Done"
                 )}
-              </button>
+              </button> */}
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              isLoading={isLoading}
+              type="Primary"
+              label="Done"
+            />
             </div>
           </div>
         </Dialog.Panel>

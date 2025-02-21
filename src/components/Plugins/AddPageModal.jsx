@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog } from "@headlessui/react";
 import { useParams } from "next/navigation";
+import Button from "../Common/Elements/Button";
 
 const TextEditor = dynamic(() => import("./RTE/TextEditor"), { ssr: false });
 
@@ -252,7 +253,7 @@ function AddPageModal({
               </div>
 
               <div className="w-full flex items-center justify-end mr-12 gap-2">
-                <button
+                {/* <button
                   type="button"
                   onClick={() => {
                     if (editData?.description) {
@@ -282,8 +283,37 @@ function AddPageModal({
                   disabled={loading}
                 >
                   Cancel
-                </button>
-                <button
+                </button> */}
+                <Button
+                  onClick={() => {
+                    if (editData?.description) {
+                      if (
+                        compareDescription(
+                          editData?.description,
+                          getValues("description")
+                        )
+                      ) {
+                        setEditData(null);
+                        setIsOpenCancelConfirm(false);
+                        setValue("description", "");
+                        onClose();
+                      } else {
+                        setIsOpenCancelConfirm(true);
+                      }
+                    } else if (getValues("description")) {
+                      setIsOpenCancelConfirm(true);
+                    } else {
+                      setEditData(null);
+                      setIsOpenCancelConfirm(false);
+                      setValue("description", "");
+                      onClose();
+                    }
+                  }}
+                  disabled={loading}
+                  type="Secondary"
+                  label ="Cancel"
+                />
+                {/* <button
                   type="button"
                   disabled={loading}
                   className="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -296,7 +326,16 @@ function AddPageModal({
                     : editData
                     ? "Update"
                     : "Add"}
-                </button>
+                </button> */}
+                <Button
+                  disabled={loading}
+                  onClick={handleClose}
+                  isLoading={loading}
+                  type="Primary"
+                  label={editData
+                    ? "Update"
+                    : "Add"}
+                />
               </div>
             </form>
           </div>
@@ -338,13 +377,18 @@ function AddPageModal({
                 This action CANNOT be undone. This will not save your page
               </p>
               <div className="flex items-center justify-between">
-                <button
+                {/* <button
                   onClick={() => setIsOpenCancelConfirm(false)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                 >
                   Cancel
-                </button>
-                <button
+                </button> */}
+                <Button
+                  onClick={() => setIsOpenCancelConfirm(false)}
+                  type="Secondary"
+                  label="Cancel"
+                />
+                {/* <button
                   onClick={() => {
                     setEditData(null);
                     setIsOpenCancelConfirm(false);
@@ -354,7 +398,17 @@ function AddPageModal({
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   OK
-                </button>
+                </button> */}
+                <Button
+                  onClick={() => {
+                    setEditData(null);
+                    setIsOpenCancelConfirm(false);
+                    setValue("description", "");
+                    onClose();
+                  }}
+                  type="Primary"
+                  label="OK"
+                />
               </div>
             </div>
           </Dialog.Panel>

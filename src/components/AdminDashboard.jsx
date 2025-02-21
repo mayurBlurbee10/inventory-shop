@@ -25,6 +25,7 @@ import MasterUsersContent from "./Master/MasterUsersContent";
 import { toast } from "react-toastify";
 import { Dialog, DialogBackdrop, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import PortalCreatedPopup from "./PortalCreatedPopup";
+import Button from "./Common/Elements/Button";
 
 const SidePanel = ({ setCurrentPage }) => (
   <div className="w-80 bg-[#0061D5] z-50 p-6 flex flex-col h-screen fixed left-0">
@@ -327,12 +328,17 @@ const SubsidiaryGrid = ({
           </div>
           {visibleSubsidiaries < subsidiaries.length && (
             <div className="flex justify-center mt-6">
-              <button
+              {/* <button
                 onClick={handleLoadMore}
                 className="bg-[#0061D5] text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 Load More
-              </button>
+              </button> */}
+              <Button 
+                onClick={handleLoadMore}
+                type="Primary"
+                label="Load More"
+              />
             </div>
           )}
         </div>

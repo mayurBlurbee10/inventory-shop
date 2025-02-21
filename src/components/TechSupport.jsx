@@ -1,5 +1,6 @@
 import { X, Phone, FileSearch, Calculator } from "lucide-react";
 import React, { useState } from "react";
+import Button from "./Common/Elements/Button";
 
 function TechSupport({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
@@ -96,21 +97,25 @@ function TechSupport({ isOpen, onClose }) {
           </div>
 
           <div className="flex justify-end space-x-4">
-            <button
-              type="button"
+            <Button
               onClick={handleModalClose}
-              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
+              type="Secondary"
+              label="Cancel"
+            />
+            {/* <button
               type="submit"
               className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
               disabled={loading}
             >
               {loading ? "Submitting..." : "Submit Request"}
-            </button>
+            </button> */}
+            <Button 
+              disabled={loading}
+              isLoading={loading}
+              type="Primary"
+              label="Submit Request"
+            />
           </div>
         </form>
 
@@ -119,27 +124,31 @@ function TechSupport({ isOpen, onClose }) {
             Or choose one of these quick options:
           </p>
           <div className="grid grid-cols-3 gap-4">
-            <button
+            {/* <button
               onClick={() => handleActionButton('quote')}
               className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
             >
               <Calculator className="h-5 w-5" />
               <span>Get Quote</span>
-            </button>
-            <button
-              onClick={() => handleActionButton('call')}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
-            >
-              <Phone className="h-5 w-5" />
-              <span>Call Us</span>
-            </button>
-            <button
-              onClick={() => handleActionButton('status')}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
-            >
-              <FileSearch className="h-5 w-5" />
-              <span>Project Status</span>
-            </button>
+            </button> */}
+            <Button 
+               onClick={() => handleActionButton('quote')}
+               icon={Calculator}
+               type="Secondary"
+               label="Get Quote"
+            />
+            <Button
+               onClick={() => handleActionButton('call')}
+               icon={Phone}
+               type="Secondary"
+               label="Call Us"
+            />
+            <Button
+             onClick={() => handleActionButton('status')}
+               icon={FileSearch}
+               type="Secondary"
+               label="Project Status"
+            />
           </div>
         </div>
       </div>

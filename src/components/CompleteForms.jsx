@@ -3,6 +3,7 @@ import { File, UploadCloud, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import MyTaskFileUploadArea from "./MyTaskFileUploadArea";
 import { toast } from "react-toastify";
+import Button from "./Common/Elements/Button";
 
 
 const CompleteForms = ({ isOpen, onClose }) => {
@@ -94,14 +95,21 @@ const CompleteForms = ({ isOpen, onClose }) => {
                             </div>
                         </div>
                         <div className="p-2 w-full flex justify-end mt-2">
-                            <button
+                            {/* <button
                                 type="submit"
                                 onClick={handleSubmit}
                                 className={`px-4 py-2 rounded-lg text-white ${isFormValid ? "bg-[#0061D5]" : "bg-gray-400 cursor-not-allowed"
                                     }`}
                                 disabled={!isFormValid}>
                                 {submitLoading ? "Submitting..." : "Submit"}
-                            </button>
+                            </button> */}
+                            <Button
+                                type="Primary"
+                                label="Submit"
+                                onClick={handleSubmit}
+                                disabled={!isFormValid}
+                                isLoading={submitLoading}
+                            />
                         </div>
                     </form>
                 </Dialog.Panel>

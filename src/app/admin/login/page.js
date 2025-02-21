@@ -6,6 +6,7 @@ import { UserRole } from '@/config/constants';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
 import { setUserData } from '@/app/lib/auth';
 import { toast } from 'react-toastify';
+import Button from '@/components/Common/Elements/Button';
 
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
@@ -129,7 +130,7 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <button
+          {/* <button
             type="submit"
             disabled={isLoading}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0061D5] hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
@@ -139,7 +140,13 @@ export default function AdminLoginPage() {
             ) : (
               'Sign In'
             )}
-          </button>
+          </button> */}
+          <Button
+             disabled={isLoading}
+             isLoading={isLoading}
+             label="Sign In"
+             type="Login"
+          />
         </form>
         <div className="mt-6 text-center">
           <a href="#" className="text-[#0061D5] hover:text-blue-500 text-sm">

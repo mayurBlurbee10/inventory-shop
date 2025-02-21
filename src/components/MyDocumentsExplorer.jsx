@@ -39,6 +39,7 @@ import { getUserData } from "@/app/lib/auth";
 import { UserRole } from "@/config/constants";
 import SignRequestModal from "./SignRequestModal";
 import { Menu, MenuItem, MenuItems, MenuButton } from "@headlessui/react";
+import Button from "./Common/Elements/Button";
 
 const ShareModal = ({
   isOpen,
@@ -63,6 +64,7 @@ const ShareModal = ({
   );
   const [collabLoading, setCollabLoading] = useState(false);
   const [collaborator, setCollaborator] = useState([]);
+  const [sendButtonLoading, setSendButtonLoading] = useState(false);
 
   useEffect(() => {
     setSharedLink(
@@ -107,7 +109,8 @@ const ShareModal = ({
 
   const handleEmailShare = async () => {
     try {
-      setCollabLoading(true);
+      // setCollabLoading(true);
+      setSendButtonLoading(true);
       const obj = {
         method: "POST",
         headers: {
@@ -128,7 +131,8 @@ const ShareModal = ({
       const data = await response.json();
       if (!response.ok)
         throw new Error(data.error || "Failed to add collaborator");
-      setCollabLoading(false);
+      // setCollabLoading(false);
+      setSendButtonLoading(false);
       onAddCollaborator({
         id: data.response.id,
         userID: userID.value,
@@ -336,13 +340,12 @@ const ShareModal = ({
                     readOnly
                     className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none"
                   />
-                  <button
+                  <Button
                     onClick={handleCopyLink}
-                    className="shrink-0 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                  >
-                    <Copy size={16} />
-                    <span>{copied ? "Copied!" : "Copy"}</span>
-                  </button>
+                    icon={Copy}
+                    type="Secondary"
+                    label={copied ? "Copied!" : "Copy"}
+                  />
                 </div>
               )}
             </div>
@@ -355,7 +358,7 @@ const ShareModal = ({
             </label>
             <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap justify-center">
               <Select
-                className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[300px]"
+                className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px]"
                 classNamePrefix="Enter email address"
                 isClearable={true}
                 isSearchable={true}
@@ -373,7 +376,7 @@ const ShareModal = ({
                 {/* <option value="uploader">Uploader</option>
                         <option value="co-owner">Co-owner</option> */}
               </select>
-              <button
+              {/* <button
                 onClick={handleEmailShare}
                 disabled={!userID}
                 className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
@@ -384,7 +387,16 @@ const ShareModal = ({
               >
                 <Send size={16} />
                 <span>Send</span>
-              </button>
+              </button> */}
+
+              <Button
+                 onClick={handleEmailShare}
+                 disabled={!userID}
+                 icon={Send}
+                 type="Primary"
+                 label="Send"
+                 isLoading={sendButtonLoading}
+              />
             </div>
           </div>
           {/* )} */}
@@ -421,7 +433,7 @@ const ShareModal = ({
                           {/* <option value="uploader">Uploader</option>
                         <option value="co-owner">Co-owner</option> */}
                         </select>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="sm:opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => {
                               handelRemoveCollaborator(content);
@@ -848,16 +860,16 @@ function SharedFolderExplorer({
     setUser(userData);
   }, []);
 
-  if (isLoading) {
-    return (
-      isLoading && (
-        <div className="flex justify-center items-center h-40">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <p className="ml-2 text-gray-500">Loading...</p>
-        </div>
-      )
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     isLoading && (
+  //       <div className="flex justify-center items-center h-40">
+  //         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+  //         <p className="ml-2 text-gray-500">Loading...</p>
+  //       </div>
+  //     )
+  //   );
+  // }
 
   return (
     <div>
@@ -1110,6 +1122,7 @@ function SharedFolderExplorer({
                                 )}
 
                                 <DeleteConfirmDialog
+                                isLoading={isLoading}
                                   isModalOpen={isDeleteModalOpen}
                                   setIsModalOpen={setIsDeleteModalOpen}
                                   handleDelete={

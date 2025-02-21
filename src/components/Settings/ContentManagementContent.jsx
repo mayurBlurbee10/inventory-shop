@@ -3,6 +3,7 @@ import { PlusCircle, X, Pencil, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useParams, useRouter } from "next/navigation";
+import Button from "../Common/Elements/Button";
 
 const ContentManagementContent = ({
   isAddRequired,
@@ -594,15 +595,21 @@ const ContentManagementContent = ({
               )}
 
               <div className="flex justify-end space-x-3">
-                <button
+                {/* <button
                   type="button"
                   onClick={handleModalClose} // Close the dialog
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                   disabled={isSubmitting}
                 >
                   Cancel
-                </button>
-                <button
+                </button> */}
+                <Button
+                 type="Secondary"
+                 onClick={handleModalClose} 
+                 disabled={isSubmitting}
+                 label="Cancel"
+                />
+                {/* <button
                   type="submit"
                   disabled={isSubmitting}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
@@ -614,7 +621,16 @@ const ContentManagementContent = ({
                     : isEditMode
                       ? "Update"
                       : "Add"}
-                </button>
+                </button> */}
+                <Button
+                type="Primary"
+                disabled={isSubmitting}
+                label= {
+                    isEditMode
+                    ? "Update"
+                    : "Add"}
+                  isLoading={isSubmitting && isEditMode}
+                />
               </div>
             </form>
           </div>

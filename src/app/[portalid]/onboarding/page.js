@@ -2,6 +2,7 @@
 "use client";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import Button from "@/components/Common/Elements/Button";
 import Footer from "@/components/Footer";
 import ContentManagementContent from "@/components/Settings/ContentManagementContent";
 import UsersContent from "@/components/Settings/UsersContent";
@@ -55,7 +56,7 @@ export default function OnBoardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAddRequired, setIsAddRequired] = useState(true)
-  const [isUserData , setIsUserData] = useState("");
+  const [isUserData, setIsUserData] = useState("");
   const steps = [
     { component: ContentManagementContent },
     { component: UsersContent },
@@ -265,16 +266,22 @@ export default function OnBoardingPage() {
             {currentStep === 0 ? (
               <div></div>
             ) : (
-              <button
+              // <button
+              //   onClick={currentStep === 0 ? onClose : handleBack}
+              //   className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
+              //   disabled={isSubmitting}
+              //  >
+              //   {currentStep === 0 ? "Cancel" : "Back"}
+              // </button>
+              <Button
                 onClick={currentStep === 0 ? onClose : handleBack}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
                 disabled={isSubmitting}
-              >
-                {currentStep === 0 ? "Cancel" : "Back"}
-              </button>
+                label={currentStep === 0 ? "Cancel" : "Back"}
+                type="Secondary"
+              />
             )}
 
-            <button
+            {/* <button
               onClick={handleNext}
               disabled={isSubmitting}
               className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting
@@ -285,7 +292,16 @@ export default function OnBoardingPage() {
               {currentStep === steps.length - 1
                 ? "Save & Continue"
                 : "Continue"}
-            </button>
+            </button> */}
+            <Button
+              onClick={handleNext}
+              disabled={isSubmitting}
+              label={currentStep === steps.length - 1
+                ? "Save & Continue"
+                : "Continue"}
+              type="Primary"
+            />
+
           </div>
         </div>
       </div>

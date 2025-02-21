@@ -7,6 +7,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { PluginType } from "@/config/constants";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
+import Button from "../Common/Elements/Button";
 
 const LoadingSpinner = () => (
   <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
@@ -119,7 +120,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center"  style={{marginTop : 0}}>
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center" style={{ marginTop: 0 }}>
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
             <div className="flex -items-center justify-between border-b border-solid">
               <label className="text-xl font-semibold text-gray-700 mb-3">
@@ -194,33 +195,49 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
               {(plugin?.type === PluginType.TNC &&
                 plugin.pages &&
                 plugin.pages?.length < 1) ||
-              plugin.type !== PluginType.TNC ? (
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 bg-gray-100 rounded-md border  disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => {
-                    // Clear the editData state
-                    setEditData(null);
+                plugin.type !== PluginType.TNC ? (
+                // <button
+                //   type="button"
+                //   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 bg-gray-100 rounded-md border  disabled:opacity-50 disabled:cursor-not-allowed"
+                //   onClick={() => {
+                //     // Clear the editData state
+                //     setEditData(null);
 
-                    // Toggle the modal only if there's no editData
+                //     // Toggle the modal only if there's no editData
+                //     if (!editData) {
+                //       setIsOpenAddPageModal((prev) => !prev);
+                //     }
+                //   }}
+                // >
+                //   <PlusCircle className="w-4 h-4" />
+                //   Add Page
+                // </button>
+                <Button
+                  onClick={() => {
+                    setEditData(null);
                     if (!editData) {
                       setIsOpenAddPageModal((prev) => !prev);
                     }
                   }}
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Add Page
-                </button>
+                  icon={PlusCircle}
+                  type="Secondary"
+                  label="Add Page"
+                />
               ) : null}
               {/* </div> */}
-              <button
+              {/* <button
                 type="button"
                 className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
                 // disabled={loading}
                 onClick={handleModalClose}
               >
                 Done
-              </button>
+              </button> */}
+              <Button
+                 onClick={handleModalClose}
+                 type="Primary"
+                 label="Done"
+              />
             </div>
           </div>
         </div>
@@ -496,7 +513,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center" style={{marginTop : 0}}>
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center" style={{ marginTop: 0 }}>
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
             <div className="flex -items-center justify-between border-b border-solid">
               <label className="text-xl font-semibold text-gray-700 mb-3">
@@ -533,9 +550,9 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
               {(pluginData.type === PluginType.TNC &&
                 pages &&
                 pages?.length < 1) ||
-              pluginData.type !== PluginType.TNC ? (
+                pluginData.type !== PluginType.TNC ? (
                 <div className="flex items-center gap-2 w-full">
-                  <button
+                  {/* <button
                     type="button"
                     className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => {
@@ -550,7 +567,18 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
                   >
                     <PlusCircle className="w-4 h-4" />
                     Add
-                  </button>
+                  </button> */}
+                  <Button
+                    onClick={() => {
+                      setEditData(null);
+                      if (!editData) {
+                        setIsOpenAddPageModal((prev) => !prev);
+                      }
+                    }}
+                    icon={PlusCircle}
+                    type="Primary"
+                    label="Add"
+                  />
                 </div>
               ) : null}
               {pluginData.type && pages && pages.length > 0 && (
@@ -611,7 +639,13 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
                 >
                   Cancel
                 </button> */}
-                <button
+                <Button
+                  onClick={handleModalClose}
+                  disabled={loading}
+                  type="Secondary"
+                  label="Cancel"
+                />
+                {/* <button
                   type="submit"
                   className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
                   disabled={loading}
@@ -623,7 +657,13 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated }) => {
                   ) : (
                     "Done"
                   )}
-                </button>
+                </button> */}
+                <Button
+                  disabled={loading}
+                  isLoading={loading}
+                  type="Primary"
+                  label="Done"
+                />
               </div>
             </form>
           </div>

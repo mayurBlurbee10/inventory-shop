@@ -23,6 +23,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { toast } from "react-toastify";
+import Button from "./Common/Elements/Button";
 
 // Mock data - in real app, this would come from an API
 const subsidiariesData = [
@@ -130,10 +131,9 @@ const ActionButton = ({
   <button
     onClick={onClick}
     className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full mb-2
-      ${
-        variant === "primary"
-          ? "bg-blue-700 text-white hover:bg-blue-800"
-          : "bg-blue-600 text-white hover:bg-blue-700"
+      ${variant === "primary"
+        ? "bg-blue-700 text-white hover:bg-blue-800"
+        : "bg-blue-600 text-white hover:bg-blue-700"
       }`}
   >
     {Icon && <Icon className="w-4 h-4 mr-2" />}
@@ -416,12 +416,17 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
         </div>
 
         {user?.id === config?.createdBy?.id && (
-          <button
-            className="inline-flex items-center justify-center mt-5 px-4 py-2 text-sm font-medium text-white bg-[#e63434e8] rounded-md hover:bg-[#bd2626] disabled:opacity-50 disabled:cursor-not-allowed"
+          // <button
+          //   className="inline-flex items-center justify-center mt-5 px-4 py-2 text-sm font-medium text-white bg-[#e63434e8] rounded-md hover:bg-[#bd2626] disabled:opacity-50 disabled:cursor-not-allowed"
+          //   onClick={() => setPortalToDelete(config)}
+          // >
+          //   Delete Portal
+          // </button>
+          <Button
             onClick={() => setPortalToDelete(config)}
-          >
-            Delete Portal
-          </button>
+            type="Delete"
+            label="Delete Portal"
+          />
         )}
       </div>
 

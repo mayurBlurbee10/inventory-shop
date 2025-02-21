@@ -15,4 +15,10 @@ class Pages extends BaseTable {
 
   @ManyToOne(() => Plugins, (plugin) => plugin.pages)
   plugin;
+
+  @Column({ type: "bit", nullable: false, default: 1 })
+  isCustomPage;
+  
+  @Column({ type: "simple-json", nullable: true, default: "[]" })
+  visibility;
 }

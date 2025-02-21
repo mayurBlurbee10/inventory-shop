@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import AddSuperUserModal from "./AddSuperUserModal";
 import { getUserData } from "@/app/lib/auth";
+import Button from "../Common/Elements/Button";
 
 export default function MasterUsersContent({setCurrentPageCount}) {
   const [users, setUsers] = useState([]);
@@ -43,13 +44,19 @@ export default function MasterUsersContent({setCurrentPageCount}) {
   return (
     <div className="space-b-6">
       <div className="flex justify-end items-center mb-4 w-full">
-        <button
+        {/* <button
           onClick={() => setShowAddModal(true)}
           className="px-4 py-2 text-white bg-[#0061D5] rounded-md hover:bg-[#0061D5] inline-flex items-center"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add User
-        </button>
+        </button> */}
+        <Button
+          onClick={() => setShowAddModal(true)}
+          icon ={Plus}
+          type="Primary"
+          label ="Add User"
+        />
       </div>
 
       {loading ? (

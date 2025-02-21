@@ -12,6 +12,7 @@ import { getSession, signIn } from "next-auth/react";
 import { getUserData } from "@/lib/auth";
 import TNCModal from "./TNCModal";
 import { UserRole } from "@/config/constants";
+import Button from "./Common/Elements/Button";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500 ">
@@ -106,9 +107,13 @@ function Login() {
     return user;
   };
 
-  const fetchUser = async () => {
+  const fetchUser = async (loginType) => {
     try {
-      setIsLoadingLogin(true);
+      if (loginType === "okta") {
+        setIsLoadingOkta(true)
+      } else {
+        setIsLoadingLogin(true);
+      }
       const encodedEmail = encodeURIComponent(email);
       const response = await fetchWrapper(
         `/api/users?email=${encodedEmail}`,
@@ -131,14 +136,14 @@ function Login() {
       console.log("error: ", error);
     } finally {
       setIsLoadingLogin(false);
+      setIsLoadingOkta(false)
     }
   };
 
   const handleCheckForTNC = async (e) => {
     e.preventDefault();
-
     try {
-      const userData = await fetchUser();
+      const userData = await fetchUser("login");
       if (userData && page && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
       } else {
@@ -265,7 +270,8 @@ function Login() {
 
   const login = async () => {
     try {
-      const userData = await fetchUser();
+      setIsLoadingOkta(true);
+      const userData = await fetchUser("okta");
       if (userData && page && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
         return;
@@ -273,6 +279,8 @@ function Login() {
       await signIn("okta");
     } catch (error) {
       console.log("error: ", error);
+    } finally {
+      setIsLoadingOkta(true);
     }
   };
   const getUserDetailsByEmail = async (email) => {
@@ -543,7 +551,7 @@ function Login() {
                       required
                     />
                   </div>
-                  <button
+                  {/* <button
                     type="submit"
                     className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group "
                     disabled={isLoadingLogin || isLoadingOkta}
@@ -556,16 +564,26 @@ function Login() {
                         Log In
                       </span>
                     )}
-                  </button>
+                  </button> */}
+                  <Button
+                    disabled={isLoadingLogin || isLoadingOkta}
+                    isLoading={isLoadingLogin}
+                    type="Login"
+                    label="Log In"
+                  />
+
                   <button
                     type="button"
-                    className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
+                    className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1 disabled:cursor-not-allowed disabled:opacity-50"
                     onClick={login}
                     disabled={isLoadingLogin || isLoadingOkta}
                   // style={{ backgroundColor: config?.secondaryColor }}
                   >
                     {isLoadingOkta ? (
-                      <div className="w-6 h-6 border-2 border-[#808080] border-t-transparent rounded-full animate-spin mx-auto " />
+                      <div className="flex justify-center items-center gap-2 ">
+                        <span>Login with Okta</span>
+                        <div className="spinner"></div>
+                      </div>
                     ) : (
                       <span className="group-hover:scale-105 transition-all ease-in-out duration-200">
                         Login with Okta

@@ -1,8 +1,10 @@
 "use client";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import Button from "@/components/Common/Elements/Button";
 import Documents from "@/components/Documents";
 import SignRequestModal from "@/components/SignRequestModal";
+import { isPlainObject } from "@tiptap/core";
 import {
   ArrowDownUp,
   Check,
@@ -306,7 +308,7 @@ const ApplicationStep = ({
         >
           <ListChecks className="size-5" />
         </div>
-        <button
+        {/* <button
           className={`px-3 py-2 border border-gray-500 rounded-lg disabled:cursor-not-allowed disabled:opacity-50 ${!isLoading && !fileListLoading && 'transition-colors duration-300 ease-in-out hover:bg-[#0061D5] hover:text-white hover:border-white'} `}
           disabled={isLoading || fileListLoading}
           onClick={handelNext}
@@ -319,7 +321,14 @@ const ApplicationStep = ({
           ) : (
             "Next"
           )}
-        </button>
+        </button> */}
+        <Button
+          onClick={handelNext}
+          disabled={isLoading || fileListLoading}
+          isLoading={isLoading || fileListLoading}
+          type="Primary"
+          label="Next"
+        />
       </div>
     </div>
   );
@@ -472,7 +481,7 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
             <div className="flex items-center justify-between p-4">
               <p>{selectedItems.length} Selected</p>
               <div className="flex gap-2">
-                <button
+                {/* <button
                   className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
                   onClick={() => {
                     setIsRest(true);
@@ -480,8 +489,16 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
                   disabled={isLoading}
                 >
                   Cancel
-                </button>
-                <button
+                </button> */}
+                <Button
+                  onClick={() => {
+                    setIsRest(true);
+                  }}
+                  disabled={isLoading}
+                  type="Secondary"
+                  label="Cancel"
+                />
+                {/* <button
                   className="bg-blue-500 text-white px-4 py-2 rounded-md"
                   onClick={handelChoose}
                   disabled={isLoading}
@@ -490,7 +507,14 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
                     {isLoading && <div className="spinner"></div>}
                     Choose
                   </div>
-                </button>
+                </button> */}
+                <Button
+                  onClick={handelChoose}
+                  disabled={isLoading}
+                  isLoading={isLoading}
+                  type="Primary"
+                  label="Choose"
+                />
               </div>
             </div>
           </div>
@@ -559,21 +583,32 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
 
             {/* Footer with Buttons */}
             <div className="flex justify-between border-t items-center p-4">
-              <button
+              {/* <button
                 className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
                 disabled={files.length > 0}
               >
                 Close
-              </button>
+              </button> */}
+              <Button
+                disabled={files.length > 0 || isUploadLoading}
+                type="Secondary"
+                label="Close"
+              />
               <div className="flex space-x-2">
-                <button
+                {/* <button
                   className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
                   onClick={handleCancel}
                   disabled={isUploadLoading || files.length == 0}
                 >
                   Cancel
-                </button>
-                <button
+                </button> */}
+                <Button
+                  onClick={handleCancel}
+                  disabled={isUploadLoading || files.length == 0}
+                  type="Secondary"
+                  label="Cancel"
+                />
+                {/* <button
                   className="text-white px-4 py-2 rounded-md border-gray bg-blue-500 hover:bg-blue-600"
                   disabled={isUploadLoading || files.length == 0}
                   onClick={uploadFiles}
@@ -587,26 +622,32 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
                       "Upload"
                     )}
                   </div>
-                </button>
+                </button> */}
+                <Button
+                onClick={uploadFiles}
+                disabled={isUploadLoading || files.length == 0}
+                isLoading={isUploadLoading}
+                type="Primary"
+                label="Upload"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
       <div className="flex items-center justify-end py-10 gap-5">
-        <button
-          className="px-3 py-2 border border-gray-500 rounded-lg hover:bg-gray-100"
+        <Button
           onClick={() => setActiveStep("application")}
-        >
-          Back
-        </button>
-        <button
-          className="px-3 py-2 border border-gray-500 rounded-lg transition-colors duration-300 ease-in-out hover:bg-[#0061D5] hover:text-white hover:border-white"
           disabled={isLoading || isUploadLoading}
-          onClick={() => setActiveStep("loanestimate")}
-        >
-          Next
-        </button>
+          type="Secondary"
+          label="Back"
+        />
+        <Button
+        onClick={() => setActiveStep("loanestimate")}
+        disabled={isLoading || isUploadLoading}
+        type="Primary"
+        label="Next"
+        />
       </div>
     </div>
   );
@@ -758,12 +799,17 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
         redirect_url={`/${params?.portalid}/loans`}
       />
       <div className="flex w-full justify-end mt-5">
-        <button
+        {/* <button
          className="px-3 py-2 border border-gray-500 rounded-lg hover:bg-gray-100"
           onClick={() => setActiveStep("documents")}
         >
           Back
-        </button>
+        </button> */}
+        <Button
+        onClick={() => setActiveStep("documents")}
+        type="Secondary"
+        label="Back"
+        />
       </div>
     </div >
   );

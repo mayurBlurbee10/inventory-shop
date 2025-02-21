@@ -17,6 +17,7 @@ import {
 import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
+import Button from "../Common/Elements/Button";
 
 const ProductsContent = () => {
   const params = useParams();
@@ -90,13 +91,19 @@ const ProductsContent = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Workflow Widgets</h3>
-        <button
+        {/* <button
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
           onClick={() => setIsOpenCreatePlugin((prev) => !prev)}
         >
           <PlusCircle className="w-4 h-4" />
           Add Widget
-        </button>
+        </button> */}
+        <Button
+          onClick={() => setIsOpenCreatePlugin((prev) => !prev)}
+          icon={PlusCircle}
+          type="Primary"
+          label="Add Widget"
+        />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[
