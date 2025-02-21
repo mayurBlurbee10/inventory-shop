@@ -17,6 +17,20 @@ import {
 import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
+import { PluginType } from "@/config/constants";
+
+const options = [
+  {
+    key:"pages",
+    label: "Pages",
+    value : PluginType.PAGES
+  },
+  {
+    key:"t&c",
+    label: "Terms and Conditions",
+    value : PluginType.TNC
+  },
+]
 
 const ProductsContent = () => {
   const params = useParams();
@@ -28,6 +42,7 @@ const ProductsContent = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [pluginSelected, setPluginSelected] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [pluginOptions, setPluginOptions] = useState(options);
 
   const fetchPlugins = async () => {
     try {
@@ -42,6 +57,12 @@ const ProductsContent = () => {
       }
       const data = await response.json();
       setPlugins(data.data);
+      setPluginOptions((prevOptions) =>
+        prevOptions.filter(
+          (option) => !data.data.some((plugin) => plugin?.type === option.key)
+        )
+      );
+      console.log(pluginOptions)
     } catch (error) {
       console.error("Error fetching plugins:", error);
     } finally {
@@ -70,6 +91,7 @@ const ProductsContent = () => {
       if (!response.ok) {
         throw new Error(data.error || "Failed to delete page");
       }
+      setPluginOptions((prev)=>([...prev, ...options.filter((opt)=>opt.key === plugin?.type)]))
       setIsDeleteModalOpen(false);
       setPluginSelected(null);
       fetchPlugins();
@@ -90,13 +112,15 @@ const ProductsContent = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Workflow Widgets</h3>
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-          onClick={() => setIsOpenCreatePlugin((prev) => !prev)}
-        >
-          <PlusCircle className="w-4 h-4" />
-          Add Widget
-        </button>
+        {pluginOptions && pluginOptions.length > 0 && (
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+            onClick={() => setIsOpenCreatePlugin((prev) => !prev)}
+          >
+            <PlusCircle className="w-4 h-4" />
+            Add Widget
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[
@@ -233,6 +257,7 @@ const ProductsContent = () => {
         isOpen={isOpenCreatePlugin}
         onClose={() => setIsOpenCreatePlugin(false)}
         onPluginCreated={fetchPlugins}
+        pluginOptions={pluginOptions}
       />
       <UpdatePluginModal
         isOpen={isOpenUpdatePlugin}

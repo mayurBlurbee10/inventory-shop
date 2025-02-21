@@ -174,6 +174,8 @@ function AddPageModal({
         setValue("description", "");
       }
     } catch (error) {
+      setValue("title", "")
+      setValue("description", "");
       toast.error(error.message);
       console.error("Error in handleClose:", error);
     } finally {
@@ -307,6 +309,7 @@ function AddPageModal({
         onClose={() => {
           setEditData(null);
           setIsOpenCancelConfirm(false);
+          setValue("title", "")
           setValue("description", "");
           onClose();
         }}
