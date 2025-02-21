@@ -3,6 +3,18 @@ import { PlusCircle, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import {
+  Home,
+  User,
+  Settings,
+  Bell,
+  Heart,
+  Star,
+  Camera,
+  Music,
+  Cloud,
+  Sun
+} from "lucide-react";
 
 const AddContentModal = ({
   contentTypes,
@@ -26,7 +38,7 @@ const AddContentModal = ({
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Handle form submission
   const handleAddEditContent = async (e) => {
     e.preventDefault();
@@ -61,10 +73,11 @@ const AddContentModal = ({
       // Construct payload with specific cases for fontSize and links
       const obj = imageUrl
         ? {
-            ...newContent,
-            fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "default",
-          }
+          ...newContent,
+          value: imageUrl,
+          fontSize: newContent.fontSize, // Add fontSize here
+          portalId: params.portalid ?? "default",
+        }
         : newContent.type === "Links"
         ? {
             ...newContent,
@@ -74,6 +87,7 @@ const AddContentModal = ({
           }
         : {
             ...newContent,
+            value: newContent.icon || newContent.value || "",
             fontSize: newContent.fontSize, // Add fontSize here
             portalId: params.portalid ?? "default",
           };
@@ -107,10 +121,9 @@ const AddContentModal = ({
       handleModalClose();
 
       toast.success(
-        `${
-          apiType === "updateContentManagement"
-            ? "Content updated successfully"
-            : "Content added successfully"
+        `${apiType === "updateContentManagement"
+          ? "Content updated successfully"
+          : "Content added successfully"
         }`
       );
     } catch (error) {
@@ -195,6 +208,19 @@ const AddContentModal = ({
     setFile(null);
     setContentTypes(originalContentTypes);
   };
+
+  const iconOptions = [
+    { name: "Home", component: Home },
+    { name: "User", component: User },
+    { name: "Settings", component: Settings },
+    { name: "Bell", component: Bell },
+    { name: "Heart", component: Heart },
+    { name: "Star", component: Star },
+    { name: "Camera", component: Camera },
+    { name: "Music", component: Music },
+    { name: "Cloud", component: Cloud },
+    { name: "Sun", component: Sun }
+  ];
 
   return (
     <div
@@ -301,6 +327,47 @@ const AddContentModal = ({
               </select>
             </div>
           )}
+          {/* Icons */}
+          {newContent.type === "Icons" && (
+            <div className="mb-4">
+              <label
+                htmlFor="iconSelect"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Select Icon
+              </label>
+              <select
+                id="iconSelect"
+                name="iconSelect"
+                className="mt-1 block w-[200px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                value={newContent?.icon || ""}
+                onChange={(e) =>
+                  setNewContent((prev) => ({ ...prev, icon: e.target.value }))
+                }
+              >
+                {iconOptions.map((icon) => (
+                  <option key={icon.name} value={icon.name}>
+                    {icon.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Display selected icon */}
+              {iconOptions.find((icon) => icon.name === newContent.icon)?.component && (
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-gray-600">Selected Icon:</span>
+                  {
+                    React.createElement(
+                      iconOptions.find((icon) => icon.name === newContent.icon).component,
+                      { className: "w-6 h-6 text-gray-700" }
+                    )
+                  }
+                </div>
+              )}
+            </div>
+          )}
+
+
 
           {/* Text */}
           {newContent.type === "Text" && (
