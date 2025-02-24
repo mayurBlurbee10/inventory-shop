@@ -77,6 +77,9 @@ class Portals extends BaseTable {
   @JoinColumn({ name: "updatedBy" })
   updatedBy;
 
+  @Column({ type: "nvarchar", length: 255, nullable : true, default : "" })
+  portalCreatedAdmin;
+
   // @OneToMany(() => ContentManagement, (content) => content.portal, {
   //   cascade: true,
   // })
