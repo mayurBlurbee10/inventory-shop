@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import Button from "../Common/Elements/Button";
 
 const filterRole = (user, portalId) => {
   const permission = user?.permissions?.find(
@@ -29,7 +30,7 @@ function ViewProfileModal({
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingRoleChange, setIsLoadingRoleChange] = useState(false);
- 
+
   const [role, setRole] = useState(
     filterRole(user, params?.portalid) === "user" ? UserRole.USER : UserRole.ADMIN
   );
@@ -188,15 +189,23 @@ function ViewProfileModal({
                   <option value={UserRole.ADMIN}>Admin</option>
                 </select>
                 <div className="flex items-center gap-5">
-                  <button
+                  {/* <button
                     type="button"
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                     onClick={() =>setRole(filterRole(user, params?.portalid))}
                     disabled={loggedInUser?.id === user?.id}
                   >
                     Cancel
-                  </button>
-                  <button
+                  </button> */}
+                  <Button
+                    onClick={() => setRole(filterRole(user, params?.portalid))}
+                    disabled={
+                      loggedInUser?.id === user?.id || isLoadingRoleChange
+                    }
+                    type="Secondary"
+                    label="Cancel"
+                  />
+                  {/* <button
                     type="button"
                     className={`inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed w-[100px] justify-center`}
                     onClick={handleChangeRole}
@@ -204,7 +213,6 @@ function ViewProfileModal({
                       loggedInUser?.id === user?.id || isLoadingRoleChange
                     }
                   >
-                    {/* {isLoadingRoleChange ? "Saving" : "Save"} */}
                     {isLoadingRoleChange ? (
                       <div className="flex justify-center text-center gap-3 disabled:cursor-not-allowed">
                         <div className="w-5 h-5 border-2 border- white border-t-transparent rounded-full animate-spin mx-auto" />
@@ -217,7 +225,16 @@ function ViewProfileModal({
                         Save
                       </span>
                     )}
-                  </button>
+                  </button> */}
+                  <Button
+                    onClick={handleChangeRole}
+                    disabled={
+                      loggedInUser?.id === user?.id || isLoadingRoleChange
+                    }
+                    isLoading={isLoadingRoleChange}
+                    type="Primary"
+                    label="Save"
+                  />
                 </div>
               </div>
               {loggedInUser?.role !== "user" && (
@@ -241,7 +258,7 @@ function ViewProfileModal({
                   {error && <p className="text-red-600 text-sm">{error}</p>}
                 </div> */}
 
-                  <button
+                  {/* <button
                     type="button"
                     className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors disabled:cursor-not-allowed"
                     onClick={() => {
@@ -255,7 +272,19 @@ function ViewProfileModal({
                     {isLoading
                       ? "Deleting This Account"
                       : "Delete This Account"}
-                  </button>
+                  </button> */}
+                  <Button
+                    onClick={() => {
+                      setIsDeleteModalOpen(user);
+                      setEnteredEmail("");
+                      setError("");
+                      handleClose();
+                    }}
+                    disabled={loggedInUser?.id === user?.id}
+                    isLoading={isLoading}
+                    label="Delete This Account"
+                    type="Delete"
+                  />
                 </>
               )}
             </div>
@@ -307,13 +336,13 @@ function ViewProfileModal({
                 </div>
 
                 <div className="flex justify-center space-x-3">
-                  <button
+                  <Button 
                     onClick={() => setIsDeleteModalOpen(null)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                  >
-                    Close
-                  </button>
-                  <button
+                    disabled={isLoading}
+                    type="Secondary"
+                    label="Close"
+                  />
+                  {/* <button
                     type="button"
                     className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors"
                     onClick={handleDeleteAccount}
@@ -326,7 +355,14 @@ function ViewProfileModal({
                     ) : (
                       "Delete This Account"
                     )}
-                  </button>
+                  </button> */}
+
+                  <Button
+                     onClick={handleDeleteAccount}
+                     disabled={isLoading}
+                     type="Delete"
+                     label="Delete This Account"
+                  />
                 </div>
               </div>
             </Dialog.Panel>

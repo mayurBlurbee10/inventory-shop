@@ -45,13 +45,28 @@
     "type": "Text"
   },
   {
-    "id": "1735630441887",
+    "id": "1735630441880",
     "title": "Footer Content",
     "type": "Text"
   },
   {
-    "id": "1735630441887",
+    "id": "1735630441858",
     "title": "Footer Links",
     "type": "Links"
+  },
+  {
+    "id": "1735630441847",
+    "title": "Card 1 Icon",
+    "type": "Icons"
+  },
+  {
+    "id": "1735630444847",
+    "title": "Card 2 Icon",
+    "type": "Icons"
+  },
+  {
+    "id": "1735630461847",
+    "title": "Card 3 Icon",
+    "type": "Icons"
   }
 ]

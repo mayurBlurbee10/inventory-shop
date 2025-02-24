@@ -1,9 +1,16 @@
-import { CodeXml } from "lucide-react";
+import { CodeXml, Pen } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-const Footer = ({ config, filterValue, user, from }) => {
+const Footer = ({
+  config,
+  filterValue,
+  user,
+  from,
+  handleModalOpenForEdit,
+}) => {
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -131,48 +138,106 @@ const Footer = ({ config, filterValue, user, from }) => {
                 : config?.logo || "/logo.png"
             }
             alt={config?.legalName}
-            className="mr-2 max-h-[60px] max-w-[150px]"
+            className="mr-2 mb-5 max-h-[60px] max-w-[150px]"
           />
 
           <div>
             <div>
               <div className="text-sm text-[#6c757d] font-medium font-lato mb-1">
                 <div>
-                  <div>
-                    {links &&
-                      links.length > 0 &&
-                      links.slice(0, 5).map((item, index) => (
-                        <span key={index}>
-                          {isFromAvailable ? (
-                            <span className="px-[5px] text-gray-400 cursor-not-allowed">
-                              {item.label}
-                            </span>
-                          ) : (
-                            <Link
-                              href={item.link}
-                              className="hover:underline px-[5px]"
-                            >
-                              {item.label}
-                            </Link>
-                          )}
-                          {index < links.length - 1 && " | "}
-                        </span>
-                      ))}
-                    {!links && <div>Footer Links</div>}
-                  </div>
+                  {isFromAvailable ? (
+                    <div className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                      <div
+                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        onClick={() =>
+                          handleModalOpenForEdit &&
+                          handleModalOpenForEdit("Footer Links")
+                        }
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {links &&
+                        links.length > 0 &&
+                        links.slice(0, 5).map((item, index) => (
+                          <span key={index}>
+                            {isFromAvailable ? (
+                              <span className="px-[5px] text-gray-400 cursor-not-allowed">
+                                {item.label}
+                              </span>
+                            ) : (
+                              <Link
+                                href={item.link}
+                                className="hover:underline px-[5px]"
+                              >
+                                {item.label}
+                              </Link>
+                            )}
+                            {index < links.length - 1 && " | "}
+                          </span>
+                        ))}
+                      {!links && <div>Footer Links</div>}
+                    </div>
+                  ) : (
+                    <div>
+                      {links &&
+                        links.length > 0 &&
+                        links.slice(0, 5).map((item, index) => (
+                          <span key={index}>
+                            {isFromAvailable ? (
+                              <span className="px-[5px] text-gray-400 cursor-not-allowed">
+                                {item.label}
+                              </span>
+                            ) : (
+                              <Link
+                                href={item.link}
+                                className="hover:underline px-[5px]"
+                              >
+                                {item.label}
+                              </Link>
+                            )}
+                            {index < links.length - 1 && " | "}
+                          </span>
+                        ))}
+                      {!links && <div>Footer Links</div>}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center justify-between flex-row">
               <div className="max-w-[670px] w-full">
-                <ul className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
-                  {contactInfo &&
-                    contactInfo.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  <span>@2025 MStrategy Portal</span>
-                </ul>
+                {isFromAvailable ? (
+                  <div className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
+                    <ul className="max-w-[500px] border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                      <div
+                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        onClick={() =>
+                          handleModalOpenForEdit &&
+                          handleModalOpenForEdit("Footer Content")
+                        }
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {contactInfo &&
+                        contactInfo.length > 0 &&
+                        contactInfo.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                    </ul>
+
+                    <span>@2025 MStrategy Portal</span>
+                  </div>
+                ) : (
+                  <ul className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
+                    {contactInfo &&
+                      contactInfo.length > 0 &&
+                      contactInfo.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    <span>@2025 MStrategy Portal</span>
+                  </ul>
+                )}
               </div>
               <div className="mb-2 md:mb-0">
                 <div className="flex items-center gap-1">

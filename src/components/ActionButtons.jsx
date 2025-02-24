@@ -7,6 +7,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
+import Button from "./Common/Elements/Button";
 
 export default function ActionButtons({
   onFolderCreated,
@@ -145,7 +146,7 @@ export default function ActionButtons({
                   Folder successfully created!
                 </div>
                 <div className="flex justify-center space-x-3">
-                  <button
+                  {/* <button
                     onClick={() => setIsModalOpen(false)}
                     className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200"
                     style={{ backgroundColor: config?.secondaryColor }}
@@ -155,7 +156,13 @@ export default function ActionButtons({
                     ) : (
                       "Done"
                     )}
-                  </button>
+                  </button> */}
+                  <Button
+                    onClick={() => setIsModalOpen(false)}
+                    isLoading={isLoading}
+                    type="Primary"
+                    label="Done"
+                  />
                 </div>
               </div>
             ) : (
@@ -169,7 +176,7 @@ export default function ActionButtons({
                   disabled={isLoading}
                 />
                 <div className="flex justify-end space-x-3 mt-4">
-                  <button
+                  {/* <button
                     onClick={() => {
                       setIsModalOpen(false);
                       setFolderName("");
@@ -178,8 +185,17 @@ export default function ActionButtons({
                     disabled={isLoading}
                   >
                     Cancel
-                  </button>
-                  <button
+                  </button> */}
+                  <Button
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setFolderName("");
+                    }}
+                    disabled={isLoading}
+                    type="Secondary"
+                    Label="Cancel"
+                  />
+                  {/* <button
                     onClick={handleCreateFolder}
                     disabled={isLoading || !folderName.trim()}
                     className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -190,7 +206,15 @@ export default function ActionButtons({
                       <FolderPlus className="w-4 h-4 mr-2" />
                     )}
                     Create
-                  </button>
+                  </button> */}
+                  <Button
+                    onClick={handleCreateFolder}
+                    disabled={isLoading || !folderName.trim()}
+                    isLoading={isLoading}
+                    type="Primary"
+                    Label="Create"
+                    icon={FolderPlus}
+                  />
                 </div>
               </>
             )}

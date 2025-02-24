@@ -197,7 +197,7 @@ export async function GET(req) {
       validSignRequests.forEach((req) => {
         const status = req.status || "unknown";
 
-        if (statusMapping.pending.includes(status)) {
+        if (statusMapping.pending.includes(status) && req?.source_files?.length > 0) {
           groupedSignRequests.pending.push(req);
         } else if (statusMapping.completed.includes(status)) {
           groupedSignRequests.completed.push(req);

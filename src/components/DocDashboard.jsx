@@ -55,6 +55,9 @@ export default function DocDashboard() {
   });
   const {data : user } = useSelector((state)=>state.user);
   const dispatch = useDispatch();
+  const [page, setPage] = useState(null);
+  const [isPageLoading, setIsPageLoading] = useState(false)
+
   const NavBarItem = ({ title, href }) => {
     if (!href) {
       console.error("href prop is required for NavBarItem.");
@@ -100,6 +103,34 @@ export default function DocDashboard() {
   //   }
   // };
 
+  const fetchPage = async () => {
+    try {
+      setIsPageLoading(true);
+      if (!params?.portalid) return;
+      const response = await fetchWrapper(
+        `/api/pages?portalId=${params.portalid || "default"}&&page=${pathname
+          .split("/")
+          .pop()}`,
+        {},
+        "fetch-page"
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch page");
+      }
+
+      const pageData = data?.data?.visibility || []
+
+      setPage(pageData);
+
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
+
   const getUserDetailsByEmail = async (email) => {
     try {
       let url = `/api/users/loginByProvider`;
@@ -141,29 +172,7 @@ export default function DocDashboard() {
   }, [router]);
 
   useEffect(() => {
-    // const fetchConfig = async () => {
-    //   try {
-    //     const response = await fetchWrapper(
-    //       `/api/portal?portalid=${params.portalid || "default"}`,
-    //       {},
-    //       "portal-login"
-    //     );
-    //     const data = await response.json();
-    //     if (!data.data && response.status === 404) {
-    //       router.push(`/${params.portalid}/not-found`);
-    //       return;
-    //     }
-    //     if (!response.ok) {
-    //       throw new Error(data.error || "Failed to fetch portal config");
-    //     }
-    //     setConfig(data.data);
-    //   } catch (error) {
-    //     console.log("error: ", error);
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // };
-    // fetchConfig();
+    fetchPage();
     fetchContent();
   }, []);
 
@@ -209,11 +218,20 @@ export default function DocDashboard() {
     router.push("login");
   };
 
+  const filterVisibility = (label) => {
+    if (isPageLoading) return false;  
+    if (!page || !page.length) return true;       
+    
+    const section = page.find((item) => item.label === label);
+    return section?.visible ?? false; 
+  };
+  
   useEffect(() => {
     const date = new Date();
     const dayIndex = date.getDay();
     const monthIndex = date.getMonth();
     const days = [
+      "Sunday",
       "Monday",
       "Tuesday",
       "Wednesday",
@@ -239,13 +257,23 @@ export default function DocDashboard() {
     setDayAndDate((prev) => ({ ...prev, month: months[monthIndex] }));
     setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
   }, []);
+  const LoadingSpinner = () => (
+    <div className="min-h-screen flex justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
 
   const userIsAdmin = isAdmin();
 
+  if(isPageLoading){
+    return <LoadingSpinner/>
+  }
+
   return (
     // <Container>
-      <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 pt-12 pb-4 border-b">
+    <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
+      <div className="flex items-center gap-10 pt-12 pb-4 border-b mt-1 ">
+        {filterVisibility("Header Section") && (
           <div>
             <h2 className="text-xl font-light text-black font-lato">
               {/* Hello, David West! Today is Wednesday, January 15th. */}
@@ -256,6 +284,8 @@ export default function DocDashboard() {
               }${dayAndDate.date === 3 ? "rd" : "th"}`}
             </h2>
           </div>
+        )}
+        {filterVisibility("Statistics Header") && (
           <div>
             <p className="text-sm font-normal text-black font-lato">
               Dow Jones <span className="text-red-500">-34.71 (-0.16%)</span>{" "}
@@ -263,151 +293,158 @@ export default function DocDashboard() {
               Nasdaq <span className="text-green-500"> +0.04 (0.00%)</span>
             </p>
           </div>
-        </div>
+        )}
+      </div>
 
-        <div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-7">
-            <div>
-              <h3 className="text-xl font-light font-lato text-center text-black mb-4">
-                Your Investments At a Glance
-              </h3>
+      <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-7">
+          <div>
+            {/* Chart */}
+            {filterVisibility("Chart Section") && (
+              <>
+                <h3 className="text-xl font-light font-lato text-center text-black mb-4">
+                  Your Investments At a Glance
+                </h3>
 
-              {/* Chart */}
-              <div className="max-w-[400px] mx-auto">
-                <Pie data={data} />
-              </div>
+                <div className="max-w-[400px] mx-auto">
+                  <Pie data={data} />
+                </div>
+              </>
+            )}
 
-              {/* Chart data table */}
+            {/* Chart data table */}
+            {filterVisibility("Statistics Section") && (
+                <div className="border border-[#0000001a] mt-[70px]">
+                  <table className="min-w-full divide-y-2 divide-[#0000001a]">
+                    <thead>
+                      <tr>
+                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
+                          Asset class
+                        </th>
+                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
+                          Investment
+                        </th>
+                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
+                          Amount
+                        </th>
+                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
+                          Return
+                        </th>
+                      </tr>
+                    </thead>
 
-              <div className="border border-[#0000001a] mt-[70px]">
-                <table className="min-w-full divide-y-2 divide-[#0000001a]">
-                  <thead>
-                    <tr>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Asset class
-                      </th>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Investment
-                      </th>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Amount
-                      </th>
-                      <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                        Return
-                      </th>
-                    </tr>
-                  </thead>
+                    <tbody className="divide-y divide-[#0000001a]">
+                      <tr>
+                        <td className="px-2 py-1.5">
+                          <p className="font-bold font-lato text-sm text-black">
+                            US Stocks
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            Vanguard VTI ETF
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            $46,000
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-green-500">
+                            +11.7%
+                          </p>
+                        </td>
+                      </tr>
 
-                  <tbody className="divide-y divide-[#0000001a]">
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          US Stocks
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          Vanguard VTI ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $46,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-green-500">
-                          +11.7%
-                        </p>
-                      </td>
-                    </tr>
+                      <tr>
+                        <td className="px-2 py-1.5">
+                          <p className="font-bold font-lato text-sm text-black">
+                            Foreign Stocks
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            Vanguard VEA ETF
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            $12,000
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-green-500">
+                            +1.4%
+                          </p>
+                        </td>
+                      </tr>
 
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Foreign Stocks
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          Vanguard VEA ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $12,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-green-500">
-                          +1.4%
-                        </p>
-                      </td>
-                    </tr>
+                      <tr>
+                        <td className="px-2 py-1.5">
+                          <p className="font-bold font-lato text-sm text-black">
+                            Emerging Markets
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            Vanguard VWO ETF
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            $23,000
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-red-500">
+                            -1.1%
+                          </p>
+                        </td>
+                      </tr>
 
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Emerging Markets
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          Vanguard VWO ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $23,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-red-500">
-                          -1.1%
-                        </p>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className="px-2 py-1.5">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Bonds
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          iShares MUB ETF
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-black">
-                          $3,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-normal font-lato text-sm text-red-500">
-                          -2.0%
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-2 py-1.5 col-span-2">
-                        <p className="font-bold font-lato text-sm text-black">
-                          Total
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5 table-column-group"></td>
-                      <td className="px-2 py-1.5">
-                        <p className="font-semibold font-lato text-sm text-black">
-                          $84,000
-                        </p>
-                      </td>
-                      <td className="px-2 py-1.5 table-column-group"></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      <tr>
+                        <td className="px-2 py-1.5">
+                          <p className="font-bold font-lato text-sm text-black">
+                            Bonds
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            iShares MUB ETF
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-black">
+                            $3,000
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-normal font-lato text-sm text-red-500">
+                            -2.0%
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-2 py-1.5 col-span-2">
+                          <p className="font-bold font-lato text-sm text-black">
+                            Total
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5 table-column-group"></td>
+                        <td className="px-2 py-1.5">
+                          <p className="font-semibold font-lato text-sm text-black">
+                            $84,000
+                          </p>
+                        </td>
+                        <td className="px-2 py-1.5 table-column-group"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+          </div>
+          {filterVisibility("Links Section") && (
             <div>
               {/* Shared document cards */}
               {/* <Link href="my-docs">
@@ -436,23 +473,15 @@ export default function DocDashboard() {
                     Loans Origination
                   </h3>
                   <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                  Apply and submit documents for a loan
+                    Apply and submit documents for a loan
                   </p>
                 </div>
               </Link>
-              {/* <div className="p-4 border rounded-md transform hover:scale-105 transition duration-300  ease-in-out">
-                <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                  Loan Origination
-                </h3>
-
-                <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                  Apply and submit documents for a loan
-                </p>
-              </div> */}
             </div>
-          </div>
+          )}
         </div>
       </div>
+    </div>
     // </Container>
   );
 }

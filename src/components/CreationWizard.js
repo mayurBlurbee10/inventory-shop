@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import DialogBox from "./DialogBox";
+import Button from "./Common/Elements/Button";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -25,13 +26,12 @@ const WizardStep = ({ step, currentStep }) => {
       <div
         className={`
         w-8 h-8 rounded-full flex items-center justify-center border
-        ${
-          isCompleted
+        ${isCompleted
             ? "bg-[#0061D5]"
             : isActive
-            ? "bg-white border-[#0061D5]"
-            : "bg-white border-gray-300"
-        }
+              ? "bg-white border-[#0061D5]"
+              : "bg-white border-gray-300"
+          }
         ${isCompleted || isActive ? "text-white" : "text-gray-500"}
       `}
       >
@@ -55,7 +55,7 @@ const InputField = ({
   type = "text",
   value,
   onChange,
-  onBlur = () => {},
+  onBlur = () => { },
   placeholder = "",
   required = true,
   isLoading = false,
@@ -314,11 +314,10 @@ const BrandingStep = ({ formData, setFormData }) => {
               return (
                 <div
                   key={theme.value}
-                  className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                    formData.theme === theme.value
-                      ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500 ring-opacity-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${formData.theme === theme.value
+                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500 ring-opacity-50"
+                    : "border-gray-200 hover:border-gray-300"
+                    }`}
                   onClick={() =>
                     setFormData({ ...formData, theme: theme.value })
                   }
@@ -953,24 +952,19 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
 
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
-          <button
+          <Button
             onClick={currentStep === 0 ? handleClose : handleBack}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
             disabled={isSubmitting || isLoading}
-          >
-            {currentStep === 0 ? "Cancel" : "Back"}
-          </button>
-          <button
+            type="Secondary"
+            label={currentStep === 0 ? "Cancel" : "Back"}
+          />
+          <Button
             onClick={handleNext}
             disabled={isSubmitting || isLoading}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-              isSubmitting || isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#0061D5] hover:bg-blue-600"
-            }`}
-          >
-            {currentStep === steps.length - 1 ? "Create Portal" : "Continue"}
-          </button>
+            type="Primary"
+            label={currentStep === steps.length - 1 ? "Create Portal" : "Continue"}
+            isLoading={isSubmitting || isLoading}
+          />
         </div>
       </div>
     </div>

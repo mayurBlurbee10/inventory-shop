@@ -5,9 +5,10 @@ import ContentManagementContent from '@/components/Settings/ContentManagementCon
 import IdentityManagementContent from '@/components/Settings/IdentityManagementContent';
 import InvoicingContent from '@/components/Settings/InvoicingContent';
 import ProductsContent from '@/components/Settings/ProductsContent';
+import ReportsContent from '@/components/Settings/ReportsContent';
 import UsersContent from '@/components/Settings/UsersContent';
 import { getUserData } from '@/lib/auth';
-import { Box, ChevronRight, FileSpreadsheet, FileText, Layout, Plug, ShoppingBag, Users } from 'lucide-react';
+import { Box, ChartLine, ChevronRight, FileSpreadsheet, FileText, Layout, Plug, ShoppingBag, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 
 function SettingsPage() {
@@ -29,6 +30,7 @@ function SettingsPage() {
     // { id: 'invoicing', label: 'Forms', icon: FileSpreadsheet },
     { id: 'Integrations', label: 'Integrations', icon: Plug },
     // { id: 'box', label: 'Box Settings', icon: Box }
+    { id: 'reports', label: 'Reports', icon: ChartLine }
   ];
 
   const getActiveContent = () => {
@@ -49,6 +51,8 @@ function SettingsPage() {
         return <div><h1 className='text-gray-700'>Coming Soon..</h1></div>;
       case 'products':
         return <ProductsContent />;
+        case 'reports':
+        return <ReportsContent />;
       default:
         return null;
     }

@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import { toast } from "react-toastify";
+import Button from "./Common/Elements/Button";
 
 function SendforSignatureDialog({
   item,
@@ -108,7 +109,7 @@ function SendforSignatureDialog({
                   options={userList}
                 />
               </div>
-              {selectedUsers.length>1 && (
+              {selectedUsers.length > 1 && (
                 <div className="flex items-center mt-4">
                   <input
                     type="checkbox"
@@ -126,24 +127,20 @@ function SendforSignatureDialog({
           </div>
           {/* Actions */}
           <div className="flex justify-end border-t px-4 py-3 space-x-2">
-            <button
+            <Button
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => handelSendforSignature(selectedUsers)}
               disabled={isLoading}
-              className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4 mr-2" />
-              )}
-              Send
-            </button>
+              type="Secondary"
+              label="Cancel"
+            />
+            <Button
+              onClick={() => handelSendforSignature(selectedUsers)}
+              disabled={isLoading || selectedUsers.length === 0}
+              isLoading={isLoading}
+              icon={Send}
+              type="Primary"
+              label="Send"
+            />
           </div>
         </DialogPanel>
       </div>

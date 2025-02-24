@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
+import Button from "./Common/Elements/Button";
 
 export default function CreateFolder({
   onFolderCreated,
@@ -148,7 +149,7 @@ export default function CreateFolder({
                   {console.log(config)}
                 </div>
                 <div className="flex justify-center space-x-3">
-                  <button
+                  {/* <button
                     onClick={() => setIsModalOpen(false)}
                     className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md bg-blue-500 hover:bg-blue-400"
                     style={{ backgroundColor: config?.secondaryColor }}
@@ -158,7 +159,13 @@ export default function CreateFolder({
                     ) : (
                       "Done"
                     )}
-                  </button>
+                  </button> */}
+                  <Button
+                    onClick={() => setIsModalOpen(false)}
+                    isLoading={isLoading}
+                    type="Primary"
+                    label="Done"
+                  />
                 </div>
               </div>
             ) : (
@@ -175,10 +182,10 @@ export default function CreateFolder({
                   disabled={isLoading}
                 />
                 <div
-                  className="flex items-center justify-center pt-4"
+                  className="flex items-center justify-center pt-4 gap-2"
 
                 >
-                  <button
+                  {/* <button
                     disabled={isLoading || !folderName.trim()}
                     className="flex items-center justify-center py-2 px-4 rounded-md text-white font-lato font-medium mr-4 disabled:cursor-not-allowed"
                     onClick={handleCreateFolder}
@@ -191,8 +198,15 @@ export default function CreateFolder({
                       <FolderPlus className="w-4 h-4 mr-2" />
                     )}
                     Create
-                  </button>
-                  <button
+                  </button> */}
+                  <Button
+                    disabled={isLoading || !folderName.trim()}
+                    onClick={handleCreateFolder}
+                    label="Create"
+                    type="Primary"
+                    isLoading={isLoading}
+                  />
+                  {/* <button
                     className="py-2 px-4 rounded-md text-[#222] font-lato font-medium hover:bg-gray-100"
                     onClick={() => {
                       setIsModalOpen(false);
@@ -201,7 +215,16 @@ export default function CreateFolder({
                     disabled={isLoading}
                   >
                     Cancel
-                  </button>
+                  </button> */}
+                  <Button
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setFolderName("");
+                    }}
+                    disabled={isLoading}
+                    type="Secondary"
+                    label="Cancel"
+                  />
                 </div>
               </div>
 

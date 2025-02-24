@@ -20,7 +20,7 @@ export async function GET(req) {
     console.log("page: ", page);
     if (!page) {
       return NextResponse.json(
-        { error: `Page doesn't exist with ${pageId}` },
+        { error: `Page doesn't exist` },
         { status: 409 }
       );
     }
@@ -33,7 +33,7 @@ export async function GET(req) {
     console.error("Error:", error.message);
     return NextResponse.json(
       {
-        error: `Failed to get page for ${pageId}.`,
+        error: `Failed to get page.`,
         details: error.message,
       },
       { status: 500 }

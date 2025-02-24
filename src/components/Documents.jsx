@@ -111,6 +111,8 @@ function Documents({
     sign: false,
     autoLoan: false,
   });
+  const [page, setPage] = useState(null);
+  const [isPageLoading, setIsPageLoading] = useState(false)
   const pathname = usePathname();
 
   const { data: config } = useSelector((state) => state.portal);
@@ -155,6 +157,33 @@ function Documents({
     // Calculate percentage for the custom CSS variable
     const percentage = ((5 - value) / 4) * 100; // 5 should be 0%, 1 should be 100%
     e.target.style.setProperty("--value-percent", percentage);
+  };
+
+  const fetchPage = async () => {
+    try {
+      setIsPageLoading(true);
+      if (!params?.portalid) return;
+      const response = await fetchWrapper(
+        `/api/pages?portalId=${params.portalid || "default"}&&page=${pathname
+          .split("/")
+          .pop()}`,
+        {},
+        "fetch-page"
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch page");
+      }
+
+      const pageData = data?.data?.visibility || []
+
+      setPage(pageData);
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      setIsPageLoading(false);
+    }
   };
 
   const handleSelfSign = async (file, taskType) => {
@@ -836,6 +865,9 @@ function Documents({
     fetchConfig();
     fetchContent();
     refreshFiles();
+    if(fileType === 'my'){
+      fetchPage();
+    }
   }, []);
 
   const filterValue = (title) => {
@@ -918,6 +950,7 @@ function Documents({
   }, [router]);
 
   const addCollaborator = ({ email, role }) => {
+    if(!email) return;
     const collaborators =
       JSON.parse(localStorage.getItem("collaborators")) || [];
     const collabExist = collaborators.find((collab) => collab.email === email);
@@ -959,6 +992,16 @@ function Documents({
     return filesList?.find((file) => file.type === "file") || null;
   };
 
+  const filterVisibility = (label) => {
+    if (isPageLoading) return false; 
+    if (!page || !page.length) return true;     
+    
+    const section = page.find((item) => item.label === label);
+    return section?.visible ?? false; 
+  };
+
+  const isAnySideSectionVisible = () => page?.some((item) => item.visible) || true;
+
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -975,7 +1018,7 @@ function Documents({
       className={`max-w-[1820px] ${
         fileType === "loan" || fileType === "advisor"
           ? ""
-          : "mx-auto sm:pt-12 mt-12"
+          : "mx-auto sm:mt-14 mt-14"
       }`}
     >
       <div>
@@ -986,7 +1029,7 @@ function Documents({
         >
           <div
             className={`col-span-5 ${
-              fileType === "loan" || fileType === "advisor"
+              fileType === "loan" || fileType === "advisor" || !isAnySideSectionVisible()
                 ? "lg:col-span-5"
                 : "lg:col-span-3"
             }`}
@@ -994,18 +1037,17 @@ function Documents({
             {fileType !== "loan" && fileType !== "advisor" && (
               <>
                 <div className="flex items-center gap-10">
-                  <span className="text-xl font-light text-[#212529] font-lato">
-                    {/* {fileType === "shared"
-                      ? "Shared Documents"
-                      : "My Documents"} */}
-                    Shared Documents
-                  </span>
-                  <span className="text-black font-lato font-normal text-sm">
-                    Securely share content with your advisor and trusted
-                    collaborators
-                  </span>
+                  <p className="text-sm font-lato">
+                    <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
+                      Shared Documents
+                    </span>
+                    <span className="text-sm font-normal text-black font-lato block md:inline">
+                      Securely share content with your advisor and trusted
+                      collaborators
+                    </span>
+                  </p>
                 </div>
-                <hr className="my-4" />
+                <hr className="my-5" />
               </>
             )}
             <div className="border border-solid border-[#0000001a] rounded-sm relative">
@@ -1579,154 +1621,162 @@ function Documents({
           {fileType !== "loan" && fileType !== "advisor" && (
             <div className="col-span-5 lg:col-span-2">
               <div>
-                <div className="grid grid-cols-3">
-                  <div></div>
-                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                    My Tasks
-                  </h3>
-                  <div
-                    className="flex items-center justify-end text-[#dc3545] cursor-pointer"
-                    onClick={() =>
-                      setCompletedTask({
-                        upload: false,
-                        completeForm: false,
-                        sign: false,
-                        autoLoan: false,
-                      })
-                    }
-                  >
-                    <RotateCw className="h-4 w-4" />
-                  </div>
-                </div>
                 {/* Tasks */}
-                <div className="mb-7">
-                  <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
-                    <tbody className="divide-y divide-gray-200 ">
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Upload identity information
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p
-                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                            onClick={() => {
-                              setMyTaskPopupBoxContent({
-                                title: "Upload identity information",
-                                actionText: "Upload",
-                              });
-                              setIsMyTaskPopupOpen((prev) => !prev);
-                              setCompletedTask((prev) => ({
-                                ...prev,
-                                upload: true,
-                              }));
-                            }}
-                          >
-                            {completedTask.upload ? (
-                              <span className="italic">Completed</span>
-                            ) : (
-                              "Upload"
-                            )}
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Upload 2023 tax return
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p
-                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                            onClick={() => {
-                              setIsCompleteFormPopupOpen((prev) => !prev);
-                              setCompletedTask((prev) => ({
-                                ...prev,
-                                completeForm: true,
-                              }));
-                            }}
-                          >
-                            {completedTask.completeForm ? (
-                              <span className="italic">Completed</span>
-                            ) : (
-                              "Complete Forms"
-                            )}
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Sign money transfer agreement
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p
-                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                            onClick={() => {
-                              handleSelfSign(firstFileToSign(), "sign");
-                              setCompletedTask((prev) => ({
-                                ...prev,
-                                sign: true,
-                              }));
-                            }}
-                            disabled={!firstFileToSign()}
-                          >
-                            {isSignReqLoading === "sign" ? (
-                              <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                            ) : completedTask.sign ? (
-                              <span className="italic">Completed</span>
-                            ) : (
-                              "Sign"
-                            )}
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="ps-3 py-4">
-                          <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p className="font-lato text-[#212529] text-sm">
-                            Auto Loan Forms
-                          </p>
-                        </td>
-                        <td className="px-3 py-4">
-                          <p
-                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                            onClick={() => {
-                              handleSelfSign(firstFileToSign(), "autoLoan");
-                              setCompletedTask((prev) => ({
-                                ...prev,
-                                autoLoan: true,
-                              }));
-                            }}
-                            disabled={!firstFileToSign()}
-                          >
-                            {isSignReqLoading === "autoLoan" ? (
-                              <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                            ) : completedTask.autoLoan ? (
-                              <span className="italic">Completed</span>
-                            ) : (
-                              "Start Forms"
-                            )}
-                          </p>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                {filterVisibility("My Task Section") && (
+                    <>
+                      <div className="grid grid-cols-3">
+                        <div></div>
+                        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                          My Tasks
+                        </h3>
+                        <div
+                          className="flex items-center justify-end text-[#dc3545] cursor-pointer"
+                          onClick={() =>
+                            setCompletedTask({
+                              upload: false,
+                              completeForm: false,
+                              sign: false,
+                              autoLoan: false,
+                            })
+                          }
+                        >
+                          <RotateCw className="h-4 w-4" />
+                        </div>
+                      </div>
+
+                      <div className="mb-7">
+                        <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
+                          <tbody className="divide-y divide-gray-200 ">
+                            <tr>
+                              <td className="ps-3 py-4">
+                                <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p className="font-lato text-[#212529] text-sm">
+                                  Upload identity information
+                                </p>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p
+                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                                  onClick={() => {
+                                    setMyTaskPopupBoxContent({
+                                      title: "Upload identity information",
+                                      actionText: "Upload",
+                                    });
+                                    setIsMyTaskPopupOpen((prev) => !prev);
+                                    setCompletedTask((prev) => ({
+                                      ...prev,
+                                      upload: true,
+                                    }));
+                                  }}
+                                >
+                                  {completedTask.upload ? (
+                                    <span className="italic">Completed</span>
+                                  ) : (
+                                    "Upload"
+                                  )}
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="ps-3 py-4">
+                                <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p className="font-lato text-[#212529] text-sm">
+                                  Upload 2023 tax return
+                                </p>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p
+                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                                  onClick={() => {
+                                    setIsCompleteFormPopupOpen((prev) => !prev);
+                                    setCompletedTask((prev) => ({
+                                      ...prev,
+                                      completeForm: true,
+                                    }));
+                                  }}
+                                >
+                                  {completedTask.completeForm ? (
+                                    <span className="italic">Completed</span>
+                                  ) : (
+                                    "Complete Forms"
+                                  )}
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="ps-3 py-4">
+                                <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p className="font-lato text-[#212529] text-sm">
+                                  Sign money transfer agreement
+                                </p>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p
+                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                                  onClick={() => {
+                                    handleSelfSign(firstFileToSign(), "sign");
+                                    setCompletedTask((prev) => ({
+                                      ...prev,
+                                      sign: true,
+                                    }));
+                                  }}
+                                  disabled={!firstFileToSign()}
+                                >
+                                  {isSignReqLoading === "sign" ? (
+                                    <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                                  ) : completedTask.sign ? (
+                                    <span className="italic">Completed</span>
+                                  ) : (
+                                    "Sign"
+                                  )}
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="ps-3 py-4">
+                                <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p className="font-lato text-[#212529] text-sm">
+                                  Auto Loan Forms
+                                </p>
+                              </td>
+                              <td className="px-3 py-4">
+                                <p
+                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                                  onClick={() => {
+                                    handleSelfSign(
+                                      firstFileToSign(),
+                                      "autoLoan"
+                                    );
+                                    setCompletedTask((prev) => ({
+                                      ...prev,
+                                      autoLoan: true,
+                                    }));
+                                  }}
+                                  disabled={!firstFileToSign()}
+                                >
+                                  {isSignReqLoading === "autoLoan" ? (
+                                    <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                                  ) : completedTask.autoLoan ? (
+                                    <span className="italic">Completed</span>
+                                  ) : (
+                                    "Start Forms"
+                                  )}
+                                </p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
 
                 {isMyTaskPopupOpen && (
                   <MyTaskPopupBox
@@ -1741,172 +1791,175 @@ function Documents({
                 />
 
                 {/* My advisor */}
-                <div className="mb-7">
-                  <div>
-                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                      My Advisor
-                    </h3>
-                  </div>
-
-                  {/* Advisory card */}
-
-                  <div className="rounded-md border border-[#dee2e6]">
-                    <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
-                      <div className="max-w-[150px] w-full">
-                        <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
-                          <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
-                        </a>
-                      </div>
-
+                {filterVisibility("Advisor Section") && (
+                    <div className="mb-7">
                       <div>
-                        <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
-                          Erica Smith
-                        </h2>
-                        <p className="font-lato text-base text-[#6c757d]">
-                          Senior Financial Advisor
-                        </p>
+                        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                          My Advisor
+                        </h3>
+                      </div>
+
+                      {/* Advisory card */}
+
+                      <div className="rounded-md border border-[#dee2e6]">
+                        <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
+                          <div className="max-w-[150px] w-full">
+                            <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
+                              <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
+                            </a>
+                          </div>
+
+                          <div>
+                            <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
+                              Erica Smith
+                            </h2>
+                            <p className="font-lato text-base text-[#6c757d]">
+                              Senior Financial Advisor
+                            </p>
+                          </div>
+                        </div>
+                        <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
+                          <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                            Meet
+                          </button>
+                          <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                            Call
+                          </button>
+                          <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
+                            Chat
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
-                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                        Meet
-                      </button>
-                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                        Call
-                      </button>
-                      <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-                        Chat
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  )}
 
                 {/* Collaborators */}
+                {filterVisibility("Collaborator Section") && (
+                    <div>
+                      <div>
+                        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                          My Collaborators
+                        </h3>
+                      </div>
+                      <div className="p-4 border border-[#dee2e6]">
+                        <form className="mb-3.5">
+                          <input
+                            type="email"
+                            value={collaborator.email}
+                            onChange={(e) =>
+                              setCollaborator((prev) => ({
+                                ...prev,
+                                email: e.target.value,
+                              }))
+                            }
+                            placeholder="user@example.com"
+                            className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
+                          />
 
-                <div>
-                  <div>
-                    <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                      My Collaborators
-                    </h3>
-                  </div>
-                  <div className="p-4 border border-[#dee2e6]">
-                    <form className="mb-3.5">
-                      <input
-                        type="email"
-                        value={collaborator.email}
-                        onChange={(e) =>
-                          setCollaborator((prev) => ({
-                            ...prev,
-                            email: e.target.value,
-                          }))
-                        }
-                        placeholder="user@example.com"
-                        className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
-                      />
-
-                      <div className="flex items-center gap-6">
-                        <select
-                          className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato"
-                          value={collaborator.role}
-                          onChange={(e) =>
-                            setCollaborator((prev) => ({
-                              ...prev,
-                              role: e.target.value,
-                            }))
-                          }
-                        >
-                          {/* <option>Co-Owner</option> */}
-                          <option value={"editor"}>Editor</option>
-                          <option value={"viewer"}>Viewer</option>
-                          {/* <option>Previewer</option>
+                          <div className="flex items-center gap-6">
+                            <select
+                              className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato"
+                              value={collaborator.role}
+                              onChange={(e) =>
+                                setCollaborator((prev) => ({
+                                  ...prev,
+                                  role: e.target.value,
+                                }))
+                              }
+                            >
+                              {/* <option>Co-Owner</option> */}
+                              <option value={"editor"}>Editor</option>
+                              <option value={"viewer"}>Viewer</option>
+                              {/* <option>Previewer</option>
                           <option>Uploader</option>
                           <option>Previewer Uploader</option>
                           <option>Viewer Uploader</option> */}
-                        </select>
+                            </select>
 
-                        <button
-                          className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm cursor-pointer"
-                          onClick={() => addCollaborator(collaborator)}
-                          type="button"
-                        >
-                          Invite
-                        </button>
-                      </div>
-                    </form>
+                            <button
+                              className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm cursor-pointer"
+                              onClick={() => addCollaborator(collaborator)}
+                              type="button"
+                            >
+                              Invite
+                            </button>
+                          </div>
+                        </form>
 
-                    {/* Table */}
+                        {/* Table */}
 
-                    <div className="border overflow-auto">
-                      <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
-                        <thead>
-                          <tr>
-                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                              Name
-                            </th>
-                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                              Email
-                            </th>
-                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                              Role
-                            </th>
-                            <th className="text-sm text-black font-medium font-lato p-3 text-start">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
+                        <div className="border overflow-auto">
+                          <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
+                            <thead>
+                              <tr>
+                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                  Name
+                                </th>
+                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                  Email
+                                </th>
+                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                  Role
+                                </th>
+                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                  Actions
+                                </th>
+                              </tr>
+                            </thead>
 
-                        <tbody>
-                          <tr className="hover:bg-gray-300">
-                            <td className="p-3">
-                              <p className="font-semibold font-lato text-sm text-black">
-                                Erica Smith
-                              </p>
-                            </td>
-                            <td className="p-3">
-                              <p className="font-normal font-lato text-sm text-black">
-                                advisor@wealthportal.com
-                              </p>
-                            </td>
-                            <td className="p-3">
-                              <p className="font-normal font-lato text-sm text-black">
-                                Editor
-                              </p>
-                            </td>
-                            <td></td>
-                          </tr>
-                          {collaborators &&
-                            collaborators.length > 0 &&
-                            collaborators.map(({ name, email, role }) => (
-                              <tr className="hover:bg-gray-300" key={email}>
+                            <tbody>
+                              <tr className="hover:bg-gray-300">
                                 <td className="p-3">
                                   <p className="font-semibold font-lato text-sm text-black">
-                                    {name}
+                                    Erica Smith
                                   </p>
                                 </td>
                                 <td className="p-3">
                                   <p className="font-normal font-lato text-sm text-black">
-                                    {email}
+                                    advisor@wealthportal.com
                                   </p>
                                 </td>
                                 <td className="p-3">
                                   <p className="font-normal font-lato text-sm text-black">
-                                    {role.charAt(0).toUpperCase() +
-                                      role.slice(1)}
+                                    Editor
                                   </p>
                                 </td>
-                                <td
-                                  className="p-3"
-                                  onClick={() => removeCollaborator(email)}
-                                >
-                                  <X className="text-red-600 cursor-pointer" />
-                                </td>
+                                <td></td>
                               </tr>
-                            ))}
-                        </tbody>
-                      </table>
+                              {collaborators &&
+                                collaborators.length > 0 &&
+                                collaborators.map(({ name, email, role }) => (
+                                  <tr className="hover:bg-gray-300" key={email}>
+                                    <td className="p-3">
+                                      <p className="font-semibold font-lato text-sm text-black">
+                                        {name}
+                                      </p>
+                                    </td>
+                                    <td className="p-3">
+                                      <p className="font-normal font-lato text-sm text-black">
+                                        {email}
+                                      </p>
+                                    </td>
+                                    <td className="p-3">
+                                      <p className="font-normal font-lato text-sm text-black">
+                                        {role.charAt(0).toUpperCase() +
+                                          role.slice(1)}
+                                      </p>
+                                    </td>
+                                    <td
+                                      className="p-3"
+                                      onClick={() => removeCollaborator(email)}
+                                    >
+                                      <X className="text-red-600 cursor-pointer" />
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
               </div>
             </div>
           )}

@@ -5,6 +5,7 @@ import DialogBox from "./DialogBox";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import Button from "./Common/Elements/Button";
 
 export default function MyTaskPopupBox({ onClose, content, config, isForImport }) {
     const [confirmPopup, setConfirmPopup] = useState(false);
@@ -214,22 +215,36 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
 
                     {/* Footer with Buttons */}
                     <div className="flex justify-between items-center p-4">
-                        <button
+                        {/* <button
                             onClick={onClose}
                             className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
                         >
                             Close
-                        </button>
+                        </button> */}
+                        <Button
+                            label="Close"
+                            type="Secondary"
+                            onClick={onClose}
+                            disabled={isLoading}
+                        />
                         <div className="flex space-x-2">
-                            <button
+                            {/* <button
                                 className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
                                 onClick={() => {
                                     setArrayOfFiles([]);
                                 }}
                             >
                                 Cancel
-                            </button>
-                            <button
+                            </button> */}
+                            <Button
+                                label="Cancel"
+                                type="Secondary"
+                                onClick={() => {
+                                    setArrayOfFiles([]);
+                                }}
+                                disabled={isLoading}
+                            />
+                            {/* <button
                                 className={`text-white px-4 py-2 rounded-lg border-gray ${config?.secondaryColor ? "" : "bg-blue-500 hover:bg-blue-600"
                                     } ${isLoading ? "bg-gray-400 cursor-not-allowed" : ""}`}
                                 onClick={async () => {
@@ -243,7 +258,21 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
                                 disabled={arrayOfFiles.length === 0 || isLoading}
                             >
                                 {isLoading ? "Uploading..." : "Upload"}
-                            </button>
+                            </button> */}
+
+                            <Button
+                                label="Upload"
+                                type="Primary"
+                                onClick={async () => {
+                                    setIsLoading(true);
+                                    await new Promise((resolve) => setTimeout(resolve, 3000));
+                                    setArrayOfFiles([]);
+                                    setIsLoading(false);
+                                    setConfirmPopup((prev) => !prev);
+                                }}
+                                isLoading={isLoading}
+                                disabled={arrayOfFiles.length === 0}
+                            />
 
                             {
                                 confirmPopup && (

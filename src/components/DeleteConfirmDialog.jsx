@@ -1,6 +1,7 @@
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { Loader2, Trash2, X } from "lucide-react";
 import { useParams } from "next/navigation";
+import Button from "./Common/Elements/Button";
 
 function DeleteConfirmDialog({
   isModalOpen,
@@ -9,9 +10,11 @@ function DeleteConfirmDialog({
   config,
   title = "Delete File",
   content = "Confirm delete?",
-  isLoading = false,
+  isLoading,
   modalRef
 }) {
+  console.log("isLoadingFromDelete:", isLoading);
+  
   return (
     <Dialog
       open={isModalOpen}
@@ -37,13 +40,19 @@ function DeleteConfirmDialog({
           <div className="text-center py-4">
             <div className="text-lg text-red-600 mb-4">{content}</div>
             <div className="flex justify-center space-x-3">
-              <button
+              {/* <button
                 onClick={() => setIsModalOpen(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 "
               >
                 Close
-              </button>
-              <button
+              </button> */}
+              <Button
+              onClick={() => setIsModalOpen(false)}
+              disabled={isLoading}
+              type="Secondary"
+              label="Close"
+              />
+              {/* <button
                 onClick={handleDelete}
                 className={`inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md  ${
                   config?.secondaryColor ? "" : "bg-blue-500 hover:bg-blue-600"
@@ -62,7 +71,15 @@ function DeleteConfirmDialog({
                     <Trash2 className="w-4 h-4 mr-2" /> Delete
                   </>
                 )}
-              </button>
+              </button> */}
+              <Button
+               onClick={handleDelete}
+               disabled={isLoading}
+               isLoading={isLoading}
+               type="Primary"
+               label="Delete"
+               icon={Trash2}
+              />
             </div>
           </div>
         </Dialog.Panel>

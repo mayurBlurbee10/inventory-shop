@@ -3,6 +3,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { X } from "lucide-react";
 import { useState } from "react";
+import Button from "../Common/Elements/Button";
 
 export default function AddSuperUserModal({ onClose, onAdd }) {
   const [formData, setFormData] = useState({
@@ -232,21 +233,25 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
             )}
           </div>
           <div className="flex justify-end space-x-3">
-            <button
-              type="button"
+            <Button
               onClick={handleModalClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
+              type="Secondary"
+              label="Cancel"
+            />
+            {/* <button
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-[#0061D5] rounded-md hover:bg-blue-700 disabled:bg-blue-400"
               disabled={loading}
             >
               {loading ? "Creating..." : "Add User"}
-            </button>
+            </button> */}
+            <Button
+              buttonType="submit"
+              disabled={loading}
+              type="Primary"
+              label={loading ? "Creating..." : "Add User"}
+            />
           </div>
         </form>
       </div>

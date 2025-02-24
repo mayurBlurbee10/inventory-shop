@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { setCurrentUser } from '@/store/services/userService';
 import { useDispatch } from 'react-redux';
 import { setPortals } from '@/store/services/portalService';
+import Button from '@/components/Common/Elements/Button';
 
 // Admin users data - in practice this should be in a secure backend
 const ADMIN_USERS = {
@@ -90,10 +91,10 @@ export default function AdminLoginPage() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6 bg-[#0061D5] py-2 rounded-md">
             <img
-               src="/M_Strategy_logo.png"
+              src="/M_Strategy_logo.png"
               alt="Company Logo"
               priority="true"
-              className="h-16" 
+              className="h-16"
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
@@ -102,7 +103,10 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
               Email
             </label>
             <input
@@ -116,7 +120,10 @@ export default function AdminLoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-gray-800 text-sm font-medium">
+            <label
+              htmlFor="password"
+              className="block text-gray-800 text-sm font-medium"
+            >
               Password
             </label>
             <input
@@ -135,7 +142,7 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <button
+          {/* <button
             type="submit"
             disabled={isLoading}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0061D5] hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
@@ -145,7 +152,14 @@ export default function AdminLoginPage() {
             ) : (
               'Sign In'
             )}
-          </button>
+          </button> */}
+          <Button
+            buttonType="submit"
+            disabled={isLoading}
+            isLoading={isLoading}
+            label="Sign In"
+            type="Login"
+          />
         </form>
         <div className="mt-6 text-center">
           <a href="#" className="text-[#0061D5] hover:text-blue-500 text-sm">

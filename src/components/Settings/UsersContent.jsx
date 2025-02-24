@@ -8,6 +8,7 @@ import UploadArea from "../UploadArea";
 import { useParams } from "next/navigation";
 import ViewProfileModal from "./ViewProfileModal";
 import { toast } from "react-toastify";
+import Button from "../Common/Elements/Button";
 
 const UsersContent = () => {
   const [users, setUsers] = useState([]);
@@ -136,13 +137,19 @@ const UsersContent = () => {
               Manage user accounts, roles, and permissions efficiently
             </p>
           </div>
-          <button
+          {/* <button
             onClick={() => setShowAddModal(true)}
            className="w-full sm:w-auto flex flex-col sm:flex-row items-center justify-center px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB]"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add User
-          </button>
+          </button> */}
+          <Button
+          onClick={() => setShowAddModal(true)}
+          type="Primary"
+          label="Add User"
+          icon={Plus}
+          />
         </div>
         {/* <div>
           <button

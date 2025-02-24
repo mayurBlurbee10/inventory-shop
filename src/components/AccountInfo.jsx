@@ -5,6 +5,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 import { clearUserData } from "@/app/lib/auth";
+import Button from "./Common/Elements/Button";
 
 function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
   const params = useParams();
@@ -102,9 +103,8 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
               {/* User Image */}
               <div className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] flex-shrink-0 flex items-center justify-center">
                 <div
-                  className={`size-20 rounded-full w-[70px] h-[70px] text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                  }`}
+                  className={`size-20 rounded-full w-[70px] h-[70px] text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                    }`}
                 >
                   {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>
@@ -170,13 +170,18 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
           </div>
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row justify-start space-y-2 sm:space-y-0 sm:space-x-4">
-            <button
+            {/* <button
               type="button"
               onClick={() => setIsChangePassModalOpen((prev) => !prev)}
               className="px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
             >
               Change Password
-            </button>
+            </button> */}
+            <Button
+               onClick={() => setIsChangePassModalOpen((prev) => !prev)}
+               type="Secondary"
+               label="Change Password"
+            />
             {/* <button
                             type="button"
                             className="px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
@@ -258,13 +263,23 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                   {error && (
                     <p className="text-red-500 text-center text-sm">{error}</p>
                   )}
-                  <button
+
+                  <div className="w-full flex justify-center mt-2">
+                    {/* <button
                     type="submit"
                     className="w-full px-4 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 disabled:bg-gray-400"
                     disabled={loading}
                   >
                     {loading ? "Setting..." : "Set Password"}
-                  </button>
+                  </button> */}
+                    <Button
+                      buttonType="submit"
+                      disabled={loading}
+                      isLoading={loading}
+                      type="Primary"
+                      label="Set Password"
+                    />
+                  </div>
                 </>
               )}
             </form>

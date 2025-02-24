@@ -72,8 +72,16 @@ const updatePlugin = async (pluginId, updatedData) => {
         );
       }
 
+      const data = updatedData?.existingPages || []
+
+      const filterPageFromData = (page)=>{
+        return data.find((item)=>item.id === page?.id)
+      }
+
       for (const page of pages) {
         page.plugin = plugin;
+        const pageWithVisibility = filterPageFromData(page);
+        page.visibility = pageWithVisibility.visibility || []
       }
       await pageRepository.save(pages);
     }

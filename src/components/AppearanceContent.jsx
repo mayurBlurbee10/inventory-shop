@@ -5,6 +5,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
+import Button from "./Common/Elements/Button";
 
 const AppearanceContent = () => {
   const params = useParams();
@@ -346,21 +347,34 @@ const AppearanceContent = () => {
         </div>
       </div>
       <div className="w-full flex flex-col sm:flex-row items-center sm:justify-center md:justify-end gap-1 sm:gap-1 md:gap-5">
-        <button
+        {/* <button
           type="button"
           className="px-8 py-2 text-sm font-medium text-black border rounded-md"
           onClick={handleResetTheme}
         >
           Cancel
-        </button>
-        <button
+        </button> */}
+        <Button
+          onClick={handleResetTheme}
+          disabled={isLoading}
+          type="Secondary"
+          label="Cancel"
+        />
+        {/* <button
           type="button"
           className="px-8 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
           onClick={handleUpdateTheme}
           disabled={isLoading}
         >
           {isLoading ? "Saving..." : "Save"}
-        </button>
+        </button> */}
+        <Button
+          onClick={handleUpdateTheme}
+          disabled={isLoading}
+          isLoading={isLoading}
+          type="Primary"
+          label="Save"
+        />
       </div>
     </div>
   );

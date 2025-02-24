@@ -4,6 +4,7 @@ import { Share2, X } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import Button from "./Common/Elements/Button";
 
 const UploadFileConfirmDialog = ({
   title,
@@ -179,7 +180,7 @@ const UploadFileConfirmDialog = ({
               </>
 
               <div className="flex justify-center space-x-3">
-                <button
+                {/* <button
                   onClick={() => {
                     setLocation([]);
                     setIsModalOpen(false);
@@ -198,7 +199,16 @@ const UploadFileConfirmDialog = ({
                   ) : (
                     "Done"
                   )}
-                </button>
+                </button> */}
+                <Button
+                  onClick={() => {
+                    setLocation([]);
+                    setIsModalOpen(false);
+                  }}
+                  isLoading={isLoading}
+                  type="Primary"
+                  label="Done"
+                />
               </div>
             </div>
           )}

@@ -2,6 +2,8 @@ import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { File, UploadCloud, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import MyTaskFileUploadArea from "./MyTaskFileUploadArea";
+import { toast } from "react-toastify";
+import Button from "./Common/Elements/Button";
 
 
 const CompleteForms = ({ isOpen, onClose }) => {
@@ -10,6 +12,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
     const [filesUploadedForW2, setFilesUploadedForW2] = useState(false);
     const [filesUploadedFor1099, setFilesUploadedFor1099] = useState(false);
     const [filesUploadedFor1040, setFilesUploadedFor1040] = useState(false);
+    const [submitLoading, setSubmitLoading] = useState(false);
 
     const handleFileChangeForW2 = (fileList) => {
         // Check if any files are selected
@@ -22,7 +25,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
         // Check if any files are selected
         setFilesUploadedFor1040(fileList.length > 0);
     };
-    
+
     const isFormValid =
         filesUploadedForW2 &&
         filesUploadedFor1099 &&
@@ -31,8 +34,12 @@ const CompleteForms = ({ isOpen, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onClose();
-        alert("Form submitted successfully!");
+        setSubmitLoading(true);
+        setTimeout(() => {
+            setSubmitLoading(false);
+            onClose();
+            toast.success("Form Submitted Successfully");
+        }, 2000)
         setAdditionalInfo("");
         console.log("form submitted successfully");
     };
@@ -88,14 +95,22 @@ const CompleteForms = ({ isOpen, onClose }) => {
                             </div>
                         </div>
                         <div className="p-2 w-full flex justify-end mt-2">
-                            <button
+                            {/* <button
                                 type="submit"
                                 onClick={handleSubmit}
                                 className={`px-4 py-2 rounded-lg text-white ${isFormValid ? "bg-[#0061D5]" : "bg-gray-400 cursor-not-allowed"
                                     }`}
                                 disabled={!isFormValid}>
-                                Submit
-                            </button>
+                                {submitLoading ? "Submitting..." : "Submit"}
+                            </button> */}
+                            <Button
+                                buttonType="submit"
+                                type="Primary"
+                                label="Submit"
+                                onClick={handleSubmit}
+                                disabled={!isFormValid}
+                                isLoading={submitLoading}
+                            />
                         </div>
                     </form>
                 </Dialog.Panel>

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import DialogBox from "./DialogBox";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
+import Button from "./Common/Elements/Button";
 
 
 export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
@@ -125,12 +126,17 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
 
                                         />
                                     </p>
-                                    <button
+                                    {/* <button
                                         onClick={handleBrowse}
                                         className="border px-3 py-1 rounded-lg border-gray-300 hover:border-blue-300 text-gray-700"
                                     >
                                         Select Files
-                                    </button>
+                                    </button> */}
+                                    <Button
+                                        onClick={handleBrowse}
+                                        type="Secondary"
+                                        label="Select Files"
+                                    />
                                 </div>
                             )
                         }
@@ -188,9 +194,14 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
                                 style={{ display: "none" }} // Hide the file input
                                 multiple
                             />
-                            <button className="border border-gray-600 py-1 px-2 rounded-lg hover:bg-gray-50 text-sm hover:border-gray-400 text-[#0061D5]" onClick={handleBrowse}>
+                            {/* <button className="border border-gray-600 py-1 px-2 rounded-lg hover:bg-gray-50 text-sm hover:border-gray-400 text-[#0061D5]" onClick={handleBrowse}>
                                 Add another file
-                            </button>
+                            </button> */}
+                            <Button
+                                onClick={handleBrowse}
+                                type="Secondary"
+                                label="Add another file"
+                            />
                         </div>
                     )
                 }

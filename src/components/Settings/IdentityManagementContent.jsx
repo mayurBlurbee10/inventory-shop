@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from '../Common/Elements/Button';
 
 const IdentityManagementContent = () => {
   const [authProviders, setAuthProviders] = useState({
@@ -107,9 +108,13 @@ const IdentityManagementContent = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Identity Management</h3>
-        <button className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
+        {/* <button className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
           Save Changes
-        </button>
+        </button> */}
+        <Button
+          type="Primary"
+          label="Save Changes"
+        />
       </div>
 
       <div className="bg-white shadow rounded-lg divide-y divide-gray-200">

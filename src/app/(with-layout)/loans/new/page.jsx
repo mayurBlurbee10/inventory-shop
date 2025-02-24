@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/Common/Elements/Button";
 import {
   ArrowDownUp,
   Folder,
@@ -211,12 +212,12 @@ const ApplicationStep = ({ setActiveStep }) => {
         >
           <ListChecks className="size-5" />
         </div>
-        <button
-          className="px-3 py-2 border border-black rounded"
+
+        <Button
           onClick={() => setActiveStep("documents")}
-        >
-          Next
-        </button>
+          type="Primary"
+          label="Next"
+        />
       </div>
     </div>
   );
@@ -297,12 +298,14 @@ const DocumentStep = ({ setActiveStep }) => {
           <div className="flex items-center justify-between p-4">
             <p>0 Selected</p>
             <div className="flex gap-2">
-              <button className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100">
-                Cancel
-              </button>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-md">
-                Choose
-              </button>
+              <Button
+                type="Secondary"
+                label="Cancel"
+              />
+              <Button
+                type="Secondary"
+                label="Choose"
+              />
             </div>
           </div>
         </div>
@@ -319,30 +322,29 @@ const DocumentStep = ({ setActiveStep }) => {
 
           {/* Footer with Buttons */}
           <div className="flex justify-between items-center p-4">
-            <button className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100">
-              Close
-            </button>
+            <Button
+              type="Secondary"
+              label="Close"
+            />
             <div className="flex space-x-2">
-              <button className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100">
-                Cancel
-              </button>
-              <button
-                className={`text-white px-4 py-2 rounded-md border-gray bg-blue-500 hover:bg-blue-600
-                    `}
-              >
-                Upload
-              </button>
+              <Button
+                type="Secondary"
+                label="Cancel"
+              />
+              <Button
+                type="Primary"
+                label="Upload"
+              />
             </div>
           </div>
         </div>
       </div>
       <div className="flex items-center justify-between py-10">
-        <button
-          className="px-3 py-2 border border-black rounded"
+        <Button
           onClick={() => setActiveStep("loanestimate")}
-        >
-          Next
-        </button>
+          type="Primary"
+          label="Next"
+        />
       </div>
     </div>
   );
@@ -405,31 +407,28 @@ function NewLoanPage() {
           <div className="flex flex-col items-start space-y-4">
             <button
               onClick={() => setActiveStep("application")}
-              className={`text-[#107fff] ${
-                activeStep === "application"
+              className={`text-[#107fff] ${activeStep === "application"
                   ? "text-3xl transition-all ease-in-out"
                   : "text-xl"
-              }`}
+                }`}
             >
               1. Application
             </button>
             <button
               onClick={() => setActiveStep("documents")}
-              className={`text-[#107fff] ${
-                activeStep === "documents"
+              className={`text-[#107fff] ${activeStep === "documents"
                   ? "text-3xl transition-all ease-in-out"
                   : "text-xl"
-              }`}
+                }`}
             >
               2. Documents
             </button>
             <button
               onClick={() => setActiveStep("loanestimate")}
-              className={`text-[#107fff] ${
-                activeStep === "loanestimate"
+              className={`text-[#107fff] ${activeStep === "loanestimate"
                   ? "text-2xl transition-all ease-in-out"
                   : "text-xl"
-              }`}
+                }`}
             >
               3. Loan Estimate
             </button>
