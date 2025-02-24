@@ -18,6 +18,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import * as LucideIcons from "lucide-react";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -266,6 +267,14 @@ export default function OnBoardingPage() {
     }
   };
 
+  const iconComponent = (title) => {
+    const iconName = filterContent(title);
+    const Icon = LucideIcons[iconName];
+
+    if (!Icon) return null;
+
+    return <Icon className="w-6 h-6 text-gray-700" />;
+  }
 
   const NavBarItem = ({ title }) => (
     <button className="px-1 py-2 text-text hover:text-text/80">{title}</button>
@@ -494,16 +503,27 @@ export default function OnBoardingPage() {
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                    </svg>
+
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
+                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+                      <div
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 1 Icon")}
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {iconComponent("Card 1 Icon") || (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="28"
+                          height="28"
+                          fill="currentColor"
+                        >
+                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                        </svg>
+                      )}
+                    </span>
                   </div>
                   <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
                     <div
@@ -530,16 +550,26 @@ export default function OnBoardingPage() {
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                    </svg>
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
+                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+                      <div
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 2 Icon")}
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {iconComponent("Card 2 Icon") || (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="28"
+                          height="28"
+                          fill="currentColor"
+                        >
+                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                        </svg>
+                      )}
+                    </span>
                   </div>
                   <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
                     <div
@@ -566,16 +596,26 @@ export default function OnBoardingPage() {
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path>
-                    </svg>
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
+                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+                      <div
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 3 Icon")}
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {iconComponent("Card 3 Icon") || (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="28"
+                          height="28"
+                          fill="currentColor"
+                        >
+                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                        </svg>
+                      )}
+                    </span>
                   </div>
                   <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
                     <div
@@ -627,6 +667,7 @@ export default function OnBoardingPage() {
             linkFields={linkFields}
             setLinkFields={setLinkFields}
             setIsContentAdded={setIsContentAdded}
+            from={'onboarding'}
           />
         )}
       </div>

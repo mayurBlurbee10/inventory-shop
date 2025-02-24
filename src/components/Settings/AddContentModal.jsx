@@ -3,6 +3,18 @@ import { PlusCircle, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import {
+  Home,
+  User,
+  Settings,
+  Bell,
+  Heart,
+  Star,
+  Camera,
+  Music,
+  Cloud,
+  Sun
+} from "lucide-react";
 
 const AddContentModal = ({
   contentTypes,
@@ -20,13 +32,14 @@ const AddContentModal = ({
   setFile,
   setLinkFields,
   linkFields,
-  setIsContentAdded
+  setIsContentAdded,
+  from=""
 }) => {
   const params = useParams();
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Handle form submission
   const handleAddEditContent = async (e) => {
     e.preventDefault();
@@ -61,10 +74,11 @@ const AddContentModal = ({
       // Construct payload with specific cases for fontSize and links
       const obj = imageUrl
         ? {
-            ...newContent,
-            fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "default",
-          }
+          ...newContent,
+          value: imageUrl,
+          fontSize: newContent.fontSize, // Add fontSize here
+          portalId: params.portalid ?? "default",
+        }
         : newContent.type === "Links"
         ? {
             ...newContent,
@@ -74,6 +88,7 @@ const AddContentModal = ({
           }
         : {
             ...newContent,
+            value: newContent.value,
             fontSize: newContent.fontSize, // Add fontSize here
             portalId: params.portalid ?? "default",
           };
@@ -107,10 +122,9 @@ const AddContentModal = ({
       handleModalClose();
 
       toast.success(
-        `${
-          apiType === "updateContentManagement"
-            ? "Content updated successfully"
-            : "Content added successfully"
+        `${apiType === "updateContentManagement"
+          ? "Content updated successfully"
+          : "Content added successfully"
         }`
       );
     } catch (error) {
@@ -166,16 +180,20 @@ const AddContentModal = ({
   };
 
   const handleRemoveLinkField = (index) => {
-    const updatedLinks = linkFields.filter((_, idx) => idx !== index);
-    setLinkFields(updatedLinks);
+    if (linkFields.length !== 1) {
+      const updatedLinks = linkFields.filter((_, idx) => idx !== index);
+      setLinkFields(updatedLinks);
+    }
   };
 
   const handleAddLinkField = () => {
     if (
-      linkFields.length < 10 &&
+      linkFields.length > 0 &&
       linkFields[linkFields.length - 1].label != "" &&
       linkFields[linkFields.length - 1].link != ""
     ) {
+      setLinkFields([...linkFields, { label: "", link: "" }]);
+    }else if(linkFields.length === 0){
       setLinkFields([...linkFields, { label: "", link: "" }]);
     }
   };
@@ -195,6 +213,19 @@ const AddContentModal = ({
     setFile(null);
     setContentTypes(originalContentTypes);
   };
+
+  const iconOptions = [
+    { name: "Home", component: Home },
+    { name: "User", component: User },
+    { name: "Settings", component: Settings },
+    { name: "Bell", component: Bell },
+    { name: "Heart", component: Heart },
+    { name: "Star", component: Star },
+    { name: "Camera", component: Camera },
+    { name: "Music", component: Music },
+    { name: "Cloud", component: Cloud },
+    { name: "Sun", component: Sun }
+  ];
 
   return (
     <div
@@ -233,7 +264,7 @@ const AddContentModal = ({
               onChange={handleTitleChange}
               required
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-              disabled={isEditMode}
+              disabled={isEditMode || from === 'onboarding'}
             >
               <option value="" disabled>
                 Select a Content Title
@@ -301,6 +332,47 @@ const AddContentModal = ({
               </select>
             </div>
           )}
+          {/* Icons */}
+          {newContent.type === "Icons" && (
+            <div className="mb-4">
+              <label
+                htmlFor="iconSelect"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Select Icon
+              </label>
+              <select
+                id="iconSelect"
+                name="iconSelect"
+                className="mt-1 block w-[200px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                value={newContent?.value}
+                onChange={(e) =>
+                  setNewContent((prev) => ({ ...prev, value: e.target.value }))
+                }
+              >
+                {iconOptions.map((icon) => (
+                  <option key={icon.name} value={icon.name}>
+                    {icon.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Display selected icon */}
+              {iconOptions.find((icon) => icon.name === newContent?.value)?.component && (
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-gray-600">Selected Icon:</span>
+                  {
+                    React.createElement(
+                      iconOptions.find((icon) => icon.name === newContent?.value).component,
+                      { className: "w-6 h-6 text-gray-700" }
+                    )
+                  }
+                </div>
+              )}
+            </div>
+          )}
+
+
 
           {/* Text */}
           {newContent.type === "Text" && (
