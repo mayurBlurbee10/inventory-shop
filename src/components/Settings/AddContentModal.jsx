@@ -32,7 +32,8 @@ const AddContentModal = ({
   setFile,
   setLinkFields,
   linkFields,
-  setIsContentAdded
+  setIsContentAdded,
+  from=""
 }) => {
   const params = useParams();
 
@@ -87,7 +88,7 @@ const AddContentModal = ({
           }
         : {
             ...newContent,
-            value: newContent.icon || newContent.value || "",
+            value: newContent.value,
             fontSize: newContent.fontSize, // Add fontSize here
             portalId: params.portalid ?? "default",
           };
@@ -179,16 +180,20 @@ const AddContentModal = ({
   };
 
   const handleRemoveLinkField = (index) => {
-    const updatedLinks = linkFields.filter((_, idx) => idx !== index);
-    setLinkFields(updatedLinks);
+    if (linkFields.length !== 1) {
+      const updatedLinks = linkFields.filter((_, idx) => idx !== index);
+      setLinkFields(updatedLinks);
+    }
   };
 
   const handleAddLinkField = () => {
     if (
-      linkFields.length < 10 &&
+      linkFields.length > 0 &&
       linkFields[linkFields.length - 1].label != "" &&
       linkFields[linkFields.length - 1].link != ""
     ) {
+      setLinkFields([...linkFields, { label: "", link: "" }]);
+    }else if(linkFields.length === 0){
       setLinkFields([...linkFields, { label: "", link: "" }]);
     }
   };
@@ -259,7 +264,7 @@ const AddContentModal = ({
               onChange={handleTitleChange}
               required
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-              disabled={isEditMode}
+              disabled={isEditMode || from === 'onboarding'}
             >
               <option value="" disabled>
                 Select a Content Title
@@ -340,9 +345,9 @@ const AddContentModal = ({
                 id="iconSelect"
                 name="iconSelect"
                 className="mt-1 block w-[200px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                value={newContent?.icon || ""}
+                value={newContent?.value}
                 onChange={(e) =>
-                  setNewContent((prev) => ({ ...prev, icon: e.target.value }))
+                  setNewContent((prev) => ({ ...prev, value: e.target.value }))
                 }
               >
                 {iconOptions.map((icon) => (
@@ -353,12 +358,12 @@ const AddContentModal = ({
               </select>
 
               {/* Display selected icon */}
-              {iconOptions.find((icon) => icon.name === newContent.icon)?.component && (
+              {iconOptions.find((icon) => icon.name === newContent?.value)?.component && (
                 <div className="mt-4 flex items-center gap-2">
                   <span className="text-gray-600">Selected Icon:</span>
                   {
                     React.createElement(
-                      iconOptions.find((icon) => icon.name === newContent.icon).component,
+                      iconOptions.find((icon) => icon.name === newContent?.value).component,
                       { className: "w-6 h-6 text-gray-700" }
                     )
                   }

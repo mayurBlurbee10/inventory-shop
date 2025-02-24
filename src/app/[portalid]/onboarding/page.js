@@ -269,7 +269,6 @@ export default function OnBoardingPage() {
 
   const iconComponent = (title) => {
     const iconName = filterContent(title);
-    console.log("Icon:", iconName);
     const Icon = LucideIcons[iconName];
 
     if (!Icon) return null;
@@ -508,7 +507,7 @@ export default function OnBoardingPage() {
                   <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
                       <div
-                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
                         onClick={() => handleModalOpenForEdit("Card 1 Icon")}
                       >
                         <Pen className="size-4" />
@@ -554,7 +553,7 @@ export default function OnBoardingPage() {
                   <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
                       <div
-                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
                         onClick={() => handleModalOpenForEdit("Card 2 Icon")}
                       >
                         <Pen className="size-4" />
@@ -600,7 +599,7 @@ export default function OnBoardingPage() {
                   <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
                       <div
-                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
                         onClick={() => handleModalOpenForEdit("Card 3 Icon")}
                       >
                         <Pen className="size-4" />
@@ -668,6 +667,7 @@ export default function OnBoardingPage() {
             linkFields={linkFields}
             setLinkFields={setLinkFields}
             setIsContentAdded={setIsContentAdded}
+            from={'onboarding'}
           />
         )}
       </div>
