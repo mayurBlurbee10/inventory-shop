@@ -116,7 +116,10 @@ export default function DocDashboard() {
         throw new Error("Failed to fetch page");
       }
 
-      setPage(data?.data?.visibility || []);
+      const pageData = data?.data?.visibility || []
+
+      setPage(pageData);
+
     } catch (error) {
       console.log("error: ", error);
     } finally {
@@ -211,8 +214,8 @@ export default function DocDashboard() {
   };
 
   const filterVisibility = (label) => {
-    if (isPageLoading) return false;  // If loading, return false
-    if (!page) return true;       // If page doesn't exist, return true
+    if (isPageLoading) return false;  
+    if (!page || !page.length) return true;       
     
     const section = page.find((item) => item.label === label);
     return section?.visible ?? false; 
@@ -305,9 +308,7 @@ export default function DocDashboard() {
             )}
 
             {/* Chart data table */}
-            {page &&
-              page.length > 0 &&
-              filterVisibility("Statistics Section") && (
+            {filterVisibility("Statistics Section") && (
                 <div className="border border-[#0000001a] mt-[70px]">
                   <table className="min-w-full divide-y-2 divide-[#0000001a]">
                     <thead>

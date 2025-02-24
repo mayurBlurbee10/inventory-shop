@@ -164,7 +164,9 @@ function Documents({
         throw new Error("Failed to fetch page");
       }
 
-      setPage(data?.data?.visibility || []);
+      const pageData = data?.data?.visibility || []
+
+      setPage(pageData);
     } catch (error) {
       console.log("error: ", error);
     } finally {
@@ -973,7 +975,7 @@ function Documents({
 
   const filterVisibility = (label) => {
     if (isPageLoading) return false; 
-    if (!page) return true;     
+    if (!page || !page.length) return true;     
     
     const section = page.find((item) => item.label === label);
     return section?.visible ?? false; 
