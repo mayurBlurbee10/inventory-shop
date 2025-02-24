@@ -94,7 +94,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         documentType: getDocumentType(fileType),
         editorConfig: {
           user: { id: userData.id, name: userData.name },
-          customization: { autoSave: true },
+          customization: { autoSave: true, uiTheme: 'default-light', features : { tabBackground : { mode : "toolbar"}} },
         },
         events: {
           onRequestSaveAs: async function (event) {
@@ -153,6 +153,8 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         height: "100%",
         width: "100%",
       });
+
+      console.log("editor.current", editorRef.current);
     } catch (error) {
       console.error("Error loading file:", error);
       toast.error("Error loading document.");
@@ -283,11 +285,11 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         }
         fetFileComments();
         setMessage("");
-        setIsOpenCommentBox(false)
       } catch (error) {
         toast.error(error.message);
       } finally {
         setIsPostLoading(false);
+        setIsOpenCommentBox(false)
       }
     };
 
@@ -356,6 +358,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                     id="onlyoffice-editor"
                     ref={editorRef}
                     className="h-full w-full"
+                    // style={{backgroundColor:' #007BFF !important'}}
                   ></div>
                 )}
               </div>
@@ -395,6 +398,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                 comments.length > 0 &&
                 comments?.map((comment) => (
                   <div
+                    key={comment?.id}
                     className="cursor-pointer w-full"
                     onClick={() => setIsOpenCommentBox((prev) => !prev)}
                   >
@@ -453,16 +457,18 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                     <button
                       className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
                       onClick={() => setIsOpenCommentBox(false)}
+                      disabled={isPostLoading}
                     >
                       Cancel
                     </button>
                     <button
                       className={`text-white px-4 py-2 rounded-lg border-gray bg-blue-500 hover:bg-blue-600  ${
-                        isLoading ? "bg-gray-400 cursor-not-allowed" : ""
+                        isPostLoading ? "bg-gray-400 cursor-not-allowed" : ""
                       }`}
                       onClick={handleAddComment}
+                      disabled={isPostLoading}
                     >
-                      Post
+                      {isPostLoading ? 'Posting...' : 'Post'}
                     </button>
                   </div>
                 </div>
@@ -481,7 +487,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                   <input
                     type="text"
                     placeholder="Write a comment"
-                    className="border w-full mx-3 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                    className="border w-full mx-3 h-9 rounded-md shadow-inner pl-4 text-sm outline-none text-gray-700"
                   />
                 </div>
               )}
@@ -490,121 +496,6 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         </DialogPanel>
       </div>
     </Dialog>
-
-    // <Dialog
-    //   open={isModalOpen}
-    //   onClose={() => {}}
-    //   className="relative z-50 text-gray-600"
-    // >
-    //   <div className="fixed inset-0 bg-black/10" aria-hidden="true" />
-    //   <div className="fixed inset-0 flex items-center text-black justify-center p-4">
-    //     <DialogPanel className="w-full max-w-[90vw] rounded-lg bg-white shadow-lg">
-    //       <div className="flex justify-between items-center border-b px-4 py-3">
-    //         <h2 className="text-lg font-semibold">Edit “{item?.name}”</h2>
-    //         <button
-    //           onClick={() => {
-    //             if (
-    //               editorRef.current &&
-    //               typeof editorRef.current.destroyEditor === "function"
-    //             ) {
-    //               console.log(
-    //                 "🔹 Destroying old editor instance...",
-    //                 editorRef.current
-    //               );
-    //               editorRef.current.destroyEditor();
-    //             }
-    //             setIsModalOpen(false);
-    //           }}
-    //           className="text-gray-400 hover:text-gray-600"
-    //         >
-    //           <X className="w-5 h-5" />
-    //         </button>
-    //       </div>
-    //       <div className="flex w-full min-h-[80vh]">
-    //         {/* Editor Section */}
-    //         <div className="min-w-[65vw] ">
-    //           <div className="space-y-4 flex-1">
-    //             {isLoading ? (
-    //               <div className="flex items-center justify-center h-60">
-    //                 <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-    //               </div>
-    //             ) : (
-    //               <div
-    //                 id="onlyoffice-editor"
-    //                 ref={editorRef}
-    //                 style={{ height: "80vh", width: "100%" }}
-    //               ></div>
-    //             )}
-    //           </div>
-    //         </div>
-    //         <div className="flex justify-end border-t px-4 py-3 space-x-2">
-    //           <button
-    //             onClick={() => {
-    //               if (
-    //                 editorRef.current &&
-    //                 typeof editorRef.current.destroyEditor === "function"
-    //               ) {
-    //                 console.log(
-    //                   "🔹 Destroying old editor instance...",
-    //                   editorRef.current
-    //                 );
-    //                 editorRef.current.destroyEditor();
-    //               }
-    //               setIsModalOpen(false);
-    //             }}
-    //             disabled={isSaveLoading}
-    //             className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-    //           >
-    //             Cancel
-    //           </button>
-    //           <button
-    //             onClick={handleSaveFile}
-    //             disabled={isSaveLoading}
-    //             className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-    //           >
-    //             {isSaveLoading ? (
-    //               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-    //             ) : (
-    //               <Save className="w-4 h-4 mr-2" />
-    //             )}
-    //             Save
-    //           </button>
-    //         </div>
-    //         {/* Comment Section */}
-    //         <div className="min-w-[25vw] border-l p-6 bg-gray-50 flex flex-col">
-    //           <div className="flex flex-col items-center justify-center p-4 text-gray-500">
-    //             <MessageSquareDiff className="w-10 h-10 text-gray-400" />
-    //             <div className="text-center mt-2">
-    //               <p className="text-lg font-medium">No comments to show</p>
-    //               <span className="text-sm text-gray-400">
-    //                 Be the first to add a comment!
-    //               </span>
-    //             </div>
-    //           </div>
-    //           <div className="flex items-center">
-    //             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold">
-    //               {user?.name
-    //                 ?.split(" ")
-    //                 .map((word) => word.charAt(0).toUpperCase())
-    //                 .slice(0, 2) // Ensure only two initials
-    //                 .join("")}
-    //             </div>
-    //             <div>
-    //               <input
-    //                 type="input"
-    //                 placeholder="Write a comment"
-    //                 className={
-    //                   "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4 text-gray-700"
-    //                 }
-    //                 disabled
-    //               />
-    //             </div>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </DialogPanel>
-    //   </div>
-    // </Dialog>
   );
 }
 
