@@ -79,7 +79,8 @@ function Login() {
 
   const validateUserAccess = async (user, config, portalId, setUser) => {
     if (!user) {
-      setUser(null);
+      // setUser(null);
+      dispatch(setCurrentUser(null))
       setError("Invalid user email or password");
       return null;
     }
@@ -89,7 +90,8 @@ function Login() {
     );
 
     if (!permission) {
-      setUser(null);
+      // setUser(null);
+      dispatch(setCurrentUser(null))
       setError("User does not have access to this portal.");
       return null;
     }
@@ -97,19 +99,21 @@ function Login() {
     const { role, portalId: userPortalId } = permission;
 
     if (role === UserRole.SUPER_ADMIN && user?.id !== config?.createdBy?.id) {
-      setUser(null);
+      // setUser(null);
+      dispatch(setCurrentUser(null))
       setError("User does not have access to this portal.");
       return null;
     } else if (
       [UserRole.USER, UserRole.ADMIN].includes(role) &&
       userPortalId !== portalId
     ) {
-      setUser(null);
+      // setUser(null);
+      dispatch(setCurrentUser(null))
       setError("User does not have access to this portal.");
       return null;
     }
 
-    setUser(user);
+    // setUser(user);
     return user;
   };
 
@@ -130,8 +134,7 @@ function Login() {
       const validatedUser = await validateUserAccess(
         data,
         config,
-        params.portalid,
-        setUser
+        params.portalid
       );
       return validatedUser;
     } catch (error) {

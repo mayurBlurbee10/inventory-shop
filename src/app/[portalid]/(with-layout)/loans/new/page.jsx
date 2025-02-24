@@ -47,6 +47,28 @@ const ApplicationStep = ({
   const { data: filesList, loading: fileListLoading } = useSelector(
     (state) => state.files
   );
+  const getFile = async () => {
+    try {
+      setIsLoading(true);
+      const userData = getUserData();
+      const requestOptions = {
+        method: "GET",
+      };
+      const response = await fetchWrapper(
+        `/api/box/folders?folderId=${userData?.boxFolderId}`,
+        requestOptions,
+        "fetchFile"
+      );
+      if (!response.ok) throw new Error("Failed to fetch files");
+      const data = await response.json();
+      const newFilesList = data?.items || [];
+      return newFilesList;
+    } catch (error) {
+      console.error("Error get files:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handelNext = async () => {
     try {
@@ -55,7 +77,8 @@ const ApplicationStep = ({
         return;
       }
       setIsLoading(true);
-      let loansFolder = findFolderWithName(filesList, "Loans");
+      let files = filesList && filesList.length > 0 ? filesList : await getFile();
+      let loansFolder = findFolderWithName(files, "Loans");
       let loansId = loansFolder?.id;
       console.log("filesList", filesList);
 
