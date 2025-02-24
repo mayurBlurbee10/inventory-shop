@@ -3,13 +3,23 @@
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Button from "@/components/Common/Elements/Button";
+import AddContentModal from "@/components/Settings/AddContentModal";
 import Footer from "@/components/Footer";
 import ContentManagementContent from "@/components/Settings/ContentManagementContent";
 import UsersContent from "@/components/Settings/UsersContent";
-import { ChevronRight, Check, IdCard, LockKeyhole, User, Building } from "lucide-react";
+import {
+  ChevronRight,
+  Check,
+  IdCard,
+  LockKeyhole,
+  User,
+  Building,
+  Pen,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import * as LucideIcons from "lucide-react";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -21,8 +31,8 @@ const WizardStep = ({ step, currentStep }) => {
         className={`
           w-8 h-8 rounded-full flex items-center justify-center border
           ${isCompleted
-            ? "bg-gray-900 border-gray-900"
-            : isActive
+              ? "bg-gray-900 border-gray-900"
+              : isActive
               ? "bg-white border-gray-900"
               : "bg-white border-gray-300"
           }
@@ -55,8 +65,35 @@ export default function OnBoardingPage() {
   const [content, setContent] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isAddRequired, setIsAddRequired] = useState(true)
+  const [isAddRequired, setIsAddRequired] = useState(true);
   const [isUserData, setIsUserData] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [contentTypes, setContentTypes] = useState([]);
+  const [originalContentTypes, setOriginalContentTypes] = useState([]);
+  const [newContent, setNewContent] = useState({
+    title: "",
+    type: "",
+    value: "",
+    fontSize: "30px",
+  });
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [file, setFile] = useState(null);
+  const [isContentAdded, setIsContentAdded] = useState(false)
+  const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
+
+  const fetchContentType = async () => {
+    const typesRequest = await fetchWrapper(
+      `/api/contentManagement/type?portalId=${params.portalid ?? "default"}`,
+      { method: "GET" },
+      "fetchContentType"
+    );
+    if (!typesRequest.ok) throw new Error("Failed to fetch Content type");
+    const typesData = await typesRequest.json();
+    setContentTypes(typesData);
+    setOriginalContentTypes(typesData);
+  };
+
   const steps = [
     { component: ContentManagementContent },
     { component: UsersContent },
@@ -81,7 +118,7 @@ export default function OnBoardingPage() {
       );
       if (!response.ok) throw new Error("Failed to fetch Content Management");
       const data = await response.json();
-      setContent(data.portalContent);
+      setContent(data?.portalContent);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -114,11 +151,8 @@ export default function OnBoardingPage() {
     };
     fetchConfig();
     fetchContent();
+    fetchContentType();
   }, []);
-
-  // useEffect(() => {
-  //   fetchContent();
-  // }, [])
 
   const handleBack = () => {
     setCurrentStep(currentStep - 1);
@@ -205,6 +239,44 @@ export default function OnBoardingPage() {
     return value;
   };
 
+  const handleModalOpenForEdit = (contentTitle) => {
+    const contentToEdit = content?.find((item) => item.title === contentTitle);
+    if (!contentToEdit) {
+      const content = contentTypes.find((item) => item.title === contentTitle);
+      setNewContent({
+        type: content.type,
+        title: contentTitle,
+        fontSize: "30px",
+      });
+      setIsDialogOpen(true);
+    } else {
+      setNewContent({
+        ...contentToEdit,
+        fontSize: contentToEdit?.fontSize || "30px",
+      });
+      setIsEditMode(true);
+      setIsDialogOpen(true);
+      setFile(null);
+      if (contentToEdit?.type == "Image") {
+        setPreviewUrl(contentToEdit.value || "");
+      }
+      if (contentToEdit?.type === "Links") {
+        setLinkFields(
+          JSON.parse(contentToEdit.value) || [{ label: "", link: "" }]
+        );
+      }
+    }
+  };
+
+  const iconComponent = (title) => {
+    const iconName = filterContent(title);
+    const Icon = LucideIcons[iconName];
+
+    if (!Icon) return null;
+
+    return <Icon className="w-6 h-6 text-gray-700" />;
+  }
+
   const NavBarItem = ({ title }) => (
     <button className="px-1 py-2 text-text hover:text-text/80">{title}</button>
   );
@@ -250,6 +322,8 @@ export default function OnBoardingPage() {
               onContentLengthChange={handleContentLengthChange}
               setContentOnboard={setContent}
               userData={isUserData}
+              isContentAdded={isContentAdded} 
+              setIsContentAdded={setIsContentAdded}
             />
           </div>
           {errors.contentLength && (
@@ -285,9 +359,9 @@ export default function OnBoardingPage() {
               onClick={handleNext}
               disabled={isSubmitting}
               className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-900 hover:bg-gray-800"
-                }`}
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gray-900 hover:bg-gray-800"
+              }`}
             >
               {currentStep === steps.length - 1
                 ? "Save & Continue"
@@ -306,6 +380,7 @@ export default function OnBoardingPage() {
         </div>
       </div>
 
+      {/* Preview Page */}
       <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-hidden bg-background min-h-[50vh] md:min-h-screen">
         <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
           <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
@@ -316,7 +391,14 @@ export default function OnBoardingPage() {
                 alt={config.legalName || "Default"}
                 className="h-[52px] mr-2"
               />
-              <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+
+              <span className="text-3xl text-[#000000e6] mb-1 font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                <div
+                  className="absolute top-0 right-0 p-1 cursor-pointer"
+                  onClick={() => handleModalOpenForEdit("Header Text")}
+                >
+                  <Pen className="size-4" />
+                </div>
                 {filterContent("Header Text")}
               </span>
             </a>
@@ -355,17 +437,24 @@ export default function OnBoardingPage() {
 
           <div className="flex-1 flex flex-col xl:flex-row  pt-12">
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
-              <div>
-                <div className="px-[15px]">
-                  <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2">
-                    {filterContent("Title")}
-                  </h2>
+              <div className="px-[15px]">
+                <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                   <div
-                    style={{ backgroundColor: config?.primaryColor }}
-                    className="p-[1px] w-full"
-                  ></div>
-
-                  <p className="font-light text-xl text-black leading-7 font-lato mb-3 mt-5">
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("Title")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
+                  {filterContent("Title")}
+                </h2>
+                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 relative">
+                  <div
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("Paragraph")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
+                  <p className="font-light text-xl leading-7 font-lato mb-3 mt-5">
                     {filterContent("Paragraph")}
                   </p>
                 </div>
@@ -385,7 +474,7 @@ export default function OnBoardingPage() {
                         type="email"
                         placeholder="Email"
                         className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
-                        required
+                        disabled
                       />
                     </div>
                     <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-5 mx-5">
@@ -396,6 +485,7 @@ export default function OnBoardingPage() {
                         type="password"
                         placeholder="Password"
                         className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
+                        disabled
                       />
                     </div>
                     <button
@@ -429,66 +519,139 @@ export default function OnBoardingPage() {
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                    </svg>
+
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
+                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+                      <div
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 1 Icon")}
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {iconComponent("Card 1 Icon") || (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="28"
+                          height="28"
+                          fill="currentColor"
+                        >
+                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                        </svg>
+                      )}
+                    </span>
                   </div>
-                  {filterContent("Card 1 Title")}
+                  <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                    <div
+                      className="absolute top-0 right-0 p-1 cursor-pointer"
+                      onClick={() => handleModalOpenForEdit("Card 1 Title")}
+                    >
+                      <Pen className="size-4" />
+                    </div>
+                    {filterContent("Card 1 Title")}
+                  </span>
                 </h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">
+                <span className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                  <div
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("Card 1 Content")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
                   {filterContent("Card 1 Content")}
-                </p>
+                </span>
               </div>
             </div>
 
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                    </svg>
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
+                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+                      <div
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 2 Icon")}
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {iconComponent("Card 2 Icon") || (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="28"
+                          height="28"
+                          fill="currentColor"
+                        >
+                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                        </svg>
+                      )}
+                    </span>
                   </div>
-                  {filterContent("Card 2 Title")}
+                  <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                    <div
+                      className="absolute top-0 right-0 p-1 cursor-pointer"
+                      onClick={() => handleModalOpenForEdit("Card 2 Title")}
+                    >
+                      <Pen className="size-4" />
+                    </div>
+                    {filterContent("Card 2 Title")}
+                  </span>
                 </h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">
+                <span className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                  <div
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("Card 2 Content")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
                   {filterContent("Card 2 Content")}
-                </p>
+                </span>
               </div>
             </div>
 
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path>
-                    </svg>
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
+                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+                      <div
+                        className="absolute top-2 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 3 Icon")}
+                      >
+                        <Pen className="size-4" />
+                      </div>
+                      {iconComponent("Card 3 Icon") || (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width="28"
+                          height="28"
+                          fill="currentColor"
+                        >
+                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                        </svg>
+                      )}
+                    </span>
                   </div>
-                  {filterContent("Card 3 Title")}
+                  <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                    <div
+                      className="absolute top-0 right-0 p-1 cursor-pointer"
+                      onClick={() => handleModalOpenForEdit("Card 3 Title")}
+                    >
+                      <Pen className="size-4" />
+                    </div>
+                    {filterContent("Card 3 Title")}
+                  </span>
                 </h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4">
+                <span className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                  <div
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("Card 3 Content")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
                   {filterContent("Card 3 Content")}
-                </p>
+                </span>
               </div>
             </div>
           </div>
@@ -499,8 +662,30 @@ export default function OnBoardingPage() {
             config={config}
             filterValue={filterContent}
             from={"onboarding"}
+            handleModalOpenForEdit={handleModalOpenForEdit}
           />
         </div>
+        {isDialogOpen && (
+          <AddContentModal
+            contentTypes={contentTypes}
+            setContentTypes={setContentTypes}
+            originalContentTypes={originalContentTypes}
+            setIsDialogOpen={setIsDialogOpen}
+            setIsEditMode={setIsEditMode}
+            isEditMode={isEditMode}
+            setNewContent={setNewContent}
+            newContent={newContent}
+            fetchData={fetchContent}
+            file={file}
+            setFile={setFile}
+            previewUrl={previewUrl}
+            setPreviewUrl={setPreviewUrl}
+            linkFields={linkFields}
+            setLinkFields={setLinkFields}
+            setIsContentAdded={setIsContentAdded}
+            from={'onboarding'}
+          />
+        )}
       </div>
     </div>
   );

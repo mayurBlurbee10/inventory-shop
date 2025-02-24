@@ -112,7 +112,9 @@ export default function SetPassword() {
         <div className="flex justify-center mt-4">
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-            onClick={(e)=>{handleSetPassword(e,'okta')}}
+            onClick={(e) => {
+              handleSetPassword(e, "okta");
+            }}
             disabled={loading}
           >
             Sign in with OKTA
@@ -123,7 +125,12 @@ export default function SetPassword() {
           To create a standard user, please finish setting up your account by
           creating a password below:
         </p>
-        <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
+        <form
+          className="text-gray-700"
+          onSubmit={(e) => {
+            handleSetPassword(e, "standardUser");
+          }}
+        >
           {success ? (
             <p className="text-green-500 text-center mb-4">
               Password set successfully! Redirecting to login...
@@ -168,13 +175,20 @@ export default function SetPassword() {
               {error && (
                 <p className="text-red-500 text-center text-sm">{error}</p>
               )}
-              <button
+              {/* <button
                 type="submit"
                 className="w-full px-4 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 disabled:bg-gray-400"
                 disabled={loading}
               >
                 {loading ? "Setting..." : "Set Password"}
-              </button>
+              </button> */}
+              <Button
+                buttonType="submit"
+                disabled={loading}
+                isLoading={loading}
+                type="Primary"
+                label="Set Password"
+              />
             </>
           )}
         </form>

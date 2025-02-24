@@ -395,6 +395,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               {loading ? "Creating..." : "Add User"}
             </button> */}
             <Button
+              buttonType="submit"
               type="Primary"
               disabled={loading}
               isLoading={loading}

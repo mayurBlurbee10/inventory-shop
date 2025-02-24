@@ -9,7 +9,9 @@ const Button = ({
     onClick,
     isLoading,
     disabled,
-    icon: Icon
+    icon: Icon,
+    buttonType = "button",
+    className=""
 }) => {
     const pathname = usePathname();
     const isAdminPanel = pathname.includes("admin");
@@ -63,7 +65,8 @@ const Button = ({
 
     return (
         <button
-            className={` ${baseStyles} ${typeOfButton[type]} ${isLoading ? "cursor-not-allowed" : ""} ${disabled || isLoading ? "cursor-not-allowed opacity-50" : ""}`}
+            type={buttonType}
+            className={`${className} ${baseStyles} ${typeOfButton[type]} ${isLoading ? "cursor-not-allowed" : ""} ${disabled || isLoading ? "cursor-not-allowed opacity-50" : ""}`}
             onClick={onClick}
             // style={getButtonStyle(type)}
             disabled={disabled || isLoading}

@@ -111,6 +111,7 @@ function TechSupport({ isOpen, onClose }) {
               {loading ? "Submitting..." : "Submit Request"}
             </button> */}
             <Button 
+              buttonType="submit"
               disabled={loading}
               isLoading={loading}
               type="Primary"

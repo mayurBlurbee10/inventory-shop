@@ -23,6 +23,7 @@ import {
   Loader2,
   UserRound,
   UsersRoundIcon,
+  FilePenLine,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
@@ -40,6 +41,7 @@ import { UserRole } from "@/config/constants";
 import SignRequestModal from "./SignRequestModal";
 import { Menu, MenuItem, MenuItems, MenuButton } from "@headlessui/react";
 import Button from "./Common/Elements/Button";
+import Editor from "./Editor";
 
 const ShareModal = ({
   isOpen,
@@ -505,6 +507,8 @@ function SharedFolderExplorer({
   const dropdownRef = useRef(null);
   const deleteModalRef = useRef(null);
   const nestedDropdownRef = useRef(null);
+  const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
+  const [editorFile, setEditorFile] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -678,7 +682,6 @@ function SharedFolderExplorer({
 
   const handleDeleteFile = async (file) => {
     // setCurrentFilesList((prev) => prev.filter((item) => item.id !== fileId));
-    console.log("File", file)
     setIsLoading(true);
     try {
       const filterBoxUser = (collabIds) => {
@@ -1096,6 +1099,20 @@ function SharedFolderExplorer({
                                             </div>
                                           </div>
                                         )}
+                                        {file.type === "file" && (
+                                          <button
+                                            className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
+                                            onClick={() => {
+                                              setIsEditorModalOpen(
+                                                (prev) => !prev
+                                              );
+                                              setEditorFile(file);
+                                            }}
+                                          >
+                                            <FilePenLine className="h-4 w-4 text-gray-600" />{" "}
+                                            Edit
+                                          </button>
+                                        )}
                                         <button
                                           className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
                                           // onClick={() => {
@@ -1400,6 +1417,14 @@ function SharedFolderExplorer({
         onClose={() => setIsSignModalOpen(false)}
         signUrl={selectedSignUrl}
       />
+     {isEditorModalOpen && (
+        <Editor
+          isModalOpen={isEditorModalOpen}
+          setIsModalOpen={setIsEditorModalOpen}
+          item={editorFile}
+          selectedItem={selectedItem}
+        />
+      )}
     </div>
   );
 }

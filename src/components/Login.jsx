@@ -566,6 +566,7 @@ function Login() {
                     )}
                   </button> */}
                   <Button
+                    buttonType="submit"
                     disabled={isLoadingLogin || isLoadingOkta}
                     isLoading={isLoadingLogin}
                     type="Login"

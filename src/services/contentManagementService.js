@@ -39,6 +39,7 @@ const createContentManagement = async (data) => {
       title: data.title,
       type: data.type,
       value: data.value,
+      fontSize : data.fontSize
     });
 
     return await contentRepository.save(content);

@@ -273,6 +273,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                     {loading ? "Setting..." : "Set Password"}
                   </button> */}
                     <Button
+                      buttonType="submit"
                       disabled={loading}
                       isLoading={loading}
                       type="Primary"

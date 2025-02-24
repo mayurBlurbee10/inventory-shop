@@ -40,29 +40,28 @@ const updatePage = async (pageId, updatedData) => {
 };
 
 const checkIfPageWithTitleExist = async (portalId, pageTitle) => {
-  const pageRepository = await getRepository(Pages);
   const pluginRepository = await getRepository(Plugins);
 
   try {
     const plugins = await pluginRepository.find({
-      where: {
-        portalId: portalId,
-      },
+      where: { portalId: portalId },
       relations: ["pages"],
     });
+
     if (!plugins || plugins.length === 0) {
       return null;
     }
-    const pageExists = plugins.some((plugin) =>
-      plugin.pages.some((page) => page.title === pageTitle)
-    );
-    if (pageExists) {
-      throw new Error(`Page with title "${pageTitle}" already exists.`);
+
+    for (const plugin of plugins) {
+      const page = plugin.pages.find((page) => page.title === pageTitle);
+      if (page) {
+        return page;
+      }
     }
-    return;
+
+    return null;
   } catch (error) {
-    console.error("Error fetching page by title:", error.message);
-    throw new Error(`Failed to get page "${pageTitle}".`);
+    throw new Error(`Failed to get page "${pageTitle}": ${error.message}`);
   }
 };
 

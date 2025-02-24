@@ -76,8 +76,8 @@ function sanitizeName(name) {
 }
 
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  <div className="flex justify-center py-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
   </div>
 );
 
@@ -173,7 +173,7 @@ const ReportsContent = () => {
   }, []);
 
   if (!config || !data) {
-    <LoadingSpinner />;
+    return <LoadingSpinner />;
   }
 
   return (
@@ -183,9 +183,9 @@ const ReportsContent = () => {
         {/* Header Section */}
         <div className="mb-5">
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900">
               Statistics Report for {config?.legalName}
-            </h1>
+            </h3>
             {/* <SquareArrowOutUpRight
               className="text-black hover:text-blue-500 size-4"
               onClick={() => {

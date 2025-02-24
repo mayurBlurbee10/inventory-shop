@@ -104,6 +104,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
                                 {submitLoading ? "Submitting..." : "Submit"}
                             </button> */}
                             <Button
+                                buttonType="submit"
                                 type="Primary"
                                 label="Submit"
                                 onClick={handleSubmit}
