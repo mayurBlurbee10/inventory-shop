@@ -3,6 +3,7 @@ import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import CreationWizard from "@/components/CreationWizard";
 import PortalCreatedPopup from "@/components/PortalCreatedPopup";
+import PortalDuplicateModal from "@/components/Settings/PortalDuplicateModal";
 import { UserRole } from "@/config/constants";
 import { setPortals } from "@/store/actions/portalAction";
 import { setActiveUsers } from "@/store/services/portalService";
@@ -14,15 +15,24 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { ChevronDown, Folder, Plus, Users } from "lucide-react";
+import { ChevronDown, Copy, Folder, Plus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
-const SubsidiaryCard = ({ subsidiary, onSelect }) => {
-  const [portalToDelete, setPortalToDelete] = useState(null);
+const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
+  const [isPortalDuplicateModalOpen, setIsPortalDuplicateModalOpen] =
+    useState(null);
   const [usersCount, setUsersCount] = useState(0);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [duplicatePortalData, setDuplicatePortalData] = useState({
+    legalName: "",
+    tradingName: "",
+    domain: "",
+  });
+  
 
   // const fetchUsers = async () => {
   //   try {
@@ -55,6 +65,35 @@ const SubsidiaryCard = ({ subsidiary, onSelect }) => {
   // useEffect(() => {
   //   fetchUsers();
   // }, []);
+
+  const handleDuplicatePortal = async () => {
+    try {
+      if (!subsidiary) return;
+      setIsLoading(true);
+      const response = await fetchWrapper(
+        `/api/portal/duplicate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: subsidiary?.id, ...duplicatePortalData }),
+        },
+        "create-portal"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create duplicate portal");
+      }
+      setIsPopupOpen(true);
+      refreshPortals();
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   function sanitizeName(name) {
     let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
     return sanitizeName.endsWith(".")
@@ -82,14 +121,13 @@ const SubsidiaryCard = ({ subsidiary, onSelect }) => {
             >
               {subsidiary.status}
             </div>
-            {/* {user?.id === subsidiary.createdBy.id && (
-                <div
-                  className={`px-2 py-1`}
-                  onClick={() => setPortalToDelete(subsidiary)}
-                >
-                  <Trash2 className="size-4 text-red-700" />
-                </div>
-              )} */}
+            <button
+              className="relative group px-2 py-1"
+              onClick={() => setIsPortalDuplicateModalOpen(subsidiary)}
+              title="Duplicate"
+            >
+              <Copy className="size-4  text-blue-700" />
+            </button>
           </div>
         </div>
         <div onClick={() => onSelect(subsidiary)}>
@@ -127,6 +165,20 @@ const SubsidiaryCard = ({ subsidiary, onSelect }) => {
           subsidiary={subsidiary}
           refreshPortals={refreshPortals}
         /> */}
+      <PortalDuplicateModal
+        isOpen={isPortalDuplicateModalOpen?.id === subsidiary?.id}
+        onClose={() => setIsPortalDuplicateModalOpen(null)}
+        handleDuplicate={handleDuplicatePortal}
+        setFormData={setDuplicatePortalData}
+        formData={duplicatePortalData}
+        isLoading={isLoading}
+      />
+      <PortalCreatedPopup
+        isOpen={isPopupOpen}
+        portalName={duplicatePortalData?.legalName}
+        portalId={sanitizeName(duplicatePortalData?.legalName)}
+        onClose={() => setIsPopupOpen(false)}
+      />
     </div>
   );
 };
@@ -157,6 +209,7 @@ const SubsidiaryGrid = ({
   subsidiaries,
   onSelectSubsidiary,
   onCreateNew,
+  refreshPortals
 }) => {
   const [visibleSubsidiaries, setVisibleSubsidiaries] = useState(5);
 
@@ -179,6 +232,7 @@ const SubsidiaryGrid = ({
                     key={subsidiary.id}
                     subsidiary={subsidiary}
                     onSelect={onSelectSubsidiary}
+                    refreshPortals={refreshPortals}
                   />
                 </React.Fragment>
               );
@@ -364,6 +418,8 @@ const AdminDashboardPage = () => {
       if (!UserResponse.ok) {
         throw new Error(data.error || "Failed to create user data");
       }
+
+      newSubsidiary.portalCreatedAdmin = data?.id
 
       const saveResponse = await fetchWrapper(
         "/api/portal",

@@ -51,7 +51,7 @@ export async function POST(req) {
         { status: 409 }
       );
     }
-    const { id, ...rest } = portalExist;
+    const { id, createdAt, updatedAt, ...rest } = portalExist;
     const portalData = {
       ...rest,
       legalName: legalName,
