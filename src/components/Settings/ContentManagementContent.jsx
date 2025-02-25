@@ -2,7 +2,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { PlusCircle, X, Pencil, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter , usePathname } from "next/navigation";
 import Button from "../Common/Elements/Button";
 import AddContentModal from "./AddContentModal";
 
@@ -38,7 +38,8 @@ const ContentManagementContent = ({
   const [loading, setLoading] = useState(false);
   const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
   const [contentLength, setContentLength] = useState("");
-
+  const pathname= usePathname();
+  const onBoarding = pathname.includes("/onboarding")
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -381,7 +382,7 @@ const ContentManagementContent = ({
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className={`grid grid-cols-1 gap-6 ${onBoarding ? "" : " sm:grid-cols-2 lg:grid-cols-3"}`}>
           {content.map((item, idx) => (
             <div key={idx} className="border rounded-lg p-4 bg-white relative">
               <div className="flex justify-between items-start ">

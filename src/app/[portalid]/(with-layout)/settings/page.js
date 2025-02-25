@@ -60,9 +60,9 @@ function SettingsPage() {
 
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg flex relative w-full h-[80vh] max-w-[1140px] mx-auto">
+    <div className="bg-white rounded-lg flex relative w-full h-[90vh] mx-auto">
       <div className="w-2/5 md:w-64 border-r border-[#dee2e6] p-3 bg-white text-gray-700">
-        <h2 className="text-xl text-gray-800 font-semibold mb-6">Settings</h2>
+        <h2 className="text-xl text-gray-800 font-semibold mb-6">Tools</h2>
         <nav className="space-y-1">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
