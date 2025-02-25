@@ -467,57 +467,18 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
   const [isExistingPageLoading, setIsExistingPageLoading] = useState(false);
 
   const handleModalClose = async () => {
-    if(pluginData.type !== PluginType.PAGES){
-      setPluginData({
-        type: "",
-        pageId: [],
-        existingPageIds : []
-      });
-      setPages([]);
-      setEditData(null);
-      setExistingPages([]);
-      setPageType("");
-      setError("")
-      onClose();
-      return;
-    }
-    try {
-      setLoading(true);
-      const pluginPayload = {
-        items : existingPages,
-      };
-      const response = await fetchWrapper(
-        "/api/pages/bulk",
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(pluginPayload),
-        },
-        "delete-pages"
-      );
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete pages");
-      }
-      const savedPluginData = await response.json();
-      setPluginData({
-        type: "",
-        pageId: [],
-        existingPageIds : []
-      });
-      setPages([]);
-      setEditData(null);
-      setExistingPages([]);
-      setPageType("");
-      setError("")
-      onClose();
-    } catch (error) {
-      console.error("Error fetching plugins:", error);
-    } finally {
-      setLoading(false);
-    }
+    setPluginData({
+      type: "",
+      pageId: [],
+      existingPageIds: [],
+    });
+    setPages([]);
+    setEditData(null);
+    setExistingPages([]);
+    setPageType("");
+    setError("");
+    onClose();
+    return;
   };
 
   console.log("pages", pages);

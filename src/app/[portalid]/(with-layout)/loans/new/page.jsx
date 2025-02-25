@@ -975,7 +975,7 @@ function NewLoanPage() {
     const isActive = currentStep === step;
 
     return (
-      <div className="flex items-center">
+      <div className="flex items-center w-40">
         <div
           className={`
           w-8 h-8 rounded-full flex items-center justify-center border
@@ -996,7 +996,7 @@ function NewLoanPage() {
             </span>
           )}
         </div>
-        <div className={`ml-3 ${isActive ? "text-[#0061D5]" : "text-gray-500"}`}>
+        <div className={`ml-3 ${isActive || isCompleted ? "text-[#0061D5]" : "text-gray-500"}`}>
           {["Application", "Documents", "Loan Estimate"][step]}
         </div>
       </div>
@@ -1004,6 +1004,17 @@ function NewLoanPage() {
   };
   const steps = ["application", "documents", "loanestimate"];
   const activeStepIndex = steps.indexOf(activeStep);
+  const stepRefs = useRef([]);
+  const scrollContainerRef = useRef(null);
+  useEffect(() => {
+    if (activeStepIndex >= 0 && stepRefs.current[activeStepIndex]) {
+      stepRefs.current[activeStepIndex].scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+  }, [activeStepIndex]);
 
   return (
     <div className="bg-white flex flex-col relative w-full min-h-[70vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
@@ -1017,10 +1028,10 @@ function NewLoanPage() {
             </p>
           </div>
 
-          <div className="px-6 py-4 overflow-auto flex w-full justify-center">
+          <div ref={scrollContainerRef} className="px-6 py-4 overflow-auto flex w-full sm:justify-center">
             <div className="flex justify-between items-center space-x-8">
               {[0, 1, 2].map((step) => (
-                <div key={step} className="flex items-center">
+                <div key={step} className="flex items-center" ref={(el) => (stepRefs.current[step] = el)}>
                   <WizardStep step={step} currentStep={activeStepIndex} />
                   {step < 2 && (
                     <ChevronRight size={16} className="mx-2 text-gray-300" />

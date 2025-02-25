@@ -16,6 +16,8 @@ import {
   Sun
 } from "lucide-react";
 import Button from "../Common/Elements/Button";
+import { useDispatch, useSelector } from "react-redux";
+import { setPortal } from "@/store/services/portalService";
 
 const AddContentModal = ({
   contentTypes,
@@ -40,6 +42,8 @@ const AddContentModal = ({
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: config } = useSelector((state) => state.portal);
+  const dispatch = useDispatch();
 
   // Handle form submission
   const handleAddEditContent = async (e) => {
@@ -115,6 +119,31 @@ const AddContentModal = ({
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Content length is too long");
+      }
+
+      if(imageUrl){
+        const portalData = {
+          ...config,
+          logo: imageUrl,
+          // primaryColor: selectedTheme.primaryColor,
+          // secondaryColor: selectedTheme.secondaryColor,
+          // accentColor: selectedTheme.accentColor,
+        };
+  
+        const response = await fetchWrapper(
+          "/api/portal",
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(portalData),
+          },
+          "update-portal"
+        );
+  
+        if (!response.ok) throw new Error("Failed to update portal theme");
+        dispatch(setPortal(params.portalid));
       }
 
       // Refresh data and close the modal
@@ -399,7 +428,7 @@ const AddContentModal = ({
                 htmlFor="value"
                 className="block text-sm font-medium text-gray-700"
               >
-                Upload Image
+                Upload Logo
               </label>
               <input
                 type="file"
@@ -453,14 +482,12 @@ const AddContentModal = ({
                 </div>
               ))}
               {linkFields.length < 10 && (
-                <button
-                  type="button"
+                <Button
+                  type="Secondary"
                   onClick={handleAddLinkField}
-                  className="flex items-center text-blue-600"
-                >
-                  <PlusCircle className="mr-2 h-5 w-5" />
-                  Add More
-                </button>
+                  icon={PlusCircle}
+                  label="Add More"
+            />
               )}
             </div>
           )}

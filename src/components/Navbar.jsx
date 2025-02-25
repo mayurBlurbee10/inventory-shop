@@ -11,6 +11,7 @@ import {
   setUserData,
 } from "@/app/lib/auth";
 import {
+  Bolt,
   CircleUserRound,
   Headset,
   LogOut,
@@ -202,7 +203,7 @@ function Navbar({ content, config, user, filterValue }) {
 
   return (
     <div className="border-b border-[#0000001a]">
-      <div className="lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto px-3">
+      <div className="w-full mx-auto px-3">
         <nav className="flex justify-between items-center bg-secondary py-2">
           <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
             {logo ? (
@@ -371,6 +372,22 @@ function Navbar({ content, config, user, filterValue }) {
                             Tech Support
                           </button>
                         )}
+                        {/* Edit button */}
+                        {userIsAdmin && !isAdvisorViewOpen && (
+                          <button
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                            onClick={() =>
+                              router.push(
+                                params.portalid
+                                  ? `/${params.portalid}/settings`
+                                  : "/settings"
+                              )
+                            }
+                          >
+                            <Bolt className="h-5 w-5" />
+                            Tools
+                          </button>
+                        )}
                         <button
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                           onClick={() =>
@@ -396,30 +413,6 @@ function Navbar({ content, config, user, filterValue }) {
                 )}
               </div>
             </div>
-
-            {/* Edit button */}
-            {userIsAdmin && !isAdvisorViewOpen && (
-              <button
-                className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center"
-                onClick={() =>
-                  router.push(
-                    params.portalid
-                      ? `/${params.portalid}/settings`
-                      : "/settings"
-                  )
-                }
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="12"
-                  height="12"
-                  fill="currentColor"
-                >
-                  <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-                </svg>
-              </button>
-            )}
           </div>
 
           {/* Mobile Navbar */}
@@ -594,6 +587,22 @@ function Navbar({ content, config, user, filterValue }) {
                                 Tech Support
                               </button>
                             )}
+                            {/* Edit button */}
+                            {userIsAdmin && !isAdvisorViewOpen && (
+                              <button
+                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                                onClick={() =>
+                                  router.push(
+                                    params.portalid
+                                      ? `/${params.portalid}/settings`
+                                      : "/settings"
+                                  )
+                                }
+                              >
+                                <Bolt className="h-5 w-5" />
+                                Tools
+                              </button>
+                            )}
                             <button
                               className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                               onClick={() =>
@@ -619,28 +628,6 @@ function Navbar({ content, config, user, filterValue }) {
                       </>
                     )}
                   </div>
-                  {userIsAdmin && !isAdvisorViewOpen && (
-                    <button
-                      className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center"
-                      onClick={() =>
-                        router.push(
-                          params.portalid
-                            ? `/${params.portalid}/settings`
-                            : "/settings"
-                        )
-                      }
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        width="12"
-                        height="12"
-                        fill="currentColor"
-                      >
-                        <path d="M12.8995 6.85453L17.1421 11.0972L7.24264 20.9967H3V16.754L12.8995 6.85453ZM14.3137 5.44032L16.435 3.319C16.8256 2.92848 17.4587 2.92848 17.8492 3.319L20.6777 6.14743C21.0682 6.53795 21.0682 7.17112 20.6777 7.56164L18.5563 9.68296L14.3137 5.44032Z"></path>
-                      </svg>
-                    </button>
-                  )}
                 </div>
               </div>
             </div>

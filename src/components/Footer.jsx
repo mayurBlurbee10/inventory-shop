@@ -60,8 +60,8 @@ const Footer = ({
   }
   return (
     <footer className=" mt-10">
-      <div className="container mx-auto px-4">
-        <div className="max-w-[1140px] mx-auto md:px-[15px]">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 md:px-[15px]">
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="col-span-1">
               <div className="mb-4">
@@ -131,7 +131,7 @@ const Footer = ({
               style={{ width: "100%", height: "auto" }}
             />
           </div> */}
-          <img
+          {/* <img
             src={
               user?.company?.logo
                 ? user.company.logo.replace("/api/upload", "/uploads")
@@ -139,10 +139,10 @@ const Footer = ({
             }
             alt={config?.legalName}
             className="mr-2 mb-5 max-h-[60px] max-w-[150px]"
-          />
+          /> */}
 
-          <div>
-            <div>
+          <div className="flex justify-between flex-wrap">
+            <div className="flex items-center">
               <div className="text-sm text-[#6c757d] font-medium font-lato mb-1">
                 <div>
                   {isFromAvailable ? (
@@ -205,52 +205,20 @@ const Footer = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between flex-row">
-              <div className="max-w-[670px] w-full">
-                {isFromAvailable ? (
-                  <div className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
-                    <ul className="max-w-[500px] border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
-                      <div
-                        className="absolute top-0 right-0 p-1 cursor-pointer"
-                        onClick={() =>
-                          handleModalOpenForEdit &&
-                          handleModalOpenForEdit("Footer Content")
-                        }
-                      >
-                        <Pen className="size-4" />
-                      </div>
-                      {contactInfo &&
-                        contactInfo.length > 0 &&
-                        contactInfo.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        ))}
-                    </ul>
-
-                    <span>@2025 MStrategy Portal</span>
-                  </div>
-                ) : (
-                  <ul className="text-xs text-[#6c757d] font-normal mb-2 leading-6 font-lato">
-                    {contactInfo &&
-                      contactInfo.length > 0 &&
-                      contactInfo.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    <span>@2025 MStrategy Portal</span>
-                  </ul>
-                )}
-              </div>
+            <div>
               <div className="mb-2 md:mb-0">
                 <div className="flex items-center gap-1">
-                  <div className="text-[#6c757d]">
-                    <CodeXml className="h-7 w-7" />
-                  </div>
                   <p className="text-xs text-[#6c757d] font-medium font-lato">
-                    by MStrategygroup
+                    Powered By MStrategygroup © 2025
                   </p>
+                  <span>
+                      <img
+                        src="/M_Strategy_logo.png"
+                        alt="Company Logo"
+                        className="h-5 w-7 bg-[#0061D5] p-1"
+                      />
+                    </span>
                 </div>
-                {/* <span className="block ml-10 md:ml-12 text-xs text-[#6c757d] font-medium font-lato">
-                  Add a customization to edit text
-                </span> */}
               </div>
             </div>
           </div>

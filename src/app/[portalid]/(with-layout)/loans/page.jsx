@@ -16,13 +16,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 function LoansPage() {
   const router = useRouter();
   const params = useParams();
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
+  const [newLoan, setNewLoan] = useState(false);
+  const newLoanDropdownRef = useRef(null);
   const { data: loanData } = useSelector((state) => state.loans);
   const dispatch = useDispatch();
 
@@ -34,7 +36,18 @@ function LoansPage() {
     dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
   };
 
-  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (newLoanDropdownRef.current && newLoanDropdownRef.current.contains(event.target)) {
+        return;
+      }
+      setIsLoanOptionOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
@@ -50,10 +63,7 @@ function LoansPage() {
           </p>
         </div>
         <div className="flex flex-col pt-8">
-          <div className="flex items-center justify-between pb-5">
-            <p className="text-xl font-light text-black font-lato">
-              My Loans
-            </p>
+          <div className="pb-5">
             <div
               className="flex items-center justify-end text-[#dc3545] cursor-pointer"
               onClick={() => handleRefresh()}
@@ -64,7 +74,7 @@ function LoansPage() {
           <table className="border border-[#dee2e6] text-sm font-lato">
             <thead>
               <tr>
-                <th className="p-5"></th>
+                <th className="p-5">My Loans</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
@@ -121,7 +131,7 @@ function LoansPage() {
             </div>
             <ChevronDown className="fill-black " />
             {isLoanOptionOpen && (
-              <div className="flex flex-col border border-[#dee2e6] w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer font-lato">
+              <div ref={newLoanDropdownRef} className="flex flex-col border border-[#dee2e6] w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer font-lato">
                 <div onClick={() => router.push(`loans/new?type=mortgage`)}>
                   Mortgage
                 </div>

@@ -2,9 +2,12 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { PlusCircle, X, Pencil, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter , usePathname } from "next/navigation";
 import Button from "../Common/Elements/Button";
 import AddContentModal from "./AddContentModal";
+import { useDispatch, useSelector } from "react-redux";
+import { setPortal } from "@/store/services/portalService";
+import { getUserData } from "@/lib/auth";
 
 const ContentManagementContent = ({
   isAddRequired,
@@ -13,7 +16,9 @@ const ContentManagementContent = ({
   setContentOnboard,
   onboardingStatus,
   isContentAdded,
-  setIsContentAdded
+  setIsContentAdded,
+  colors,
+  setColors
 }) => {
   const params = useParams();
   const [content, setContent] = useState([]);
@@ -38,6 +43,16 @@ const ContentManagementContent = ({
   const [loading, setLoading] = useState(false);
   const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
   const [contentLength, setContentLength] = useState("");
+  const pathname= usePathname();
+  const onBoarding = pathname.includes("/onboarding");
+  const { data: config } = useSelector((state) => state.portal);
+  // const [colors, setColors] = useState({
+  //   primaryColor : config.primaryColor,
+  //   secondaryColor : config.secondaryColor,
+  //   accentColor : config.accentColor
+  // })
+
+  const dispatch = useDispatch();
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -342,6 +357,64 @@ const ContentManagementContent = ({
     setIsDialogOpen(true);
   };
 
+  const handleChange = (e) => {
+    setColors({
+      ...colors,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const completeOnboarding = async (id) => {
+    const requestOptions = {
+      method: "PUT",
+      body: JSON.stringify({ id }),
+    };
+    const response = await fetchWrapper(
+      `/api/users`,
+      requestOptions,
+      "changeOnboarding"
+    );
+
+    if (!response.ok) throw new Error(response.error);
+  };
+
+   const handleSave = async () => {
+     const userData = getUserData();
+     setIsSubmitting(true);
+     if (contentLength >= 11) {
+       completeOnboarding(userData.id);
+     }
+     try {
+       const portalData = {
+         ...config,
+         primaryColor: colors.primaryColor,
+         secondaryColor: colors.secondaryColor,
+         accentColor: colors.accentColor,
+       };
+
+       const response = await fetchWrapper(
+         "/api/portal",
+         {
+           method: "PUT",
+           headers: {
+             "Content-Type": "application/json",
+           },
+           body: JSON.stringify(portalData),
+         },
+         "update-portal"
+       );
+
+       if (!response.ok) throw new Error("Failed to update portal theme");
+
+       dispatch(setPortal(params.portalid));
+     } catch (error) {
+       toast.error(error.message);
+       console.log(error);
+     } finally {
+       setIsSubmitting(false);
+     }
+   };
+
   const router = useRouter();
   const manageContentNavigate = () => {
     router.push("onboarding");
@@ -350,38 +423,42 @@ const ContentManagementContent = ({
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
+        <div className="w-[70%]">
           <h3 className="text-lg font-medium text-gray-900">
-            Content Management
+            Homepage Configuration
           </h3>
           <p className="text-gray-600 text-sm">
             Organize and edit the information displayed across your platform.
           </p>
         </div>
         {!isManageRequired && contentLength < 11 && (
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={addContent}
-          >
-            Add Content
-          </button>
+          <Button
+          label="Add Content"
+          type="Primary"
+          onClick={addContent}
+          buttonType = "button"
+          />
         )}
-        {isManageRequired && onboardingStatus && (
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={manageContentNavigate}
-          >
-            Manage Content
-          </button>
+        {/* {isManageRequired && onboardingStatus && ( */}
+        {isManageRequired && contentLength < 11 && (
+          <Button
+          label="Manage Content"
+          type="Primary"
+          onClick={manageContentNavigate}
+          buttonType = "button"
+          />
         )}
-
       </div>
       {loading ? (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div
+          className={`grid grid-cols-1 gap-6 ${
+            onBoarding ? "" : " sm:grid-cols-2 lg:grid-cols-3"
+          }`}
+        >
           {content.map((item, idx) => (
             <div key={idx} className="border rounded-lg p-4 bg-white relative">
               <div className="flex justify-between items-start ">
@@ -401,12 +478,76 @@ const ContentManagementContent = ({
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
-
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <div>
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">Pick Colors</h3>
+          <p className="text-gray-600 text-sm">
+            Organize and edit the information displayed across your platform.
+          </p>
+        </div>
+        <div className="pt-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Primary Color
+                </label>
+                <input
+                  type="color"
+                  name="primaryColor"
+                  value={colors?.primaryColor}
+                  onChange={handleChange}
+                  className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Secondary Color
+                </label>
+                <input
+                  type="color"
+                  name="secondaryColor"
+                  value={colors?.secondaryColor}
+                  onChange={handleChange}
+                  className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Accent Color
+                </label>
+                <input
+                  type="color"
+                  name="accentColor"
+                  value={colors?.accentColor}
+                  onChange={handleChange}
+                  className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        {onBoarding ? (
+          <></>
+        ) : (
+          <div className="my-5">
+            <Button
+              onClick={handleSave}
+              disabled={isSubmitting}
+              label={"Save"}
+              type="Primary"
+              className="ml-auto"
+              isLoading={isSubmitting}
+            />
+          </div>
+        )}
+      </div>
       {/* Dialog Box */}
       {isDialogOpen && (
         <AddContentModal
@@ -486,18 +627,16 @@ const ContentManagementContent = ({
               </select>
             </div>
             <div className="flex justify-end space-x-3">
-              <button
+              <Button
                 onClick={handleNewTitleModalClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
+                type="Secondary"
+                label="Cancel"
+              />
+              <Button
                 onClick={handleAddNewTitle}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              >
-                Add Title
-              </button>
+                type="Primary"
+                label="Add Title"
+              />
             </div>
           </div>
         </div>

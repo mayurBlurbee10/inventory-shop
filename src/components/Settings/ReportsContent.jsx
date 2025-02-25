@@ -199,7 +199,7 @@ const ReportsContent = () => {
         </div>
 
         {/* KPIs in single row */}
-        <div className="flex gap-6 mb-5">
+        <div className="flex flex-wrap gap-6 mb-5">
           <div className="flex-1">
             <KPICard
               title="Monthly Active Users"
@@ -223,14 +223,14 @@ const ReportsContent = () => {
           <h2 className="text-lg font-medium text-gray-900 mb-6">
             Usage Analytics
           </h2>
-          <div className="h-[400px]">
+          <div className="sm:h-[400px] h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={data}
                 margin={{
                   top: 5,
-                  right: 30,
-                  left: 20,
+                  right: window.innerWidth < 640 ? -20 : 30,
+                  left: window.innerWidth < 640 ? -20 : 20,
                   bottom: 5,
                 }}
               >

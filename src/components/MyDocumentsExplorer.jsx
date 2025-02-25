@@ -1132,7 +1132,7 @@ function SharedFolderExplorer({
                                 )}
 
                                 <DeleteConfirmDialog
-                                isLoading={isLoading}
+                                  isLoading={isLoading}
                                   isModalOpen={isDeleteModalOpen}
                                   setIsModalOpen={setIsDeleteModalOpen}
                                   handleDelete={
@@ -1323,6 +1323,18 @@ function SharedFolderExplorer({
                                       </div>
                                     </div>
                                   )}
+                                {/* {file.type === "file" && (
+                                  <button
+                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
+                                    onClick={() => {
+                                      setIsEditorModalOpen((prev) => !prev);
+                                      setEditorFile(file);
+                                    }}
+                                  >
+                                    <FilePenLine className="h-4 w-4 text-gray-600" />{" "}
+                                    Edit
+                                  </button>
+                                )} */}
                                 <button
                                   className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
                                   }`}
@@ -1403,7 +1415,7 @@ function SharedFolderExplorer({
         onClose={() => setIsSignModalOpen(false)}
         signUrl={selectedSignUrl}
       />
-     {isEditorModalOpen && (
+      {isEditorModalOpen && (
         <Editor
           isModalOpen={isEditorModalOpen}
           setIsModalOpen={setIsEditorModalOpen}

@@ -116,6 +116,8 @@ function AddPageModal({
         return;
       }
 
+      console.log("Plugin", plugin)
+
       const payload = {
         title,
         description,
@@ -195,7 +197,7 @@ function AddPageModal({
     <>
       {isOpen && (
         <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/10 bg-opacity-80 flex items-center justify-center" style={{marginTop : 0}}>
-          <div className="bg-white rounded-lg w-[80%] flex flex-col relative">
+          <div className="bg-white rounded-lg w-[90%] max-w-[700px] flex flex-col relative">
             <button
               onClick={onClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-500"
@@ -230,7 +232,7 @@ function AddPageModal({
                 )}
               </div>
 
-              <div className="flex flex-col w-full">
+              <div className="flex flex-col w-full max-h-[450px] overflow-y-auto sm:max-h-none sm:overflow-visible">
                 <label className="text-xl font-semibold mb-1">
                   Description
                 </label>

@@ -220,4 +220,8 @@
     table {
         table-layout: auto;
     }
+    .editor {
+        min-height: 300px;
+        max-height: 300px;
+    }
 }

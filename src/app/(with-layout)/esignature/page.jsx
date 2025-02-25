@@ -114,14 +114,20 @@ function ESignature() {
           setAccountDropdown(false);
         }}
       >
-        <div className="mb-4">
-          <h3 className="text-lg xl:text-2xl text-[#3c4043] font-medium text-center xl:mb-5">
-            Welcome, {user?.name}
-          </h3>
+       <div className="border-b border-[#dee2e6] pt-8 pb-5">
+          <p className="text-sm font-lato mt-1 text-black">
+            <span className="block md:inline text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
+              E-signature
+            </span>
+            <span className="block md:inline text-black">
+              Securely execute an eSignature workflow, including document preparation, and digital signing.
+            </span>
+          </p>
+
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b">
+        <div className="flex border-b pt-[20px]">
           <button
             className={`px-4 py-2 text-lg ${activeTab === "pending"
               ? "border-b-2 border-blue-500 text-blue-600"

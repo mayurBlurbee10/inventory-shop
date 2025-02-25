@@ -2,6 +2,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
 
 const Button = ({
     label,
@@ -15,43 +16,14 @@ const Button = ({
 }) => {
     const pathname = usePathname();
     const isAdminPanel = pathname.includes("admin");
+    const { data: config } = useSelector((state) => state.portal);
 
-    // const [config, setConfig] = useState(null)
-    // const params = useParams;
-    // const fetchConfig = async () => {
-    //         try {
-    //             const response = await fetchWrapper(
-    //                 `/api/portal?portalid=${params.portalid || "default"}`,
-    //                 {},
-    //                 "portal-login"
-    //             );
-    //             const data = await response.json();
-    //             if (!data.data && response.status === 404) {
-    //                 router.push(`/${params.portalid}/not-found`);
-    //                 return;
-    //             }
-    //             if (!response.ok) {
-    //                 throw new Error(data.error || "Failed to fetch portal config");
-    //             }
-    //             setConfig(data.data);
-    //         } catch (error) {
-    //             console.log("error: ", error);
-    //         } finally {
-    //             // setFooterLoading(false);
-    //         }
-    //     };
-    //     useEffect(() => {
-    //         fetchConfig();
-    //     }, []);
-
-    //     console.log("config:", config);
-
-    // const getButtonStyle = (type) => {
-    //     if (type === "Primary" && config?.secondaryColor) {
-    //       return { backgroundColor: config.secondaryColor };
-    //     }
-    //     return {}; 
-    //   };
+    const getButtonStyle = (type) => {
+        if ((type === "Primary" || (type === "Login" && !isAdminPanel)) && config?.secondaryColor) {
+          return { backgroundColor: config.secondaryColor };
+        }
+        return {}; 
+      };
 
     const baseStyles = `flex items-center justify-center gap-2 font-lato ${type==="Login" ? "" : "border border-gray px-4 py-2 rounded-lg"}`;
     const typeOfButton = {
@@ -68,7 +40,7 @@ const Button = ({
             type={buttonType}
             className={`${className} ${baseStyles} ${typeOfButton[type]} ${isLoading ? "cursor-not-allowed" : ""} ${disabled || isLoading ? "cursor-not-allowed opacity-50" : ""}`}
             onClick={onClick}
-            // style={getButtonStyle(type)}
+            style={getButtonStyle(type)}
             disabled={disabled || isLoading}
         >
             {Icon && <Icon className="w-4 h-4" />}
