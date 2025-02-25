@@ -555,17 +555,17 @@ export default function OnBoardingPage() {
                         disabled
                       />
                     </div>
-                    {/* <button
+                    <button
                       type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group "
                       style={{ backgroundColor: config?.secondaryColor }}
                     >
                       Log In
-                    </button> */}
-                    <Button
+                    </button>
+                    {/* <Button
                       type="Login"
                       label="Log In"
-                    />
+                    /> */}
                     <button
                       type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"

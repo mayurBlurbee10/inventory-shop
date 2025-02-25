@@ -24,7 +24,7 @@ const MyPageContent = () => {
     pageId: [],
   });
   const [existingPages, setExistingPages] = useState([]);
-  const [isExistingPageLoading, setIsExistingPageLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [plugin, setPlugin] = useState(null);
   const hasFetched = useRef(false);
 
@@ -63,6 +63,41 @@ const MyPageContent = () => {
       setLoading(false);
     }
   };
+
+  const handleDone = async () => {
+      try {
+        setIsSubmitting(true);
+        const pageIds = pages.map((item)=>item.id)
+        const pluginPayload = {
+          type: PluginType.PAGES,
+          portalId: params.portalid ,
+          pageId: pageIds,
+          existingPages : pages,
+        };
+        const pluginResponse = await fetchWrapper(
+          "/api/plugins",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(pluginPayload),
+          },
+          "save-plugin"
+        );
+        if (!pluginResponse.ok) {
+          const pluginErrorData = await pluginResponse.json();
+          throw new Error(pluginErrorData.error || "Failed to update plugin");
+        }
+        const savedPluginData = await pluginResponse.json();
+
+        toast.success("Plugin updated successfully")
+      } catch (error) {
+        console.error("Error fetching plugins:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
   const fetchExistingPages = async () => {
     if (hasFetched.current) return;
@@ -285,19 +320,30 @@ const MyPageContent = () => {
           )}
         </div>
 
-        <div className="flex justify-between items-center w-full space-x-4 mt-12">
-          <Button
-            onClick={() => {
-              setEditData(null);
-              if (!editData) {
-                setIsOpenAddPageModal((prev) => !prev);
-              }
-            }}
-            icon={PlusCircle}
-            type="Secondary"
-            label="Add Page"
-          />
-        </div>
+        {!loading && (
+          <div className="flex justify-between items-center w-full space-x-4 mt-12">
+            <Button
+              onClick={() => {
+                setEditData(null);
+                if (!editData) {
+                  setIsOpenAddPageModal((prev) => !prev);
+                }
+              }}
+              icon={PlusCircle}
+              type="Secondary"
+              label="Add Page"
+            />
+            <Button
+              onClick={handleDone}
+              type="Primary"
+              label="Done"
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+              className="ml-auto"
+            />
+          </div>
+        )}
+
         <AddPageModal
           isOpen={isOpenAddPageModal}
           onClose={() => setIsOpenAddPageModal(false)}

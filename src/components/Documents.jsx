@@ -1001,7 +1001,12 @@ function Documents({
     return section?.visible ?? false; 
   };
 
-  const isAnySideSectionVisible = () => page?.some((item) => item.visible) || true;
+  const isAnySideSectionVisible = () => {
+    if (isPageLoading) return false; 
+    if (!page || !page.length) return false; 
+    
+    return page.some((item) => item.visible);
+  };
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
