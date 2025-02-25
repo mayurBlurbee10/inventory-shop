@@ -21,6 +21,7 @@ import {
   Headset,
   LogOut,
   Loader2,
+  Search,
 } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -1053,29 +1054,9 @@ function Documents({
             <div className="border border-solid border-[#0000001a] rounded-sm relative">
               <div className="border-b border-solid border-[#0000001a]">
                 <div className="py-[18px] flex items-center w-full px-5 bg-gray-50">
-                  {/* <img src={
-                          user?.company?.logo
-                            ? user.company.logo.replace("/api/upload", "/uploads")
-                            : config?.logo || "/default_logo_purple.png"
-                        }
-                          alt={config?.legalName}
-                          className="h-8 w-8" /> */}
-
-                  {user?.company?.logo || config?.logo ? (
-                    <img
-                      src={
-                        user?.company?.logo
-                          ? user.company.logo.replace("/api/upload", "/uploads")
-                          : config?.logo || "/default_logo_purple.png"
-                      }
-                      alt={params.portalid}
-                      className="h-8 w-8"
-                    />
-                  ) : (
-                    // Skeleton for logo
-                    <div className="h-8 w-8 mr-2 bg-gray-300 animate-pulse rounded" />
-                  )}
-
+                  <div>
+                    <Search className="w-5 h-5" />
+                  </div>
                   <input
                     type="search"
                     placeholder="Search file and folders"
@@ -1085,6 +1066,90 @@ function Documents({
                       "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4 text-gray-700"
                     }
                   />
+
+                  <div>
+                    <div className="flex items-center gap-3">
+                      {fileType !== "loan" && (
+                        <>
+                          {/* Card view button */}
+                          <button
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
+                              view === "grid" ? "hidden" : "visible"
+                            }`}
+                            onClick={() => {
+                              setView("grid");
+                              // setIsOpenOptionDrawer(false);
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              height="24"
+                              fill="currentColor"
+                            >
+                              <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
+                            </svg>
+                          </button>
+
+                          {/* List view button */}
+                          <button
+                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
+                              view === "list" ? "hidden" : "visible"
+                            }`}
+                            onClick={() => {
+                              setView("list");
+                              // setIsOpenOptionDrawer(false);
+                            }}
+                          >
+                            <AlignJustify />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Upload items */}
+                      <div className="relative" ref={dropdownRef}>
+                        <button
+                          className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
+                          onClick={() => {
+                            setIsOpenNewFolderDrawer((prev) => !prev);
+                          }}
+                        >
+                          <Plus />
+                        </button>
+
+                        {isOpenNewFolderDrawer && (
+                          <div className="absolute top-[50px] z-20 right-0 w-48 bg-white shadow-md p-3 rounded-md">
+                            <ul>
+                              <li>
+                                <button
+                                  className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
+                                  onClick={() => {
+                                    setIsOpenNewFolderDrawer(false); // Close the drawer
+                                    setIsOpenUploadArea((prev) => !prev); // Toggle upload area
+                                  }}
+                                >
+                                  Upload
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
+                                  onClick={() => {
+                                    setIsOpenNewFolderDrawer(false); // Close the drawer
+                                    setIsNewFolderModalOpen((prev) => !prev);
+                                  }}
+                                >
+                                  New Folder
+                                </button>
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
 
                   {/* {searchQuery.length > 0 && (
                           <div
@@ -1211,7 +1276,7 @@ function Documents({
               )}
 
               {/* breadcrumbs */}
-              <div className="px-5 border-b break-words">
+              <div className="px-5 border-b break-words flex justify-between">
                 <div className="py-3 flex items-center justify-between flex-wrap relative">
                   <div>
                     {/* <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
@@ -1234,10 +1299,10 @@ function Documents({
                       setSelectedBulkItems={setSelectedBulkItems}
                     />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-3">
-                      {/* Grid range */}
-                      {view === "grid" && (
+                </div>
+                <div className="w-50 flex justify-center items-center">
+                 {/* Grid range */}
+                 {view === "grid" && (
                         <div className="items-center justify=-center gap-2 hidden md:flex">
                           <button
                             className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
@@ -1266,88 +1331,7 @@ function Documents({
                           </button>
                         </div>
                       )}
-
-                      {fileType !== "loan" && (
-                        <>
-                          {/* Card view button */}
-                          <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
-                              view === "grid" ? "hidden" : "visible"
-                            }`}
-                            onClick={() => {
-                              setView("grid");
-                              // setIsOpenOptionDrawer(false);
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              height="24"
-                              fill="currentColor"
-                            >
-                              <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
-                            </svg>
-                          </button>
-
-                          {/* List view button */}
-                          <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
-                              view === "list" ? "hidden" : "visible"
-                            }`}
-                            onClick={() => {
-                              setView("list");
-                              // setIsOpenOptionDrawer(false);
-                            }}
-                          >
-                            <AlignJustify />
-                          </button>
-                        </>
-                      )}
-
-                      {/* Upload items */}
-                      <div className="relative" ref={dropdownRef}>
-                        <button
-                          className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                          onClick={() => {
-                            setIsOpenNewFolderDrawer((prev) => !prev);
-                          }}
-                        >
-                          <Plus />
-                        </button>
-
-                        {isOpenNewFolderDrawer && (
-                          <div className="absolute top-[50px] z-20 right-0 w-48 bg-white shadow-md p-3 rounded-md">
-                            <ul>
-                              <li>
-                                <button
-                                  className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                  onClick={() => {
-                                    setIsOpenNewFolderDrawer(false); // Close the drawer
-                                    setIsOpenUploadArea((prev) => !prev); // Toggle upload area
-                                  }}
-                                >
-                                  Upload
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                  onClick={() => {
-                                    setIsOpenNewFolderDrawer(false); // Close the drawer
-                                    setIsNewFolderModalOpen((prev) => !prev);
-                                  }}
-                                >
-                                  New Folder
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
-                </div>
               </div>
 
               {isNewFolderModalOpen && (
