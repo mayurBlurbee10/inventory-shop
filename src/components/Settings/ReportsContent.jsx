@@ -229,8 +229,8 @@ const ReportsContent = () => {
                 data={data}
                 margin={{
                   top: 5,
-                  right: window.innerWidth < 640 ? -20 : 30,
-                  left: window.innerWidth < 640 ? -20 : 20,
+                  right: 30,
+                  left: 20,
                   bottom: 5,
                 }}
               >
