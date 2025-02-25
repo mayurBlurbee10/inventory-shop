@@ -14,7 +14,8 @@ import {
   X,
   Trash2,
   ChevronDown,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  Copy
 } from "lucide-react";
 import CreationWizard from "./CreationWizard";
 import Image from "next/image";
@@ -26,6 +27,7 @@ import { toast } from "react-toastify";
 import { Dialog, DialogBackdrop, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import PortalCreatedPopup from "./PortalCreatedPopup";
 import Button from "./Common/Elements/Button";
+import PortalDuplicateModal from "./Settings/PortalDuplicateModal";
 
 const SidePanel = ({ setCurrentPage }) => (
   <div className="w-80 bg-[#0061D5] z-50 p-6 flex flex-col h-screen fixed left-0">
@@ -73,8 +75,15 @@ const SubsidiaryCard = ({
   subsidiary,
   onSelect
 }) => {
-  const [portalToDelete, setPortalToDelete] = useState(null);
+  const [isPortalDuplicateModalOpen, setIsPortalDuplicateModalOpen] = useState(null);
   const [usersCount, setUsersCount] = useState(0);
+  const [isPopupOpen, setIsPopupOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [duplicatePortalData, setDuplicatePortalData] = useState({
+    legalName: "",
+    tradingName: "",
+    domain: "",
+  });
 
   // const fetchUsers = async () => {
   //   try {
@@ -107,6 +116,34 @@ const SubsidiaryCard = ({
   // useEffect(() => {
   //   fetchUsers();
   // }, []);
+
+  const handleDuplicatePortal = async () => {
+    try {
+      if (!subsidiary) return;
+      setIsLoading(true);
+      const response = await fetchWrapper(
+        `/api/portal/duplicate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id : subsidiary?.id, ...duplicatePortalData }),
+        },
+        "create-portal"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create duplicate portal");
+      }
+      setIsPopupOpen(true)
+    } catch (error) {
+      console.log("error: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   function sanitizeName(name) {
     let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
     return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
@@ -124,21 +161,24 @@ const SubsidiaryCard = ({
           </div>
           <div className="flex items-center gap-2">
             <div
-              className={`px-2 py-1 rounded-full text-xs font-medium ${subsidiary.status === "active"
-                ? "bg-green-100 text-green-800"
-                : "bg-yellow-100 text-yellow-800"
-                }`}
+              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                subsidiary.status === "active"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-yellow-100 text-yellow-800"
+              }`}
             >
               {subsidiary.status}
             </div>
-            {/* {user?.id === subsidiary.createdBy.id && (
-              <div
-                className={`px-2 py-1`}
-                onClick={() => setPortalToDelete(subsidiary)}
-              >
-                <Trash2 className="size-4 text-red-700" />
-              </div>
-            )} */}
+
+            <div
+              className="relative group px-2 py-1"
+              onClick={() => setIsPortalDuplicateModalOpen(subsidiary)}
+            >
+              <Copy className="size-4  text-blue-700" />
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition bg-gray-800 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap">
+                duplicate
+              </span>
+            </div>
           </div>
         </div>
         <div onClick={() => onSelect(subsidiary)}>
@@ -176,6 +216,22 @@ const SubsidiaryCard = ({
         subsidiary={subsidiary}
         refreshPortals={refreshPortals}
       /> */}
+      {/* {isPortalDuplicateModalOpen?.id === subsidiary?.id && ( */}
+        <PortalDuplicateModal
+          isOpen={isPortalDuplicateModalOpen?.id === subsidiary?.id}
+          onClose={()=>setIsPortalDuplicateModalOpen(null)}
+          handleDuplicate={handleDuplicatePortal}
+          setFormData={setDuplicatePortalData}
+          formData={duplicatePortalData}
+          isLoading={isLoading}
+        />
+      {/* )} */}
+      <PortalCreatedPopup
+        isOpen={isPopupOpen}
+        portalName={duplicatePortalData?.legalName}
+        portalId={sanitizeName(duplicatePortalData?.legalName)}
+        onClose={() => setIsPopupOpen(false)}
+      />
     </div>
   );
 };
@@ -490,6 +546,8 @@ export default function AdminDashboard() {
       if (!UserResponse.ok) {
         throw new Error(data.error || "Failed to create user data");
       }
+
+      newSubsidiary.portalCreatedAdmin = data?.id
 
       const saveResponse = await fetchWrapper(
         "/api/portal",

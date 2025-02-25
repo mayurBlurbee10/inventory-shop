@@ -23,8 +23,10 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Button from "./Common/Elements/Button";
+import { setPortals } from "@/store/actions/portalAction";
+import { setActiveUsers } from "@/store/services/portalService";
 
 // Mock data - in real app, this would come from an API
 const subsidiariesData = [
@@ -152,6 +154,7 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
   const [enteredPortal, setEnteredPortal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
   function sanitizeName(name) {
     let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
@@ -159,6 +162,24 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
       ? sanitizeName.slice(0, -1)
       : sanitizeName;
   }
+
+  const getPortal = async () => {
+    try {
+      const userData = getUserData();
+      const response = await fetchWrapper(
+        `/api/portal?userId=${userData?.id}?_limit=5`, // ⬅ Add limit parameter
+        { method: "GET" },
+        "get-portal"
+      );
+      if (!response.ok) throw new Error("Failed to fetch portals");
+      const data = await response.json();
+      const subsidiariesData = data.data;
+      dispatch(setPortals(subsidiariesData?.portals));
+      dispatch(setActiveUsers(subsidiariesData?.activeUsers));
+    } catch (err) {
+      console.error("Error while fetching portals", err);
+    } 
+  };
 
   const handleDeleteSubsidiary = async () => {
     if (subsidiary.legalName !== enteredPortal) {
@@ -183,6 +204,7 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Portal deletion failed");
+      await getPortal()
       router.back();
       toast.success(data.message || "Portal deleted successfully");
     } catch (error) {
