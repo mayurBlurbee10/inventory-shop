@@ -306,12 +306,12 @@ const MyPageContent = () => {
                 <p>No pages found.</p>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-5 p-1 md:p-3 lg:p-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
                     {renderPagesList(
                       pages.filter((item) => !item.isCustomPage)
                     )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-5 p-1 md:p-3 lg:p-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
                     {renderPagesList(pages.filter((item) => item.isCustomPage))}
                   </div>
                 </>
@@ -321,7 +321,7 @@ const MyPageContent = () => {
         </div>
 
         {!loading && (
-          <div className="flex justify-between items-center w-full space-x-4 mt-12">
+          <div className="flex justify-between items-center w-full space-x-4 mt-12 p-1 md:p-2 lg:p-3">
             <Button
               onClick={() => {
                 setEditData(null);

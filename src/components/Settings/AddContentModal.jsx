@@ -482,14 +482,12 @@ const AddContentModal = ({
                 </div>
               ))}
               {linkFields.length < 10 && (
-                <button
-                  type="button"
+                <Button
+                  type="Secondary"
                   onClick={handleAddLinkField}
-                  className="flex items-center text-blue-600"
-                >
-                  <PlusCircle className="mr-2 h-5 w-5" />
-                  Add More
-                </button>
+                  icon={PlusCircle}
+                  label="Add More"
+            />
               )}
             </div>
           )}
