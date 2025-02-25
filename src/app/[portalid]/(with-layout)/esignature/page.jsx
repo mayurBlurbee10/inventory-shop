@@ -124,7 +124,7 @@ function ESignature() {
         <div className="border-b border-[#dee2e6] pt-8 pb-5">
           <p className="text-sm font-lato mt-1 text-black">
             <span className="block md:inline text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
-              Welcome, {user?.name}
+              E-signature
             </span>
             <span className="block md:inline text-black">
               Securely execute an eSignature workflow, including document preparation, and digital signing.
@@ -132,9 +132,6 @@ function ESignature() {
           </p>
 
         </div>
-        <p className="text-xl font-light font-lato pt-8 text-black">
-          E-signature
-        </p>
         {/* Tabs */}
         <div className="flex border-b pt-[20px]">
           <button
