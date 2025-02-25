@@ -4,16 +4,24 @@ import BoxSettingsContent from '@/components/Settings/BoxSettingsContent';
 import ContentManagementContent from '@/components/Settings/ContentManagementContent';
 import IdentityManagementContent from '@/components/Settings/IdentityManagementContent';
 import InvoicingContent from '@/components/Settings/InvoicingContent';
+import MyPageContent from '@/components/Settings/MyPageContent';
 import ProductsContent from '@/components/Settings/ProductsContent';
 import ReportsContent from '@/components/Settings/ReportsContent';
 import UsersContent from '@/components/Settings/UsersContent';
 import { getUserData } from '@/lib/auth';
 import { Box, ChartLine, ChevronRight, FileSpreadsheet, FileText, Layout, Plug, ShoppingBag, Users } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux';
 
 function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('appearance');
+  const [activeTab, setActiveTab] = useState('homepage_configuration');
   const [isUserData, setIsUserData] = useState("");
+  const { data: config } = useSelector((state) => state.portal);
+  const [colors, setColors] = useState({
+    primaryColor : config.primaryColor,
+    secondaryColor : config.secondaryColor,
+    accentColor : config.accentColor
+  })
 
   useEffect(() => {
     const userData = getUserData();
@@ -22,10 +30,12 @@ function SettingsPage() {
   // console.log('isUserData', isUserData);
 
   const tabs = [
-    { id: 'appearance', label: 'Theme', icon: Layout },
+    { id: 'homepage_configuration', label: 'Homepage Configuration', icon: FileText },
+    { id: 'my_page', label: 'My Page', icon: Layout },
+    // { id: 'appearance', label: 'Theme', icon: Layout },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'products', label: 'Widgets', icon: ShoppingBag },
-    { id: 'content', label: 'Content', icon: FileText },
+    // { id: 'content', label: 'Content', icon: FileText },
     { id: 'identity', label: 'Identity Management', icon: Users },
     // { id: 'invoicing', label: 'Forms', icon: FileSpreadsheet },
     { id: 'Integrations', label: 'Integrations', icon: Plug },
@@ -35,14 +45,17 @@ function SettingsPage() {
 
   const getActiveContent = () => {
     switch (activeTab) {
-      case 'appearance':
-        return <AppearanceContent />;
+      case 'homepage_configuration':
+        return <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} colors={colors} setColors={setColors}/>;
+      case 'my_page':
+        return <MyPageContent/>;
+      // case 'appearance':
+      //   return <AppearanceContent />;
       case 'users':
         return <UsersContent />;
       case 'identity':
         return <IdentityManagementContent />;
-      case 'content':
-        return <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} />;
+     
       // case 'invoicing':
       //   return <InvoicingContent />;
       // case 'box':
@@ -60,8 +73,8 @@ function SettingsPage() {
 
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg flex relative w-full h-[90vh] mx-auto">
-      <div className="w-2/5 md:w-64 border-r border-[#dee2e6] p-3 bg-white text-gray-700">
+    <div className="bg-white rounded-lg flex justify-center relative w-full h-[90vh]">
+      <div className="w-2/5 md:w-72 border-r border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs">
         <h2 className="text-xl text-gray-800 font-semibold mb-6">Tools</h2>
         <nav className="space-y-1">
           {tabs.map(({ id, label, icon: Icon }) => (
@@ -73,10 +86,10 @@ function SettingsPage() {
                 : 'text-gray-700/90 hover:bg-blue-600/10'
                 }`}
             >
-              <div className="flex items-center justify-start space-x-3">
+              <div className="flex items-center space-x-3">
                 <Icon className={`w-5 h-5 ${activeTab === id ? 'text-white' : 'text-gray-700/90'
                   }`} />
-                <span>{label}</span>
+                <span className=''>{label}</span>
               </div>
               <ChevronRight className={`w-4 h-4 ${activeTab === id ? 'text-white' : 'text-gray-700/80'
                 }`} />
@@ -84,7 +97,7 @@ function SettingsPage() {
           ))}
         </nav>
       </div>
-      <div className="md:flex-1 p-6 overflow-y-auto">
+      <div className="md:flex-1 w-full p-6 overflow-y-auto">
         {getActiveContent()}
       </div>
     </div>

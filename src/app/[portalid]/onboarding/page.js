@@ -75,7 +75,20 @@ export default function OnBoardingPage() {
   const [file, setFile] = useState(null);
   const [isContentAdded, setIsContentAdded] = useState(false)
   const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
+  const { data: config } = useSelector((state) => state.portal);
+  const [colors, setColors] = useState({
+    primaryColor: config?.primaryColor,
+    secondaryColor: config?.secondaryColor,
+    accentColor: config?.accentColor,
+  });
+  const dispatch = useDispatch();
 
+  const handleChange = (e) => {
+    setColors({
+      ...colors,
+      [e.target.name]: e.target.value,
+    });
+  };
   const fetchContentType = async () => {
     const typesRequest = await fetchWrapper(
       `/api/contentManagement/type?portalId=${params.portalid ?? "default"}`,
@@ -93,9 +106,6 @@ export default function OnBoardingPage() {
     { component: UsersContent },
   ];
   const CurrentStepComponent = steps[currentStep].component;
-
-  const { data: config } = useSelector((state) => state.portal);
-  const dispatch = useDispatch()
 
   useEffect(() => {
     const userData = getUserData();
@@ -156,20 +166,57 @@ export default function OnBoardingPage() {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleNext = async () => {
-    if (validateStep()) {
-      if (currentStep === 1) {
-        setIsSubmitting(true);
-        const userData = getUserData();
-        if (contentLength >= 11) {
-          completeOnboarding(userData.id);
-        } else {
-          router.push(`/${params.portalid}/dashboard`);
-        }
-      } else {
-        setCurrentStep(currentStep + 1);
-      }
+  const handleSave = async () => {
+    // if (validateStep()) {
+    //   if (currentStep === 1) {
+    //     setIsSubmitting(true);
+    //     const userData = getUserData();
+    //     if (contentLength >= 11) {
+    //       completeOnboarding(userData.id);
+    //     } else {
+    //       router.push(`/${params.portalid}/dashboard`);
+    //     }
+    //   } else {
+    //     setCurrentStep(currentStep + 1);
+    //   }
+    // }
+    const userData = getUserData();
+
+    setIsSubmitting(true);
+    if (contentLength >= 11) {
+      completeOnboarding(userData.id);
     }
+     try {
+       const portalData = {
+         ...config,
+         primaryColor: colors.primaryColor,
+         secondaryColor: colors.secondaryColor,
+         accentColor: colors.accentColor,
+       };
+
+       const response = await fetchWrapper(
+         "/api/portal",
+         {
+           method: "PUT",
+           headers: {
+             "Content-Type": "application/json",
+           },
+           body: JSON.stringify(portalData),
+         },
+         "update-portal"
+       );
+
+       if (!response.ok) throw new Error("Failed to update portal theme");
+
+       dispatch(setPortal(params.portalid));
+       router.push(`/${params.portalid}/dashboard`);
+     } catch (error) {
+       toast.error(error.message);
+       console.log(error);
+     } finally {
+       setIsSubmitting(false);
+     }
+
     setTimeout(() => {
       setErrors({});
     }, 3000);
@@ -233,7 +280,15 @@ export default function OnBoardingPage() {
 
   const filterContent = (title) => {
     const contentItem = content?.find((item) => item.title === title);
-    const value = contentItem ? contentItem.value : title;
+    let value = contentItem ? contentItem.value : title;
+    if(title === 'Logo'){
+      if(contentItem && contentItem.type === 'Image'){
+        value = value.replace("/api/upload", "/uploads")
+      }else {
+        value = null
+      }
+    }
+    console.log("value", value)
     return value;
   };
 
@@ -283,8 +338,8 @@ export default function OnBoardingPage() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">
-      <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-gray-50 bg-opacity-80 flex items-center justify-center min-h-[50vh] md:min-h-screen">
-        <div className="bg-white rounded-lg w-[80%] h-[calc(100vh-120px)] flex flex-col relative">
+      <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-gray-50 bg-opacity-80 flex justify-center min-h-[50vh] md:min-h-screen">
+        <div className="bg-white w-full h-screen flex flex-col relative border-r border-[#dee2e6]">
           {/* Loading Overlay */}
           {isSubmitting && (
             <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
@@ -300,7 +355,7 @@ export default function OnBoardingPage() {
             </div>
           )}
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200">
+          {/* <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center space-x-8">
               {[0, 1].map((step) => (
                 <div key={step} className="flex items-center">
@@ -311,7 +366,7 @@ export default function OnBoardingPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
@@ -320,8 +375,10 @@ export default function OnBoardingPage() {
               onContentLengthChange={handleContentLengthChange}
               setContentOnboard={setContent}
               userData={isUserData}
-              isContentAdded={isContentAdded} 
+              isContentAdded={isContentAdded}
               setIsContentAdded={setIsContentAdded}
+              colors={colors}
+              setColors={setColors}
             />
           </div>
           {errors.contentLength && (
@@ -335,7 +392,7 @@ export default function OnBoardingPage() {
 
           {/* Footer */}
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
-            {currentStep === 0 ? (
+            {/* {currentStep === 0 ? (
               <div></div>
             ) : (
               // <button
@@ -351,10 +408,10 @@ export default function OnBoardingPage() {
                 label={currentStep === 0 ? "Cancel" : "Back"}
                 type="Secondary"
               />
-            )}
+            )} */}
 
             {/* <button
-              onClick={handleNext}
+              onClick={handleSave}
               disabled={isSubmitting}
               className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting
                   ? "bg-gray-400 cursor-not-allowed"
@@ -366,29 +423,41 @@ export default function OnBoardingPage() {
                 : "Continue"}
             </button> */}
             <Button
-              onClick={handleNext}
+              onClick={handleSave}
               disabled={isSubmitting}
-              label={currentStep === steps.length - 1
-                ? "Save & Continue"
-                : "Continue"}
+              label={"Save"}
               type="Primary"
+              className="ml-auto"
             />
-
           </div>
         </div>
       </div>
 
       {/* Preview Page */}
-      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-hidden bg-background min-h-[50vh] md:min-h-screen">
+      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-x-hidden bg-background min-h-[50vh] md:min-h-screen overflow-y-auto">
         <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
           <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              <img
+              <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
+                <div
+                  className="absolute top-0 right-0 p-1 cursor-pointer"
+                  onClick={() => handleModalOpenForEdit("Logo")}
+                >
+                  <Pen className="size-4" />
+                </div>
+                <img
+                  src={filterContent("Logo") || config?.logo}
+                  alt={params.portalid || "Default"}
+                  className="h-[52px] mr-2"
+                />
+                {/* {filterContent("Logo")} */}
+              </span>
+              {/* <img
                 // src="/default_logo_purple.png"
                 src={config?.logo || "/logo.png"}
                 alt={config.legalName || "Default"}
                 className="h-[52px] mr-2"
-              />
+              /> */}
 
               <span className="text-3xl text-[#000000e6] mb-1 font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                 <div
@@ -486,13 +555,17 @@ export default function OnBoardingPage() {
                         disabled
                       />
                     </div>
-                    <button
+                    {/* <button
                       type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group "
                       style={{ backgroundColor: config?.secondaryColor }}
                     >
                       Log In
-                    </button>
+                    </button> */}
+                    <Button
+                      type="Login"
+                      label="Log In"
+                    />
                     <button
                       type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
@@ -517,7 +590,6 @@ export default function OnBoardingPage() {
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-
                   <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
                       <div
@@ -681,7 +753,7 @@ export default function OnBoardingPage() {
             linkFields={linkFields}
             setLinkFields={setLinkFields}
             setIsContentAdded={setIsContentAdded}
-            from={'onboarding'}
+            from={"onboarding"}
           />
         )}
       </div>

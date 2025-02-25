@@ -116,6 +116,8 @@ function AddPageModal({
         return;
       }
 
+      console.log("Plugin", plugin)
+
       const payload = {
         title,
         description,

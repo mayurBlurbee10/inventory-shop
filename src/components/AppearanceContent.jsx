@@ -87,7 +87,7 @@ const AppearanceContent = () => {
     });
   };
 
-  const handleUpdateTheme = () => {
+  const handleUpdateTheme = async () => {
     try {
       setIsLoading(true);
       const portalData = {
@@ -98,49 +98,47 @@ const AppearanceContent = () => {
         secondaryColor: selectedTheme.secondaryColor,
         accentColor: selectedTheme.accentColor,
       };
-      const updatePortalTheme = async () => {
-        if (typeof selectedTheme?.logo === "object") {
-          const uploadData = new FormData();
-          uploadData.append("file", selectedTheme?.logo);
 
-          const uploadResponse = await fetchWrapper(
-            "/api/upload",
-            {
-              method: "POST",
-              body: uploadData,
-            },
-            "user-logo"
-          );
+      if (typeof selectedTheme?.logo === "object") {
+        const uploadData = new FormData();
+        uploadData.append("file", selectedTheme?.logo);
 
-          if (!uploadResponse.ok) {
-            throw new Error("Failed to upload logo");
-          }
-
-          const uploadResult = await uploadResponse.json();
-          setSelectedTheme((prev) => ({ ...prev, logo: uploadResult.url }));
-          portalData.logo = uploadResult.url;
-          console.log("portalData", portalData);
-          console.log("uploadResult.url", uploadResult.url);
-        }
-
-        const response = await fetchWrapper(
-          "/api/portal",
+        const uploadResponse = await fetchWrapper(
+          "/api/upload",
           {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(portalData),
+            method: "POST",
+            body: uploadData,
           },
-          "update-portal"
+          "user-logo"
         );
 
-        if (!response.ok) throw new Error("Failed to update portal theme");
-      };
-      updatePortalTheme().then(() => {
-        dispatch(setPortal(params.portalid));
-        toast.success("Portal Theme updated successfully");
-      });
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload logo");
+        }
+
+        const uploadResult = await uploadResponse.json();
+        setSelectedTheme((prev) => ({ ...prev, logo: uploadResult.url }));
+        portalData.logo = uploadResult.url;
+        console.log("portalData", portalData);
+        console.log("uploadResult.url", uploadResult.url);
+      }
+
+      const response = await fetchWrapper(
+        "/api/portal",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(portalData),
+        },
+        "update-portal"
+      );
+
+      if (!response.ok) throw new Error("Failed to update portal theme");
+
+      dispatch(setPortal(params.portalid));
+      toast.success("Portal Theme updated successfully");
     } catch (error) {
       toast.error(error.message);
       console.log(error);
