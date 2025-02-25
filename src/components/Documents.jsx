@@ -1002,7 +1002,7 @@ function Documents({
   };
 
   const isAnySideSectionVisible = () => {
-    if (isPageLoading) return false; 
+    if (isPageLoading) return true; 
     if (!page || !page.length) return false; 
     
     return page.some((item) => item.visible);
@@ -1058,7 +1058,7 @@ function Documents({
             )}
             <div className="border border-solid border-[#0000001a] rounded-sm relative">
               <div className="border-b border-solid border-[#0000001a]">
-                <div className="py-[18px] flex items-center w-full px-5 bg-gray-50">
+                <div className="py-[18px] flex items-center w-full px-5 bg-gray-50 text-[#8f8f8f]">
                   <div>
                     <Search className="w-5 h-5" />
                   </div>

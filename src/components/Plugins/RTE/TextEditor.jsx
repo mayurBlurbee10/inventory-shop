@@ -85,7 +85,7 @@ const Toolbar = ({ editor }) => {
   };
 
   return (
-    <div className="flex items-center justify-start w-full flex-wrap gap-2 rounded border border-[#ccc] shadow mb-4 py-1">
+    <div className="flex items-center justify-start w-full flex-wrap gap-2 rounded border border-[#ccc] shadow mb-4 py-1 h-[100px] overflow-y-scroll sm:h-auto">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 ml-1 border-none rounded cursor-pointer hover:bg-indigo-200 ${

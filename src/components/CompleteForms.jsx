@@ -50,7 +50,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
             <div className="fixed inset-0 flex items-center justify-center p-4 font-lato">
                 <Dialog.Panel className="mx-auto max-w-[760px] h-[550px] sm:h-auto overflow-auto bg-white p-6 shadow-xl rounded-lg">
 
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex justify-between items-center mb-4 relative">
                         <div className="flex flex-col gap-2">
                             <h1 className="text-black font-semibold text-xl">
                                 Upload tax forms
@@ -61,7 +61,7 @@ const CompleteForms = ({ isOpen, onClose }) => {
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-500"
+                            className="absolute top-0 right-0 text-gray-400 hover:text-gray-500"
                         >
                             <X className="w-5 h-5" />
                         </button>

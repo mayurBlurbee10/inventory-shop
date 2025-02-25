@@ -120,11 +120,6 @@ function Login() {
 
   const fetchUser = async (loginType) => {
     try {
-      if (loginType === "okta") {
-        setIsLoadingOkta(true)
-      } else {
-        setIsLoadingLogin(true);
-      }
       const encodedEmail = encodeURIComponent(email);
       const response = await fetchWrapper(
         `/api/users?email=${encodedEmail}`,
@@ -144,9 +139,6 @@ function Login() {
       return validatedUser;
     } catch (error) {
       console.log("error: ", error);
-    } finally {
-      setIsLoadingLogin(false);
-      setIsLoadingOkta(false)
     }
   };
 
@@ -283,12 +275,13 @@ function Login() {
   const login = async () => {
     try {
       setIsLoadingOkta(true);
-      const userData = await fetchUser("okta");
+      const userData = await fetchUser();
       if (userData && page && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
         return;
       }
       await signIn("okta");
+      setIsLoadingOkta(false)
     } catch (error) {
       console.log("error: ", error);
     } finally {
