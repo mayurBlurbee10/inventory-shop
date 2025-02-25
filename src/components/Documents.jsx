@@ -1003,7 +1003,7 @@ function Documents({
 
   const isAnySideSectionVisible = () => {
     if (isPageLoading) return true; 
-    if (!page || !page.length) return false; 
+    if (!page || !page.length) return true; 
     
     return page.some((item) => item.visible);
   };
