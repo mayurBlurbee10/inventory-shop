@@ -4,7 +4,7 @@ import BaseTable from "./BaseTable";
 import { Plugins } from "./Plugins";
 
 export
-@Entity()
+@Entity("pages")
 class Pages extends BaseTable {
   @Column({ type: "nvarchar", length: 255 })
   title;

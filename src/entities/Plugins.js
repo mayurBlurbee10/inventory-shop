@@ -5,7 +5,7 @@ import { Users } from "./Users";
 import { Pages } from "./Pages";
 
 export
-@Entity()
+@Entity("plugins")
 class Plugins extends BaseTable {
   @Column({ type: "nvarchar", length: 255 })
   type;
