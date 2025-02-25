@@ -50,10 +50,7 @@ function LoansPage() {
           </p>
         </div>
         <div className="flex flex-col pt-8">
-          <div className="flex items-center justify-between pb-5">
-            <p className="text-xl font-light text-black font-lato">
-              My Loans
-            </p>
+          <div className="pb-5">
             <div
               className="flex items-center justify-end text-[#dc3545] cursor-pointer"
               onClick={() => handleRefresh()}
@@ -64,7 +61,7 @@ function LoansPage() {
           <table className="border border-[#dee2e6] text-sm font-lato">
             <thead>
               <tr>
-                <th className="p-5"></th>
+                <th className="p-5">My Loans</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
