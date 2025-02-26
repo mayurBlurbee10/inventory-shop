@@ -35,11 +35,11 @@ export async function POST(req) {
   const data = await req.json();
   console.log("data: ", data);
 
-  let { legalName, tradingName, domain } = data;
+  let { legalName, domain } = data;
   console.log("legalName: ", legalName);
 
-  if (!legalName || !data.id || !tradingName || !domain) {
-    return NextResponse.json({ error: "Name are required" }, { status: 400 });
+  if (!legalName || !data.id || !domain) {
+    return NextResponse.json({ error: "Company Name and Domain Setup fields required" }, { status: 400 });
   }
 
   try {
@@ -55,7 +55,6 @@ export async function POST(req) {
     const portalData = {
       ...rest,
       legalName: legalName,
-      tradingName: tradingName,
       domain: domain,
       status: "setup",
     };

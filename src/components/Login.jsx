@@ -78,7 +78,9 @@ function Login() {
     }
   };
 
-  const validateUserAccess = async (user, config, portalId, setUser) => {
+  console.log("Page", page)
+
+  const validateUserAccess = async (user, config, portalId) => {
     if (!user) {
       // setUser(null);
       dispatch(setCurrentUser(null))
@@ -115,10 +117,11 @@ function Login() {
     }
 
     // setUser(user);
+    dispatch(setCurrentUser(user))
     return user;
   };
 
-  const fetchUser = async (loginType) => {
+  const fetchUser = async () => {
     try {
       const encodedEmail = encodeURIComponent(email);
       const response = await fetchWrapper(
@@ -144,8 +147,15 @@ function Login() {
 
   const handleCheckForTNC = async (e) => {
     e.preventDefault();
+    const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
+
+    if (buttonType === "login with okta") {
+      setIsLoadingOkta(true);
+    }
+    setIsLoadingLogin(true);
+    setError("");
     try {
-      const userData = await fetchUser("login");
+      const userData = await fetchUser();
       if (userData && page && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
       } else {
@@ -158,27 +168,7 @@ function Login() {
 
   useEffect(() => {
     const fetchConfig = async () => {
-      try {
-        // const response = await fetchWrapper(
-        //   `/api/portal?portalid=${params.portalid || "default"}`,
-        //   {},
-        //   "portal-login"
-        // );
-        // const data = await response.json();
-        // if (!data.data && response.status === 404) {
-        //   router.push(`/${params.portalid}/not-found`);
-        //   return;
-        // }
-        // if (!response.ok) {
-        //   throw new Error(data.error || "Failed to fetch portal config");
-        // }
-        // setConfig(data.data);
-        dispatch(setPortal(params.portalid || "default"))
-      } catch (error) {
-        console.log("error: ", error);
-      } finally {
-        setIsLoading(false);
-      }
+      dispatch(setPortal(params.portalid || "default"));
     };
     fetchConfig();
     fetchContent();
@@ -199,15 +189,6 @@ function Login() {
   };
 
   const handleLogin = async (e) => {
-    // Identify which button was clicked
-    const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
-
-    if (buttonType === "login with okta") {
-      setIsLoadingOkta(true);
-    }
-    setIsLoadingLogin(true);
-    setError("");
-
     console.log("Login attempt for:", email);
 
     try {
@@ -689,7 +670,6 @@ function Login() {
         <TNCModal
           onClose={() => {
             setIsTNCOpen(false);
-            setUser(null);
           }}
           user={user}
           email={email}

@@ -21,11 +21,11 @@ import Button from "../Common/Elements/Button";
 import { PluginType } from "@/config/constants";
 
 const options = [
-  {
-    key:"pages",
-    label: "Pages",
-    value : PluginType.PAGES
-  },
+  // {
+  //   key:"pages",
+  //   label: "Pages",
+  //   value : PluginType.PAGES
+  // },
   {
     key:"t&c",
     label: "Terms and Conditions",
@@ -57,7 +57,8 @@ const ProductsContent = () => {
         throw new Error("Failed to fetch plugins");
       }
       const data = await response.json();
-      setPlugins(data.data);
+      const filterPlugins = data.data.filter((item)=>item.type !== PluginType.PAGES)
+      setPlugins(filterPlugins);
       setPluginOptions((prevOptions) =>
         prevOptions.filter(
           (option) => !data.data.some((plugin) => plugin?.type === option.key)

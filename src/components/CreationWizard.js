@@ -131,9 +131,9 @@ const CompanyDetailsStep = ({ formData, setFormData }) => {
       </div>
 
       <div className="grid grid-cols-2 gap-4 ">
-        <div className="col-span-2 text-gray-700">
+        <div className="text-gray-700">
           <InputField
-            label="Legal Company Name"
+            label="Company Name"
             type="legalName"
             value={formData.legalName}
             onChange={(e) =>
@@ -145,16 +145,6 @@ const CompanyDetailsStep = ({ formData, setFormData }) => {
           />
           {error && <p className="text-red-600 text-sm">{error}</p>}
         </div>
-
-        <InputField
-          label="Trading Name"
-          value={formData.tradingName}
-          onChange={(e) =>
-            setFormData({ ...formData, tradingName: e.target.value })
-          }
-          placeholder="e.g., Acme Corp"
-        />
-
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Region <span className="text-gray-400">*</span>
@@ -220,7 +210,7 @@ const CompanyDetailsStep = ({ formData, setFormData }) => {
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
-            rows={3}
+            rows={5}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
             placeholder="Brief description of the portal's operations"
           />

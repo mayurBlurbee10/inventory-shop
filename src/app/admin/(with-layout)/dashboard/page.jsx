@@ -29,7 +29,6 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [duplicatePortalData, setDuplicatePortalData] = useState({
     legalName: "",
-    tradingName: "",
     domain: "",
   });
   
@@ -89,6 +88,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
       refreshPortals();
     } catch (error) {
       console.log("error: ", error);
+      toast.error(error.message)
     } finally {
       setIsLoading(false);
     }
@@ -312,7 +312,7 @@ const AdminDashboardPage = () => {
     try {
       let newSubsidiary = {
         legalName: formData.legalName,
-        tradingName: formData.tradingName,
+        tradingName: formData.legalName,
         domain: formData.domain,
         status: "setup",
         userCount: 0,

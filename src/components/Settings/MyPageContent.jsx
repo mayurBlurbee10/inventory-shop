@@ -316,12 +316,12 @@ const MyPageContent = () => {
                 <p>No pages found.</p>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
                     {renderPagesList(
                       pages.filter((item) => !item.isCustomPage)
                     )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
                     {renderPagesList(pages.filter((item) => item.isCustomPage))}
                   </div>
                 </>
