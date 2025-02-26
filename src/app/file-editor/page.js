@@ -8,11 +8,8 @@ export default function FileEditorPage() {
   const getFile = async () => {
     try {
       const secretKey = new TextEncoder().encode(
-        "OKxRd0yUnWvX0Ai6py9UjULFiOOyqL"
+        "9bce206dc17d48548d37a329732a3c88"
       );
-    //   const secretKey = new TextEncoder().encode(
-    //     "9bce206dc17d48548d37a329732a3c88"
-    //   );
       const tokenPayload = {
         document: {
           fileType: "docx",
