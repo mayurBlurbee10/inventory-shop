@@ -98,40 +98,40 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
           user: { id: userData.id, name: userData.name },
           customization: { autoSave: true, uiTheme: 'default-light', features : { tabBackground : { mode : "toolbar"}} },
         },
-        // events: {
-        //   onRequestSaveAs: async function (event) {
-        //     console.log("Saving document...");
-        //     try {
-        //       const data = event.data; // Get file data from ONLYOFFICE
-        //       console.log("fileData", event);
-        //       const blob = await getBlobFromUrl(data.url, fileType);
-        //       console.log("blob", blob);
-        //       await uploadFileToBox(blob);
-        //     } catch (error) {
-        //       console.error("Error updating file:", error);
-        //       toast.error("Failed to save document.");
-        //     }
-        //   },
-        //   onRequestClose: function () {
-        //     console.log("Editor closed");
-        //     if (editorRef.current && editorRef.current.destroyEditor) {
-        //       editorRef.current.destroyEditor();
-        //     }
-        //   },
-        //   onDownloadAs: async function (event) {
-        //     console.log("Saving document...");
-        //     try {
-        //       const data = event.data; // Get file data from ONLYOFFICE
-        //       console.log("fileData", event);
-        //       const blob = await getBlobFromUrl(data.url, fileType);
-        //       console.log("blob", blob);
-        //       await uploadFileToBox(blob);
-        //     } catch (error) {
-        //       console.error("Error updating file:", error);
-        //       toast.error("Failed to save document.");
-        //     }
-        //   },
-        // },
+        events: {
+          onRequestSaveAs: async function (event) {
+            console.log("Saving document...");
+            try {
+              const data = event.data; // Get file data from ONLYOFFICE
+              console.log("fileData", event);
+              const blob = await getBlobFromUrl(data.url, fileType);
+              console.log("blob", blob);
+              await uploadFileToBox(blob);
+            } catch (error) {
+              console.error("Error updating file:", error);
+              toast.error("Failed to save document.");
+            }
+          },
+          onRequestClose: function () {
+            console.log("Editor closed");
+            if (editorRef.current && editorRef.current.destroyEditor) {
+              editorRef.current.destroyEditor();
+            }
+          },
+          onDownloadAs: async function (event) {
+            console.log("Saving document...");
+            try {
+              const data = event.data; // Get file data from ONLYOFFICE
+              console.log("fileData", event);
+              const blob = await getBlobFromUrl(data.url, fileType);
+              console.log("blob", blob);
+              await uploadFileToBox(blob);
+            } catch (error) {
+              console.error("Error updating file:", error);
+              toast.error("Failed to save document.");
+            }
+          },
+        },
       };
 
       const token = await new SignJWT(tokenPayload)
@@ -148,11 +148,6 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         console.log("🔹 Destroying old editor instance...", editorRef.current);
         editorRef.current.destroyEditor();
       }
-
-      console.log('tokenPayload: ', tokenPayload);
-      setTimeout(()=>{
-        console.log('tokenPayload: ', tokenPayload);
-      },1000)
 
       editorRef.current = new window.DocsAPI.DocEditor("onlyoffice-editor", {
         ...tokenPayload,
