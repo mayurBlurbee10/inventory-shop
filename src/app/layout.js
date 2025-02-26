@@ -24,7 +24,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <script type="text/javascript" src="https://0705d950.docs.onlyoffice.com/web-apps/apps/api/documents/api.js" strategy="lazyOnload"></script>
+        <script type="text/javascript" src="http://192.168.1.29/web-apps/apps/api/documents/api.js" strategy="lazyOnload"></script>
+        {/* <script type="text/javascript" src="https://0705d950.docs.onlyoffice.com/web-apps/apps/api/documents/api.js" strategy="lazyOnload"></script> */}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

@@ -80,8 +80,11 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       setFileUrl(fileUrl);
       setFileType(fileType);
       const userData = getUserData();
+      // const secretKey = new TextEncoder().encode(
+      //   "9bce206dc17d48548d37a329732a3c88"
+      // );
       const secretKey = new TextEncoder().encode(
-        "9bce206dc17d48548d37a329732a3c88"
+        "OKxRd0yUnWvX0Ai6py9UjULFiOOyqL"
       );
 
       const tokenPayload = {
