@@ -77,6 +77,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       if (!response || !response.ok) throw new Error("Failed to fetch file");
 
       const { fileUrl, fileType } = await response.json();
+      setIsLoading(false);
       setFileUrl(fileUrl);
       setFileType(fileType);
       const userData = getUserData();
