@@ -213,9 +213,9 @@ const Footer = ({
                   </p>
                   <span>
                       <img
-                        src="/M_Strategy_logo.png"
+                        src="/mstrategy_horizontal.jpg"
                         alt="Company Logo"
-                        className="h-5 w-7 bg-[#0061D5] p-1"
+                        className="h-6 w-15 p-1"
                       />
                     </span>
                 </div>

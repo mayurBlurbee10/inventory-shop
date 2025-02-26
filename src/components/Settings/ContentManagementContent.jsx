@@ -422,10 +422,10 @@ const ContentManagementContent = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="w-[70%]">
+      <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
+        <div className=" text-center sm:text-left">
           <h3 className="text-lg font-medium text-gray-900">
-            Homepage Configuration
+            Home Page
           </h3>
           <p className="text-gray-600 text-sm">
             Organize and edit the information displayed across your platform.

@@ -30,8 +30,8 @@ function SettingsPage() {
   // console.log('isUserData', isUserData);
 
   const tabs = [
-    { id: 'homepage_configuration', label: 'Homepage Configuration', icon: FileText },
-    { id: 'my_page', label: 'My Page', icon: Layout },
+    { id: 'homepage_configuration', label: 'Home Page', icon: FileText },
+    { id: 'my_page', label: 'Pages', icon: Layout },
     // { id: 'appearance', label: 'Theme', icon: Layout },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'products', label: 'Widgets', icon: ShoppingBag },
@@ -73,7 +73,7 @@ function SettingsPage() {
 
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg flex justify-center relative w-full h-[90vh]">
+    <div className="bg-white rounded-lg flex justify-center relative w-full h-[85vh]">
       <div className="w-2/5 md:w-72 border-r border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs">
         <h2 className="text-xl text-gray-800 font-semibold mb-6">Tools</h2>
         <nav className="space-y-1">
@@ -87,12 +87,12 @@ function SettingsPage() {
                 }`}
             >
               <div className="flex items-center space-x-3">
-                <Icon className={`w-5 h-5 ${activeTab === id ? 'text-white' : 'text-gray-700/90'
-                  }`} />
-                <span className=''>{label}</span>
+                <div><Icon className={`w-5 h-5 ${activeTab === id ? 'text-white' : 'text-gray-700/90'
+                  }`} /></div>
+                <span className='text-left'>{label}</span>
               </div>
-              <ChevronRight className={`w-4 h-4 ${activeTab === id ? 'text-white' : 'text-gray-700/80'
-                }`} />
+              <div> <ChevronRight className={`w-4 h-4 ${activeTab === id ? 'text-white' : 'text-gray-700/80'
+                }`} /></div>
             </button>
           ))}
         </nav>

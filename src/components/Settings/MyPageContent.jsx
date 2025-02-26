@@ -295,6 +295,16 @@ const MyPageContent = () => {
   return (
     <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto">
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
+        <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
+          <div className=" text-center sm:text-left">
+            <h3 className="text-lg font-medium text-gray-900">
+              Pages
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Easily manage and customize the sections displayed on your page.
+            </p>
+          </div>
+        </div>  
         <div className="py-2 text-gray-900">
           {loading ? (
             <div className="flex justify-center py-8">
@@ -321,7 +331,7 @@ const MyPageContent = () => {
         </div>
 
         {!loading && (
-          <div className="flex justify-between items-center w-full space-x-4 mt-12 p-1 md:p-2 lg:p-3">
+          <div className="flex sm:justify-between justify-center items-center w-full space-x-4 mt-12 p-1 md:p-2 lg:p-3 flex-wrap gap-2">
             <Button
               onClick={() => {
                 setEditData(null);

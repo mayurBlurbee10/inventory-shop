@@ -111,7 +111,7 @@ const ProductsContent = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-center gap-2 sm:justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Workflow Widgets</h3>
         {pluginOptions && pluginOptions.length > 0 && (
           <Button

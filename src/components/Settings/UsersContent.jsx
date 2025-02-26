@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Import, Plus } from "lucide-react";
+import { Import, Plus, PlusCircle } from "lucide-react";
 import AddUserModal from "./AddUserModal";
 import FileViewerModal from "./FileViewerModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -148,7 +148,7 @@ const UsersContent = () => {
           onClick={() => setShowAddModal(true)}
           type="Primary"
           label="Add User"
-          icon={Plus}
+          icon={PlusCircle}
           />
         </div>
         {/* <div>

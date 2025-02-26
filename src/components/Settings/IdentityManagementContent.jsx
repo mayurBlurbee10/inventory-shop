@@ -106,7 +106,7 @@ const IdentityManagementContent = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-center gap-2 sm:justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Identity Management</h3>
         {/* <button className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
           Save Changes

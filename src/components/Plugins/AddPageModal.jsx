@@ -197,7 +197,7 @@ function AddPageModal({
     <>
       {isOpen && (
         <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/10 bg-opacity-80 flex items-center justify-center" style={{marginTop : 0}}>
-          <div className="bg-white rounded-lg w-[90%] max-w-[700px] flex flex-col relative">
+          <div className="bg-white rounded-lg w-[90%] max-w-[1000px] flex flex-col relative">
             <button
               onClick={onClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-500"
@@ -213,18 +213,20 @@ function AddPageModal({
             >
               <div className="flex flex-col w-full">
                 <label className="text-xl font-semibold mb-1">Title</label>
-                <input
-                  type="text"
-                  placeholder="Page Title"
-                  {...register("title", {
-                    required: "Title is required",
-                    maxLength: {
-                      value: 100,
-                      message: "Title cannot exceed 100 characters",
-                    },
-                  })}
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
-                />
+                <div className="px-4">
+                  <input
+                    type="text"
+                    placeholder="Page Title"
+                    {...register("title", {
+                      required: "Title is required",
+                      maxLength: {
+                        value: 100,
+                        message: "Title cannot exceed 100 characters",
+                      },
+                    })}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
+                  />
+                </div>
                 {errors.title && (
                   <p className="text-sm text-red-600 mt-1">
                     {errors.title.message}
@@ -232,7 +234,7 @@ function AddPageModal({
                 )}
               </div>
 
-              <div className="flex flex-col w-full max-h-[450px] overflow-y-auto sm:max-h-none sm:overflow-visible">
+              <div className="flex flex-col w-full max-h-[450px] overflow-y-auto sm:max-h-none sm:overflow-visible custom-scrollbar">
                 <label className="text-xl font-semibold mb-1">
                   Description
                 </label>
