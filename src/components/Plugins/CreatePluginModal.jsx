@@ -256,6 +256,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
   const [pageCreated, setPageCreated] = useState([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [pageSelected, setPageSelected] = useState(null);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [pluginData, setPluginData] = useState({
     type: "",
     pageId: []
@@ -276,11 +277,10 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     try {
       const user = getUserData();
-
+      setIsSubmitLoading(true);
       const pluginPayload = {
         type: pluginData.type,
         portalId: params.portalid || "",
@@ -326,7 +326,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
       setError(error.message || "An unexpected error occurred");
     } finally {
       // Reset loading state
-      setLoading(false);
+      setIsSubmitLoading(false)
     }
   };
 
@@ -511,17 +511,21 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
                 pages?.length < 1) ||
               pluginData.type !== PluginType.TNC ? (
                 <div className="flex items-center gap-2 w-full">
-                  <Button
-                    onClick={() => {
-                      setEditData(null);
-                      if (!editData) {
-                        setIsOpenAddPageModal((prev) => !prev);
-                      }
-                    }}
-                    icon={PlusCircle}
-                    type="Primary"
-                    label="Add"
-                  />
+                    {
+                      pluginData?.type && (
+                        <Button
+                          onClick={() => {
+                            setEditData(null);
+                            if (!editData) {
+                              setIsOpenAddPageModal((prev) => !prev);
+                            }
+                          }}
+                          icon={PlusCircle}
+                          type="Primary"
+                          label="Add"
+                        />
+                      )
+                    }
                 </div>
               ) : null}
 
@@ -544,8 +548,8 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
                 />
                 <Button
                   buttonType="submit"
-                  disabled={loading}
-                  isLoading={loading}
+                  disabled={isSubmitLoading || loading}
+                  isLoading={isSubmitLoading}
                   type="Primary"
                   label="Done"
                 />
