@@ -94,6 +94,17 @@ function Login() {
 
     if (!permission) {
       // setUser(null);
+      const isSuperAdminPer = user?.permissions?.find(
+        (perm) => perm.role === UserRole.SUPER_ADMIN
+      );
+
+      if (isSuperAdminPer) {
+        if (user?.id === config?.createdBy?.id) {
+          dispatch(setCurrentUser(user));
+          setError("");
+          return user;
+        }
+      }
       dispatch(setCurrentUser(null))
       setError("User does not have access to this portal.");
       return null;
@@ -101,12 +112,7 @@ function Login() {
 
     const { role, portalId: userPortalId } = permission;
 
-    if (role === UserRole.SUPER_ADMIN && user?.id !== config?.createdBy?.id) {
-      // setUser(null);
-      dispatch(setCurrentUser(null))
-      setError("User does not have access to this portal.");
-      return null;
-    } else if (
+    if (
       [UserRole.USER, UserRole.ADMIN].includes(role) &&
       userPortalId !== portalId
     ) {
@@ -156,10 +162,14 @@ function Login() {
     setError("");
     try {
       const userData = await fetchUser();
-      if (userData && page && !userData?.isTNCAccepted) {
-        setIsTNCOpen(true);
+      if (userData) {
+        if (page && !userData.isTNCAccepted) {
+          setIsTNCOpen(true);
+        } else {
+          handleLogin(e);
+        }
       } else {
-        handleLogin(e);
+        setIsLoadingLogin(false);
       }
     } catch (error) {
       console.error("Error handling TNC check:", error);
@@ -670,6 +680,7 @@ function Login() {
         <TNCModal
           onClose={() => {
             setIsTNCOpen(false);
+            setIsLoadingLogin(false)
           }}
           user={user}
           email={email}
