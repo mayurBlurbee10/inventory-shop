@@ -22,7 +22,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
   const handleLogout = async () => {
     clearUserData();
     await signOut();
-    router.push("login");
+    // router.push("login");
   };
 
   const handleSetPassword = async (e) => {
@@ -57,8 +57,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
       const data = await response.json();
       if (response.ok) {
         setSuccess(true);
-        await handleLogout();
-        setTimeout(() => router.push(`/${params.portalid}/login`), 3000);
+        setTimeout(() => router.push(`/${params.portalid}/login`), 2000);
       } else {
         setError(data.error || "Failed to set password.");
         throw new Error(data.error || "Failed to set password.");

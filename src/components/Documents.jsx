@@ -52,6 +52,7 @@ import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
+import Button from "./Common/Elements/Button";
 
 function Documents({
   fileType,
@@ -1831,7 +1832,10 @@ function Documents({
                         </h3>
                       </div>
                       <div className="p-4 border border-[#dee2e6]">
-                        <form className="mb-3.5">
+                      <form className="mb-3.5" onSubmit={(e) => {
+                        e.preventDefault(); // Prevents form from refreshing the page
+                        addCollaborator(collaborator); // Calls function only when form is submitted
+                      }}>
                           <input
                             type="email"
                             value={collaborator.email}
@@ -1841,6 +1845,7 @@ function Documents({
                                 email: e.target.value,
                               }))
                             }
+                            required
                             placeholder="user@example.com"
                             className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
                           />
@@ -1865,13 +1870,19 @@ function Documents({
                           <option>Viewer Uploader</option> */}
                             </select>
 
-                            <button
+                            {/* <button
                               className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm cursor-pointer"
                               onClick={() => addCollaborator(collaborator)}
                               type="button"
                             >
                               Invite
-                            </button>
+                            </button> */}
+                            <Button 
+                              // onClick={addCollaborator(collaborator)}
+                              type="Secondary"
+                              label="Invite"
+                              buttonType="Submit"
+                            />
                           </div>
                         </form>
 
