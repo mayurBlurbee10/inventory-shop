@@ -252,13 +252,12 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
             </div>
 
             <div className="flex justify-center space-x-3">
-              <button
+              <Button 
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Close
-              </button>
-              <button
+                type="Seconday"
+                label="Close"
+              />
+              {/* <button
                 type="button"
                 className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors"
                 onClick={handleDeleteSubsidiary}
@@ -271,7 +270,14 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
                 ) : (
                   "Delete This Portal"
                 )}
-              </button>
+              </button> */}
+              <Button 
+                onClick={handleDeleteSubsidiary}
+                disabled={isLoading}
+                isLoading={isLoading}
+                label="Delete This Portal"
+                type="Delete"
+              />
             </div>
           </div>
         </Dialog.Panel>

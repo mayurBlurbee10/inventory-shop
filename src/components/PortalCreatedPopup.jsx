@@ -3,6 +3,7 @@ import { clearUserData } from "@/app/lib/auth";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Button from "./Common/Elements/Button";
 
 function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
   const router = useRouter();
@@ -38,12 +39,11 @@ function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
               Your portal <span className="font-semibold">{portalName}</span> has
               been created successfully. Please visit to explore more.
             </p>
-            <button
+            <Button 
               onClick={handleVisitPortal}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Visit your portal
-            </button>
+              label="Visit your portal"
+              type="Primary"
+            />
           </div>
         </DialogPanel>
       </div>

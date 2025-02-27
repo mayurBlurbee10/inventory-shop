@@ -2,6 +2,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog } from "@headlessui/react";
 import { Loader2, X } from "lucide-react";
 import React, { useState } from "react";
+import Button from "../Common/Elements/Button";
 
 const InputField = ({
   label,
@@ -147,14 +148,13 @@ const PortalDuplicateModal = ({
             </div>
 
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
-              <button
+              <Button 
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
                 disabled={isLoading}
-              >
-                Cancel
-              </button>
-              <button
+                label="Cancel"
+                type="Secondary"
+              />
+              {/* <button
                 onClick={handleDuplicate}
                 disabled={isLoading}
                 className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
@@ -166,7 +166,14 @@ const PortalDuplicateModal = ({
                 {isLoading
                   ? "Creating..."
                   : "Create Portal"}
-              </button>
+              </button> */}
+              <Button
+                onClick={handleDuplicate}
+                disabled={isLoading}
+                isLoading={isLoading}
+                label="Create Portal"
+                type="Primary"
+              />
             </div>
           </div>
         </Dialog.Panel>

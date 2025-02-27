@@ -6,7 +6,7 @@ import {
   setSuperUsers,
 } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
-import { FileText, Layout, LogOut, MenuIcon, Users } from "lucide-react";
+import { FileText, Layout, LogOut, MenuIcon, Users, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,6 +14,10 @@ import { useDispatch, useSelector } from "react-redux";
 
 const SidePanel = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const isDashboard = pathname.includes("dashboard");
+  const isReports = pathname.includes("reports");
+  const isUserManagement = pathname.includes("user-management");
   return (
     <div className="w-80 bg-[#0061D5] z-50 p-6 flex flex-col h-screen fixed left-0">
       <div className="mb-8">
@@ -28,14 +32,24 @@ const SidePanel = () => {
 
       <nav className="space-y-4 flex-1">
         <button
-          className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
+          className={`flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded-lg transition-colors hover:bg-blue-600
+            ${
+              isDashboard
+                ? "bg-blue-700"
+                : "hover:bg-blue-650"
+            }`}
           onClick={() => router.push("dashboard")}
         >
           <Layout className="w-5 h-5 mr-3" />
           Dashboard
         </button>
         <button
-          className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
+          className={`flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded-lg transition-colors hover:bg-blue-600
+            ${
+              isReports
+                ? "bg-blue-700"
+                : "hover:bg-blue-650"
+            }`}
           onClick={() => router.push("reports")}
         >
           <FileText className="w-5 h-5 mr-3" />
@@ -43,7 +57,12 @@ const SidePanel = () => {
         </button>
 
         <button
-          className="flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded transition-colors"
+          className={`flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded-lg transition-colors hover:bg-blue-600
+            ${
+              isUserManagement
+                ? "bg-blue-700"
+                : "hover:bg-blue-650"
+            }`}
           onClick={() => router.push("user-management")}
         >
           <Users className="w-5 h-5 mr-3" />

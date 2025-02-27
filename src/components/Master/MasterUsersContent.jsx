@@ -1,7 +1,7 @@
 "use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
-import { Plus } from "lucide-react";
+import { Plus, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import AddSuperUserModal from "./AddSuperUserModal";
 import { getUserData } from "@/app/lib/auth";
@@ -63,7 +63,7 @@ export default function MasterUsersContent() {
         </button> */}
         <Button
           onClick={() => setShowAddModal(true)}
-          icon ={Plus}
+          icon ={PlusCircle}
           type="Primary"
           label ="Add User"
         />
