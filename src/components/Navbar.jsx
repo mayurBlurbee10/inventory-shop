@@ -217,7 +217,7 @@ function Navbar({ content, config, user, filterValue }) {
             )}
 
             <span
-              className="text-3xl text-[#000000e6] mb-1 font-lato"
+              className="text-3xl text-[#000000e6] mb-1 font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
               style={{
                 fontSize:
                   content?.portalContent?.find(

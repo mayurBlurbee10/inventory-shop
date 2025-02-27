@@ -1707,15 +1707,15 @@ function Documents({
                               </td>
                               <td className="px-3 py-4">
                                 <p
-                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                                  className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
                                   onClick={() => {
+                                    if (!firstFileToSign()) return;
                                     handleSelfSign(firstFileToSign(), "sign");
                                     setCompletedTask((prev) => ({
                                       ...prev,
                                       sign: true,
                                     }));
                                   }}
-                                  disabled={!firstFileToSign()}
                                 >
                                   {isSignReqLoading === "sign" ? (
                                     <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
@@ -1738,8 +1738,9 @@ function Documents({
                               </td>
                               <td className="px-3 py-4">
                                 <p
-                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                                  className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
                                   onClick={() => {
+                                    if (!firstFileToSign()) return;
                                     handleSelfSign(
                                       firstFileToSign(),
                                       "autoLoan"
@@ -1749,7 +1750,6 @@ function Documents({
                                       autoLoan: true,
                                     }));
                                   }}
-                                  disabled={!firstFileToSign()}
                                 >
                                   {isSignReqLoading === "autoLoan" ? (
                                     <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
