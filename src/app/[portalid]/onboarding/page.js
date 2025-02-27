@@ -436,7 +436,7 @@ export default function OnBoardingPage() {
       {/* Preview Page */}
       <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-x-hidden bg-background min-h-[50vh] md:min-h-screen overflow-y-auto">
         <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
-          <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
+          <nav className="flex flex-wrap gap-2 justify-between items-center bg-secondary py-2 sm:px-[14px]">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
                 <div
@@ -445,11 +445,11 @@ export default function OnBoardingPage() {
                 >
                   <Pen className="size-4" />
                 </div>
-                <img
+                <div className="block min-w-16"><img
                   src={filterContent("Logo") || config?.logo}
                   alt={params.portalid || "Default"}
                   className="h-[52px] mr-2"
-                />
+                /></div>
                 {/* {filterContent("Logo")} */}
               </span>
               {/* <img
@@ -466,10 +466,12 @@ export default function OnBoardingPage() {
                 >
                   <Pen className="size-4" />
                 </div>
-                {filterContent("Header Text")}
+                <span className="max-w-[250px] block overflow-hidden text-ellipsis whitespace-nowrap">
+                  {filterContent("Header Text")}
+                </span>
               </span>
             </a>
-            <div className="hidden md:flex items-center gap-x-6">
+            <div className="hidden lg:flex items-center justify-center gap-x-6">
               <div className="flex items-center transition-transform transform hover:scale-105 ">
                 <User className="w-5 h-5 text-gray-500 pb-[2px]" />
                 <NavBarItem title="Individual" />
@@ -485,7 +487,7 @@ export default function OnBoardingPage() {
                 <NavBarItem title="Contact" />
               </div>
             </div>
-            <button className="md:hidden text-text">
+            <button className="lg:hidden text-text">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -505,7 +507,7 @@ export default function OnBoardingPage() {
           <div className="flex-1 flex flex-col xl:flex-row  pt-12">
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
               <div className="px-[15px]">
-                <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Title")}
@@ -521,7 +523,7 @@ export default function OnBoardingPage() {
                   >
                     <Pen className="size-4" />
                   </div>
-                  <p className="font-light text-xl leading-7 font-lato mb-3 mt-5">
+                  <p className="font-light text-xl leading-7 font-lato mb-3 mt-5 line-clamp-3">
                     {filterContent("Paragraph")}
                   </p>
                 </div>
@@ -611,17 +613,17 @@ export default function OnBoardingPage() {
                     >
                       <Pen className="size-4" />
                     </div>
-                    {filterContent("Card 1 Title")}
+                    <div className="line-clamp-2 leading-6">{filterContent("Card 1 Title")}</div>
                   </span>
                 </h5>
-                <span className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Card 1 Content")}
                   >
                     <Pen className="size-4" />
                   </div>
-                  {filterContent("Card 1 Content")}
+                  <div className="line-clamp-2">{filterContent("Card 1 Content")}</div>
                 </span>
               </div>
             </div>
@@ -657,17 +659,17 @@ export default function OnBoardingPage() {
                     >
                       <Pen className="size-4" />
                     </div>
-                    {filterContent("Card 2 Title")}
+                    <div className="line-clamp-2 leading-6">{filterContent("Card 2 Title")}</div>
                   </span>
                 </h5>
-                <span className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Card 2 Content")}
                   >
                     <Pen className="size-4" />
                   </div>
-                  {filterContent("Card 2 Content")}
+                  <div className="line-clamp-2">{filterContent("Card 2 Content")}</div>
                 </span>
               </div>
             </div>
@@ -703,17 +705,17 @@ export default function OnBoardingPage() {
                     >
                       <Pen className="size-4" />
                     </div>
-                    {filterContent("Card 3 Title")}
+                    <div className="line-clamp-2 leading-6">{filterContent("Card 3 Title")}</div>
                   </span>
                 </h5>
-                <span className="text-[#6c757d] text-sm font-normal leading-6 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Card 3 Content")}
                   >
                     <Pen className="size-4" />
                   </div>
-                  {filterContent("Card 3 Content")}
+                  <div className="line-clamp-2">{filterContent("Card 3 Content")}</div>
                 </span>
               </div>
             </div>
