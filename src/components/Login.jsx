@@ -226,7 +226,13 @@ function Login() {
       localStorage.setItem("accessToken", data.accessToken);
       console.log("Redirecting to dashboard");
       toast.success("Redirecting to dashboard");
-      if (userData?.isTNCAccepted) {
+      if (page && userData?.isTNCAccepted) {
+        if (userData.isOnboardingRequired) {
+          router.push(`onboarding`);
+        } else {
+          router.push(`dashboard`);
+        }
+      } else{
         if (userData.isOnboardingRequired) {
           router.push(`onboarding`);
         } else {
