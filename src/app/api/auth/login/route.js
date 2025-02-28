@@ -239,17 +239,18 @@ export async function POST(request) {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
+      role: userRole,
       company: user.company,
       isOnboardingRequired: user.isOnboardingRequired,
       boxUserId: user.boxUserId,
       boxFolderId: user.folderId,
       collaborationIds: user.collaborationIds,
       signRequestsIds: user.signRequestsId,
-      permissions : user.permissions
+      permissions : user.permissions,
+      isTNCAccepted : user.isTNCAccepted,
     };
 
-    if (user.role != UserRole.SUPER_ADMIN) {
+    if (userRole != UserRole.SUPER_ADMIN) {
       userData.boxUserId = user.boxUserId;
       userData.boxFolderId = user.folderId;
       userData.boxFiles = boxData?.files || [];

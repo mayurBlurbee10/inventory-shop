@@ -1,5 +1,6 @@
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import { generateToken } from "@/app/lib/jwt";
+import { UserRole } from "@/config/constants";
 import userService from "@/services/userService";
 import { NextResponse } from "next/server";
 
@@ -7,7 +8,7 @@ export async function POST(request) {
   try {
     await logApiCall(request);
     const data = await request.json();
-    const user = await userService.getUserByEmail(data.email, data.portalid);
+    const user = await userService.getUserByEmail(data.email);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials!! user not found with this email" },
@@ -26,7 +27,19 @@ export async function POST(request) {
         { status: 403 }
       );
     }
-    const userRole = userPermission?.role;
+    let userRole;
+    if (!userPermission) {
+      const userIsSuperAdminPermission =
+        Array.isArray(user.permissions) &&
+        user.permissions.find(
+          (permission) => permission.role === UserRole.SUPER_ADMIN
+        );
+      if (userIsSuperAdminPermission) {
+        userRole = userIsSuperAdminPermission.role;
+      } else {
+        userRole = userPermission?.role;
+      }
+    }
     const userData = {
       id: user.id,
       email: user.email,

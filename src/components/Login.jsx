@@ -161,16 +161,7 @@ function Login() {
     setIsLoadingLogin(true);
     setError("");
     try {
-      const userData = await fetchUser();
-      if (userData) {
-        if (page && !userData.isTNCAccepted) {
-          setIsTNCOpen(true);
-        } else {
-          handleLogin(e);
-        }
-      } else {
-        setIsLoadingLogin(false);
-      }
+        handleLogin(e);
     } catch (error) {
       console.error("Error handling TNC check:", error);
     }
@@ -225,6 +216,9 @@ function Login() {
 
       // Store user data using auth utility
       const userData = data.user;
+      if (userData && page && !userData?.isTNCAccepted) {
+        setIsTNCOpen(true);
+      }
       console.log("Storing user data:", userData);
       // setUserData(userData);
       dispatch(setCurrentUser(userData))
@@ -232,10 +226,12 @@ function Login() {
       localStorage.setItem("accessToken", data.accessToken);
       console.log("Redirecting to dashboard");
       toast.success("Redirecting to dashboard");
-      if (userData.isOnboardingRequired) {
-        router.push(`onboarding`);
-      } else {
-        router.push(`dashboard`);
+      if (userData?.isTNCAccepted) {
+        if (userData.isOnboardingRequired) {
+          router.push(`onboarding`);
+        } else {
+          router.push(`dashboard`);
+        }
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -309,11 +305,11 @@ function Login() {
       }
     };
     fetchSession().then(() => {
-      const userData = getUserData();
-      if (!userData) {
-        router.push("login");
-        return;
-      }
+      // const userData = getUserData();
+      // if (!userData) {
+      //   router.push("login");
+      //   return;
+      // }
 
       // setUser(userData);
     });

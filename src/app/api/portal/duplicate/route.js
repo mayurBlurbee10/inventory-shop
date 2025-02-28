@@ -35,10 +35,10 @@ export async function POST(req) {
   const data = await req.json();
   console.log("data: ", data);
 
-  let { legalName, domain } = data;
+  let { legalName, domain, createdBy } = data;
   console.log("legalName: ", legalName);
 
-  if (!legalName || !data.id || !domain) {
+  if (!legalName || !data.id || !domain || !createdBy) {
     return NextResponse.json({ error: "Company Name and Domain Setup fields required" }, { status: 400 });
   }
 
@@ -56,6 +56,7 @@ export async function POST(req) {
       ...rest,
       legalName: legalName,
       domain: domain,
+      createdBy: createdBy,
       status: "setup",
     };
     const portal = await portalService.createPortal(portalData);

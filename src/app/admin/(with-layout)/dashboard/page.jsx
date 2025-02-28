@@ -69,6 +69,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
     try {
       if (!subsidiary) return;
       setIsLoading(true);
+      const user = getUserData();
       const response = await fetchWrapper(
         `/api/portal/duplicate`,
         {
@@ -76,7 +77,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id: subsidiary?.id, ...duplicatePortalData }),
+          body: JSON.stringify({ id: subsidiary?.id, ...duplicatePortalData, createdBy: user?.id}),
         },
         "create-portal"
       );

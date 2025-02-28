@@ -27,8 +27,9 @@ import { setFileList } from "@/store/actions/fileAction";
 import { setLoans } from "@/store/services/loanService";
 import { setPortal } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
+import { UserRole } from "@/config/constants";
 
-function Navbar({ content, config, user, filterValue }) {
+function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
@@ -48,6 +49,7 @@ function Navbar({ content, config, user, filterValue }) {
   const [logo, setLogo] = useState(null);
 
   const { data: loanData } = useSelector((state) => state.loans);
+  const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -196,9 +198,7 @@ function Navbar({ content, config, user, filterValue }) {
   // }, [router]);
 
   useEffect(() => {
-    // fetchConfig();
-    // fetchContent();
-    setUserIsAdmin(isAdmin());
+    setUserIsAdmin(user?.role !== UserRole.USER);
   }, []);
 
   return (

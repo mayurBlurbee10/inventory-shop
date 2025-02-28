@@ -40,38 +40,39 @@ function TNCModal({ onClose, user, email, password, page }) {
       }
       const updatedData = await response.json();
       console.log("Update updatedData", updatedData);
-      const loginResponse = await fetchWrapper(
-        "/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            portalid: params.portalid,
-          }),
-        },
-        "default-login"
-      );
+      // const loginResponse = await fetchWrapper(
+      //   "/api/auth/login",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       email,
+      //       password,
+      //       portalid: params.portalid,
+      //     }),
+      //   },
+      //   "default-login"
+      // );
 
-      if (!loginResponse.ok) {
-        const data = await loginResponse.json();
-        throw new Error(data.error || "Login failed");
-      }
+      // if (!loginResponse.ok) {
+      //   const data = await loginResponse.json();
+      //   throw new Error(data.error || "Login failed");
+      // }
 
-      const data = await loginResponse.json();
-      // Store user data using auth utility
-      const userData = data.user;
-      // setUserData(userData);
-      dispatch(setCurrentUser(userData))
-      // localStorage.setItem("portal", params.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
+      // const data = await loginResponse.json();
+      // // Store user data using auth utility
+      // const userData = data.user;
+      // // setUserData(userData);
+      // dispatch(setCurrentUser(userData))
+      // // localStorage.setItem("portal", params.portalid);
+      // localStorage.setItem("accessToken", data.accessToken);
 
-      console.log("Redirecting to home");
+      // console.log("Redirecting to home");
+
       toast.success("Redirecting to home");
-      if (userData.isOnboardingRequired) {
+      if (user.isOnboardingRequired) {
         router.push(`onboarding`);
       } else {
         router.push(`dashboard`);
