@@ -197,6 +197,8 @@ const MyPageContent = () => {
 
   const renderPagesList = (pagesList) => {
     return pagesList?.map((page, index) => (
+      <React.Fragment key={page?.id}>
+        {((!page?.isCustomPage && page?.visibility?.length > 0 ) || page?.isCustomPage) && (
       <div
         className={`py-2 text-base flex gap-2 w-full shadow-md p-4 rounded-lg ${
           page?.isCustomPage ? "justify-between items-center" : "flex-col"
@@ -289,6 +291,8 @@ const MyPageContent = () => {
             ))}
         </div>
       </div>
+      )}
+      </React.Fragment>
     ));
   };
 

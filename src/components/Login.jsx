@@ -575,7 +575,8 @@ function Login() {
                   <button
                     type="button"
                     className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1 disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={login}
+                    onClick={() => {}}
+                    // onClick={login}
                     disabled={isLoadingLogin || isLoadingOkta}
                   // style={{ backgroundColor: config?.secondaryColor }}
                   >
