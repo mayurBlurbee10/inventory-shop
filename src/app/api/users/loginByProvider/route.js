@@ -21,12 +21,6 @@ export async function POST(request) {
         (permission) => permission.portalId === data.portalid
       );
 
-    if (!userPermission) {
-      return NextResponse.json(
-        { error: "This user does not have access to this portal" },
-        { status: 403 }
-      );
-    }
     let userRole;
     if (!userPermission) {
       const userIsSuperAdminPermission =
@@ -37,8 +31,13 @@ export async function POST(request) {
       if (userIsSuperAdminPermission) {
         userRole = userIsSuperAdminPermission.role;
       } else {
-        userRole = userPermission?.role;
+        return NextResponse.json(
+          { error: "This user does not have access to this portal" },
+          { status: 403 }
+        );
       }
+    }else {
+      userRole = userPermission?.role;
     }
     const userData = {
       id: user.id,

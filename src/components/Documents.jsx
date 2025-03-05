@@ -932,13 +932,7 @@ function Documents({
       setSession(sessionData);
       if (sessionData) {
         await getUserDetailsByEmail(sessionData.user.email);
-      } else {
-        if (!userData) {
-          router.push("login");
-          return;
-        }
-        await getUserDetailsByEmail(userData?.email);
-      }
+      } 
     };
     fetchSession().then(() => {
       const userData = getUserData();
