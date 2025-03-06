@@ -101,6 +101,21 @@ export async function POST(request) {
     // }
     const userExist = await userService.getUserByEmail(userData.email);
     const mainUser = await userService.getUserById(userData.createdBy);
+    const userPermission =
+      Array.isArray(mainUser.permissions) &&
+      mainUser.permissions.find(
+        (permission) => permission.portalId === userData?.portal
+      );
+
+    let mainUserRole = userPermission?.role;
+
+    if (!userPermission) {
+      const superUserPermission =
+        Array.isArray(mainUser.permissions) &&
+        mainUser.permissions.find((permission) => permission.portalId === null);
+
+        mainUserRole = superUserPermission?.role;
+    }
 
     if (userExist) {
       console.log("userExist", userExist);
@@ -121,7 +136,7 @@ export async function POST(request) {
         // newUser.portalId = userData.portal;
       } else if (userData.role === UserRole.SUPER_ADMIN) {
         newUser.isOnboardingRequired = userData.isOnboardingRequired;
-        if (mainUser?.role === UserRole.SUPER_ADMIN) {
+        if (mainUserRole === UserRole.SUPER_ADMIN) {
           if (!mainUser?.groupMembersIds) {
             mainUser.groupMembersIds = [];
           }
@@ -135,15 +150,17 @@ export async function POST(request) {
       const user = await userService.updateUser(userExist.id, newUser);
       if (userData.role !== UserRole.MASTER) {
         // TODO: send email as exisiting user like reset Password
+        const userPortal =
+        userData.role === UserRole.SUPER_ADMIN ? "admin" : userData.permissions.portalId;
         sendSetPasswordEmail(
           newUser.email,
           newUser.name,
           token,
-          userData.permissions.portalId,
+          userPortal,
           true
         );
       }
-      if (mainUser.role === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
+      if (mainUserRole === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
         try {
           if (!mainUser.groupMembersIds) {
             mainUser.groupMembersIds = [];
@@ -212,6 +229,7 @@ export async function POST(request) {
         logo: userData.logo,
       };
     } else if (userData.role === UserRole.SUPER_ADMIN) {
+      newUser.resetPasswordToken = token;
       newUser.isOnboardingRequired = userData.isOnboardingRequired;
       newUser.boxUserId = userData.boxUserId;
       newUser.folderId = userData.folderId;
@@ -219,7 +237,7 @@ export async function POST(request) {
         name: userData.companyName,
         logo: userData.logo,
       };
-      if (mainUser?.role === UserRole.SUPER_ADMIN) {
+      if (mainUserRole === UserRole.SUPER_ADMIN) {
         if (!mainUser?.groupMembersIds) {
           mainUser.groupMembersIds = [];
         }
@@ -236,10 +254,10 @@ export async function POST(request) {
       // because super_admin will be created from admin so it should go to admin for set password
       const userPortal =
         userData.role === UserRole.SUPER_ADMIN ? "admin" : userData.portal;
-      sendSetPasswordEmail(newUser.email, newUser.name, token, userPortal);
+        sendSetPasswordEmail(newUser.email, newUser.name, token, userPortal);
     }
 
-    if (mainUser.role === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
+    if (mainUserRole === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
       try {
         if (!mainUser.groupMembersIds) {
           mainUser.groupMembersIds = [];

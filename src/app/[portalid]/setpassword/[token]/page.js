@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
+import SetPasswordUsingToken from "@/components/SetPasswordUsingToken";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -12,6 +13,7 @@ const LoadingSpinner = () => (
 );
 
 export default function SetPassword() {
+  return <SetPasswordUsingToken />
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);

@@ -81,7 +81,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
       const userData = {
         email: formData.email,
         name: formData.name,
-        password: formData.password,
+        password: "admin123",
         companyName: formData.companyName,
         logo: logoUrl,
         role: UserRole.SUPER_ADMIN,
@@ -183,7 +183,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
               onChange={(e) => handleFormChange("email", e.target.value)}
             />
           </div>
-          <div>
+          {/* <div>
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
@@ -198,7 +198,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
               value={formData.password}
               onChange={(e) => handleFormChange("password", e.target.value)}
             />
-          </div>
+          </div> */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Company Name

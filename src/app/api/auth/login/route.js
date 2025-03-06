@@ -177,8 +177,8 @@ export async function POST(request) {
         );
       }
     }
-
-    if (data.role && data.role !== user.role) {
+    
+    if (data.role && data.role !== userRole) {
       return NextResponse.json(
         { error: "This user does not have access to this portal" },
         { status: 403 }
