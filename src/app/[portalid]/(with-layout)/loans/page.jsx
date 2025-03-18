@@ -26,7 +26,15 @@ function LoansPage() {
   const [newLoan, setNewLoan] = useState(false);
   const newLoanDropdownRef = useRef(null);
   const { data: loanData } = useSelector((state) => state.loans);
+  const {data : pages } = useSelector((state)=>state.pages);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const page = pages?.find((page) => page.title === "loans");
+    if (page && !page.isPageVisible) {
+      router.push("access-denied");
+    }
+  }, []);
 
   useEffect(() => {
     dispatch(setLoans(loanData?.length < 3 ? defaultLoanData : loanData));
@@ -48,6 +56,16 @@ function LoansPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const LoadingSpinner = () => (
+    <div className="min-h-screen flex justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
+
+  if(!loanData){
+    return <LoadingSpinner/>
+  }
 
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">

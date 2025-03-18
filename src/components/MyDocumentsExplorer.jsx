@@ -512,6 +512,31 @@ function SharedFolderExplorer({
   const { data: user } = useSelector((state) => state.user);
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
   const [editorFile, setEditorFile] = useState(null);
+  const [esignAvailable, setEsignAvailable] = useState(true)
+ 
+  const fetchPage = async () => {
+    try {
+      if (!params?.portalid) return;
+      const response = await fetchWrapper(
+        `/api/pages?portalId=${
+          params.portalid || "default"
+        }&&page=${"esignature"}`,
+        {},
+        "fetch-page"
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch page");
+      }
+
+      const pageAvailable = data?.data?.isPageVisible;
+
+      setEsignAvailable(pageAvailable);
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -861,6 +886,7 @@ function SharedFolderExplorer({
     }
     fetchUser();
     // setUser(userData);
+    fetchPage();
   }, []);
 
   // if (isLoading) {
@@ -1058,7 +1084,7 @@ function SharedFolderExplorer({
                                           <FolderInput className="h-4 w-4 text-gray-600" />{" "}
                                           Move
                                         </button>
-                                        {file.type === "file" && (
+                                        {file.type === "file" && esignAvailable && (
                                           <div className="relative group/sign text-gray-600">
                                             <button className="group/sign hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 rounded-lg">
                                               <Signature className="h-4 w-4 text-gray-600" />{" "}
@@ -1282,7 +1308,7 @@ function SharedFolderExplorer({
                                   </button>
                                 )}
                                 {listType !== "shared" &&
-                                  file.type === "file" && (
+                                  file.type === "file" && esignAvailable && (
                                     <div className="relative group/signGrid text-gray-600">
                                       <button className="group/signGrid hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 ">
                                         <Signature className="h-4 w-4 text-gray-600" />{" "}

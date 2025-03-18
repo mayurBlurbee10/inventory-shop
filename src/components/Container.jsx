@@ -15,7 +15,7 @@ import { setCurrentUser } from "@/store/services/userService";
 function Container({ children }) {
   const params = useParams();
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   // const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
 
@@ -123,7 +123,7 @@ function Container({ children }) {
         return;
       }
 
-      setUser(userData);
+      // setUser(userData);
       fetchConfig();
       fetchContent();
       // getFiles()
@@ -139,11 +139,10 @@ function Container({ children }) {
       <Navbar
         content={content}
         config={config}
-        user={user}
         filterValue={filterValue}
       />
-      {children}
-      <Footer config={config} filterValue={filterValue} user={user} />
+       {children}
+      <Footer config={config} filterValue={filterValue} />
     </div>
   );
 }

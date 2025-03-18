@@ -4,6 +4,7 @@ import { fileReducer } from "./fileReducer";
 import { portalReducer } from "./portalReducer";
 import { loanReducer } from "./loanReducer";
 import { userReducer } from "./userReducer";
+import { pageReducer } from "./pageReducer";
 
 
 export default combineReducers({
@@ -11,5 +12,6 @@ export default combineReducers({
   files : fileReducer,
   portal : portalReducer,
   loans : loanReducer,
-  user : userReducer
+  user : userReducer,
+  pages : pageReducer
 });

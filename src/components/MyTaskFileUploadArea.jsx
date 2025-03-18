@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import Button from "./Common/Elements/Button";
 
 
-export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
+export default function MyTaskFileUploadArea({ isForImport, onFileChange, from="" }) {
     const [arrayOfFiles, setArrayOfFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -192,16 +192,15 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange }) {
                                 ref={fileInputRef}
                                 onChange={handleFileSelect}
                                 style={{ display: "none" }} // Hide the file input
-                                multiple
+                                multiple={ from !== "tasks"}
                             />
-                            {/* <button className="border border-gray-600 py-1 px-2 rounded-lg hover:bg-gray-50 text-sm hover:border-gray-400 text-[#0061D5]" onClick={handleBrowse}>
-                                Add another file
-                            </button> */}
-                            <Button
-                                onClick={handleBrowse}
-                                type="Secondary"
-                                label="Add another file"
-                            />
+                            {from !== "tasks" && (
+                                <Button
+                                    onClick={handleBrowse}
+                                    type="Secondary"
+                                    label="Add another file"
+                                />
+                            )}
                         </div>
                     )
                 }

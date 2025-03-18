@@ -4,7 +4,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import CreationWizard from "@/components/CreationWizard";
 import PortalCreatedPopup from "@/components/PortalCreatedPopup";
 import PortalDuplicateModal from "@/components/Settings/PortalDuplicateModal";
-import { UserRole } from "@/config/constants";
+import { PluginType, UserRole } from "@/config/constants";
 import { setPortals } from "@/store/actions/portalAction";
 import { setActiveUsers } from "@/store/services/portalService";
 import {
@@ -32,6 +32,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
     domain: "",
   });
   
+  const { data : user } = useSelector((state)=> state.user)
 
   // const fetchUsers = async () => {
   //   try {
@@ -77,7 +78,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ id: subsidiary?.id, ...duplicatePortalData, createdBy: user?.id}),
+          body: JSON.stringify({ id: subsidiary?.id, ...duplicatePortalData, createdBy: user?.id, existingPortal : subsidiary?.legalName}),
         },
         "create-portal"
       );
@@ -308,6 +309,51 @@ const AdminDashboardPage = () => {
       : sanitizeName;
   };
 
+  const fetchExistingPages = async (legalName) => {
+    try {
+      const pluginPayload = {
+        type: PluginType.PAGES,
+        portalId: sanitizeName(legalName) || "default",
+        createdBy: user?.id,
+      };
+      const pluginResponse = await fetchWrapper(
+        "/api/plugins",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(pluginPayload),
+        },
+        "save-plugin"
+      );
+
+      if (!pluginResponse.ok) {
+        return;
+      }
+
+      const savedPluginData = await pluginResponse.json();
+
+      const response = await fetchWrapper(
+        "/api/pages/bulk",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            portalId: sanitizeName(legalName),
+            pluginId: savedPluginData?.data?.id,
+          }),
+        },
+        "fetch-page"
+      );
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+
   const handleCreateSubsidiary = async (formData) => {
     setIsLoading(true);
     try {
@@ -440,6 +486,7 @@ const AdminDashboardPage = () => {
       //   setSubsidiaries((prev) => [...prev, subsidiary.data]);
       dispatch(setPortals([...subsidiaries, subsidiary.data]));
       getPortal();
+      await fetchExistingPages(formData.legalName);
       // toast.success(subsidiary.message || "Portal created successfully");
       setNewPortalName(subsidiary.data.legalName);
       setNewPortalId(sanitizeName(subsidiary.data.legalName));

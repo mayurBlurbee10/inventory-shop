@@ -21,4 +21,7 @@ class Pages extends BaseTable {
   
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   visibility;
+
+  @Column({ type: "bit", nullable: false, default: 1 })
+  isPageVisible;
 }

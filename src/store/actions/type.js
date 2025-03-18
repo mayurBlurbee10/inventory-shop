@@ -14,5 +14,7 @@ export const SET_SUPER_USERS = "SET_SUPER_USERS";
 
 export const SET_CURRENT_USER = "SET_CURRENT_USER";
 
+export const SET_PAGES = "SET_PAGES";
+
 export const SET_LOANS = "SET_LOANS";
 export const SET_NEW_LOAN = "SET_NEW_LOAN";

@@ -28,6 +28,7 @@ import { setLoans } from "@/store/services/loanService";
 import { setPortal } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
 import { UserRole } from "@/config/constants";
+import { setPages as setReduxPages } from "@/store/services/pageService";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -47,9 +48,11 @@ function Navbar({ content, config, filterValue }) {
   // const isAdvisorViewOpen = pathname.includes("advisor");
   const dropdownRef = useRef(null);
   const [logo, setLogo] = useState(null);
+  const [pages, setPages] = useState([]);
 
   const { data: loanData } = useSelector((state) => state.loans);
   const { data: user } = useSelector((state) => state.user);
+  const { data: pageData } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -95,6 +98,7 @@ function Navbar({ content, config, filterValue }) {
     dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
     dispatch(setPortal(null));
     dispatch(setCurrentUser(null));
+    dispatch(setReduxPages(null));
   }
   const handleLogout = async () => {
     clearUserData();
@@ -104,98 +108,41 @@ function Navbar({ content, config, filterValue }) {
     document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     window.location.href = params.portalid ? `/${params.portalid}/login` : "/login";
   };
-  //   const fetchConfig = async () => {
-  //     try {
-  //       if (!params?.portalid) return;
-  //       const response = await fetchWrapper(
-  //         `/api/portal?portalid=${params.portalid || "default"}`,
-  //         {},
-  //         "portal-login"
-  //       );
-  //       const data = await response.json();
-  //       if (!data.data && response.status === 404) {
-  //         router.push(`/${params.portalid}/not-found`);
-  //         return;
-  //       }
-  //       if (!response.ok) {
-  //         throw new Error("Failed to fetch users");
-  //       }
 
-  //       setConfig(data.data);
-  //     } catch (error) {
-  //       console.log("error: ", error);
-  //     }
-  //   };
+  useEffect(() => {
+    const filterPages =
+      pageData?.filter((item) => item.isCustomPage === false) || [];
 
-  //   const fetchContent = async () => {
-  //     const response = await fetchWrapper(
-  //       `/api/contentManagement?portalId=${params.portalid}`,
-  //       { method: "GET" },
-  //       "fetchContentManagement"
-  //     );
-  //     const data = await response.json();
-  //     if (!response.ok) {
-  //       throw new Error(data.error || "Failed to fetch Content Management");
-  //     }
-  //     setContent(data);
-  //   };
+    setPages(filterPages);
+  }, [pageData]);
 
-  // const filterValue = (title) => {
-  //   if (!content) return null;
-  //   console.log("content:", content);
+   const fetchPages = async () => {
+     try {
+      const encodedPage = encodeURIComponent('pages');
+      const response = await fetchWrapper(
+        `/api/plugins?portalId=${params?.portalid}&type=${encodedPage}`,
+        {},
+        "fetch-page"
+      );
+       if (!response.ok) {
+         throw new Error("Failed to fetch plugins");
+       }
+       const data = await response.json();
 
-  //   const contentItem = content.portalContent.find(
-  //     (item) => item.title === title
-  //   );
-  //   const value = contentItem ? contentItem.value : null;
+       const filterPages =
+       Array.isArray(data?.data) && data.data.length > 0
+         ? data.data[0]?.pages?.filter((item) => item.isCustomPage === false) || []
+         : [];
+       setPages(filterPages);
+     } catch (error) {
+       console.error("Error fetching plugins:", error);
+     }
+   };
 
-  //   if (!value) {
-  //     const defaultItem = content.defaultContent.find(
-  //       (item) => item.title === title
-  //     );
-  //     return defaultItem ? defaultItem.value : null;
-  //   }
-  //   return value;
-  // };
-
-  // const getUserDetailsByEmail = async (email) => {
-  //   try {
-  //     let url = `/api/users/loginByProvider`;
-  //     const body = {
-  //       method: "POST",
-  //       body: JSON.stringify({ email, portalid: params.portalid }),
-  //     };
-  //     const response = await fetchWrapper(url, body, "fetchUserByEmail");
-  //     if (!response.ok) throw new Error("Failed to get user from email");
-  //     const data = await response.json();
-  //     const userData = data.user;
-  //     setUserData(userData);
-  //     localStorage.setItem("portal", params.portalid);
-  //     localStorage.setItem("accessToken", data.accessToken);
-  //   } catch (error) {
-  //     console.error("Failed to get user from email:", error);
-  //     router.push("login");
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   const fetchSession = async () => {
-  //     const sessionData = await getSession();
-  //     setSession(sessionData);
-  //     if (sessionData) {
-  //       await getUserDetailsByEmail(sessionData.user.email);
-  //     }
-  //   };
-  //   fetchSession().then(() => {
-  //     const userData = getUserData();
-  //     if (!userData) {
-  //       router.push("login");
-  //       return;
-  //     }
-
-  //     setUser(userData);
-  //   });
-  // }, [router]);
+  const filterPageVisibility = (pageTitle) => {
+    const page = pages?.length && pages?.find((page) => page.title === pageTitle);
+    return page ?  page.isPageVisible : true
+  }
 
   useEffect(() => {
     setUserIsAdmin(user?.role !== UserRole.USER);
@@ -258,14 +205,16 @@ function Navbar({ content, config, filterValue }) {
               </>
             ) : (
               <>
-                <NavBarItem
-                  title="Dashboard"
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/dashboard`
-                      : `/dashboard`
-                  }
-                />
+                {filterPageVisibility("dashboard") && (
+                   <NavBarItem
+                     title="Dashboard"
+                     href={
+                       params.portalid
+                         ? `/${params.portalid}/dashboard`
+                         : `/dashboard`
+                     }
+                   />
+                 )}
                 {/* <NavBarItem
                   title="My Documents"
                   href={
@@ -273,28 +222,34 @@ function Navbar({ content, config, filterValue }) {
                   }
                 /> */}
 
-                <NavBarItem
-                  title="Shared Documents"
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/shared-docs`
-                      : "/shared-docs"
-                  }
-                />
-                <NavBarItem
-                  title="eSignature"
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/esignature`
-                      : "/esignature"
-                  }
-                />
-                <NavBarItem
-                  title="Loans"
-                  href={
-                    params.portalid ? `/${params.portalid}/loans` : "/loans"
-                  }
-                />
+                  {filterPageVisibility("shared-docs") && (
+                   <NavBarItem
+                     title="Shared Documents"
+                     href={
+                       params.portalid
+                         ? `/${params.portalid}/shared-docs`
+                         : "/shared-docs"
+                     }
+                   />
+                 )}
+                 {filterPageVisibility("esignature") && (
+                   <NavBarItem
+                     title="eSignature"
+                     href={
+                       params.portalid
+                         ? `/${params.portalid}/esignature`
+                         : "/esignature"
+                     }
+                   />
+                 )}
+                 {filterPageVisibility("loans") && (
+                   <NavBarItem
+                     title="Loans"
+                     href={
+                       params.portalid ? `/${params.portalid}/loans` : "/loans"
+                     }
+                   />
+                 )}
                 {/* {userIsAdmin && (
                   <NavBarItem
                     title="Settings"
@@ -484,14 +439,16 @@ function Navbar({ content, config, filterValue }) {
                   </>
                 ) : (
                   <>
-                    <NavBarItem
-                      title="Dashboard"
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/dashboard`
-                          : `/dashboard`
-                      }
-                    />
+                    {filterPageVisibility("dashboard") && (
+                       <NavBarItem
+                         title="Dashboard"
+                         href={
+                           params.portalid
+                             ? `/${params.portalid}/dashboard`
+                             : `/dashboard`
+                         }
+                       />
+                     )}
                     {/* <NavBarItem
                       title="My Documents"
                       href={
@@ -500,28 +457,36 @@ function Navbar({ content, config, filterValue }) {
                           : "/my-docs"
                       }
                     /> */}
-                    <NavBarItem
-                      title="Shared Documents"
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/shared-docs`
-                          : "/shared-docs"
-                      }
-                    />
-                    <NavBarItem
-                      title="eSignature"
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/esignature`
-                          : "/esignature"
-                      }
-                    />
-                    <NavBarItem
-                      title="Loans"
-                      href={
-                        params.portalid ? `/${params.portalid}/loans` : "/loans"
-                      }
-                    />
+                    {filterPageVisibility("shared-docs") && (
+                       <NavBarItem
+                         title="Shared Documents"
+                         href={
+                           params.portalid
+                             ? `/${params.portalid}/shared-docs`
+                             : "/shared-docs"
+                         }
+                       />
+                     )}
+                     {filterPageVisibility("esignature") && (
+                       <NavBarItem
+                         title="eSignature"
+                         href={
+                           params.portalid
+                             ? `/${params.portalid}/esignature`
+                             : "/esignature"
+                         }
+                       />
+                     )}
+                     {filterPageVisibility("loans") && (
+                       <NavBarItem
+                         title="Loans"
+                         href={
+                           params.portalid
+                             ? `/${params.portalid}/loans`
+                             : "/loans"
+                         }
+                       />
+                     )}
                   </>
                 )}
                 <div className="flex items-center space-x-2 cursor-pointer">

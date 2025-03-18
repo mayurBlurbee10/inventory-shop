@@ -11,11 +11,12 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession, signIn } from "next-auth/react";
 import { getUserData } from "@/lib/auth";
 import TNCModal from "./TNCModal";
-import { UserRole } from "@/config/constants";
+import { PluginType, UserRole } from "@/config/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
+import { setPages } from "@/store/services/pageService";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500 ">
@@ -43,7 +44,7 @@ function Login() {
   const [session, setSession] = useState(null);
   // const [user, setUser] = useState(null);
   const [isTNCOpen, setIsTNCOpen] = useState(false);
-  const [page, setPage] = useState(null);
+  const [tncPage, setTncPage] = useState(null);
 
   const { data: config } = useSelector((state) => state.portal);
   const { data: user } = useSelector((state) => state.user);
@@ -59,17 +60,17 @@ function Login() {
         "fetch-page"
       );
       if (!response.ok) {
-        throw new Error("Failed to fetch page");
+        return;
       }
       const data = await response.json();
       if (!data || (data && data?.length === 0)) {
-        setPage(null);
+        setTncPage(null);
         return;
       }
       if (data?.data.length > 0 && data?.data[0].pages.length > 0) {
-        setPage(data?.data[0].pages[0]);
+        setTncPage(data?.data[0].pages[0]);
       } else {
-        setPage(null);
+        setTncPage(null);
       }
     } catch (error) {
       console.error("Error fetching plugins:", error);
@@ -77,8 +78,6 @@ function Login() {
       setIsLoading(false);
     }
   };
-
-  console.log("Page", page)
 
   const validateUserAccess = async (user, config, portalId) => {
     if (!user) {
@@ -216,7 +215,7 @@ function Login() {
 
       // Store user data using auth utility
       const userData = data.user;
-      if (userData && page && !userData?.isTNCAccepted) {
+      if (userData && tncPage && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
       }
       console.log("Storing user data:", userData);
@@ -225,14 +224,14 @@ function Login() {
       // localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
 
-      if (page && userData?.isTNCAccepted) {
+      if (tncPage && userData?.isTNCAccepted) {
         if (userData.isOnboardingRequired) {
           router.push(`onboarding`);
         } else {
           router.push(`dashboard`);
           toast.success("Redirecting to dashboard");
         }
-      } else if (!page) {
+      } else if (!tncPage) {
         if (userData.isOnboardingRequired) {
           router.push(`onboarding`);
         } else {
@@ -270,7 +269,7 @@ function Login() {
     try {
       setIsLoadingOkta(true);
       const userData = await fetchUser();
-      if (userData && page && !userData?.isTNCAccepted) {
+      if (userData && tncPage && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
         return;
       }
@@ -689,7 +688,7 @@ function Login() {
           user={user}
           email={email}
           password={password}
-          page={page}
+          page={tncPage}
         />
       )}
     </div>

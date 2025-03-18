@@ -185,7 +185,7 @@ export default function AdvisorView() {
                         {/* Hello, David West! Today is Wednesday, January 15th. */}
                         {`Hello, Jhon! Today is ${dayAndDate.day}, ${dayAndDate.month
                             } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
-                            }${dayAndDate.date === 3 ? "rd" : "th"}`}
+                            }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
                     </h2>
                 </div>
             </div>

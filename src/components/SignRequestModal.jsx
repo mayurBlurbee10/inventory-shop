@@ -1,4 +1,5 @@
 "use client";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -8,8 +9,46 @@ export default function SignRequestModal({
   onClose,
   signUrl,
   redirect_url = "",
+  signRequest=null,
+  setSignRequest=()=>{}
 }) {
   const router = useRouter();
+
+  const fetchSignRequest = async () => {
+    try {
+      const response = await fetchWrapper(
+        `/api/box/e-sign?id=${signRequest?.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        },
+        "get-esign-request"
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to get e-sign request");
+      }
+      setSignRequest(data?.data)
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
+
+  const handleClose = async () => {
+    try {
+      if(signRequest){
+        await fetchSignRequest();
+        onClose();
+      }
+      onClose();
+    } catch (error) {
+      console.log(error.message)
+    }
+  };
+
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -25,7 +64,7 @@ export default function SignRequestModal({
                   router.push(redirect_url);
                   onClose()
                 }
-                onClose();
+                handleClose();
               }}
               className="p-1 hover:bg-gray-100 rounded-full text-black"
             >

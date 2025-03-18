@@ -10,3 +10,13 @@ export const PluginType = {
   PAGES: "pages",
   TNC: "t&c",
 };
+
+export const TaskType = {
+  SIGN: "sign",
+  UPLOAD: "upload",
+};
+
+export const TaskStatus = {
+  PENDING: "pending",
+  COMPLETED: "completed",
+};

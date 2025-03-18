@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 const Footer = ({
   config,
   filterValue,
-  user,
   from,
   handleModalOpenForEdit,
 }) => {

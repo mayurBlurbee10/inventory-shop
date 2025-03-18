@@ -59,6 +59,8 @@ export async function GET(request) {
   const email = searchParams.get("email");
   const role = searchParams.get("role");
   const userId = searchParams.get("userId");
+  const boxUserId = searchParams.get("boxUserId");
+
   let users = {};
   if (portalid) {
     users = await userService.getUsersByPortal(portalid);
@@ -66,6 +68,8 @@ export async function GET(request) {
     users = await userService.getUserByEmail(email);
   } else if (role) {
     users = await userService.getUserByRole(role, userId);
+  } else if(boxUserId){
+    users = await userService.getUserByBoxUserId(boxUserId)
   } else {
     users = await userService.getUsers();
   }

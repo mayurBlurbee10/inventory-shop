@@ -33,7 +33,16 @@ function ESignature() {
 
   const { data: config } = useSelector((state) => state.portal);
   const { data: user } = useSelector((state) => state.user);
-  const dispatch = useDispatch()
+  const {data : pages } = useSelector((state)=>state.pages);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const page = pages?.find((page) => page.title === "esignature");
+    if (page && !page.isPageVisible) {
+      router.push("access-denied");
+    }
+  }, []);
+
   const handlePreview = (fileId) => {
     setPreviewFileId(fileId);
     setIsPreviewModalOpen(true);
@@ -104,6 +113,12 @@ function ESignature() {
   //   }
   // }, [isSignModalOpen]);
 
+  const LoadingSpinner = () => (
+    <div className="min-h-screen flex justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
+
   useEffect(() => {
     const userData = getUserData();
     // setUser(userData);
@@ -112,6 +127,10 @@ function ESignature() {
       fetchSignRequests(userData);
     }
   }, [router]);
+
+  if(isLoading){
+    return <LoadingSpinner/>
+  }
 
   return (
     <div className="bg-white rounded-lg flex relative w-full max-w-[1140px] mx-auto">

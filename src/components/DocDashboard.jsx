@@ -53,10 +53,20 @@ export default function DocDashboard() {
     date: "",
     month: "",
   });
-  const {data : user } = useSelector((state)=>state.user);
-  const dispatch = useDispatch();
   const [page, setPage] = useState(null);
   const [isPageLoading, setIsPageLoading] = useState(false)
+  
+  const {data : user } = useSelector((state)=>state.user);
+  const {data : pages } = useSelector((state)=>state.pages);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const page = pages?.find((page) => page.title === "dashboard");
+    if (page && !page.isPageVisible) {
+      router.push("access-denied");
+    }
+  }, []);
 
   const NavBarItem = ({ title, href }) => {
     if (!href) {
@@ -225,6 +235,11 @@ export default function DocDashboard() {
     const section = page.find((item) => item.label === label);
     return section?.visible ?? false; 
   };
+
+  const filterLinksVisibility = (title) => {
+    const page = pages?.find((page) => page.title === title);
+    return page ? page.isPageVisible : true;
+  };
   
   useEffect(() => {
     const date = new Date();
@@ -281,7 +296,7 @@ export default function DocDashboard() {
                 dayAndDate.month
               } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${
                 dayAndDate.date === 2 ? "nd" : ""
-              }${dayAndDate.date === 3 ? "rd" : "th"}`}
+              }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
             </h2>
           </div>
         )}
@@ -457,26 +472,42 @@ export default function DocDashboard() {
                   </p>
                 </div>
               </Link> */}
-              <Link href="shared-docs">
-                <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                  <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                    Shared Documents
-                  </h3>
-                  <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                    Securely share content with your advisor
-                  </p>
-                </div>
-              </Link>
-              <Link href="loans">
-                <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                  <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                    Loans Origination
-                  </h3>
-                  <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                    Apply and submit documents for a loan
-                  </p>
-                </div>
-              </Link>
+              {filterLinksVisibility("shared-docs") && (
+                 <Link href="shared-docs">
+                   <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
+                     <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
+                       Shared Documents
+                     </h3>
+                     <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
+                       Securely share content with your advisor
+                     </p>
+                   </div>
+                 </Link>
+               )}
+               {filterLinksVisibility("loans") && (
+                 <Link href="loans">
+                   <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
+                     <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
+                       Loans Origination
+                     </h3>
+                     <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
+                       Apply and submit documents for a loan
+                     </p>
+                   </div>
+                 </Link>
+               )}
+               {filterLinksVisibility("esignature") && (
+                 <Link href="esignature">
+                   <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
+                     <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
+                       E-signature
+                     </h3>
+                     <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
+                       Digitally sign and manage agreements.
+                     </p>
+                   </div>
+                 </Link>
+               )}
             </div>
           )}
         </div>

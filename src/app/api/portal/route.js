@@ -93,7 +93,6 @@ export async function GET(req) {
     const portalId = searchParams.get("portalid");
     const userId = searchParams.get("userId");
     const id = searchParams.get("id");
-    console.log("portalId get: ", portalId);
 
     if (!!portalId) {
       const portalLegalName = reverseSanitizeName(portalId);
@@ -138,7 +137,6 @@ export async function GET(req) {
       });
     } else {
       const portals = await portalService.getPortals();
-      console.log("else portals: ", JSON.stringify(portals));
       return NextResponse.json({
         message: `portals retrieved successfully.`,
         data: portals,

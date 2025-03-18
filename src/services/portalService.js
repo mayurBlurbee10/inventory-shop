@@ -56,8 +56,6 @@ const getPortalsByUser = async (user) => {
       },
     });
 
-    console.log("Portals", portals)
-
     const allUsers = new Set();
 
     const portalWithUserCounts = await Promise.all(

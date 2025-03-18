@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -33,10 +33,15 @@ import Documents from "@/components/Documents";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
+import Tasks from "@/components/Common/Tasks";
 
+const LoadingSpinner = () => (
+  <div className="min-h-[60vh] flex justify-center items-center py-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+);
 
-
-export default function AdvisorView() {
+export default function AdvisorViewSharedDocsPage() {
     const [user, setUser] = useState(null);
     const [filesList, setFilesList] = useState(null);
     const [filteredFilesList, setFilteredFilesList] = useState(filesList);
@@ -66,8 +71,11 @@ export default function AdvisorView() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [duplicateFiles, setDuplicateFiles] = useState([]);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [activeTab, setActiveTab] = useState('documents');
 
     const { data: config } = useSelector((state) => state.portal);
+    const searchParams = useSearchParams();
+    const boxUserId = searchParams.get("userId");
     const dispatch = useDispatch()
 
     const router = useRouter();
@@ -78,6 +86,44 @@ export default function AdvisorView() {
         month: "",
     });
 
+    
+    const tabs = [
+        { id: 'documents', label: 'Documents'},
+        { id: 'tasks', label: 'Tasks'}
+    ];
+
+    const getActiveContent = () => {
+      switch (activeTab) {
+        case "documents":
+          return (
+            <Documents fileType={"advisor"} clientFolderId={user?.folderId} />
+          );
+        case "tasks":
+          return <Tasks user={user} />;
+        default:
+          return null;
+      }
+    };
+
+    const fetchUserByBoxUserId = async () => {
+        try {
+          setIsLoading(true)
+          const url =`/api/users?boxUserId=${boxUserId}`
+          const response = await fetchWrapper(url, {}, "fetchUser");
+          if (!response.ok) throw new Error("Something went wrong!!");
+          const data = await response.json();
+          console.log("User:", data);
+          setUser(data);
+        } catch (error) {
+          console.error("Download error:", error);
+        }finally {
+          setIsLoading(false)
+        }
+      };
+  
+    useEffect(()=>{
+        fetchUserByBoxUserId()
+    }, [boxUserId])
 
     useEffect(() => {
         const date = new Date();
@@ -109,47 +155,6 @@ export default function AdvisorView() {
         setDayAndDate((prev) => ({ ...prev, month: months[monthIndex] }));
         setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
     }, []);
-    const fetchConfig = async () => {
-        try {
-            if(!params.portalid) return;
-            // const response = await fetchWrapper(
-            //     `/api/portal?portalid=${params.portalid || "default"}`,
-            //     {},
-            //     "portal-login"
-            // );
-            // const data = await response.json();
-            // if (!data.data && response.status === 404) {
-            //     router.push(`/${params.portalid}/not-found`);
-            //     return;
-            // }
-            // if (!response.ok) {
-            //     throw new Error(data.error || "Failed to fetch portal config");
-            // }
-            // setConfig(data.data);
-        } catch (error) {
-            console.log("error: ", error);
-        } finally {
-            // setFooterLoading(false);
-        }
-    };
-    useEffect(() => {
-        // fetchConfig();
-        // fetchContent();
-        // refreshFiles();
-    }, []);
-
-    const fetchContent = async () => {
-        const response = await fetchWrapper(
-            `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
-            { method: "GET" },
-            "fetchContentManagement"
-        );
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || "Failed to fetch Content Management");
-        }
-        setContent(data);
-    };
 
     const handleBrowse = (event) => {
         if (event.type === "click") {
@@ -158,8 +163,6 @@ export default function AdvisorView() {
             handleFileSelect(event);
         }
     };
-
-
 
     const refreshFiles = async () => {
         try {
@@ -600,7 +603,6 @@ export default function AdvisorView() {
     };
 
     return (
-        // <Container>
         <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
             <div className="grid grid-cols-1 lg:grid-cols-4 pt-8 gap-7">
 
@@ -615,8 +617,18 @@ export default function AdvisorView() {
                                 className="w-full h-[100px] sm:h-[150px] object-cover border"
                             />
                             <div className="text-center p-2">
-                                <h3 className="text-sm sm:text-md text-blue-600 font-medium">David West</h3>
-                                <p className="text-gray-600 text-xs sm:text-sm">Account ID: 821900</p>
+                            {isLoading ? (
+                                <div className="p-2 py-4 mr-2 bg-gray-300 animate-pulse rounded" />
+                            ) : (
+                                <>
+                                <h3 className="text-sm sm:text-md text-blue-600 font-medium">
+                                    {user?.name}
+                                </h3>
+                                <p className="text-gray-600 text-xs sm:text-sm truncate w-full">
+                                    {user?.email}
+                                </p>
+                                </>
+                            )}
                             </div>
                         </div>
                     </div>
@@ -624,11 +636,30 @@ export default function AdvisorView() {
 
 
                 <div className="col-span-3">
-                    <Documents fileType={'advisor'}/>
+                    <div className="flex gap-3 border-b">
+                    {tabs.map(({ id, label }) => (
+                        <button
+                        key={id}
+                        className={`px-4 py-2 text-md sm:text-lg font-lato ${
+                            activeTab === id
+                            ? "border-b-2 border-blue-500 text-blue-600"
+                            : "text-gray-600"
+                        }`}
+                        onClick={() => setActiveTab(id)}
+                        >
+                        <div className="flex items-center space-x-3">
+                            <span className="text-left">{label}</span>
+                        </div>
+                        </button>
+                    ))}
+                    </div>
+                    {isLoading ? (
+                        <LoadingSpinner />
+                    ) : (
+                    <div className="mt-3">{getActiveContent()}</div>
+                    )}
                 </div>
             </div>
-
         </div>
-        // </Container>
     );
 }

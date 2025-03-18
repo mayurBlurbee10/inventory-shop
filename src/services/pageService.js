@@ -30,8 +30,7 @@ const updatePage = async (pageId, updatedData) => {
       throw new Error("page not exist");
     }
 
-    page.title = updatedData.title;
-    page.description = updatedData.description;
+    Object.assign(page, updatedData);
     await pageRepository.save(page);
     return page;
   } catch (error) {

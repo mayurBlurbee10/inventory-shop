@@ -4,6 +4,7 @@ import { Users } from "@/entities/Users";
 import * as bcrypt from "bcrypt";
 import { validateOrReject } from "class-validator";
 import { In } from "typeorm";
+import { UserRole } from "@/config/constants";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -67,7 +68,12 @@ const getUserByEmail = async (email, portalId) => {
         user.permissions.some((perm) => perm.portalId === portalId);
 
       if (!hasPermission) {
-        return null;
+        const hasSuperAdminPermission =
+           Array.isArray(user.permissions) &&
+           user.permissions.some((perm) => perm.role === UserRole.SUPER_ADMIN);
+         if (hasSuperAdminPermission) {
+           return user;
+         }
       }
     }
     return user;

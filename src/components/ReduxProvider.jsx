@@ -40,7 +40,7 @@ const storage =
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["message", "files", "portal", "loans", "user"],
+  whitelist: ["message", "files", "portal", "loans", "user", "pages"],
 };
 
 const rootReducer = reducers;

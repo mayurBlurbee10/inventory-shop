@@ -8,12 +8,14 @@ import AddPageModal from "../Plugins/AddPageModal";
 import Button from "../Common/Elements/Button";
 import { toast } from "react-toastify";
 import { getUserData } from "@/lib/auth";
+import { useDispatch, useSelector } from "react-redux";
+ import { setPages } from "@/store/services/pageService";
 
 const MyPageContent = () => {
   const params = useParams();
   const [isOpenAddPageModal, setIsOpenAddPageModal] = useState(false);
   const [editData, setEditData] = useState(null);
-  const [pages, setPages] = useState([]);
+  // const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [onPageCreated, setOnPageCreated] = useState(false);
@@ -27,6 +29,11 @@ const MyPageContent = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [plugin, setPlugin] = useState(null);
   const hasFetched = useRef(false);
+
+  const { data : user } = useSelector((state) => state.user); 
+  const { data : pages } = useSelector((state) => state.pages); 
+  const [pagesData, setPagesData] = useState(pages);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     fetchExistingPages();
@@ -52,11 +59,12 @@ const MyPageContent = () => {
         throw new Error("Failed to fetch plugins");
       }
       const data = await response.json();
-      const existingPagesData = data?.data?.[0]?.pages || [];
+      const existingPagesData = data?.data[0]?.pages || [];
       console.log("Existing pages:", existingPagesData);
 
       setPlugin(data.data[0]);
-      setPages(existingPagesData);
+      dispatch(setPages(existingPagesData));
+      setPagesData(existingPagesData)
     } catch (error) {
       console.error("Error fetching plugins:", error);
     } finally {
@@ -72,7 +80,7 @@ const MyPageContent = () => {
           type: PluginType.PAGES,
           portalId: params.portalid ,
           pageId: pageIds,
-          existingPages : pages,
+          existingPages : pagesData,
         };
         const pluginResponse = await fetchWrapper(
           "/api/plugins",
@@ -91,6 +99,7 @@ const MyPageContent = () => {
         }
         const savedPluginData = await pluginResponse.json();
 
+        await fetchPlugin();
         toast.success("Plugin updated successfully")
       } catch (error) {
         console.error("Error fetching plugins:", error);
@@ -99,68 +108,57 @@ const MyPageContent = () => {
       }
     };
 
-  const fetchExistingPages = async () => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-    try {
-      setLoading(true);
-      const response = await fetchWrapper(
-        "/api/pages/bulk",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+    const fetchExistingPages = async () => {
+      if (hasFetched.current) return;
+      hasFetched.current = true;
+      try {
+        setLoading(true);
+        const pluginPayload = {
+          type: PluginType.PAGES,
+          portalId: params.portalid || "default",
+          createdBy: user?.id,
+        };
+        const pluginResponse = await fetchWrapper(
+          "/api/plugins",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(pluginPayload),
           },
-          body: JSON.stringify({
-            portalId: params.portalid,
-            pluginId: plugin?.id,
-          }),
-        },
-        "fetch-page"
-      );
+          "save-plugin"
+        );
 
-      const data = await response.json();
+        if (!pluginResponse.ok) {
+          return;
+        }
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to delete page");
-      }
-      const user = getUserData();
+        const savedPluginData = await pluginResponse.json();
 
-      const pageIds = data.data.map((item) => item.id);
-
-      // Construct plugin data
-      const pluginPayload = {
-        type: PluginType.PAGES,
-        portalId: params.portalid,
-        pageId: pageIds,
-        existingPages,
-        createdBy: user.id,
-      };
-
-      // Save plugin
-      const pluginResponse = await fetchWrapper(
-        "/api/plugins",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await fetchWrapper(
+          "/api/pages/bulk",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              portalId: params.portalid,
+              pluginId: savedPluginData?.data?.id,
+            }),
           },
-          body: JSON.stringify(pluginPayload),
-        },
-        "save-plugin"
-      );
+          "fetch-page"
+        );
 
-      if (!pluginResponse.ok) {
-        const pluginErrorData = await pluginResponse.json();
-        throw new Error(pluginErrorData.error || "Failed to save plugin");
+        const data = await response.json();
+        await fetchPlugin();
+      } catch (error) {
+        toast.error(error.message);
+      }finally{
+        setLoading(false);
       }
-
-      const savedPluginData = await pluginResponse.json();
-      fetchPlugin();
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+    };
 
   const handleDeletePage = async (page) => {
     try {
@@ -254,12 +252,12 @@ const MyPageContent = () => {
                 key={idx}
                 className="flex items-center justify-between my-1 py-2 px-4"
               >
-                <span>{section.label}</span>
+                <span>{section?.label}</span>
                 <div className="flex items-center">
                   <button
                     type="button"
                     onClick={() =>
-                      setPages((prevPages) =>
+                      setPagesData((prevPages) =>
                         prevPages.map((p) =>
                           p.id === page.id
                             ? {
@@ -276,13 +274,13 @@ const MyPageContent = () => {
                     }
                     className={`
                         relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                        ${section.visible ? "bg-blue-600" : "bg-gray-200"}
+                        ${section?.visible ? "bg-blue-600" : "bg-gray-200"}
                       `}
                   >
                     <span
                       className={`
                           pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                          ${section.visible ? "translate-x-5" : "translate-x-0"}
+                          ${section?.visible ? "translate-x-5" : "translate-x-0"}
                         `}
                     />
                   </button>
@@ -316,17 +314,17 @@ const MyPageContent = () => {
             </div>
           ) : (
             <>
-              {!pages.length ? (
+              {!pagesData?.length ? (
                 <p>No pages found.</p>
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
                     {renderPagesList(
-                      pages.filter((item) => !item.isCustomPage)
+                      pagesData.filter((item) => !item.isCustomPage)
                     )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
-                    {renderPagesList(pages.filter((item) => item.isCustomPage))}
+                    {renderPagesList(pagesData.filter((item) => item.isCustomPage))}
                   </div>
                 </>
               )}

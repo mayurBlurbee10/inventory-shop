@@ -53,6 +53,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
+import { TaskStatus, TaskType } from "@/config/constants";
 
 function Documents({
   fileType,
@@ -60,6 +61,7 @@ function Documents({
   selectedItems,
   isRest,
   loanFolderId,
+  clientFolderId
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
@@ -115,6 +117,10 @@ function Documents({
   });
   const [page, setPage] = useState(null);
   const [isPageLoading, setIsPageLoading] = useState(false)
+  const [isTaskLoading, setIsTaskLoading] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [taskToUpdate, setTaskToUpdate] = useState(null);
+  const [signRequest, setSignRequest] = useState(null);
   const pathname = usePathname();
 
   const { data: config } = useSelector((state) => state.portal);
@@ -125,7 +131,16 @@ function Documents({
   const [currentFilesList, setCurrentFilesList] = useState(filesList);
 
   const {data : user } = useSelector((state)=>state.user);
+  const { data: pages } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const page = pages?.find((page) => page.title === "shared-docs");
+    if (page && !page.isPageVisible) {
+      router.push("access-denied");
+    }
+  }, []);
+
 
   const handleBrowse = (event) => {
     if (event.type === "click") {
@@ -398,7 +413,12 @@ function Documents({
           // setFilesList(newFilesList)
           dispatch(setFiles(userData?.boxFolderId));
         }
-      } else {
+      } else if(fileType === 'advisor'){
+        if (!clientFolderId) {
+          return;
+        }
+        dispatch(setFiles(clientFolderId));
+      }  else {
         if (!userData?.boxFolderId) {
           return;
         }
@@ -1002,6 +1022,101 @@ function Documents({
     
     return page.some((item) => item.visible);
   };
+
+  const fetchTasks = async () => {
+    try {
+      setIsTaskLoading(true);
+      const url =`/api/tasks?portalId=${params.portalid}&&userId=${user?.id}`
+      const response = await fetchWrapper(url, {}, "fetch-tasks");
+      if (!response.ok) throw new Error("Something went wrong!!");
+      const data = await response.json();
+      console.log("User:", data);
+      setTasks(data.data);
+    } catch (error) {
+      console.error("Download error:", error);
+    } finally {
+      setIsTaskLoading(false);
+    }
+  };
+
+  const handleOpenSignModal = async (task) => {
+    try {
+      setIsSignReqLoading(task?.title);
+      const response = await fetchWrapper(
+        `/api/box/e-sign?id=${task?.uploads[0]}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        },
+        "get-esign-request"
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to get e-sign request");
+      }
+      setSignRequest(data?.data)
+      toast.success("E-sign request generated successfully.");
+      const currentUserReq = data?.data.signers.find(
+        (item) => item.email === user.email
+      );
+     
+      if (currentUserReq) {
+        setTimeout(() => {
+          setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+          setIsSignModalOpen(true);
+          setIsSignReqLoading(null);
+        }, 2500);
+      }
+    } catch (error) {
+      setIsSignReqLoading(null);
+    } finally {
+      setIsSignReqLoading(null);
+    }
+  }
+
+  const updateTaskStatus = async () => {
+    try {
+      setIsTaskLoading(true);
+      const response = await fetchWrapper(
+        `/api/tasks`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body : JSON.stringify({
+            taskId : taskToUpdate?.id,
+            status : TaskStatus.COMPLETED
+          })
+        },
+        "update-task"
+      );
+
+      if (!response.ok) throw new Error("Something went wrong!!");
+      await fetchTasks();
+    } catch (error) {
+      console.error("Download error:", error);
+    } finally {
+      setIsTaskLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const completed = ["signed", "completed", "finalizing"];
+    if (signRequest && completed.includes(signRequest?.status)) {
+      if(taskToUpdate.uploads[0] === signRequest?.id){
+        updateTaskStatus();
+        setSignRequest(null);
+      }
+    }
+  }, [signRequest]);
+
+  useEffect(()=>{
+    fetchTasks()
+  }, [])
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -1756,6 +1871,50 @@ function Documents({
                                 </p>
                               </td>
                             </tr>
+                            {tasks?.length > 0 && tasks?.map((task)=>(
+                               <tr key={task?.id}>
+                                 <td className="ps-3 py-4">
+                                   <div className={`h-3 w-3 rounded-full  pulse-animation ${task?.status === TaskStatus.PENDING ? "bg-[#ffc107]" : "bg-[#1ec0cb]"}`}></div>
+                                 </td>
+                                 <td className="px-3 py-4">
+                                   <p className="font-lato text-[#212529] text-sm">
+                                     {task?.title}
+                                   </p>
+                                 </td>
+                                 <td className="px-3 py-4">
+                                   <p
+                                     className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer`}
+                                     onClick={()=> {
+                                       if(task?.status === TaskStatus.COMPLETED){
+                                         return;
+                                       }
+                                       setTaskToUpdate(task)
+                                       if(task?.type === TaskType.SIGN){
+                                         handleOpenSignModal(task);
+                                       }else {
+                                         setMyTaskPopupBoxContent({
+                                           title: task?.title,
+                                           actionText: task?.type,
+                                         });
+                                         setIsMyTaskPopupOpen((prev) => !prev);
+                                         setCompletedTask((prev) => ({
+                                           ...prev,
+                                           upload: true,
+                                         }));
+                                       }
+                                     }}
+                                   >
+                                     {isSignReqLoading === task?.title ? (
+                                       <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                                     ) : task?.status === TaskStatus.COMPLETED ? (
+                                       <span className="italic">Completed</span>
+                                     ) : (
+                                       <span>{task?.type.charAt(0).toUpperCase() + task?.type.slice(1)}</span>
+                                     )}
+                                   </p>
+                                 </td>
+                               </tr>
+                             ))}
                           </tbody>
                         </table>
                       </div>
@@ -1958,9 +2117,11 @@ function Documents({
             </div>
           )}
           <SignRequestModal
-            isOpen={isSignModalOpen}
+            isOpen={isSignModalOpen && signRequest !== null}
             onClose={() => setIsSignModalOpen(false)}
             signUrl={selectedSignUrl}
+            signRequest={signRequest}
+            setSignRequest={setSignRequest}
           />
         </div>
       </div>

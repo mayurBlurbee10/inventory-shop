@@ -20,6 +20,7 @@ import {
 } from 'chart.js';
 import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 import Link from "next/link";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 const labels = ["Mon, 11PM", "Tue, 3AM", "Tue, 7AM", "Tue, 11AM", "Tue, 3PM"];
@@ -127,12 +128,20 @@ const options = {
     },
 };
 
+const LoadingSpinner = () => (
+    <div className="min-h-[60vh] flex justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
 
 
-export default function AdvisorView() {
+export default function AdvisorViewDashboard() {
     const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
     const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState('');
     const [user, setUser] = useState(null);
+    const [usersList, setUsersList] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const params = useParams();
 
     const [dayAndDate, setDayAndDate] = useState({
         day: "",
@@ -173,8 +182,27 @@ export default function AdvisorView() {
         setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
     }, []);
 
+    const fetchUser = async () => {
+      try {
+        setIsLoading(true);
+        const url = params.portalid
+          ? `/api/users?portalid=${params.portalid || "default"}`
+          : "/api/users";
+        const response = await fetchWrapper(url, {}, "fetchUserList");
+        if (!response.ok) throw new Error("Download failed");
+        const data = await response.json();
+        console.log("UsersList:", data);
+        setUsersList(data);
+      } catch (error) {
+        console.error("Download error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-
+    useEffect(() => {
+      fetchUser();
+    }, []);
 
     return (
         // <Container>
@@ -185,7 +213,7 @@ export default function AdvisorView() {
                         {/* Hello, David West! Today is Wednesday, January 15th. */}
                         {`Hello, Erica Smith! Today is ${dayAndDate.day}, ${dayAndDate.month
                             } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
-                            }${dayAndDate.date === 3 ? "rd" : "th"}`}
+                            }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
                     </h2>
                 </div>
             </div>
@@ -198,75 +226,31 @@ export default function AdvisorView() {
                         </h3>
 
                         <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5">
-                            <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
-                                <Link href="shared-docs" passHref>
-                                    <img
-                                        src="/images (1).jpg"
-                                        alt="User"
-                                        className="w-full h-[100px] sm:h-[150px] object-cover border"
-                                    />
-                                </Link>
+                            {
+                                !isLoading && usersList.length > 0 &&
+                                usersList.map((user) => (
+                                    <div className="border w-[150px] sm:w-[200px] lg:w-[220px]" key={user?.id}>
+                                        <Link href={`shared-docs?userId=${user?.boxUserId}`} passHref>
+                                            <img
+                                                src="/images (1).jpg"
+                                                alt="User"
+                                                className="w-full h-[100px] sm:h-[150px] object-cover border"
+                                            />
+                                        </Link>
 
-                                <div className="text-center p-2">
-                                    <h3 className="text-sm sm:text-md text-blue-600 font-medium">David West</h3>
-                                    <p className="text-gray-600 text-xs sm:text-sm">Account ID: 821900</p>
-                                </div>
-                            </div>
-                            <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
-                                <Link href="shared-docs" passHref>
-                                    <img
-                                         src="/profile-3.jpg"
-                                        alt="User"
-                                        className="w-full h-[100px] sm:h-[150px] object-cover border"
-                                    />
-                                </Link>
-                                <div className="text-center p-2">
-                                    <h3 className="text-sm sm:text-md text-blue-600 font-medium">Jessica Chu</h3>
-                                    <p className="text-gray-600 text-xs sm:text-sm">Account ID: 112094</p>
-                                </div>
-                            </div>
-                            <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
-                                <Link href="shared-docs" passHref>
-                                    <img
-                                        src="/images (2).jpg"
-                                        alt="User"
-                                        className="w-full h-[100px] sm:h-[150px] object-cover border"
-                                    />
-                                </Link>
-                                <div className="text-center p-2">
-                                    <h3 className="text-sm sm:text-md text-blue-600 font-medium">Zen Gest</h3>
-                                    <p className="text-gray-600 text-xs sm:text-sm">Account ID: 854236</p>
-                                </div>
-                            </div>
-                            <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
-                                <Link href="shared-docs" passHref>
-                                    <img
-                                        src="/images (3).jpg"
-
-                                        alt="User"
-                                        className="w-full h-[100px] sm:h-[150px] object-cover border"
-                                    />
-                                </Link>
-                                <div className="text-center p-2">
-                                    <h3 className="text-sm sm:text-md text-blue-600 font-medium">Jessy hau</h3>
-                                    <p className="text-gray-600 text-xs sm:text-sm">Account ID: 698524</p>
-                                </div>
-                            </div>
-                            <div className="border w-[150px] sm:w-[200px] lg:w-[220px]">
-                                <Link href="shared-docs" passHref>
-                                    <img
-                                        src="/images.jpg"
-                                        alt="User"
-                                        className="w-full h-[100px] sm:h-[150px] object-cover border"
-                                    />
-                                </Link>
-                                <div className="text-center p-2">
-                                    <h3 className="text-sm sm:text-md text-blue-600 font-medium">James Foe</h3>
-                                    <p className="text-gray-600 text-xs sm:text-sm">Account ID: 536247</p>
-                                </div>
-                            </div>
+                                        <div className="text-center p-2">
+                                            <h3 className="text-sm sm:text-md text-blue-600 font-medium">{user?.name}</h3>
+                                            <p className="text-gray-600 text-xs sm:text-sm truncate w-full">{user?.email}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                            {
+                                isLoading && (
+                                    <LoadingSpinner/>
+                                )
+                            }
                         </div>
-
                     </div>
                     <div>
                         <div>
