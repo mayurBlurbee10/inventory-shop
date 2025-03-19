@@ -17,9 +17,7 @@ const createUser = async (data) => {
   try {
     const user = userRepository.create(data);
     // Validate user data according to the role-specific rules
-    console.log("user", user);
     const valid = await validateOrReject(user);
-    console.log("valid", valid);
     await userRepository.save(user);
     return user;
   } catch (error) {
@@ -179,7 +177,6 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
     await userRepository.save(user);
     return "Password successfully set";
   } catch (error) {
-    console.log("error ==> ", error);
     throw new Error("Failed to set password.");
   }
 };
@@ -241,7 +238,6 @@ const setResetPasswordToken = async (email, token) => {
     await userRepository.save(user);
     return "ResetPasswordToken successfully set";
   } catch (error) {
-    console.log("error ==> ", error);
     throw new Error("Failed to set ResetPasswordToken.");
   }
 };
@@ -261,7 +257,6 @@ const updateUser = async (id, updatedData) => {
     const mainUser = await getUserById(id);
     Object.assign(mainUser, updatedData);
     await userRepository.save(mainUser);
-    console.log("User updated successfully!");
     return mainUser;
   } catch (error) {
     console.error("Error updating user:", error.message);

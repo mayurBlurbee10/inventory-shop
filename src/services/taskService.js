@@ -74,7 +74,6 @@ const updateTask = async (taskId, updatedData) => {
     const mainTask = await taskRepository.findOneBy({ id: taskId });
     Object.assign(mainTask, updatedData);
     await taskRepository.save(mainTask);
-    console.log("Task updated successfully!");
     return mainTask;
   } catch (error) {
     console.error("Error updating task:", error.message);

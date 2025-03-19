@@ -3,6 +3,7 @@ import * as actions from "../actions/type";
 const initialState = {
   resError: "",
   resSuccess: "",
+  messages : null,
 };
 
 export const messageReducer = (state = initialState, action) => {
@@ -19,7 +20,14 @@ export const messageReducer = (state = initialState, action) => {
       };
     case actions.CLEAR_RES_MSG:
       return {
-        ...initialState
+        ...state,
+        resError: initialState.resError,
+        resSuccess: initialState.resSuccess,
+      };
+    case actions.SET_MESSAGES:
+      return {
+        ...state,
+        messages: action.payload,
       };
     default:
       return state;

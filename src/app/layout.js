@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import ReduxProvider from "@/components/ReduxProvider";
 import StoreProvider from "@/components/ReduxProvider";
+import { SocketProvider } from "@/context/SocketProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,23 +30,24 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
-      >
-        <StoreProvider>
-          {children}
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick={false}
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-            transition={Bounce}
-          />
-        </StoreProvider>
+      > <SocketProvider>
+          <StoreProvider>
+            {children}
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick={false}
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+              transition={Bounce}
+            />
+          </StoreProvider>
+        </SocketProvider>
       </body>
     </html>
   );

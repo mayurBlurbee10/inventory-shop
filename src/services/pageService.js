@@ -13,7 +13,6 @@ const createPage = async (data) => {
   const pageRepository = await getRepository(Pages);
   try {
     const page = pageRepository.create(data);
-    console.log("page", page);
     await pageRepository.save(page);
     return page;
   } catch (error) {

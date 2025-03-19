@@ -54,6 +54,7 @@ import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
 import { TaskStatus, TaskType } from "@/config/constants";
+import Messaging from "./Common/Messaging";
 
 function Documents({
   fileType,
@@ -2113,6 +2114,10 @@ function Documents({
                       </div>
                     </div>
                   )}
+
+                {filterVisibility("Messaging") && (
+                  <Messaging />
+                )}
               </div>
             </div>
           )}

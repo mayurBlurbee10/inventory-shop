@@ -112,61 +112,6 @@ const AllTaskModal = ({ isOpen, onClose }) => {
                   )}
                 </tbody>
               </table>
-
-              {/* Pagination Controls */}
-              {/* {totalPages > 1 && (
-                <div className="flex justify-end items-center p-4 gap-x-5 bg-gray-100 rounded-b-lg">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <span className="text-gray-700">Rows per page:</span>
-                    <select
-                      className="border rounded px-2 py-1 bg-white text-gray-700"
-                      value={itemsPerPage}
-                      onChange={handleItemsPerPageChange}
-                    >
-                      <option value="5">5</option>
-                      <option value="10">10</option>
-                      <option value="20">20</option>
-                    </select>
-                  </div>
-                  <span className="text-gray-700 text-sm">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <div className="flex gap-2 items-center">
-                    <button
-                      className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronsLeft className="size-5" />
-                    </button>
-                    <button
-                      className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft className="size-5" />
-                    </button>
-                    <button
-                      className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight className="size-5" />
-                    </button>
-                    <button
-                      className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronsRight className="size-5" />
-                    </button>
-                  </div>
-                </div>
-              )} */}
             </div>
           </div>
         </Dialog.Panel>

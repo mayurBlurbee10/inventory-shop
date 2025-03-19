@@ -20,7 +20,6 @@ const createPlugin = async (data) => {
       portalId: data.portalId,
       createdBy: data.createdBy,
     });
-    console.log("plugin", plugin);
     await pluginRepository.save(plugin);
 
     if (Array.isArray(data.pageId)) {

@@ -18,3 +18,5 @@ export const SET_PAGES = "SET_PAGES";
 
 export const SET_LOANS = "SET_LOANS";
 export const SET_NEW_LOAN = "SET_NEW_LOAN";
+
+export const SET_MESSAGES = "SET_MESSAGES";

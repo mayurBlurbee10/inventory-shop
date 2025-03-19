@@ -19,3 +19,10 @@ export const clearResponseMsg = () => {
     type: actions.CLEAR_RES_MSG,
   };
 };
+
+export const setMessageData = (payload) => {
+  return {
+    type: actions.SET_MESSAGES,
+    payload,
+  };
+};

@@ -81,7 +81,6 @@ const getPortals = async () => {
   const portalRepository = await getRepository(Portals);
   try {
     const portals = await portalRepository.find();
-    console.log("portals: ", JSON.stringify(portals));
     return portals;
   } catch (error) {
     throw new Error("Failed to get portals.");
@@ -103,7 +102,6 @@ const getPortalByLegalName = async (legalName) => {
 const updatePortalThemes = async (portalData) => {
   const portalRepository = await getRepository(Portals);
   try {
-    console.log(portalData.id);
     const portalExist = await portalRepository.findOneBy({ id: portalData.id });
     if (!portalExist) {
       throw new Error("portal doesn't exist");

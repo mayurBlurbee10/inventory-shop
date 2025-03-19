@@ -2,42 +2,41 @@ import portalService from "@/services/portalService";
 import { notFound, redirect } from "next/navigation";
 
 function reverseSanitizeName(sanitizedName) {
-  // If the sanitized name ends with a hyphen, remove it
   let reversedName = sanitizedName.endsWith("-")
     ? sanitizedName.slice(0, -1)
     : sanitizedName;
 
-  // Replace hyphens with spaces
   reversedName = reversedName.replace(/-/g, " ");
-
-  // Capitalize the first letter of each word
   reversedName = reversedName
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  // Return the reconstructed name
   return reversedName;
 }
 
+// ✅ Use `async function` for Server Component
 export default async function PortalPage({ params }) {
-  const { portalid } = params;
+  // // 🔹 Ensure `params` is available before accessing `portalid`
+ 
 
-  const excludeRoues = ["login", "dashboard", "my-docs", "shared-docs"];
+  // const portalid = params.portalid; // ✅ Access params correctly
 
-  if (excludeRoues.includes(portalid)) {
-    return redirect(`/${portalid}`); 
-  }
+  // const excludeRoutes = ["login", "dashboard", "my-docs", "shared-docs"];
 
-  const reversedPortalName = reverseSanitizeName(portalid || "default");
+  // if (excludeRoutes.includes(portalid)) {
+  //   redirect(`/${portalid}`);
+  // }
 
-  const portalExists = await portalService.getPortalByLegalName(
-    reversedPortalName
-  );
+  // const reversedPortalName = reverseSanitizeName(portalid);
 
-  if (!portalExists) {
-    return redirect(`/${portalid}/not-found`); 
-  }
+  // const portalExists = await portalService.getPortalByLegalName(
+  //   reversedPortalName
+  // );
 
-  return redirect(`/${portalid}/login`);
+  // if (!portalExists) {
+  //   redirect(`/${portalid}/not-found`);
+  // }
+
+  redirect(`/login`);
 }

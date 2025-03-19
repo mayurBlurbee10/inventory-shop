@@ -17,6 +17,7 @@ export const existingPages = [
       { label: "My Task Section", visible: true },
       { label: "Advisor Section", visible: true },
       { label: "Collaborator Section", visible: true },
+      { label: "Messaging", visible: true },
     ],
   },
   {
