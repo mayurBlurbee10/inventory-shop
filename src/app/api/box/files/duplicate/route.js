@@ -40,7 +40,7 @@ export async function POST(req) {
     for (const item of items) {
       try {
         const movedFile = await client.files.copy(item.id, destinationFolderId);
-        await addCollaborator(movedFile.id, userId, "editor", "file");
+        // await addCollaborator(movedFile.id, userId, "editor", "file");
         results.push(movedFile);
       } catch (error) {
         console.error(`Failed to copy ${item.type} with ID ${item.id}:`, error);

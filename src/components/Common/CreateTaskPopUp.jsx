@@ -10,7 +10,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
 import { TaskType } from "@/config/constants";
 
-const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
+const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
     const isForImport = false;
     const params = useParams();
     const [submitLoading, setSubmitLoading] = useState(false) 
@@ -20,17 +20,17 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
     const [filesUploaded, setFilesUploaded]=useState(false)
     const [resetUpload, setResetUpload] = useState(false);
     const [formData, setFormData] = useState({
-        title : "",
-        description : "",
-        dueDate : "",
-        type : TaskType.SIGN,
-
-    })
+      title: task?.title || "",
+      description: task?.description || "",
+      dueDate: task?.dueDate
+      ? new Date(task?.dueDate).toISOString().split("T")[0]
+      : "",
+      type: task?.type || TaskType.SIGN,
+    });
     const { data : loggedInUser } = useSelector((state)=> state.user);
    
     const handleFileChange = (fileList) => {
         setFilesUploaded(fileList);
-        
     };
 
     const handleRequestSignature = async (fileId) => {
@@ -99,14 +99,104 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
        }
      };
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
+    console.log("formData", formData)
+    console.log("filesUploaded", filesUploaded)
+
+    const handleEdit = async () => {
       try {
         setSubmitLoading(true);
         let fileIds;
-       if(filesUploaded.length > 0){
+        let filedata;
+        const filterFiles = filesUploaded?.filter((file) => !file?.id);
+        if (filterFiles.length > 0) {
+          const uploadData = new FormData();
+          filterFiles.forEach((file) => {
+            uploadData.append("file", file);
+          });
+
+          uploadData.append("boxFolderId", user?.folderId);
+          uploadData.append("email", user?.email);
+          uploadData.append("userId", user?.boxUserId);
+
+          const requestOptions = {
+            method: "POST",
+            body: uploadData,
+          };
+
+          const fileResponse = await fetchWrapper(
+            "/api/box/files",
+            requestOptions,
+            "uploadFile"
+          );
+
+          filedata = await fileResponse.json();
+          if (filedata?.duplicateFiles?.length > 0) {
+            filedata = await handleCreateDuplicateFiles(
+              filedata?.duplicateFiles
+            );
+          }
+
+          let esignData;
+
+          if (filedata?.files?.length > 0) {
+            esignData = await handleRequestSignature(filedata?.files[0]?.id);
+          }
+
+          fileIds = esignData?.data?.map((item) => item.id) || [];
+        }
+
+        const url = `/api/tasks`;
+        const payload = {
+          taskId: task?.id,
+          title: formData.title,
+          description: formData.description,
+          dueDate: new Date(formData.dueDate),
+          type: formData.type,
+        };
+        if(fileIds?.length > 0){
+          payload.uploads = fileIds
+        }
+        if (filedata?.files?.length > 0) {
+          payload.file = {
+            id: filedata?.files[0]?.id,
+            name: filedata?.files[0]?.name,
+            description: filedata?.files[0]?.description,
+            size: filedata?.files[0]?.size,
+          };
+        }
+        console.log("payload", payload);
+        const response = await fetchWrapper(
+          url,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          },
+          "update-task"
+        );
+        if (!response.ok) throw new Error("Something went wrong!!");
+        const data = await response.json();
+        await onTaskCreated();
+        toast.success("Task Updated Successfully");
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setSubmitLoading(false);
+        onClose();
+      }
+    };
+
+    const handleSubmit = async () => {
+      try {
+        setSubmitLoading(true);
+        let fileIds;
+        let filedata;
+      const filterFiles = filesUploaded?.filter((file) => !file?.id)
+       if(filterFiles.length > 0){
         const uploadData = new FormData();
-        filesUploaded.forEach((file)=>{
+          filterFiles.forEach((file)=>{
             uploadData.append("file", file);
         })
 
@@ -125,7 +215,7 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
            "uploadFile"
          );
         
-        let filedata = await fileResponse.json();
+        filedata = await fileResponse.json();
         if(filedata?.duplicateFiles?.length > 0){
             filedata = await handleCreateDuplicateFiles(filedata?.duplicateFiles)
         }
@@ -141,14 +231,22 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
 
         const url =`/api/tasks`
         const payload = {
-            title : formData.title,
-            description : formData.description,
-            dueDate : new Date(formData.dueDate),
-            type : formData.type,
-            user : user?.id,
-            createdBy : loggedInUser?.id,
-            uploads : fileIds || [],
-            portalId : params.portalid,
+          title: formData.title,
+          description: formData.description,
+          dueDate: new Date(formData.dueDate),
+          type: formData.type,
+          user: user?.id,
+          createdBy: loggedInUser?.id,
+          uploads: fileIds || [],
+          portalId: params.portalid,
+        };
+        if (filedata?.files?.length > 0) {
+          payload.file =  {
+            id: filedata?.files[0]?.id,
+            name: filedata?.files[0]?.name,
+            description: filedata?.files[0]?.description,
+            size: filedata?.files[0]?.size,
+          }
         }
         console.log("payload", payload)
         const response = await fetchWrapper(
@@ -178,8 +276,17 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
         setSelectedType(type);
     }
 
+    const handleCreate = async () => {
+      console.log("handleCreate triggered 🚀");
+      if (task?.id) {
+        await handleEdit();
+      } else {
+        await handleSubmit();
+      }
+    };
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
             <div className="bg-white rounded-lg p-6 w-full max-w-[800px]">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl text-gray-800 font-semibold">Create Task</h2>
@@ -191,7 +298,7 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
                     </button>
                 </div>
 
-                <form className="space-y-4" onSubmit={handleSubmit}>
+                  <form className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
                            Please select Task Type
@@ -250,7 +357,7 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
                                 <label className="block text-sm font-medium text-gray-700 pb-1">
                                     Document
                                 </label>
-                                <MyTaskFileUploadArea reset ={resetUpload} isForImport={isForImport} onFileChange={handleFileChange} from={"tasks"}/>
+                                <MyTaskFileUploadArea reset ={resetUpload} isForImport={isForImport} onFileChange={handleFileChange} from={"tasks"} existingFilesToShow={task?.file ? [task?.file] : []}/>
                             </div>
                         )
                     }
@@ -261,12 +368,17 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
                                 <label className="block text-sm font-medium text-gray-700 pb-1">
                                     Due Date
                                 </label>
-                                <input required type="date" min={new Date().toISOString().split("T")[0]} className="border p-2 font-medium text-gray-700 rounded-lg outline-none" onChange={(e) => setFormData((prev)=>({...prev, dueDate : e.target.value}))} />
+                                <input 
+                                  type="date" 
+                                  min={new Date().toISOString().split("T")[0]} 
+                                  className="border p-2 font-medium text-gray-700 rounded-lg outline-none" 
+                                  value={formData.dueDate}
+                                  onChange={(e) => setFormData((prev)=>({...prev, dueDate : e.target.value}))} 
+                                />
                             </div>
                         )
                     }
 
-                    
                     <div className=" flex gap-3 justify-end">
                         <Button
                             type="Secondary"
@@ -274,11 +386,11 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated }) => {
                             onClick={onClose}
                         />
                         <Button
-                            buttonType="submit"
                             type="Primary"
                             label="Submit"
+                            onClick={handleCreate}
                             isLoading={submitLoading}
-                            disabled={!formData.type || (formData?.type === TaskType.SIGN && !filesUploaded.length)}
+                            disabled={!formData.type || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
                         />
                     </div>
                 </form>

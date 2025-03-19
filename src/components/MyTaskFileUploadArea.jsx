@@ -7,11 +7,13 @@ import { useEffect } from "react";
 import Button from "./Common/Elements/Button";
 
 
-export default function MyTaskFileUploadArea({ isForImport, onFileChange, from="" }) {
-    const [arrayOfFiles, setArrayOfFiles] = useState([]);
+export default function MyTaskFileUploadArea({ isForImport, onFileChange, from="", existingFilesToShow = [] }) {
+    const [arrayOfFiles, setArrayOfFiles] = useState(existingFilesToShow);
     const [isDragging, setIsDragging] = useState(false);
 
     const fileInputRef = useRef(null);
+
+    console.log("existingFilesToShow", existingFilesToShow)
 
     const handleBrowse = (event) => {
         if (event.type === "click") {

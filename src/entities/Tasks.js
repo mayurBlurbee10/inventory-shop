@@ -23,6 +23,9 @@ import "reflect-metadata";
  
    @Column({ type: "simple-json", nullable: true, default: "[]" })
    uploads;
+
+   @Column({ type: "simple-json", nullable: true })
+   file;
  
    @Column({ type: "datetime", nullable: true })
    dueDate;

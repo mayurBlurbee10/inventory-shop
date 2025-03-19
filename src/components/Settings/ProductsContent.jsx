@@ -22,6 +22,7 @@ import Button from "../Common/Elements/Button";
 import { PluginType } from "@/config/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPages } from "@/store/services/pageService";
+import AllTaskModal from "../Common/AllTaskModal";
 
 const options = [
   // {
@@ -49,6 +50,7 @@ const ProductsContent = () => {
   const [pluginOptions, setPluginOptions] = useState(options);
   const [pagesData, setPagesData] = useState([]);
   const [isUpdateLoading, setIsUpdateLoading] = useState(null)
+  const [isAllTaskModalOpen, setIsAllTaskModalOpen] = useState(false);
   const hasFetched = useRef(false);
 
   const { data : user } = useSelector((state) => state.user);
@@ -356,6 +358,51 @@ const ProductsContent = () => {
                   )}
                 </div>
               ))}
+             <div
+                  className="border rounded-lg p-4 bg-white shadow-sm text-gray-800 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-start gap-3">
+                      <File className="w-6 h-6 text-blue-600" />
+                      <div>
+                        <h4 className="text-lg font-medium text-gray-900">
+                          Tasks
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Edit and manage user tasks
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className=" flex items-center justify-end gap-2">
+                      <div
+                        className={`px-2 py-1 cursor-pointer`}
+                        onClick={() => {
+                          setIsAllTaskModalOpen((prev) => !prev);
+                        }}
+                      >
+                        <Edit className="size-4 text-blue-700" />
+                      </div>
+                      {/* <div
+                        className={`px-2 py-1 cursor-pointer`}
+                        onClick={() => {
+                          setIsDeleteModalOpen((prev) => !prev);
+                          setPluginSelected(plugin);
+                        }}
+                      >
+                        <Trash2 className="size-4 text-red-700" />
+                      </div> */}
+                    </div>
+                  </div>
+                  <div className="mt-4 flex space-x-2">
+                    <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                      Configure
+                    </button>
+                    <button className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+                      Documentation
+                    </button>
+                  </div>
+                </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {pagesData &&
@@ -428,6 +475,10 @@ const ProductsContent = () => {
         isOpen={isOpenUpdatePlugin}
         onClose={() => setIsOpenUpdatePlugin(false)}
         plugin={pluginEdit}
+      />
+      <AllTaskModal
+        isOpen={isAllTaskModalOpen}
+        onClose={() => setIsAllTaskModalOpen(false)}
       />
     </div>
   );

@@ -57,7 +57,16 @@ export async function GET(req) {
         message: `tasks retrieved successfully.`,
         data: tasks || [],
       });
-    } else if (!!taskId) {
+    } 
+    if (!!portalId) {
+      const tasks = await taskService.getTasksByPortalId(portalId);
+
+      return NextResponse.json({
+        message: `tasks retrieved successfully.`,
+        data: tasks || [],
+      });
+    } 
+    if (!!taskId) {
       const task = await taskService.getTaskById(taskId);
       if (!task) {
         return NextResponse.json(
@@ -82,26 +91,29 @@ export async function GET(req) {
 export async function PUT(req) {
   try {
     await logApiCall(req);
-    const data = await req.json();
+    const {taskId , ...rest} = await req.json();
 
-    const taskExist = await taskService.getTaskById(data.taskId);
+    const taskExist = await taskService.getTaskById(taskId);
 
     if (!taskExist) {
       return NextResponse.json(
-        { error: `task with taskId ${data.taskId} not found.` },
+        { error: `task with taskId ${taskId} not found.` },
         { status: 404 }
       );
     }
 
     const taskObj = {
-      status: data.status,
+      ...rest
     };
+    // if (rest.status) {
+    //   taskObj.status = data.status;
+    // }
 
     // if (taskExist.type === TaskType.SIGN) {
     //   taskObj.uploads = data.uploads;
     // }
 
-    const task = await taskService.updateTask(data.taskId, taskObj);
+    const task = await taskService.updateTask(taskId, taskObj);
 
     return NextResponse.json({
       message: `task updated successfully.`,
