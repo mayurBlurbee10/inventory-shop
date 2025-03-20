@@ -30,7 +30,8 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
-      > <SocketProvider>
+      > 
+      {/* <SocketProvider> */}
           <StoreProvider>
             {children}
             <ToastContainer
@@ -47,7 +48,7 @@ export default function RootLayout({ children }) {
               transition={Bounce}
             />
           </StoreProvider>
-        </SocketProvider>
+        {/* </SocketProvider> */}
       </body>
     </html>
   );

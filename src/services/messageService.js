@@ -16,13 +16,12 @@ const getMessages = async (senderId, receiverId, portalId) => {
         { portalId : portalId, sender: { id: senderId }, receiver: { id: receiverId } },
         { portalId : portalId, sender: { id: receiverId }, receiver: { id: senderId } },
       ],
-      relations: ["sender", "receiver"], 
-      order: { createdAt: "ASC" }, 
+      relations: ["sender", "receiver"],
+      order: { createdAt: "ASC" },
     });
 
     return messages;
   } catch (error) {
-    console.error("Error getting messages:", error.message);
     throw error;
   }
 };
@@ -38,7 +37,37 @@ const createMessage = async (message) => {
   }
 };
 
+const updateMessage = async (messageId, updatedData) => {
+  const messageRepository = await getRepository(Messages);
+  try {
+    const message = await messageRepository.findOneBy({ id: messageId });
+
+    Object.assign(message, updatedData);
+    await messageRepository.save(message);
+    return message;
+  } catch (error) {
+    
+    throw error;
+  }
+};
+
+const deleteMessage = async (messageId) => {
+  const messageRepository = await getRepository(Messages);
+  try {
+    const message = await messageRepository.findOneBy({ id: messageId });
+    if (!message) {
+      return;
+    }
+    await messageRepository.remove(message);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   getMessages,
   createMessage,
+  updateMessage,
+  deleteMessage
 };

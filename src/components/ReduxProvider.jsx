@@ -72,7 +72,7 @@ export default function StoreProvider({ children }) {
     persistorRef.current = persistStore(storeRef.current);
 
     storeRef.current.subscribe(() => {
-      console.log("State changed:", storeRef.current.getState());
+      // console.log("State changed:", storeRef.current.getState());
     });
   }
   return (
