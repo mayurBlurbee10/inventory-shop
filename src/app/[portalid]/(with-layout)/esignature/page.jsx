@@ -114,7 +114,7 @@ function ESignature() {
   // }, [isSignModalOpen]);
 
   const LoadingSpinner = () => (
-    <div className="min-h-screen flex justify-center items-center py-8">
+    <div className="min-h-[84vh] flex justify-center items-center py-8">
       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
     </div>
   );
@@ -153,7 +153,7 @@ function ESignature() {
         </div>
         {/* Tabs */}
         <div className="border mt-[20px]">
-        <div className="flex border-b p-5 bg-gray-50">
+        <div className="flex border-b p-4 bg-gray-50">
           <button
             className={`px-4 py-2 text-md sm:text-lg font-lato ${activeTab === "pending"
               ? "border-b-2 border-blue-500 text-blue-600"
@@ -181,17 +181,17 @@ function ESignature() {
             <p className="ml-2 text-gray-500">Loading...</p>
           </div>
         ) : (
-          <div className="h-[550px] sm:min-h-[500px] overflow-y-auto p-5">
+          <div className="max-h-[550px] overflow-y-auto">
             {activeTab === "pending" && (
               <div>
                 {pendingRequests?.length > 0 ? (
-                  <ul className="space-y-2 overflow-y-auto">
+                  <ul className="overflow-y-auto">
                     {pendingRequests.map((req) => (
                       <React.Fragment key={req.id}>
                         {req.source_files.length > 0 && (
                           <li
                             key={req.id}
-                            className="p-3 font-lato border rounded-lg shadow-sm flex justify-between items-center hover:shadow-md transition-shadow"
+                            className="px-3 py-2 font-lato border-b flex justify-between items-center"
                           >
                             <span className="text-gray-800 font-semibold">
                               {req?.source_files[0]?.name}
@@ -218,11 +218,11 @@ function ESignature() {
             {activeTab === "completed" && (
               <div>
                 {completedRequests?.length > 0 ? (
-                  <ul className="space-y-2">
+                  <ul>
                     {completedRequests?.map((req) => (
                       <li
                         key={req.id}
-                        className="p-3 border rounded-lg shadow-sm flex items-center justify-between"
+                        className="p-3 border-b flex items-center justify-between"
                       >
                         <span className="text-gray-800 font-semibold font-lato">
                           {req?.sign_files.files[0]?.name}
