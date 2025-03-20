@@ -1,4 +1,4 @@
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 
 // const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
 //   path: "/api/socket",
@@ -13,6 +13,6 @@ import { io } from "socket.io-client";
 //   debug: true
 // });
 
-const socket = io();
+// const socket = io();
 
-export default socket;
+// export default socket;

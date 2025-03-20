@@ -459,36 +459,6 @@ export default function DocDashboard() {
           {filterVisibility("My Task Section") && (
             <TasksSection fileType="my" />
           )}
-          {filterVisibility("Advisor Section") && (
-              <div className="mb-7">
-                <div>
-                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                    My Advisor
-                  </h3>
-                </div>
-
-                {/* Advisory card */}
-
-                <div className="border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-6 p-4 ">
-                    <div className="max-w-[150px] w-full">
-                      <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
-                        <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
-                      </a>
-                    </div>
-
-                    <div>
-                      <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
-                        Erica Smith
-                      </h2>
-                      <p className="font-lato text-base text-[#6c757d]">
-                        Senior Financial Advisor
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-          )}
           {filterVisibility("Collaborator Section") && (
             <CollaboratorSection />
           )}
