@@ -2,6 +2,7 @@
 import AppearanceContent from '@/components/AppearanceContent';
 import BoxSettingsContent from '@/components/Settings/BoxSettingsContent';
 import ContentManagementContent from '@/components/Settings/ContentManagementContent';
+import CustomizationContent from '@/components/Settings/CustomizationContent';
 import IdentityManagementContent from '@/components/Settings/IdentityManagementContent';
 import InvoicingContent from '@/components/Settings/InvoicingContent';
 import MyPageContent from '@/components/Settings/MyPageContent';
@@ -14,7 +15,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 
 function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('my_page');
+  const [activeTab, setActiveTab] = useState('customization');
   const [isUserData, setIsUserData] = useState("");
   const { data: config } = useSelector((state) => state.portal);
   const [colors, setColors] = useState({
@@ -31,7 +32,8 @@ function SettingsPage() {
 
   const tabs = [
     // { id: 'homepage_configuration', label: 'Home Page', icon: FileText },
-    { id: 'my_page', label: 'Customization', icon: Layout },
+    { id: 'customization', label: 'Customization', icon: Layout },
+    // { id: 'my_page', label: 'Pages', icon: Layout },
     // { id: 'appearance', label: 'Theme', icon: Layout },
     { id: 'users', label: 'Users', icon: Users },
     // { id: 'products', label: 'Widgets', icon: ShoppingBag },
@@ -47,8 +49,10 @@ function SettingsPage() {
     switch (activeTab) {
       // case 'homepage_configuration':
       //   return <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} colors={colors} setColors={setColors}/>;
-      case 'my_page':
-        return <MyPageContent/>;
+      case 'customization':
+        return <CustomizationContent />;
+      // case 'my_page':
+      //   return <MyPageContent/>;
       // case 'appearance':
       //   return <AppearanceContent />;
       case 'users':

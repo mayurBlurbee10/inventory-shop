@@ -95,7 +95,7 @@ function Navbar({ content, config, filterValue }) {
           </button>
           {/* Line Below Button */}
           <div
-            className={`h-1 w-full absolute -bottom-6 left-0 transition-all duration-300 ${
+            className={`h-1 w-full absolute left-0 transition-all duration-300 -bottom-6 ${
               pathname.includes(href) ? "opacity-100" : "opacity-0"
             }`}
             style={{
@@ -173,7 +173,7 @@ function Navbar({ content, config, filterValue }) {
                 className="mr-2 max-h-[60px] max-w-[150px]"
               />
             ) : (
-              <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
+              <div className="h-[60px] w-[150px] mr-2 bg-gray-300 animate-pulse rounded" />
             )}
 
             <span

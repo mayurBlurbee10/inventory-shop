@@ -93,28 +93,12 @@ export default function DocDashboard() {
     setIsOpen((prev) => !prev);
   };
 
-  // const fetchConfig = async () => {
-  //   try {
-  //     if (!params?.portalid) return;
-  //     const response = await fetchWrapper(
-  //       `/api/portal?portalid=${params.portalid || "default"}`,
-  //       {},
-  //       "portal-login"
-  //     );
-  //     const data = await response.json();
-  //     if (!data.data && response.status === 404) {
-  //       router.push(`/${params.portalid}/not-found`);
-  //       return;
-  //     }
-  //     if (!response.ok) {
-  //       throw new Error("Failed to fetch users");
-  //     }
-
-  //     setConfig(data.data);
-  //   } catch (error) {
-  //     console.log("error: ", error);
-  //   }
-  // };
+  const isAnySideSectionVisible = () => {
+    if (isPageLoading) return true; 
+    if (!page || !page.length) return true; 
+    
+    return page.some((item) => item.visible);
+  };
 
   const fetchPage = async () => {
     try {
@@ -472,7 +456,10 @@ export default function DocDashboard() {
             </div>
           </div>
           <div className="col-span-2">
+          {filterVisibility("My Task Section") && (
             <TasksSection fileType="my" />
+          )}
+          {filterVisibility("Advisor Section") && (
               <div className="mb-7">
                 <div>
                   <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
@@ -482,7 +469,7 @@ export default function DocDashboard() {
 
                 {/* Advisory card */}
 
-                <div className="rounded-md border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
+                <div className="border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-6 p-4 ">
                     <div className="max-w-[150px] w-full">
                       <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
@@ -501,10 +488,12 @@ export default function DocDashboard() {
                   </div>
                 </div>
               </div>
+          )}
+          {filterVisibility("Collaborator Section") && (
             <CollaboratorSection />
-          </div>
-          {/* {filterVisibility("Links Section") && (
-            <div>
+          )}
+          {filterVisibility("Links Section") && (
+            <div className="mt-7">
               {filterLinksVisibility("shared-docs") && (
                  <Link href="shared-docs">
                    <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
@@ -542,7 +531,8 @@ export default function DocDashboard() {
                  </Link>
                )}
             </div>
-          )} */}
+          )}
+          </div>
         </div>
       </div>
     </div>

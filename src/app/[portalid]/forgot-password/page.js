@@ -49,7 +49,7 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div className='w-full h-screen flex justify-center items-center border'>
+        <div className='w-full h-screen flex justify-center items-center border bg-white'>
             {
                 showSuccess ? (
                     <div className="w-full max-w-sm mx-auto p-8 bg-white rounded-lg flex flex-col justify-center items-center space-y-5 border">

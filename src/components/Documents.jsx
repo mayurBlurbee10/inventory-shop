@@ -1722,7 +1722,7 @@ function Documents({
             <div className="col-span-5 lg:col-span-2">
               <div>
                 {/* Tasks */}
-                {/* {filterVisibility("My Task Section") && (
+                {filterVisibility("My Task Section") && (
                     <>
                       <div className="grid grid-cols-3">
                         <div></div>
@@ -1932,10 +1932,10 @@ function Documents({
                 <CompleteForms
                   onClose={() => setIsCompleteFormPopupOpen(false)}
                   isOpen={isCompleteFormPopupOpen}
-                /> */}
+                />
 
                 {/* My advisor */}
-                {/* {filterVisibility("Advisor Section") && (
+                {filterVisibility("Advisor Section") && (
                     <div className="mb-7">
                       <div>
                         <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
@@ -1943,7 +1943,7 @@ function Documents({
                         </h3>
                       </div>
 
-                      <div className="rounded-md border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
+                      <div className="border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-start gap-6 p-4 ">
                           <div className="max-w-[150px] w-full">
                             <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
@@ -1960,7 +1960,7 @@ function Documents({
                             </p>
                           </div>
                         </div>
-                        <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
+                        {/* <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
                           <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
                             Meet
                           </button>
@@ -1970,13 +1970,13 @@ function Documents({
                           <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
                             Chat
                           </button>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
-                  )} */}
+                  )}
 
                 {/* Collaborators */}
-                {/* {filterVisibility("Collaborator Section") && (
+                {filterVisibility("Collaborator Section") && (
                     <div>
                       <div>
                         <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
@@ -2101,7 +2101,7 @@ function Documents({
                         </div>
                       </div>
                     </div>
-                  )} */}
+                  )}
 
                 {filterVisibility("Messaging") && (
                   <Messaging />

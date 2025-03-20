@@ -66,7 +66,7 @@ const Messaging = () => {
   }, [users]);
 
   return (
-    <div>
+    <div className="mt-7">
       <div>
         <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
           Messaging

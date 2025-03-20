@@ -7,7 +7,10 @@ export const existingPages = [
       { label: "Header Section", visible: true },
       { label: "Statistics Section", visible: true },
       { label: "Statistics Header", visible: true },
-      { label: "Links Section", visible: true },
+      { label: "Links Section", visible: false },
+      { label: "My Task Section", visible: true },
+      { label: "Advisor Section", visible: true },
+      { label: "Collaborator Section", visible: true },
     ],
   },
   {

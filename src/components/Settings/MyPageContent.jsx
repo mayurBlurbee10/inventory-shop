@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ContentManagementContent from "./ContentManagementContent";
 import ProductsContent from "./ProductsContent";
 
-const MyPageContent = () => {
+const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
   const params = useParams();
   const [isOpenAddPageModal, setIsOpenAddPageModal] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -38,18 +38,13 @@ const MyPageContent = () => {
   const dispatch = useDispatch();
   const [isUserData, setIsUserData] = useState("");
   const { data: config } = useSelector((state) => state.portal);
-  const [colors, setColors] = useState({
-    primaryColor: config.primaryColor,
-    secondaryColor: config.secondaryColor,
-    accentColor: config.accentColor
-  })
 
   useEffect(() => {
     const userData = getUserData();
     setIsUserData(userData?.isOnboardingRequired)
   }, []);
   useEffect(() => {
-    fetchExistingPages();
+      fetchExistingPages();
   }, []);
 
   useEffect(() => {
@@ -165,6 +160,7 @@ const MyPageContent = () => {
         );
 
         const data = await response.json();
+        setIsQueryFetched(true);
         await fetchPlugin();
       } catch (error) {
         toast.error(error.message);
@@ -308,10 +304,6 @@ const MyPageContent = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
-        <ContentManagementContent isManageRequired={true} onboardingStatus={isUserData} colors={colors} setColors={setColors} />
-      </div>
     <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto">
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
         <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
@@ -383,10 +375,6 @@ const MyPageContent = () => {
           plugin={plugin}
           pageType={pluginData.type}
         />
-      </div>
-    </div>
-      <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
-        <ProductsContent />
       </div>
     </div>
   );

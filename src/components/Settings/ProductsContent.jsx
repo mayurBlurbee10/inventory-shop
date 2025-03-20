@@ -37,7 +37,7 @@ const options = [
   },
 ]
 
-const ProductsContent = () => {
+const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) => {
   const params = useParams();
   const [isOpenCreatePlugin, setIsOpenCreatePlugin] = useState(false);
   const [isOpenUpdatePlugin, setIsOpenUpdatePlugin] = useState(false);
@@ -204,8 +204,11 @@ const ProductsContent = () => {
   };
 
   useEffect(() => {
-    fetchExistingPages();
-  }, []);
+    if(isQueryFetched){
+      fetchPlugins();
+      setIsQueryFetched(false);
+    }
+  }, [isQueryFetched]);
 
   return (
     <div className="space-y-6">
