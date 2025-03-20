@@ -11,6 +11,7 @@ import {
   ListChecks,
   Plus,
   RotateCw,
+  Search,
   UploadCloud,
   User,
 } from "lucide-react";
@@ -25,6 +26,7 @@ function LoansPage() {
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
   const [newLoan, setNewLoan] = useState(false);
   const newLoanDropdownRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: loanData } = useSelector((state) => state.loans);
   const {data : pages } = useSelector((state)=>state.pages);
   const dispatch = useDispatch();
@@ -66,11 +68,15 @@ function LoansPage() {
   if(!loanData){
     return <LoadingSpinner/>
   }
+  const filteredLoanData = loanData?.filter((loan) =>
+    loan.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+console.log("loanData", loanData);
 
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div className="m-1 mx-4">
-        <div className="border-b border-[#dee2e6] pt-12 pb-5 flex justify-between items-center">
+        <div className="border-b border-[#dee2e6] pt-12 pb-5 flex justify-between sm:items-center flex-col md:flex-row gap-3">
           <div className="text-sm font-lato">
             <span className="block md:inline text-black text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
               Loan Origination
@@ -79,9 +85,10 @@ function LoansPage() {
               Securely execute a loan origination workflow, including application, document ingestion, and eSignature.
             </span>
           </div>
+          <div>
           {loanData?.length === 3 ? (
           <div
-            className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl py-10 cursor-pointer font-lato"
+            className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl cursor-pointer font-lato"
             onClick={() => router.push(`loans/new?type=mortgage`)}
           >
             <List className="size-8" />
@@ -99,7 +106,7 @@ function LoansPage() {
             </div>
             <ChevronDown className="fill-black " />
             {isLoanOptionOpen && (
-              <div ref={newLoanDropdownRef} className="flex flex-col border border-[#dee2e6] bg-white  w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer font-lato">
+              <div ref={newLoanDropdownRef} className="flex flex-col border border-[#dee2e6] bg-white  w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer font-lato z-[50]">
                 <div onClick={() => router.push(`loans/new?type=mortgage`)}>
                   Mortgage
                 </div>
@@ -114,6 +121,7 @@ function LoansPage() {
           </div>
         )}
         </div>
+        </div>
         <div className="flex flex-col pt-8">
           <div className="pb-5">
             <div
@@ -123,20 +131,35 @@ function LoansPage() {
               <RotateCw className="h-4 w-4" />
             </div>
           </div>
-          <table className="border border-[#dee2e6] text-sm font-lato">
-            <thead className="bg-gray-50">
+          <div className="border w-full">
+            <div className="py-[18px] flex items-center w-full px-5 bg-gray-50 text-[#8f8f8f]">
+              <div>
+                <Search className="w-5 h-5" />
+              </div>
+              <input
+                type="search"
+                placeholder="Search file and folders"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={
+                  "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4 text-gray-700"
+                }
+              />
+            </div>
+          <table className=" border-[#dee2e6] text-sm font-lato w-full">
+            <thead className="border-t">
               <tr>
-                <th className="p-5">My Loans</th>
+                <th className="p-3">My Loans</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {loanData?.length > 0 &&
-                loanData?.map(({ id, icon, name, type, status }) => (
-                  <tr key={id} className="border border-[#dee2e6] text-center">
+            <tbody className="border-t">
+              {filteredLoanData?.length > 0 ?
+                filteredLoanData?.map(({ id, icon, name, type, status }) => (
+                  <tr key={id} className=" border-b text-center">
                     <td className="py-5 flex items-center justify-center">
                       {/* <Icon className="size-8" /> */}
                       {icon === "CarFront" && <CarFront className="size-8" />}
@@ -159,9 +182,16 @@ function LoansPage() {
                       Details
                     </td>
                   </tr>
-                ))}
+                )): (
+                    <tr>
+                      <td colSpan="5" className="text-center text-gray-500 py-4">
+                        No loan found
+                      </td>
+                    </tr>
+                )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>
