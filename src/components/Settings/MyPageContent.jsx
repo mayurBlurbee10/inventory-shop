@@ -310,7 +310,7 @@ const MyPageContent = () => {
   return (
     <div className="flex flex-col gap-5">
       <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
-        <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} colors={colors} setColors={setColors} />
+        <ContentManagementContent isManageRequired={true} onboardingStatus={isUserData} colors={colors} setColors={setColors} />
       </div>
     <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto">
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">

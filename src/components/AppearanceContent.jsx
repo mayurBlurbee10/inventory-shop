@@ -14,7 +14,7 @@ const AppearanceContent = () => {
     logo: "",
     primaryColor: "#3B82F6",
     secondaryColor: "#6B7280",
-    accentColor: "#8B5CF6",
+    // accentColor: "#8B5CF6",
   });
   // const [config, setConfig] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +49,7 @@ const AppearanceContent = () => {
         logo: config?.logo,
         primaryColor: config?.primaryColor || prev.primaryColor,
         secondaryColor: config?.secondaryColor || prev.secondaryColor,
-        accentColor: config?.accentColor || prev.accentColor,
+        // accentColor: config?.accentColor || prev.accentColor,
       }));
       setPreviewUrl(
         config?.logo.includes("/api")
@@ -96,7 +96,7 @@ const AppearanceContent = () => {
         theme: selectedTheme.theme,
         primaryColor: selectedTheme.primaryColor,
         secondaryColor: selectedTheme.secondaryColor,
-        accentColor: selectedTheme.accentColor,
+        // accentColor: selectedTheme.accentColor,
       };
 
       if (typeof selectedTheme?.logo === "object") {
@@ -304,7 +304,7 @@ const AppearanceContent = () => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Primary Color
@@ -329,7 +329,7 @@ const AppearanceContent = () => {
                 className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
               />
             </div>
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700">
                 Accent Color
               </label>
@@ -340,7 +340,7 @@ const AppearanceContent = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

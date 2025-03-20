@@ -290,7 +290,6 @@ export default function DocDashboard() {
   return (
     // <Container>
     <div className="max-w-[1820px] mx-auto px-4 pb-[70px]">
-
       <div className="mt-14">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
           <div className="col-span-3">
@@ -299,18 +298,28 @@ export default function DocDashboard() {
                 <div>
                   <h2 className="text-xl font-light text-black font-lato">
                     {/* Hello, David West! Today is Wednesday, January 15th. */}
-                    {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${dayAndDate.month
-                      } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
-                      }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
+                    {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${
+                      dayAndDate.month
+                    } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${
+                      dayAndDate.date === 2 ? "nd" : ""
+                    }${dayAndDate.date === 3 ? "rd" : ""}${
+                      dayAndDate.date !== 1 &&
+                      dayAndDate.date !== 2 &&
+                      dayAndDate.date !== 3
+                        ? "th"
+                        : ""
+                    }`}
                   </h2>
                 </div>
               )}
               {filterVisibility("Statistics Header") && (
                 <div>
                   <p className="text-sm font-normal text-black font-lato">
-                    Dow Jones <span className="text-red-500">-34.71 (-0.16%)</span>{" "}
-                    S&P 500 <span className="text-red-500">-0.79 (-0.03%)</span>{" "}
-                    Nasdaq <span className="text-green-500"> +0.04 (0.00%)</span>
+                    Dow Jones{" "}
+                    <span className="text-red-500">-34.71 (-0.16%)</span> S&P
+                    500 <span className="text-red-500">-0.79 (-0.03%)</span>{" "}
+                    Nasdaq{" "}
+                    <span className="text-green-500"> +0.04 (0.00%)</span>
                   </p>
                 </div>
               )}
@@ -463,9 +472,37 @@ export default function DocDashboard() {
             </div>
           </div>
           <div className="col-span-2">
-            <TasksSection fileType='my' />
+            <TasksSection fileType="my" />
+              <div className="mb-7">
+                <div>
+                  <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                    My Advisor
+                  </h3>
+                </div>
+
+                {/* Advisory card */}
+
+                <div className="rounded-md border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-6 p-4 ">
+                    <div className="max-w-[150px] w-full">
+                      <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
+                        <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
+                      </a>
+                    </div>
+
+                    <div>
+                      <h2 className="font-medium text-2xl font-lato mb-1 text-[#212529] leading-none">
+                        Erica Smith
+                      </h2>
+                      <p className="font-lato text-base text-[#6c757d]">
+                        Senior Financial Advisor
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             <CollaboratorSection />
-          </div> 
+          </div>
           {/* {filterVisibility("Links Section") && (
             <div>
               {filterLinksVisibility("shared-docs") && (

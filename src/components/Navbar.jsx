@@ -84,12 +84,25 @@ function Navbar({ content, config, filterValue }) {
 
     return (
       <Link href={href} passHref>
-        <button
-          className={`px-3 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+        <div className="relative flex flex-col items-center mx-2">
+          <button
+            className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+              pathname.includes(href) ? "font-bold" : "text-black"
             }`}
-        >
-          {title}
-        </button>
+            style={pathname.includes(href) ? { color: config?.secondaryColor } : {}}
+          >
+            {title}
+          </button>
+          {/* Line Below Button */}
+          <div
+            className={`h-1 w-full absolute -bottom-6 left-0 transition-all duration-300 ${
+              pathname.includes(href) ? "opacity-100" : "opacity-0"
+            }`}
+            style={{
+              backgroundColor: pathname.includes(href) ? config?.secondaryColor : "transparent",
+            }}
+          ></div>
+        </div>
       </Link>
     );
   };
@@ -149,7 +162,7 @@ function Navbar({ content, config, filterValue }) {
   }, []);
 
   return (
-    <div className="border-b border-[#0000001a]">
+    <div className="border-b border-[#0000001a] relative">
       <div className="w-full mx-auto px-3">
         <nav className="flex justify-between items-center bg-secondary py-2">
           <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
@@ -183,7 +196,7 @@ function Navbar({ content, config, filterValue }) {
             </span>
           </div>
 
-          <div className="hidden lg:flex space-x-4 items-center">
+          <div className="hidden lg:flex items-center">
             {isAdvisorViewOpen ? (
               <>
                 <NavBarItem
