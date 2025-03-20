@@ -43,17 +43,17 @@ const AllTaskModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Dialog open={isOpen} onClose={() => {}} className="relative z-20">
+    <div className="relative z-20">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4 text-[#000000e8]">
-        <Dialog.Panel className="mx-auto max-w-[90vw] w-[1200px] h-[80vh] bg-white rounded-lg shadow-xl relative">
+        <div className="mx-auto max-w-[90vw] w-[1200px] h-[80vh] bg-white rounded-lg shadow-xl relative">
           <div className="flex items-center justify-between px-6 py-4 border-b">
-            <Dialog.Title className="text-lg font-semibold text-gray-900">
+            <div className="text-lg font-semibold text-gray-900">
               Tasks
-            </Dialog.Title>
+            </div>
             <button
-              onClick={onClose}
+              onClick={() => onClose()}
               className="p-1 hover:bg-gray-100 rounded-full text-black"
             >
               <X className="h-5 w-5" />
@@ -114,7 +114,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
               </table>
             </div>
           </div>
-        </Dialog.Panel>
+        </div>
         {selectTaskToUpdate !== null && (
           <CreateTaskPopUp
             onClose={() => setSelectTaskToUpdate(null)}
@@ -124,7 +124,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
           />
         )}
       </div>
-    </Dialog>
+    </div>
   );
 };
 

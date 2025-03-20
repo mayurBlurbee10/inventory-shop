@@ -73,7 +73,7 @@ function SettingsPage() {
 
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg flex justify-center relative w-full h-[85vh]">
+    <div className="bg-white rounded-lg flex justify-center relative w-full h-[84vh]">
       <div className="w-2/5 md:w-72 border-r border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs">
         <h2 className="text-xl text-gray-800 font-semibold mb-6">Tools</h2>
         <nav className="space-y-1">

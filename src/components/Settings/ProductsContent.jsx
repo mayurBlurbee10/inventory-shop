@@ -476,10 +476,14 @@ const ProductsContent = () => {
         onClose={() => setIsOpenUpdatePlugin(false)}
         plugin={pluginEdit}
       />
-      <AllTaskModal
-        isOpen={isAllTaskModalOpen}
-        onClose={() => setIsAllTaskModalOpen(false)}
-      />
+      {
+        isAllTaskModalOpen && (
+          <AllTaskModal
+          isOpen={isAllTaskModalOpen}
+          onClose={() => setIsAllTaskModalOpen(false)}
+        />
+        )
+      }
     </div>
   );
 };

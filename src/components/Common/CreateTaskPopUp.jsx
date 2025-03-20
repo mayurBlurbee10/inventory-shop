@@ -17,7 +17,7 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
     const [selectedType, setSelectedType] = useState(TaskType.SIGN)
     const [discription, setDiscription] = useState("");
     const [title, setTitle] = useState("");
-    const [filesUploaded, setFilesUploaded]=useState(false)
+    const [filesUploaded, setFilesUploaded]=useState([])
     const [resetUpload, setResetUpload] = useState(false);
     const [formData, setFormData] = useState({
       title: task?.title || "",
@@ -287,18 +287,18 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
-            <div className="bg-white rounded-lg p-6 w-full max-w-[800px]">
-                <div className="flex justify-between items-center mb-4">
+            <div className="bg-white rounded-lg w-full max-w-[800px]">
+                <div className="flex justify-between items-center mb-4 border-b py-4 px-6">
                     <h2 className="text-xl text-gray-800 font-semibold">Create Task</h2>
                     <button
-                        className="text-gray-400 hover:text-gray-500"
+                        className="p-1 hover:bg-gray-100 rounded-full text-black"
                         onClick={onClose}
                     >
-                        <X className="h-6 w-6" />
+                        <X className="h-5 w-5" />
                     </button>
                 </div>
 
-                  <form className="space-y-4">
+                  <form className="space-y-4 p-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
                            Please select Task Type
