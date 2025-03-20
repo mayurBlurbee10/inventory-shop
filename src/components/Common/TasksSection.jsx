@@ -256,7 +256,7 @@ const TasksSection = ({ fileType }) => {
 
                     <div className="mb-7 max-h-[300px] overflow-y-auto border border-[#dee2e6]">
                         <table className="min-w-full divide-y divide-gray-200 overflow-auto ">
-                            <thead className="bg-gray-50 text-sm font-lato">
+                            <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
                                 <tr>
                                     <th></th>
                                     <th className='text-start px-3 py-4'>Task</th>

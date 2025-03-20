@@ -208,7 +208,7 @@ function ESignature() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-500 text-center">
+                  <p className="text-gray-500 text-center p-3">
                     No pending requests
                   </p>
                 )}
@@ -234,7 +234,7 @@ function ESignature() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-500 text-center">
+                  <p className="text-gray-500 text-center p-3">
                     No completed requests
                   </p>
                 )}
