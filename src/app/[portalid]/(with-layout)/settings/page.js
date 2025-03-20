@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 
 function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('homepage_configuration');
+  const [activeTab, setActiveTab] = useState('my_page');
   const [isUserData, setIsUserData] = useState("");
   const { data: config } = useSelector((state) => state.portal);
   const [colors, setColors] = useState({
@@ -30,23 +30,23 @@ function SettingsPage() {
   // console.log('isUserData', isUserData);
 
   const tabs = [
-    { id: 'homepage_configuration', label: 'Home Page', icon: FileText },
-    { id: 'my_page', label: 'Pages', icon: Layout },
+    // { id: 'homepage_configuration', label: 'Home Page', icon: FileText },
+    { id: 'my_page', label: 'Customization', icon: Layout },
     // { id: 'appearance', label: 'Theme', icon: Layout },
     { id: 'users', label: 'Users', icon: Users },
-    { id: 'products', label: 'Widgets', icon: ShoppingBag },
+    // { id: 'products', label: 'Widgets', icon: ShoppingBag },
     // { id: 'content', label: 'Content', icon: FileText },
     { id: 'identity', label: 'Identity Management', icon: Users },
     // { id: 'invoicing', label: 'Forms', icon: FileSpreadsheet },
-    { id: 'Integrations', label: 'Integrations', icon: Plug },
+    // { id: 'Integrations', label: 'Integrations', icon: Plug },
     // { id: 'box', label: 'Box Settings', icon: Box }
     { id: 'reports', label: 'Reports', icon: ChartLine }
   ];
 
   const getActiveContent = () => {
     switch (activeTab) {
-      case 'homepage_configuration':
-        return <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} colors={colors} setColors={setColors}/>;
+      // case 'homepage_configuration':
+      //   return <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} colors={colors} setColors={setColors}/>;
       case 'my_page':
         return <MyPageContent/>;
       // case 'appearance':
@@ -60,10 +60,10 @@ function SettingsPage() {
       //   return <InvoicingContent />;
       // case 'box':
       //   return <BoxSettingsContent />;
-      case 'Integrations':
-        return <div><h1 className='text-gray-700'>Coming Soon..</h1></div>;
-      case 'products':
-        return <ProductsContent />;
+      // case 'Integrations':
+      //   return <div><h1 className='text-gray-700'>Coming Soon..</h1></div>;
+      // case 'products':
+      //   return <ProductsContent />;
         case 'reports':
         return <ReportsContent />;
       default:

@@ -455,12 +455,12 @@ const ContentManagementContent = ({
         </div>
       ) : (
         <div
-          className={`grid grid-cols-1 gap-6 ${
+          className={`grid grid-cols-1 gap-6 p-1 md:p-2 lg:p-3 ${
             onBoarding ? "" : " sm:grid-cols-2 lg:grid-cols-3"
           }`}
         >
           {content.map((item, idx) => (
-            <div key={idx} className="border rounded-lg p-4 bg-white relative">
+            <div key={idx} className="border rounded-lg p-4 bg-white relative shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start ">
                 <div>
                   <h4 className="text-lg font-medium text-gray-900">
@@ -491,7 +491,7 @@ const ContentManagementContent = ({
             Organize and edit the information displayed across your platform.
           </p>
         </div>
-        <div className="pt-6">
+        <div className="pt-6 p-1 md:p-2 lg:p-3">
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>

@@ -1722,7 +1722,7 @@ function Documents({
             <div className="col-span-5 lg:col-span-2">
               <div>
                 {/* Tasks */}
-                {filterVisibility("My Task Section") && (
+                {/* {filterVisibility("My Task Section") && (
                     <>
                       <div className="grid grid-cols-3">
                         <div></div>
@@ -1932,7 +1932,7 @@ function Documents({
                 <CompleteForms
                   onClose={() => setIsCompleteFormPopupOpen(false)}
                   isOpen={isCompleteFormPopupOpen}
-                />
+                /> */}
 
                 {/* My advisor */}
                 {filterVisibility("Advisor Section") && (
@@ -1945,8 +1945,8 @@ function Documents({
 
                       {/* Advisory card */}
 
-                      <div className="rounded-md border border-[#dee2e6]">
-                        <div className="flex items-start gap-6 border-b border-b-[#dee2e6] p-4">
+                      <div className="rounded-md border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start gap-6 p-4 ">
                           <div className="max-w-[150px] w-full">
                             <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
                               <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
@@ -1962,7 +1962,7 @@ function Documents({
                             </p>
                           </div>
                         </div>
-                        <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
+                        {/* <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
                           <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
                             Meet
                           </button>
@@ -1972,13 +1972,13 @@ function Documents({
                           <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
                             Chat
                           </button>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   )}
 
                 {/* Collaborators */}
-                {filterVisibility("Collaborator Section") && (
+                {/* {filterVisibility("Collaborator Section") && (
                     <div>
                       <div>
                         <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
@@ -1987,8 +1987,8 @@ function Documents({
                       </div>
                       <div className="p-4 border border-[#dee2e6]">
                       <form className="mb-3.5" onSubmit={(e) => {
-                        e.preventDefault(); // Prevents form from refreshing the page
-                        addCollaborator(collaborator); // Calls function only when form is submitted
+                        e.preventDefault(); 
+                        addCollaborator(collaborator); 
                       }}>
                           <input
                             type="email"
@@ -2015,24 +2015,15 @@ function Documents({
                                 }))
                               }
                             >
-                              {/* <option>Co-Owner</option> */}
+                              
                               <option value={"editor"}>Editor</option>
                               <option value={"viewer"}>Viewer</option>
-                              {/* <option>Previewer</option>
-                          <option>Uploader</option>
-                          <option>Previewer Uploader</option>
-                          <option>Viewer Uploader</option> */}
+                              
                             </select>
 
-                            {/* <button
-                              className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm cursor-pointer"
-                              onClick={() => addCollaborator(collaborator)}
-                              type="button"
-                            >
-                              Invite
-                            </button> */}
+                            
                             <Button 
-                              // onClick={addCollaborator(collaborator)}
+                              onClick={addCollaborator(collaborator)}
                               type="Secondary"
                               label="Invite"
                               buttonType="Submit"
@@ -2040,8 +2031,7 @@ function Documents({
                           </div>
                         </form>
 
-                        {/* Table */}
-
+                       
                         <div className="border overflow-auto">
                           <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
                             <thead>
@@ -2113,7 +2103,7 @@ function Documents({
                         </div>
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                 {filterVisibility("Messaging") && (
                   <Messaging />

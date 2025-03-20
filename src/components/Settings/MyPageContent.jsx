@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 import { getUserData } from "@/lib/auth";
 import { useDispatch, useSelector } from "react-redux";
  import { setPages } from "@/store/services/pageService";
+import ContentManagementContent from "./ContentManagementContent";
+import ProductsContent from "./ProductsContent";
 
 const MyPageContent = () => {
   const params = useParams();
@@ -34,7 +36,18 @@ const MyPageContent = () => {
   const { data : pages } = useSelector((state) => state.pages); 
   const [pagesData, setPagesData] = useState(pages);
   const dispatch = useDispatch();
+  const [isUserData, setIsUserData] = useState("");
+  const { data: config } = useSelector((state) => state.portal);
+  const [colors, setColors] = useState({
+    primaryColor: config.primaryColor,
+    secondaryColor: config.secondaryColor,
+    accentColor: config.accentColor
+  })
 
+  useEffect(() => {
+    const userData = getUserData();
+    setIsUserData(userData?.isOnboardingRequired)
+  }, []);
   useEffect(() => {
     fetchExistingPages();
   }, []);
@@ -198,7 +211,7 @@ const MyPageContent = () => {
       <React.Fragment key={page?.id}>
         {((!page?.isCustomPage && page?.visibility?.length > 0 ) || page?.isCustomPage) && (
       <div
-        className={`py-2 text-base flex gap-2 w-full shadow-md p-4 rounded-lg ${
+        className={`text-base flex gap-2 w-full border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow ${
           page?.isCustomPage ? "justify-between items-center" : "flex-col"
         }`}
         key={index}
@@ -208,7 +221,7 @@ const MyPageContent = () => {
         </h3>
         {page?.isCustomPage && (
           <>
-            <div className="flex items-center ml-auto gap-2">
+            <div className="flex items-center ml-auto gap-2 ">
               <button
                 type="button"
                 className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
@@ -295,6 +308,10 @@ const MyPageContent = () => {
   };
 
   return (
+    <div className="flex flex-col gap-5">
+      <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
+        <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} colors={colors} setColors={setColors} />
+      </div>
     <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto">
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
         <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
@@ -366,6 +383,10 @@ const MyPageContent = () => {
           plugin={plugin}
           pageType={pluginData.type}
         />
+      </div>
+    </div>
+      <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
+        <ProductsContent />
       </div>
     </div>
   );

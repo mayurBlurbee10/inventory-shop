@@ -324,7 +324,7 @@ function Login() {
   if (!config || !content) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col justify-between">
       <div className="max-w-[1140px] w-full py-[70px] mx-auto">
         <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
           {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
@@ -371,7 +371,7 @@ function Login() {
 
           </a>
 
-          <div className="hidden md:flex items-center gap-x-6">
+          {/* <div className="hidden md:flex items-center gap-x-6">
             <div className="flex items-center transition-transform transform hover:scale-105 ">
               <User className="w-5 h-5 text-gray-500 pb-[2px]" />
               <NavBarItem title="Individual" />
@@ -402,7 +402,7 @@ function Login() {
                 />
               </svg>
             </button>
-          </div>
+          </div> */}
         </nav>
 
         <div className="flex-1 flex flex-col md:flex-row pt-12">
@@ -571,8 +571,12 @@ function Login() {
                     type="Login"
                     label="Log In"
                   />
-
-                  <button
+                  <div className="w-full flex justify-center items-center text-sm mt-2 text-black hover:text-blue-700  cursor-pointer">
+                    <p onClick={() => router.push(`forgot-password`)}>
+                      forgot password?
+                    </p>
+                  </div>
+                  {/* <button
                     type="button"
                     className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1 disabled:cursor-not-allowed disabled:opacity-50"
                     onClick={() => {}}
@@ -590,7 +594,7 @@ function Login() {
                         Login with Okta
                       </span>
                     )}
-                  </button>
+                  </button> */}
                 </div>
               </form>
 
@@ -678,7 +682,9 @@ function Login() {
           </div>
         </div>
       </div>
-      <Footer config={config} filterValue={filterValue} />
+      <div>
+        <Footer config={config} filterValue={filterValue} />
+      </div>
       {isTNCOpen && (
         <TNCModal
           onClose={() => {

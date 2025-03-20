@@ -19,6 +19,9 @@ import Navbar from "./Navbar";
 import Container from "./Container";
 import { setCurrentUser } from "@/store/services/userService";
 import { useDispatch, useSelector } from "react-redux";
+import TasksSection from "./Common/TasksSection";
+import AdvisorSection from "./Common/CollaboratorSection";
+import CollaboratorSection from "./Common/CollaboratorSection";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -273,7 +276,7 @@ export default function DocDashboard() {
     setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
   }, []);
   const LoadingSpinner = () => (
-    <div className="min-h-screen flex justify-center items-center py-8">
+    <div className="min-h-[84vh] flex justify-center items-center py-8">
       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
     </div>
   );
@@ -286,50 +289,49 @@ export default function DocDashboard() {
 
   return (
     // <Container>
-    <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
-      <div className="flex items-center gap-10 pt-12 pb-4 border-b mt-1 ">
-        {filterVisibility("Header Section") && (
-          <div>
-            <h2 className="text-xl font-light text-black font-lato">
-              {/* Hello, David West! Today is Wednesday, January 15th. */}
-              {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${
-                dayAndDate.month
-              } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${
-                dayAndDate.date === 2 ? "nd" : ""
-              }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
-            </h2>
-          </div>
-        )}
-        {filterVisibility("Statistics Header") && (
-          <div>
-            <p className="text-sm font-normal text-black font-lato">
-              Dow Jones <span className="text-red-500">-34.71 (-0.16%)</span>{" "}
-              S&P 500 <span className="text-red-500">-0.79 (-0.03%)</span>{" "}
-              Nasdaq <span className="text-green-500"> +0.04 (0.00%)</span>
-            </p>
-          </div>
-        )}
-      </div>
+    <div className="max-w-[1820px] mx-auto px-4 pb-[70px]">
 
-      <div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-7">
-          <div>
-            {/* Chart */}
-            {filterVisibility("Chart Section") && (
-              <>
-                <h3 className="text-xl font-light font-lato text-center text-black mb-4">
-                  Your Investments At a Glance
-                </h3>
-
-                <div className="max-w-[400px] mx-auto">
-                  <Pie data={data} />
+      <div className="mt-14">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
+          <div className="col-span-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-10 pb-4 border-b">
+              {filterVisibility("Header Section") && (
+                <div>
+                  <h2 className="text-xl font-light text-black font-lato">
+                    {/* Hello, David West! Today is Wednesday, January 15th. */}
+                    {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${dayAndDate.month
+                      } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
+                      }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
+                  </h2>
                 </div>
-              </>
-            )}
+              )}
+              {filterVisibility("Statistics Header") && (
+                <div>
+                  <p className="text-sm font-normal text-black font-lato">
+                    Dow Jones <span className="text-red-500">-34.71 (-0.16%)</span>{" "}
+                    S&P 500 <span className="text-red-500">-0.79 (-0.03%)</span>{" "}
+                    Nasdaq <span className="text-green-500"> +0.04 (0.00%)</span>
+                  </p>
+                </div>
+              )}
+            </div>
+            {/* Chart */}
+            <div className="mt-5">
+              {filterVisibility("Chart Section") && (
+                <>
+                  <h3 className="text-xl font-light font-lato text-center text-black mb-4">
+                    Your Investments At a Glance
+                  </h3>
 
-            {/* Chart data table */}
-            {filterVisibility("Statistics Section") && (
-                <div className="border border-[#0000001a] mt-[70px]">
+                  <div className="max-w-[400px] mx-auto">
+                    <Pie data={data} />
+                  </div>
+                </>
+              )}
+
+              {/* Chart data table */}
+              {filterVisibility("Statistics Section") && (
+                <div className="border border-[#0000001a] mt-[70px] max-w-2xl mx-auto">
                   <table className="min-w-full divide-y-2 divide-[#0000001a]">
                     <thead>
                       <tr>
@@ -458,20 +460,14 @@ export default function DocDashboard() {
                   </table>
                 </div>
               )}
+            </div>
           </div>
-          {filterVisibility("Links Section") && (
+          <div className="col-span-2">
+            <TasksSection fileType='my' />
+            <CollaboratorSection />
+          </div> 
+          {/* {filterVisibility("Links Section") && (
             <div>
-              {/* Shared document cards */}
-              {/* <Link href="my-docs">
-                <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                  <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                    My Documents
-                  </h3>
-                  <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                    Securely share content with your advisor
-                  </p>
-                </div>
-              </Link> */}
               {filterLinksVisibility("shared-docs") && (
                  <Link href="shared-docs">
                    <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
@@ -509,7 +505,7 @@ export default function DocDashboard() {
                  </Link>
                )}
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

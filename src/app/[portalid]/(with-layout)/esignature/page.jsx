@@ -152,7 +152,8 @@ function ESignature() {
 
         </div>
         {/* Tabs */}
-        <div className="flex border-b pt-[20px]">
+        <div className="border mt-[20px]">
+        <div className="flex border-b p-5 bg-gray-50">
           <button
             className={`px-4 py-2 text-md sm:text-lg font-lato ${activeTab === "pending"
               ? "border-b-2 border-blue-500 text-blue-600"
@@ -180,7 +181,7 @@ function ESignature() {
             <p className="ml-2 text-gray-500">Loading...</p>
           </div>
         ) : (
-          <div className="mt-4 min-h-[400px] sm:min-h-[500px] overflow-auto">
+          <div className="h-[550px] sm:min-h-[500px] overflow-y-auto p-5">
             {activeTab === "pending" && (
               <div>
                 {pendingRequests?.length > 0 ? (
@@ -190,7 +191,7 @@ function ESignature() {
                         {req.source_files.length > 0 && (
                           <li
                             key={req.id}
-                            className="p-3 font-lato border rounded-lg shadow-sm flex justify-between items-center"
+                            className="p-3 font-lato border rounded-lg shadow-sm flex justify-between items-center hover:shadow-md transition-shadow"
                           >
                             <span className="text-gray-800 font-semibold">
                               {req?.source_files[0]?.name}
@@ -241,6 +242,7 @@ function ESignature() {
             )}
           </div>
         )}
+        </div>
       </div>
       <SettingsModal
         isOpen={isSettingsOpen}

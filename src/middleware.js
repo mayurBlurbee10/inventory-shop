@@ -12,6 +12,7 @@ const excludedRoutes = {
   '/api/setPassword': ['POST','GET'],
   '/api/plugins': ['GET'],
   '/api/box/files/proxy-file': ['GET'],
+  '/api/users/resendInviteLink': ['POST'],
 };
 
 const publicRoutes = [

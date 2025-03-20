@@ -434,7 +434,7 @@ export default function OnBoardingPage() {
       </div>
 
       {/* Preview Page */}
-      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-x-hidden bg-background min-h-[50vh] md:min-h-screen overflow-y-auto">
+      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-x-hidden bg-background min-h-[50vh] md:min-h-screen overflow-y-auto flex flex-col justify-between">
         <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
           <nav className="flex flex-wrap gap-2 justify-between items-center bg-secondary py-2 sm:px-[14px]">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
@@ -471,7 +471,7 @@ export default function OnBoardingPage() {
                 </span>
               </span>
             </a>
-            <div className="hidden lg:flex items-center justify-center gap-x-6">
+            {/* <div className="hidden lg:flex items-center justify-center gap-x-6">
               <div className="flex items-center transition-transform transform hover:scale-105 ">
                 <User className="w-5 h-5 text-gray-500 pb-[2px]" />
                 <NavBarItem title="Individual" />
@@ -501,7 +501,7 @@ export default function OnBoardingPage() {
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-            </button>
+            </button> */}
           </nav>
 
           <div className="flex-1 flex flex-col xl:flex-row  pt-12">
@@ -561,12 +561,17 @@ export default function OnBoardingPage() {
                       type="Login"
                       label="Log In"
                     />
-                    <button
+                    <div className="w-full flex justify-center items-center">
+                      <p className="text-sm text-black mt-2 cursor-pointer">
+                        Forgot Password?
+                      </p>
+                    </div>
+                    {/* <button
                       type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
                     >
                       Login with Okta
-                    </button>
+                    </button> */}
                   </div>
                 </form>
 
