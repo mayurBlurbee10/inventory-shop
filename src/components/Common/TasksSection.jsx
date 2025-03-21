@@ -4,7 +4,7 @@ import Button from '@/components/Common/Elements/Button';
 import CompleteForms from '@/components/CompleteForms';
 import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
-import { TaskStatus, TaskType } from '@/config/constants';
+import { TaskStatus, TaskType, UserRole } from '@/config/constants';
 import { Dialog } from '@headlessui/react';
 import { Calendar, CheckCircle, FileText, Loader2, Plus, RotateCw, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
@@ -15,6 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export const TaskNoteModal = ({ isOpen, onClose, task }) => {
     const router = useRouter();
+    const { data : user } = useSelector((state) => state.user);
 
     const formatDate = (timestamp) => {
         const date = new Date(timestamp);
@@ -35,7 +36,25 @@ export const TaskNoteModal = ({ isOpen, onClose, task }) => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-  
+            
+             {user?.role === UserRole?.MODERATOR && ( 
+                <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
+                    {user?.name
+                    ?.split(" ")
+                    .map((word) => word.charAt(0).toUpperCase())
+                    .slice(0, 2)
+                    .join("")}
+                    </div>
+
+                    {/* User Info */}
+                    <div>
+                    <p className="text-lg font-semibold text-gray-800">{task?.user?.name || "Unknown User"}</p>
+                    <p className="text-gray-500 text-sm">{task?.user?.email || "No Email Provided"}</p>
+                    </div>
+                </div>
+             )}
             {/* Task Content */}
             <div className="space-y-5 font-lato text-gray-800">
               {/* Title */}
@@ -283,7 +302,7 @@ const TasksSection = () => {
     const fetchTasks = async () => {
         try {
             setIsTaskLoading(true);
-            const url = `/api/tasks?portalId=${params.portalid}&&userId=${user?.id}`
+            const url = user?.role === UserRole.MODERATOR ? `/api/tasks?portalId=${params.portalid}` : `/api/tasks?portalId=${params.portalid}&userId=${user?.id}`
             const response = await fetchWrapper(url, {}, "fetch-tasks");
             if (!response.ok) throw new Error("Something went wrong!!");
             const data = await response.json();
@@ -322,7 +341,7 @@ const TasksSection = () => {
             <div className="grid grid-cols-3">
               <div></div>
               <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                My Tasks
+                {user?.role === UserRole.MODERATOR ? "Your Tasks" : "My Tasks"}
               </h3>
               <div
                 className="flex items-center justify-end text-[#dc3545] cursor-pointer"

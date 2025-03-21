@@ -26,7 +26,7 @@ export async function PUT(request) {
     const userData = await request.json();
     console.log("Received userData:", userData);
 
-    const role = userData.role === "user" ? UserRole.USER : UserRole.ADMIN;
+    const role = userData.role;
 
     const user = await userService.getUserById(userData.id);
 

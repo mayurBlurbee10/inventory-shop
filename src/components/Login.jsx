@@ -224,20 +224,13 @@ function Login() {
       // localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
 
-      if (tncPage && userData?.isTNCAccepted) {
-        // if (userData.isOnboardingRequired) {
-        //   router.push(`onboarding`);
-        // } else {
-          router.push(`dashboard`);
-          toast.success("Redirecting to dashboard");
-        // }
-      } else if (!tncPage) {
-        // if (userData.isOnboardingRequired) {
-        //   router.push(`onboarding`);
-        // } else {
-          router.push(`dashboard`);
-          toast.success("Redirecting to dashboard");
-        // }
+      if (!tncPage || userData?.isTNCAccepted) {
+        const targetRoute =
+          userData?.role === UserRole.MODERATOR
+            ? "advisor/dashboard"
+            : "dashboard";
+        router.push(targetRoute);
+        toast.success("Redirecting to dashboard");
       }
     } catch (err) {
       console.error("Login error:", err);

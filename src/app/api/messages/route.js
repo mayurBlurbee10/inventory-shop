@@ -59,6 +59,18 @@ export async function GET(req) {
         data: messages || [],
       });
     }
+
+    if (!!portalId && !!senderId) {
+      const messages = await messageService.getUserMessages(
+        senderId,
+        portalId
+      );
+
+      return NextResponse.json({
+        message: `messages retrieved successfully.`,
+        data: messages || [],
+      });
+    }
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to retrieve messages.", details: error.message },

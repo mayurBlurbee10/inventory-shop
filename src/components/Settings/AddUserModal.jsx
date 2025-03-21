@@ -349,6 +349,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
             >
               <option value={UserRole.USER}>User</option>
               <option value={UserRole.ADMIN}>Admin</option>
+              <option value={UserRole.MODERATOR}>Moderator</option>
             </select>
           </div>
           <div>

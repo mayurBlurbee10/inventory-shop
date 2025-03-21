@@ -22,4 +22,7 @@ class Messages extends BaseTable {
 
   @Column({ type: "nvarchar", length: 255, nullable: true })
   portalId;
+
+  @Column({ type: "nvarchar", length: "MAX", nullable: true })
+  subject;
 }

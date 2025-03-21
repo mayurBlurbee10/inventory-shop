@@ -26,6 +26,24 @@ const getMessages = async (senderId, receiverId, portalId) => {
   }
 };
 
+const getUserMessages = async (senderId, portalId) => {
+  const messageRepository = await getRepository(Messages);
+  try {
+    const messages = await messageRepository.find({
+      where: [
+        { portalId : portalId, sender: { id: senderId }},
+        { portalId : portalId, receiver: { id: senderId } },
+      ],
+      relations: ["sender", "receiver"],
+      order: { createdAt: "ASC" },
+    });
+
+    return messages;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const createMessage = async (message) => {
   const messageRepository = await getRepository(Messages);
   try {
@@ -69,5 +87,6 @@ export default {
   getMessages,
   createMessage,
   updateMessage,
-  deleteMessage
+  deleteMessage,
+  getUserMessages
 };

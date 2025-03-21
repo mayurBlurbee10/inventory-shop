@@ -21,6 +21,8 @@ import {
 import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 import Link from "next/link";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import TasksSection from "@/components/Common/TasksSection";
+import MessageSection from "@/components/Common/MessageSection";
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 const labels = ["Mon, 11PM", "Tue, 3AM", "Tue, 7AM", "Tue, 11AM", "Tue, 3PM"];
@@ -217,16 +219,15 @@ export default function AdvisorViewDashboard() {
                 </div>
             </div> */}
 
-            <div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-10">
-                    <div className="flex flex-col ">
+            <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-10 w-full">
+                <div className="flex flex-col w-full">
                         <div >
                             <div className="w-full flex justify-center items-center">
                                 <h3 className="text-xl font-light font-lato text-black mb-4">
                                     Your Clients
                                 </h3>
                             </div>
-                            <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5">
+                            <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5 text-black">
                                 {
                                     !isLoading && usersList.length > 0 &&
                                     <div className="overflow-x-auto border rounded-lg max-h-[300px] overflow-y-auto w-full">
@@ -278,9 +279,10 @@ export default function AdvisorViewDashboard() {
                                 <Line data={data} options={options} />
                             </div>
                         </div>
-                    </div>
-                    <div>
-                        <div>
+                </div>
+                <div className="w-full">
+                    <TasksSection />
+                    {/* <div>
                             <div className="grid grid-cols-3">
                                 <div></div>
                                 <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
@@ -290,6 +292,7 @@ export default function AdvisorViewDashboard() {
                                     <RotateCw className="h-4 w-4" />
                                 </div>
                             </div>
+                           
                             <div className="mb-7">
                                 <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
                                     <tbody className="divide-y divide-gray-200 ">
@@ -351,10 +354,9 @@ export default function AdvisorViewDashboard() {
                                     )
                                 }
                             </div>
-                        </div>
+                    </div> */}
 
-
-                    </div>
+                    <MessageSection />
                 </div>
             </div>
         </div>

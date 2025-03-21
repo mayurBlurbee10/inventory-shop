@@ -13,6 +13,14 @@ const filterRole = (user, portalId) => {
   const permission = user?.permissions?.find(
     (item) => item.portalId === portalId
   );
+  if(!permission){
+    const superadminpermission = user?.permissions?.find(
+      (item) => item.role === UserRole?.SUPER_ADMIN
+    );
+    if(superadminpermission){
+      return superadminpermission?.role
+    }
+  }
   return permission?.role;
 };
 
@@ -31,18 +39,16 @@ function ViewProfileModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingRoleChange, setIsLoadingRoleChange] = useState(false);
 
-  const [role, setRole] = useState(
-    filterRole(user, params?.portalid) === "user" ? UserRole.USER : UserRole.ADMIN
-  );
+  const [role, setRole] = useState(filterRole(user, params?.portalid));
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(null);
 
   const handleChangeRole = async () => {
     try {
       setIsLoadingRoleChange(true);
-      if (filterRole(user, params?.portalid) === role) {
-        toast.success("Role updated successfully");
-        return;
-      }
+      // if (filterRole(user, params?.portalid) === role) {
+      //   toast.success("Role updated successfully");
+      //   return;
+      // }
       const response = await fetchWrapper(
         "/api/users/role",
         {
@@ -127,7 +133,7 @@ function ViewProfileModal({
 
   useEffect(() => {
     if (user) {
-      setRole(filterRole(user, params?.portalid) === "user" ? UserRole.USER : UserRole.ADMIN);
+      setRole(filterRole(user, params?.portalid));
     }
   }, [user]);
 
@@ -139,7 +145,7 @@ function ViewProfileModal({
     }
     setLoggedInUser(userData);
     if (user) {
-      setRole(filterRole(user, params?.portalid) === "user" ? UserRole.USER : UserRole.ADMIN);
+      setRole(filterRole(user, params?.portalid));
     }
   }, []);
 
@@ -187,6 +193,7 @@ function ViewProfileModal({
                 >
                   <option value={UserRole.USER}>User</option>
                   <option value={UserRole.ADMIN}>Admin</option>
+                  <option value={UserRole.MODERATOR}>Moderator</option>
                 </select>
                 <div className="flex items-center gap-5">
                   {/* <button
