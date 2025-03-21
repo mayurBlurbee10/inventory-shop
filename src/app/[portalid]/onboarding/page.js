@@ -107,13 +107,13 @@ export default function OnBoardingPage() {
   ];
   const CurrentStepComponent = steps[currentStep].component;
 
-  useEffect(() => {
-    const userData = getUserData();
-    setIsUserData(userData)
-    if (!userData?.isOnboardingRequired) {
-      router.push("login");
-    }
-  }, [router]);
+  // useEffect(() => {
+  //   const userData = getUserData();
+  //   setIsUserData(userData)
+  //   if (!userData?.isOnboardingRequired) {
+  //     router.push("login");
+  //   }
+  // }, [router]);
 
   const fetchContent = async () => {
     try {
@@ -507,7 +507,7 @@ export default function OnBoardingPage() {
           <div className="flex-1 flex flex-col xl:flex-row  pt-12">
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
               <div className="px-[15px]">
-                <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2">
+                <h2 className="text-[56px] font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Title")}
@@ -516,7 +516,11 @@ export default function OnBoardingPage() {
                   </div>
                   {filterContent("Title")}
                 </h2>
-                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 relative">
+                <div
+                  style={{ backgroundColor: config?.primaryColor }}
+                  className="p-[1px] w-full my-2"
+                ></div>
+                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 relative ">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Paragraph")}

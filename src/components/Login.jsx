@@ -225,19 +225,19 @@ function Login() {
       localStorage.setItem("accessToken", data.accessToken);
 
       if (tncPage && userData?.isTNCAccepted) {
-        if (userData.isOnboardingRequired) {
-          router.push(`onboarding`);
-        } else {
+        // if (userData.isOnboardingRequired) {
+        //   router.push(`onboarding`);
+        // } else {
           router.push(`dashboard`);
           toast.success("Redirecting to dashboard");
-        }
+        // }
       } else if (!tncPage) {
-        if (userData.isOnboardingRequired) {
-          router.push(`onboarding`);
-        } else {
+        // if (userData.isOnboardingRequired) {
+        //   router.push(`onboarding`);
+        // } else {
           router.push(`dashboard`);
           toast.success("Redirecting to dashboard");
-        }
+        // }
       }
     } catch (err) {
       console.error("Login error:", err);

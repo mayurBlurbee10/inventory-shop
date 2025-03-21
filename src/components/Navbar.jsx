@@ -89,7 +89,7 @@ function Navbar({ content, config, filterValue }) {
             className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
               pathname.includes(href) ? "font-bold" : "text-black"
             }`}
-            style={pathname.includes(href) ? { color: config?.secondaryColor } : {}}
+            style={pathname.includes(href) ? { color: config?.primaryColor } : {}}
           >
             {title}
           </button>
@@ -99,7 +99,7 @@ function Navbar({ content, config, filterValue }) {
               pathname.includes(href) ? "opacity-100" : "opacity-0"
             }`}
             style={{
-              backgroundColor: pathname.includes(href) ? config?.secondaryColor : "transparent",
+              backgroundColor: pathname.includes(href) ? config?.primaryColor : "transparent",
             }}
           ></div>
         </div>

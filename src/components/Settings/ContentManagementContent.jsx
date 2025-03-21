@@ -428,75 +428,82 @@ const ContentManagementContent = ({
             Home Page
           </h3>
           <p className="text-gray-600 text-sm">
-            Organize and edit the information displayed across your platform.
+            Organize and edit your home page.
           </p>
         </div>
-        {!isManageRequired && contentLength < 11 && (
+        {!isManageRequired && contentLength < 14 && (
           <Button
           label="Add Content"
           type="Primary"
           onClick={addContent}
           buttonType = "button"
+          disabled={loading}
           />
         )}
         {/* {isManageRequired && onboardingStatus && ( */}
-        {isManageRequired && contentLength < 11 && (
+        {isManageRequired && (
           <Button
-          label="Manage Content"
+          label="Edit Home Page"
           type="Primary"
           onClick={manageContentNavigate}
           buttonType = "button"
           />
         )}
       </div>
-      {loading ? (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <div
-          className={`grid grid-cols-1 gap-6 p-1 md:p-2 lg:p-3 ${
-            onBoarding ? "" : " sm:grid-cols-2 lg:grid-cols-3"
-          }`}
-        >
-          {content.map((item, idx) => (
-            <div key={idx} className="border rounded-lg p-4 bg-white relative shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start ">
-                <div>
-                  <h4 className="text-lg font-medium text-gray-900">
-                    {item.title}
-                  </h4>
-                  <p className="text-sm text-gray-500">Type: {item.type}</p>
-                  <p className="text-sm text-gray-500">
-                    Last Updated: {formatDate(item?.updatedAt)}
-                  </p>
-                </div>
-
-                <button
-                  className="text-blue-600 hover:text-blue-900 px-2 absolute top-0 right-0 m-2"
-                  onClick={() => handleModalOpenForEdit(item.id)}
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-              </div>
+      {
+        isManageRequired ? <></> : (
+          loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div
+              className={`grid grid-cols-1 gap-6 p-1 md:p-2 lg:p-3 ${
+                onBoarding ? "" : " sm:grid-cols-2 lg:grid-cols-3"
+              }`}
+            >
+              {content.map((item, idx) => (
+                <div key={idx} className="border rounded-lg p-4 bg-white relative shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start ">
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900">
+                        {item.title}
+                      </h4>
+                      <p className="text-sm text-gray-500">Type: {item.type}</p>
+                      <p className="text-sm text-gray-500">
+                        Last Updated: {formatDate(item?.updatedAt)}
+                      </p>
+                    </div>
+    
+                    <button
+                      className="text-blue-600 hover:text-blue-900 px-2 absolute top-0 right-0 m-2"
+                      onClick={() => handleModalOpenForEdit(item.id)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )
+      }
+
+      <hr/>
 
       <div>
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Pick Colors</h3>
-          <p className="text-gray-600 text-sm">
+          <h3 className="text-lg font-medium text-gray-900">Set Colors</h3>
+          {/* <p className="text-gray-600 text-sm">
             Organize and edit the information displayed across your platform.
-          </p>
+          </p> */}
         </div>
         <div className="pt-6 p-1 md:p-2 lg:p-3">
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Primary Color
+                  Header Links
                 </label>
                 <input
                   type="color"
@@ -508,7 +515,7 @@ const ContentManagementContent = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Secondary Color
+                  Buttons
                 </label>
                 <input
                   type="color"

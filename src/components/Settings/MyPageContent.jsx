@@ -309,7 +309,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
         <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
           <div className=" text-center sm:text-left">
             <h3 className="text-lg font-medium text-gray-900">
-              Pages
+              Page Content
             </h3>
             <p className="text-gray-600 text-sm">
               Easily manage and customize the sections displayed on your page.
@@ -324,7 +324,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
           ) : (
             <>
               {!pagesData?.length ? (
-                <p>No pages found.</p>
+                <p>No page content found.</p>
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
@@ -332,16 +332,44 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
                       pagesData.filter((item) => !item.isCustomPage)
                     )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
+                      {!loading && (
+                        <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
+                          <Button
+                            onClick={handleDone}
+                            type="Primary"
+                            label="Save"
+                            isLoading={isSubmitting}
+                            disabled={isSubmitting}
+                            className="ml-auto"
+                          />
+                        </div>
+                      )}
+                      <hr className="my-5"/>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 ">
                     {renderPagesList(pagesData.filter((item) => item.isCustomPage))}
                   </div>
+                      {!loading && (
+                        <div className="flex sm:justify-between justify-center items-center w-full space-x-4 p-1 md:p-2 lg:p-3 flex-wrap gap-2">
+                          <Button
+                            onClick={() => {
+                              setEditData(null);
+                              if (!editData) {
+                                setIsOpenAddPageModal((prev) => !prev);
+                              }
+                            }}
+                            icon={PlusCircle}
+                            type="Secondary"
+                            label="Add Page"
+                          />
+                        </div>
+                      )}
                 </>
               )}
             </>
           )}
         </div>
 
-        {!loading && (
+        {/* {!loading && (
           <div className="flex sm:justify-between justify-center items-center w-full space-x-4 mt-12 p-1 md:p-2 lg:p-3 flex-wrap gap-2">
             <Button
               onClick={() => {
@@ -363,7 +391,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
               className="ml-auto"
             />
           </div>
-        )}
+        )} */}
 
         <AddPageModal
           isOpen={isOpenAddPageModal}

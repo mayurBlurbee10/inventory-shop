@@ -129,10 +129,10 @@ const options = {
 };
 
 const LoadingSpinner = () => (
-    <div className="min-h-[60vh] flex justify-center items-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    <div className="min-h-full flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
     </div>
-  );
+);
 
 
 export default function AdvisorViewDashboard() {
@@ -183,73 +183,100 @@ export default function AdvisorViewDashboard() {
     }, []);
 
     const fetchUser = async () => {
-      try {
-        setIsLoading(true);
-        const url = params.portalid
-          ? `/api/users?portalid=${params.portalid || "default"}`
-          : "/api/users";
-        const response = await fetchWrapper(url, {}, "fetchUserList");
-        if (!response.ok) throw new Error("Download failed");
-        const data = await response.json();
-        console.log("UsersList:", data);
-        setUsersList(data);
-      } catch (error) {
-        console.error("Download error:", error);
-      } finally {
-        setIsLoading(false);
-      }
+        try {
+            setIsLoading(true);
+            const url = params.portalid
+                ? `/api/users?portalid=${params.portalid || "default"}`
+                : "/api/users";
+            const response = await fetchWrapper(url, {}, "fetchUserList");
+            if (!response.ok) throw new Error("Download failed");
+            const data = await response.json();
+            console.log("UsersList:", data);
+            setUsersList(data);
+        } catch (error) {
+            console.error("Download error:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
-      fetchUser();
+        fetchUser();
     }, []);
 
     return (
         // <Container>
-        <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
-            <div className="grid grid-cols-1 lg:grid-cols-2 pt-12 pb-4 border-b">
+        <div className="max-w-[1140px] mx-auto px-4">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-2 pt-12 pb-4 border-b">
                 <div>
                     <h2 className="text-xl font-light text-black font-lato">
-                        {/* Hello, David West! Today is Wednesday, January 15th. */}
                         {`Hello, Erica Smith! Today is ${dayAndDate.day}, ${dayAndDate.month
                             } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
                             }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
                     </h2>
                 </div>
-            </div>
+            </div> */}
 
             <div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-7">
-                    <div>
-                        <h3 className="text-xl font-light font-lato text-black mb-4">
-                            Your Clients
-                        </h3>
-
-                        <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5">
-                            {
-                                !isLoading && usersList.length > 0 &&
-                                usersList.map((user) => (
-                                    <div className="border w-[150px] sm:w-[200px] lg:w-[220px]" key={user?.id}>
-                                        <Link href={`shared-docs?userId=${user?.boxUserId}`} passHref>
-                                            <img
-                                                src="/images (1).jpg"
-                                                alt="User"
-                                                className="w-full h-[100px] sm:h-[150px] object-cover border"
-                                            />
-                                        </Link>
-
-                                        <div className="text-center p-2">
-                                            <h3 className="text-sm sm:text-md text-blue-600 font-medium">{user?.name}</h3>
-                                            <p className="text-gray-600 text-xs sm:text-sm truncate w-full">{user?.email}</p>
-                                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-10">
+                    <div className="flex flex-col ">
+                        <div >
+                            <div className="w-full flex justify-center items-center">
+                                <h3 className="text-xl font-light font-lato text-black mb-4">
+                                    Your Clients
+                                </h3>
+                            </div>
+                            <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5">
+                                {
+                                    !isLoading && usersList.length > 0 &&
+                                    <div className="overflow-x-auto border rounded-lg max-h-[300px] overflow-y-auto w-full">
+                                        <table className="w-full bg-white border-collapse">
+                                            <thead className="sticky top-0 bg-gray-50 w-full">
+                                                <tr>
+                                                    <th className="py-2 px-4 border-b text-left text-sm">Name</th>
+                                                    <th className="py-2 px-4 border-b text-left text-sm">Message</th>
+                                                    <th className="py-2 px-4 border-b text-left text-sm">Phone</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {usersList.map((user) => (
+                                                    <tr key={user?.id} className="hover:bg-gray-100 transition-colors">
+                                                        <td className="py-2 px-4 border-b text-blue-600 text-sm">
+                                                            <Link href={`shared-docs?userId=${user?.boxUserId}`} passHref>
+                                                                {user?.name}
+                                                            </Link>
+                                                        </td>
+                                                        <td className="py-2 px-4 border-b text-sm">
+                                                            {`Message ${Math.floor(Math.random() * 100)}`}
+                                                        </td>
+                                                        <td className="py-2 px-4 border-b text-sm">
+                                                            {`+1-${Math.floor(1000000000 + Math.random() * 9000000000)}`}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                ))
-                            }
-                            {
-                                isLoading && (
-                                    <LoadingSpinner/>
-                                )
-                            }
+                                }
+                                {
+                                    isLoading && (
+                                        <LoadingSpinner />
+                                    )
+                                }
+                            </div>
+                        </div>
+                        <div className="bg-white w-full mx-auto mt-8">
+                            {/* Title Section */}
+                            <div className="grid grid-cols-1">
+                                <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                                    Your Market at a Glance
+                                </h3>
+                            </div>
+
+                            {/* Chart Section */}
+                            <div className="w-full h-[400px]">
+                                <Line data={data} options={options} />
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -323,19 +350,6 @@ export default function AdvisorViewDashboard() {
                                         />
                                     )
                                 }
-                            </div>
-                        </div>
-                        <div className="bg-white p-8 max-w-5xl mx-auto">
-                            {/* Title Section */}
-                            <div className="grid grid-cols-1">
-                                <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                                    Your Market at a Glance
-                                </h3>
-                            </div>
-
-                            {/* Chart Section */}
-                            <div className="w-full h-[400px]">
-                                <Line data={data} options={options} />
                             </div>
                         </div>
 

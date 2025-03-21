@@ -140,12 +140,12 @@ const Footer = ({
             className="mr-2 mb-5 max-h-[60px] max-w-[150px]"
           /> */}
 
-          <div className="flex justify-between flex-wrap">
-            <div className="flex items-center">
-              <div className="text-sm text-[#6c757d] font-medium font-lato mb-1">
+          <div className="flex justify-between items-end flex-wrap">
+            <div className="flex items-end">
+              <div className="text-sm text-[#6c757d] font-medium font-lato">
                 <div>
                   {isFromAvailable ? (
-                    <div className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                    <div className="border border-dashed border-gray-400 pl-3 pr-8 relative">
                       <div
                         className="absolute top-0 right-0 p-1 cursor-pointer"
                         onClick={() =>
@@ -160,13 +160,13 @@ const Footer = ({
                         links.slice(0, 5).map((item, index) => (
                           <span key={index}>
                             {isFromAvailable ? (
-                              <span className="px-[5px] text-gray-400 cursor-not-allowed">
+                              <span className="px-[5px] text-gray-400 cursor-not-allowed text-xs">
                                 {item.label}
                               </span>
                             ) : (
                               <Link
                                 href={item.link}
-                                className="hover:underline px-[5px]"
+                                className="hover:underline px-[5px] text-xs"
                               >
                                 {item.label}
                               </Link>
@@ -174,22 +174,22 @@ const Footer = ({
                             {index < links.length - 1 && " | "}
                           </span>
                         ))}
-                      {!links && <div>Footer Links</div>}
+                      {!links && <div className="text-xs">Footer Links</div>}
                     </div>
                   ) : (
-                    <div>
+                    <div className="flex items-end">
                       {links &&
                         links.length > 0 &&
                         links.slice(0, 5).map((item, index) => (
                           <span key={index}>
                             {isFromAvailable ? (
-                              <span className="px-[5px] text-gray-400 cursor-not-allowed">
+                              <span className="px-[5px] text-gray-400 cursor-not-allowed text-xs">
                                 {item.label}
                               </span>
                             ) : (
                               <Link
                                 href={item.link}
-                                className="hover:underline px-[5px]"
+                                className="hover:underline px-[5px] text-xs"
                               >
                                 {item.label}
                               </Link>
@@ -197,7 +197,7 @@ const Footer = ({
                             {index < links.length - 1 && " | "}
                           </span>
                         ))}
-                      {!links && <div>Footer Links</div>}
+                      {!links && <div className="text-xs">Footer Links</div>}
                     </div>
                   )}
                 </div>
@@ -206,7 +206,7 @@ const Footer = ({
 
             <div>
               <div className="mb-2 md:mb-0">
-                <div className="flex items-center gap-1">
+                <div className="flex items-end gap-1">
                   <p className="text-xs text-[#6c757d] font-medium font-lato">
                     Powered By MStrategygroup © 2025
                   </p>
