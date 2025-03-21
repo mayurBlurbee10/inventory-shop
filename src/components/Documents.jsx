@@ -56,6 +56,7 @@ import Button from "./Common/Elements/Button";
 import { TaskStatus, TaskType } from "@/config/constants";
 import Messaging from "./Common/Messaging";
 import TasksSection from "./Common/TasksSection";
+import MessageSection from "./Common/MessageSection";
 
 function Documents({
   fileType,
@@ -2106,7 +2107,8 @@ function Documents({
                   )}
 
                 {filterVisibility("Messaging") && (
-                  <Messaging />
+                  // <Messaging />
+                  <MessageSection />
                 )}
               </div>
             </div>

@@ -53,7 +53,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
               Tasks
             </div>
             <button
-              onClick={() => onClose()}
+              onClick={onClose}
               className="p-1 hover:bg-gray-100 rounded-full text-black"
             >
               <X className="h-5 w-5" />

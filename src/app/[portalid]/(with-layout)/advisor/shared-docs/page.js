@@ -74,6 +74,7 @@ export default function AdvisorViewSharedDocsPage() {
     const [activeTab, setActiveTab] = useState('documents');
 
     const { data: config } = useSelector((state) => state.portal);
+    const { data: loggedInUser } = useSelector((state) => state.portal);
     const searchParams = useSearchParams();
     const boxUserId = searchParams.get("userId");
     const dispatch = useDispatch()
@@ -96,7 +97,7 @@ export default function AdvisorViewSharedDocsPage() {
       switch (activeTab) {
         case "documents":
           return (
-            <Documents fileType={"advisor"} clientFolderId={user?.folderId} />
+            <Documents fileType={"advisor"} clientFolderId={user ? user?.folderId : loggedInUser?.folderId} />
           );
         case "tasks":
           return <Tasks user={user} />;

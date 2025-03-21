@@ -36,6 +36,7 @@ function Navbar({ content, config, filterValue }) {
   const router = useRouter();
   // const [user, setUser] = useState(null);
   const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const [userIsModerator, setUserIsModerator] = useState(false);
   //   const [config, setConfig] = useState(null);
   // const [session, setSession] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -159,6 +160,7 @@ function Navbar({ content, config, filterValue }) {
 
   useEffect(() => {
     setUserIsAdmin(user?.role !== UserRole.USER);
+    setUserIsModerator(user?.role === UserRole.MODERATOR);
   }, []);
 
   return (
@@ -304,9 +306,9 @@ function Navbar({ content, config, filterValue }) {
                 {/* DROPDOWN SECTION DONE*/}
                 {accountDropdown && (
                   <>
-                    {isAdvisorViewOpen ? (
+                    {userIsModerator ? (
                       <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                        <button
+                        {/* <button
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                           onClick={() =>
                             router.push(
@@ -317,6 +319,13 @@ function Navbar({ content, config, filterValue }) {
                           }
                         >
                           <UserRoundPen className="h-5 w-5" /> Client View
+                        </button> */}
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Sign out
                         </button>
                       </div>
                     ) : (
@@ -356,7 +365,7 @@ function Navbar({ content, config, filterValue }) {
                             Tools
                           </button>
                         )}
-                        <button
+                        {/* <button
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                           onClick={() =>
                             router.push(
@@ -367,7 +376,7 @@ function Navbar({ content, config, filterValue }) {
                           }
                         >
                           <UserRoundPen className="h-5 w-5" /> Advisor View
-                        </button>
+                        </button> */}
                         <button
                           onClick={handleLogout}
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"

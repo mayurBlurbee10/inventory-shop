@@ -100,7 +100,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task }) => {
             <div className="mt-6 flex justify-end space-x-4">
               <Button onClick={onClose} type="Secondary" label="Close" />
   
-              {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && (
+              {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && (
                 <Button
                   onClick={() => router.push("esignature")}
                   type="Primary"
@@ -408,7 +408,7 @@ const TasksSection = () => {
                               <p
                                 className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer`}
                                 onClick={() => {
-                                  if (task?.status === TaskStatus.COMPLETED) {
+                                  if (task?.status === TaskStatus.COMPLETED || user?.role === UserRole?.MODERATOR) {
                                     return;
                                   }
                                   setTaskToUpdate(task);
