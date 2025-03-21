@@ -131,6 +131,12 @@ export async function DELETE(req) {
   }
 }
 
+export const getSignRequest = async (signRequestId) => {
+  return await client.signRequests.getById({
+    sign_request_id: signRequestId,
+  });
+};
+
 export async function GET(req) {
   try {
     await logApiCall(req);
@@ -142,9 +148,7 @@ export async function GET(req) {
     const userId = searchParams.get("userId");
 
     if (signRequestId) {
-      const signRequest = await client.signRequests.getById({
-        sign_request_id: signRequestId,
-      });
+      const signRequest = await getSignRequest(signRequestId)
       return NextResponse.json({
         message: "Sign Request Retrieved",
         data: signRequest,

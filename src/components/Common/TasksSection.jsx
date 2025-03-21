@@ -5,16 +5,100 @@ import CompleteForms from '@/components/CompleteForms';
 import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType } from '@/config/constants';
-import { Loader2, Plus, RotateCw } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { Dialog } from '@headlessui/react';
+import { Calendar, CheckCircle, FileText, Loader2, Plus, RotateCw, X } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 
-const TasksSection = ({ fileType }) => {
+export const TaskNoteModal = ({ isOpen, onClose, task }) => {
+    const router = useRouter();
+
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString("en-GB");
+      };
+  
+    return (
+      <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-6">
+          <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-lg bg-white p-8 shadow-lg border border-gray-300">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-5 border-b pb-3 border-gray-200">
+              <Dialog.Title className="text-2xl text-gray-700 font-semibold font-lato">
+                📝 Task Details
+              </Dialog.Title>
+              <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+  
+            {/* Task Content */}
+            <div className="space-y-5 font-lato text-gray-800">
+              {/* Title */}
+              <h3 className="text-xl font-semibold">{task?.title || "Untitled Task"}</h3>
+  
+              {/* Description */}
+              <div className="p-4 bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                <p className="text-md">{task?.description || "No description provided."}</p>
+              </div>
+  
+              {/* Task Details */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Status */}
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <span className="font-medium text-gray-600">Status:</span>
+                  <span  className={`px-2 py-1 text-sm font-semibold rounded-md ${
+                        task?.status === TaskStatus.PENDING
+                        ? "text-yellow-600 bg-yellow-100" // Better contrast for Pending
+                        : "text-teal-700 bg-teal-100" // Improved greenish-teal for Completed
+                    }`}>
+                    {task?.status?.charAt(0).toUpperCase() + task?.status?.slice(1) || "Pending"}
+                  </span>
+                </div>
+  
+                {/* Due Date */}
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-blue-500" />
+                  <span className="font-medium text-gray-600">Due Date:</span>
+                  <span>{formatDate(task?.dueDate) || "N/A"}</span>
+                </div>
+  
+                {/* File */}
+                <div className="flex items-center space-x-2 col-span-2">
+                  <FileText className="w-5 h-5 text-gray-500" />
+                  <span className="font-medium text-gray-600">File:</span>
+                  <span className="truncate">{task?.file?.name || "No file attached"}</span>
+                </div>
+              </div>
+            </div>
+  
+            {/* Actions */}
+            <div className="mt-6 flex justify-end space-x-4">
+              <Button onClick={onClose} type="Secondary" label="Close" />
+  
+              {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && (
+                <Button
+                  onClick={() => router.push("esignature")}
+                  type="Primary"
+                  label="Sign Now"
+                />
+              )}
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+    );
+  };
+
+const TasksSection = () => {
     const [page, setPage] = useState(null);
     const params = useParams();
+    const router = useRouter();
     const { data: user } = useSelector((state) => state.user);
     const { data: config } = useSelector((state) => state.portal);
     const [isPageLoading, setIsPageLoading] = useState(false)
@@ -29,7 +113,9 @@ const TasksSection = ({ fileType }) => {
     const [isSignModalOpen, setIsSignModalOpen] = useState(false);
     const [selectedSignUrl, setSelectedSignUrl] = useState(null);
     const [createTask, setCreateTask] = useState(false)
-
+    const [isOpenTaskModal, setIsOpenTaskModal] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [isOpenAddTaskModal, setIsOpenAddTaskModal] = useState(false);
 
     const [completedTask, setCompletedTask] = useState({
         upload: false,
@@ -75,10 +161,8 @@ const TasksSection = ({ fileType }) => {
         }
     };
     useEffect(() => {
-        if (fileType === 'my') {
-            fetchPage();
-        }
-    }, [])
+      fetchPage();
+    }, []);
     const firstFileToSign = () => {
         return filesList?.find((file) => file.type === "file") || null;
     };
@@ -224,6 +308,7 @@ const TasksSection = ({ fileType }) => {
             }
         }
     }, [signRequest]);
+
     const modelClose = () => {
         setCreateTask(false);
     }
@@ -231,277 +316,175 @@ const TasksSection = ({ fileType }) => {
     console.log("tasks:", tasks);
    
     return (
-        <div className='reletive mt-1'>
-            {filterVisibility("My Task Section") && (
-                <>
-                    <div className="grid grid-cols-3">
-                        <div></div>
-                        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                            My Tasks
-                        </h3>
-                        <div
-                            className="flex items-center justify-end text-[#dc3545] cursor-pointer"
-                            onClick={() =>
-                                setCompletedTask({
-                                    upload: false,
-                                    completeForm: false,
-                                    sign: false,
-                                    autoLoan: false,
-                                })
-                            }
-                        >
-                            <RotateCw className="h-4 w-4" />
-                        </div>
-                    </div>
+      <div className="reletive mt-1">
+        {filterVisibility("My Task Section") && (
+          <>
+            <div className="grid grid-cols-3">
+              <div></div>
+              <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                My Tasks
+              </h3>
+              <div
+                className="flex items-center justify-end text-[#dc3545] cursor-pointer"
+                onClick={() =>
+                  setCompletedTask({
+                    upload: false,
+                    completeForm: false,
+                    sign: false,
+                    autoLoan: false,
+                  })
+                }
+              >
+                <RotateCw className="h-4 w-4" />
+              </div>
+              {/* <Button 
+                iconClassName="w-5 h-5"
+                className='text-gray-600 w-24 h-10 ml-auto'
+                label={"Add"}
+                icon={Plus}
+                onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
+              /> */}
+            </div>
 
-                    <div className="mb-7 max-h-[300px] overflow-y-auto border border-[#dee2e6]">
-                        <table className="min-w-full divide-y divide-gray-200 overflow-auto ">
-                            <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
-                                <tr>
-                                    <th></th>
-                                    <th className='text-start px-3 py-4'>Task</th>
-                                    <th className='text-start px-3 py-4'>Status</th>
-                                    <th className='text-start px-3 py-4'>Due Date</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 ">
-                                <tr>
-                                    <td className="ps-3 py-4">
-                                        <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                            Upload Investment Proposals
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p
-                                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer"
-                                            onClick={() => {
-                                                setMyTaskPopupBoxContent({
-                                                    title: "Upload identity information",
-                                                    actionText: "Upload",
-                                                });
-                                                setIsMyTaskPopupOpen((prev) => !prev);
-                                                setCompletedTask((prev) => ({
-                                                    ...prev,
-                                                    upload: true,
-                                                }));
-                                            }}
-                                        >
-                                            {completedTask.upload ? (
-                                                <span className="italic">Completed</span>
-                                            ) : (
-                                                "Upload"
-                                            )}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                           20/03/2025
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="ps-3 py-4">
-                                        <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                            Review and Approve Legal Agreements
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p
-                                            className="font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer"
-                                            onClick={() => {
-                                                setIsCompleteFormPopupOpen((prev) => !prev);
-                                                setCompletedTask((prev) => ({
-                                                    ...prev,
-                                                    completeForm: true,
-                                                }));
-                                            }}
-                                        >
-                                            {completedTask.completeForm ? (
-                                                <span className="italic">Completed</span>
-                                            ) : (
-                                                "Complete Forms"
-                                            )}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                           25/04/2025
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="ps-3 py-4">
-                                        <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                            Sign Financial Statements
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p
-                                            className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer ${!firstFileToSign()
-                                                ? "pointer-events-none opacity-50"
-                                                : ""
-                                                }`}
-                                            onClick={() => {
-                                                if (!firstFileToSign()) return;
-                                                handleSelfSign(firstFileToSign(), "sign");
-                                                setCompletedTask((prev) => ({
-                                                    ...prev,
-                                                    sign: true,
-                                                }));
-                                            }}
-                                        >
-                                            {isSignReqLoading === "sign" ? (
-                                                <Loader2 className="size-5 animate-spin text-blue-500" />
-                                            ) : completedTask.sign ? (
-                                                <span className="italic">Completed</span>
-                                            ) : (
-                                                "Sign"
-                                            )}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                           28/03/2025
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="ps-3 py-4">
-                                        <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                            Auto Business Registration Forms
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p
-                                            className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer ${!firstFileToSign()
-                                                ? "pointer-events-none opacity-50"
-                                                : ""
-                                                }`}
-                                            onClick={() => {
-                                                if (!firstFileToSign()) return;
-                                                handleSelfSign(firstFileToSign(), "autoLoan");
-                                                setCompletedTask((prev) => ({
-                                                    ...prev,
-                                                    autoLoan: true,
-                                                }));
-                                            }}
-                                        >
-                                            {isSignReqLoading === "autoLoan" ? (
-                                                <Loader2 className="size-5 animate-spin text-blue-500" />
-                                            ) : completedTask.autoLoan ? (
-                                                <span className="italic">Completed</span>
-                                            ) : (
-                                                "Start Forms"
-                                            )}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-4">
-                                        <p className="font-lato text-[#212529] text-sm">
-                                            21/03/2025
-                                        </p>
-                                    </td>
-                                </tr>
-                                {tasks?.length > 0 &&
-                                    tasks?.map((task) => (
-                                        <tr key={task?.id}>
-                                            <td className="ps-3 py-4">
-                                                <div
-                                                    className={`h-3 w-3 rounded-full  pulse-animation ${task?.status === TaskStatus.PENDING
-                                                        ? "bg-[#ffc107]"
-                                                        : "bg-[#1ec0cb]"
-                                                        }`}
-                                                ></div>
-                                            </td>
-                                            <td className="px-3 py-4">
-                                                <p className="font-lato text-[#212529] text-sm">
-                                                    {task?.title}
-                                                </p>
-                                            </td>
-                                            <td className="px-3 py-4">
-                                                <p
-                                                    className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer`}
-                                                    onClick={() => {
-                                                        if (
-                                                            task?.status === TaskStatus.COMPLETED
-                                                        ) {
-                                                            return;
-                                                        }
-                                                        setTaskToUpdate(task);
-                                                        if (task?.type === TaskType.SIGN) {
-                                                            handleOpenSignModal(task);
-                                                        } else {
-                                                            setMyTaskPopupBoxContent({
-                                                                title: task?.title,
-                                                                actionText: task?.type,
-                                                            });
-                                                            setIsMyTaskPopupOpen((prev) => !prev);
-                                                            setCompletedTask((prev) => ({
-                                                                ...prev,
-                                                                upload: true,
-                                                            }));
-                                                        }
-                                                    }}
-                                                >
-                                                    {isSignReqLoading === task?.title ? (
-                                                        <Loader2 className="size-5 animate-spin text-blue-500" />
-                                                    ) : task?.status ===
-                                                        TaskStatus.COMPLETED ? (
-                                                        <span className="italic">Completed</span>
-                                                    ) : (
-                                                        <span>
-                                                            {task?.type.charAt(0).toUpperCase() +
-                                                                task?.type.slice(1)}
-                                                        </span>
-                                                    )}
-                                                </p>
-                                            </td>
-                                            <td className="px-3 py-4">
-                                                <p className="font-lato text-[#212529] text-sm">
-                                                    {task?.dueDate
-                                                        ? new Date(task?.dueDate).toLocaleDateString("en-GB")
-                                                        : new Date().toLocaleDateString("en-GB")}
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
-            {isMyTaskPopupOpen && (
-                <MyTaskPopupBox
-                    onClose={() => setIsMyTaskPopupOpen(false)}
-                    content={myTaskPopupBoxContent}
-                    config={config}
-                />
-            )}
-            <CompleteForms
-                onClose={() => setIsCompleteFormPopupOpen(false)}
-                isOpen={isCompleteFormPopupOpen}
+            <div className="mb-7 max-h-[300px] overflow-y-auto border border-[#dee2e6]">
+              <table className="min-w-full divide-y divide-gray-200 overflow-auto ">
+                <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
+                  <tr>
+                    <th></th>
+                    <th className="text-start px-3 py-4">Task</th>
+                    <th className="text-start px-3 py-4">Status</th>
+                    <th className="text-start px-3 py-4">Due Date</th>
+                    <th className="text-start px-3 py-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 ">
+                  {isTaskLoading ? (
+                    <tr>
+                      <td colSpan={"5"}>
+                        <div className="min-h-[100px] flex items-center justify-center">
+                          <Loader2 className="text-blue-500 animate-spin" />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <>
+                      {tasks?.length > 0 ? (
+                        tasks?.map((task) => (
+                          <tr key={task?.id}>
+                            <td className="ps-3 py-4">
+                              <div
+                                className={`h-3 w-3 rounded-full  pulse-animation ${
+                                  task?.status === TaskStatus.PENDING
+                                    ? "bg-[#ffc107]"
+                                    : "bg-[#1ec0cb]"
+                                }`}
+                              ></div>
+                            </td>
+                            <td className="px-3 py-4">
+                              <p className="font-lato text-[#212529] text-sm">
+                                {task?.title}
+                              </p>
+                            </td>
+                            <td className="px-3 py-4">
+                              <p
+                                className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer`}
+                                onClick={() => {
+                                  if (task?.status === TaskStatus.COMPLETED) {
+                                    return;
+                                  }
+                                  setTaskToUpdate(task);
+                                  if (task?.type === TaskType.SIGN) {
+                                    // handleOpenSignModal(task);
+                                    router.push("esignature");
+                                  } else {
+                                    setMyTaskPopupBoxContent({
+                                      title: task?.title,
+                                      actionText: task?.type,
+                                    });
+                                    setIsMyTaskPopupOpen((prev) => !prev);
+                                    setCompletedTask((prev) => ({
+                                      ...prev,
+                                      upload: true,
+                                    }));
+                                  }
+                                }}
+                              >
+                                {isSignReqLoading === task?.title ? (
+                                  <Loader2 className="size-5 animate-spin text-blue-500" />
+                                ) : task?.status === TaskStatus.COMPLETED ? (
+                                  <span className="italic">Completed</span>
+                                ) : (
+                                  <span>
+                                    {task?.type.charAt(0).toUpperCase() +
+                                      task?.type.slice(1)}
+                                  </span>
+                                )}
+                              </p>
+                            </td>
+                            <td className="px-3 py-4">
+                              <p className="font-lato text-[#212529] text-sm">
+                                {task?.dueDate
+                                  ? new Date(task?.dueDate).toLocaleDateString(
+                                      "en-GB"
+                                    )
+                                  : new Date().toLocaleDateString("en-GB")}
+                              </p>
+                            </td>
+                            <td className="px-3 py-4 cursor-pointer" onClick={() => {setIsOpenTaskModal((prev) => !prev); setSelectedTask(task)}}>
+                              <p className="font-lato text-[#212529] text-sm hover:text-blue-500">
+                                View Details
+                              </p>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr className="text-center">
+                          <td colSpan="5">
+                            <p className="font-lato text-[#212529] text-sm py-4">
+                              No Tasks to Show !!!
+                            </p>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+        {isMyTaskPopupOpen && (
+          <MyTaskPopupBox
+            onClose={() => setIsMyTaskPopupOpen(false)}
+            content={myTaskPopupBoxContent}
+            config={config}
+          />
+        )}
+        <TaskNoteModal 
+            isOpen={isOpenTaskModal}
+            onClose={() => {setIsOpenTaskModal(false); setSelectedTask(null);}}
+            task={selectedTask}
+        />
+        <CompleteForms
+          onClose={() => setIsCompleteFormPopupOpen(false)}
+          isOpen={isCompleteFormPopupOpen}
+        />
+        <SignRequestModal
+          isOpen={isSignModalOpen && signRequest !== null}
+          onClose={() => setIsSignModalOpen(false)}
+          signUrl={selectedSignUrl}
+          signRequest={signRequest}
+          setSignRequest={setSignRequest}
+        />
+        {isOpenAddTaskModal && (
+            <CreateTaskPopUp
+                onClose={() => setIsOpenAddTaskModal(false)}
+                user={user}
+                onTaskCreated={fetchTasks}
             />
-            <SignRequestModal
-                isOpen={isSignModalOpen && signRequest !== null}
-                onClose={() => setIsSignModalOpen(false)}
-                signUrl={selectedSignUrl}
-                signRequest={signRequest}
-                setSignRequest={setSignRequest}
-            />
-           
-        </div>
-    )
+        )}
+      </div>
+    );
 }
 
 export default TasksSection;

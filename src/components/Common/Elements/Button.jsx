@@ -12,7 +12,8 @@ const Button = ({
     disabled,
     icon: Icon,
     buttonType = "button",
-    className=""
+    className="",
+    iconClassName=""
 }) => {
     const pathname = usePathname();
     const isAdminPanel = pathname.includes("admin");
@@ -43,7 +44,7 @@ const Button = ({
             style={getButtonStyle(type)}
             disabled={disabled || isLoading}
         >
-            {Icon && <Icon className="w-4 h-4" />}
+            {Icon && <Icon className={`w-4 h-4 ${iconClassName}`} />}
             {label}
             {isLoading && <div className="spinner"></div>}
         </button>

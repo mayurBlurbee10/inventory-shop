@@ -55,6 +55,7 @@ import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
 import { TaskStatus, TaskType } from "@/config/constants";
 import Messaging from "./Common/Messaging";
+import TasksSection from "./Common/TasksSection";
 
 function Documents({
   fileType,
@@ -1115,9 +1116,9 @@ function Documents({
     }
   }, [signRequest]);
 
-  useEffect(()=>{
-    fetchTasks()
-  }, [])
+  // useEffect(()=>{
+  //   fetchTasks()
+  // }, [])
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -1723,203 +1724,204 @@ function Documents({
               <div>
                 {/* Tasks */}
                 {filterVisibility("My Task Section") && (
-                    <>
-                      <div className="grid grid-cols-3">
-                        <div></div>
-                        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                          My Tasks
-                        </h3>
-                        <div
-                          className="flex items-center justify-end text-[#dc3545] cursor-pointer"
-                          onClick={() =>
-                            setCompletedTask({
-                              upload: false,
-                              completeForm: false,
-                              sign: false,
-                              autoLoan: false,
-                            })
-                          }
-                        >
-                          <RotateCw className="h-4 w-4" />
-                        </div>
-                      </div>
+                    // <>
+                    //   <div className="grid grid-cols-3">
+                    //     <div></div>
+                    //     <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                    //       My Tasks
+                    //     </h3>
+                    //     <div
+                    //       className="flex items-center justify-end text-[#dc3545] cursor-pointer"
+                    //       onClick={() =>
+                    //         setCompletedTask({
+                    //           upload: false,
+                    //           completeForm: false,
+                    //           sign: false,
+                    //           autoLoan: false,
+                    //         })
+                    //       }
+                    //     >
+                    //       <RotateCw className="h-4 w-4" />
+                    //     </div>
+                    //   </div>
 
-                      <div className="mb-7">
-                        <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
-                          <tbody className="divide-y divide-gray-200 ">
-                            <tr>
-                              <td className="ps-3 py-4">
-                                <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p className="font-lato text-[#212529] text-sm">
-                                  Upload identity information
-                                </p>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p
-                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                                  onClick={() => {
-                                    setMyTaskPopupBoxContent({
-                                      title: "Upload identity information",
-                                      actionText: "Upload",
-                                    });
-                                    setIsMyTaskPopupOpen((prev) => !prev);
-                                    setCompletedTask((prev) => ({
-                                      ...prev,
-                                      upload: true,
-                                    }));
-                                  }}
-                                >
-                                  {completedTask.upload ? (
-                                    <span className="italic">Completed</span>
-                                  ) : (
-                                    "Upload"
-                                  )}
-                                </p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="ps-3 py-4">
-                                <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p className="font-lato text-[#212529] text-sm">
-                                  Upload 2023 tax return
-                                </p>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p
-                                  className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                                  onClick={() => {
-                                    setIsCompleteFormPopupOpen((prev) => !prev);
-                                    setCompletedTask((prev) => ({
-                                      ...prev,
-                                      completeForm: true,
-                                    }));
-                                  }}
-                                >
-                                  {completedTask.completeForm ? (
-                                    <span className="italic">Completed</span>
-                                  ) : (
-                                    "Complete Forms"
-                                  )}
-                                </p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="ps-3 py-4">
-                                <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p className="font-lato text-[#212529] text-sm">
-                                  Sign money transfer agreement
-                                </p>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p
-                                  className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
-                                  onClick={() => {
-                                    if (!firstFileToSign()) return;
-                                    handleSelfSign(firstFileToSign(), "sign");
-                                    setCompletedTask((prev) => ({
-                                      ...prev,
-                                      sign: true,
-                                    }));
-                                  }}
-                                >
-                                  {isSignReqLoading === "sign" ? (
-                                    <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                                  ) : completedTask.sign ? (
-                                    <span className="italic">Completed</span>
-                                  ) : (
-                                    "Sign"
-                                  )}
-                                </p>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="ps-3 py-4">
-                                <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p className="font-lato text-[#212529] text-sm">
-                                  Auto Loan Forms
-                                </p>
-                              </td>
-                              <td className="px-3 py-4">
-                                <p
-                                  className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
-                                  onClick={() => {
-                                    if (!firstFileToSign()) return;
-                                    handleSelfSign(
-                                      firstFileToSign(),
-                                      "autoLoan"
-                                    );
-                                    setCompletedTask((prev) => ({
-                                      ...prev,
-                                      autoLoan: true,
-                                    }));
-                                  }}
-                                >
-                                  {isSignReqLoading === "autoLoan" ? (
-                                    <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                                  ) : completedTask.autoLoan ? (
-                                    <span className="italic">Completed</span>
-                                  ) : (
-                                    "Start Forms"
-                                  )}
-                                </p>
-                              </td>
-                            </tr>
-                            {tasks?.length > 0 && tasks?.map((task)=>(
-                               <tr key={task?.id}>
-                                 <td className="ps-3 py-4">
-                                   <div className={`h-3 w-3 rounded-full  pulse-animation ${task?.status === TaskStatus.PENDING ? "bg-[#ffc107]" : "bg-[#1ec0cb]"}`}></div>
-                                 </td>
-                                 <td className="px-3 py-4">
-                                   <p className="font-lato text-[#212529] text-sm">
-                                     {task?.title}
-                                   </p>
-                                 </td>
-                                 <td className="px-3 py-4">
-                                   <p
-                                     className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer`}
-                                     onClick={()=> {
-                                       if(task?.status === TaskStatus.COMPLETED){
-                                         return;
-                                       }
-                                       setTaskToUpdate(task)
-                                       if(task?.type === TaskType.SIGN){
-                                         handleOpenSignModal(task);
-                                       }else {
-                                         setMyTaskPopupBoxContent({
-                                           title: task?.title,
-                                           actionText: task?.type,
-                                         });
-                                         setIsMyTaskPopupOpen((prev) => !prev);
-                                         setCompletedTask((prev) => ({
-                                           ...prev,
-                                           upload: true,
-                                         }));
-                                       }
-                                     }}
-                                   >
-                                     {isSignReqLoading === task?.title ? (
-                                       <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                                     ) : task?.status === TaskStatus.COMPLETED ? (
-                                       <span className="italic">Completed</span>
-                                     ) : (
-                                       <span>{task?.type.charAt(0).toUpperCase() + task?.type.slice(1)}</span>
-                                     )}
-                                   </p>
-                                 </td>
-                               </tr>
-                             ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </>
+                    //   <div className="mb-7">
+                    //     <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
+                    //       <tbody className="divide-y divide-gray-200 ">
+                    //         <tr>
+                    //           <td className="ps-3 py-4">
+                    //             <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p className="font-lato text-[#212529] text-sm">
+                    //               Upload identity information
+                    //             </p>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p
+                    //               className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                    //               onClick={() => {
+                    //                 setMyTaskPopupBoxContent({
+                    //                   title: "Upload identity information",
+                    //                   actionText: "Upload",
+                    //                 });
+                    //                 setIsMyTaskPopupOpen((prev) => !prev);
+                    //                 setCompletedTask((prev) => ({
+                    //                   ...prev,
+                    //                   upload: true,
+                    //                 }));
+                    //               }}
+                    //             >
+                    //               {completedTask.upload ? (
+                    //                 <span className="italic">Completed</span>
+                    //               ) : (
+                    //                 "Upload"
+                    //               )}
+                    //             </p>
+                    //           </td>
+                    //         </tr>
+                    //         <tr>
+                    //           <td className="ps-3 py-4">
+                    //             <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p className="font-lato text-[#212529] text-sm">
+                    //               Upload 2023 tax return
+                    //             </p>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p
+                    //               className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
+                    //               onClick={() => {
+                    //                 setIsCompleteFormPopupOpen((prev) => !prev);
+                    //                 setCompletedTask((prev) => ({
+                    //                   ...prev,
+                    //                   completeForm: true,
+                    //                 }));
+                    //               }}
+                    //             >
+                    //               {completedTask.completeForm ? (
+                    //                 <span className="italic">Completed</span>
+                    //               ) : (
+                    //                 "Complete Forms"
+                    //               )}
+                    //             </p>
+                    //           </td>
+                    //         </tr>
+                    //         <tr>
+                    //           <td className="ps-3 py-4">
+                    //             <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p className="font-lato text-[#212529] text-sm">
+                    //               Sign money transfer agreement
+                    //             </p>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p
+                    //               className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
+                    //               onClick={() => {
+                    //                 if (!firstFileToSign()) return;
+                    //                 handleSelfSign(firstFileToSign(), "sign");
+                    //                 setCompletedTask((prev) => ({
+                    //                   ...prev,
+                    //                   sign: true,
+                    //                 }));
+                    //               }}
+                    //             >
+                    //               {isSignReqLoading === "sign" ? (
+                    //                 <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                    //               ) : completedTask.sign ? (
+                    //                 <span className="italic">Completed</span>
+                    //               ) : (
+                    //                 "Sign"
+                    //               )}
+                    //             </p>
+                    //           </td>
+                    //         </tr>
+                    //         <tr>
+                    //           <td className="ps-3 py-4">
+                    //             <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p className="font-lato text-[#212529] text-sm">
+                    //               Auto Loan Forms
+                    //             </p>
+                    //           </td>
+                    //           <td className="px-3 py-4">
+                    //             <p
+                    //               className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
+                    //               onClick={() => {
+                    //                 if (!firstFileToSign()) return;
+                    //                 handleSelfSign(
+                    //                   firstFileToSign(),
+                    //                   "autoLoan"
+                    //                 );
+                    //                 setCompletedTask((prev) => ({
+                    //                   ...prev,
+                    //                   autoLoan: true,
+                    //                 }));
+                    //               }}
+                    //             >
+                    //               {isSignReqLoading === "autoLoan" ? (
+                    //                 <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                    //               ) : completedTask.autoLoan ? (
+                    //                 <span className="italic">Completed</span>
+                    //               ) : (
+                    //                 "Start Forms"
+                    //               )}
+                    //             </p>
+                    //           </td>
+                    //         </tr>
+                    //         {tasks?.length > 0 && tasks?.map((task)=>(
+                    //            <tr key={task?.id}>
+                    //              <td className="ps-3 py-4">
+                    //                <div className={`h-3 w-3 rounded-full  pulse-animation ${task?.status === TaskStatus.PENDING ? "bg-[#ffc107]" : "bg-[#1ec0cb]"}`}></div>
+                    //              </td>
+                    //              <td className="px-3 py-4">
+                    //                <p className="font-lato text-[#212529] text-sm">
+                    //                  {task?.title}
+                    //                </p>
+                    //              </td>
+                    //              <td className="px-3 py-4">
+                    //                <p
+                    //                  className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer`}
+                    //                  onClick={()=> {
+                    //                    if(task?.status === TaskStatus.COMPLETED){
+                    //                      return;
+                    //                    }
+                    //                    setTaskToUpdate(task)
+                    //                    if(task?.type === TaskType.SIGN){
+                    //                      handleOpenSignModal(task);
+                    //                    }else {
+                    //                      setMyTaskPopupBoxContent({
+                    //                        title: task?.title,
+                    //                        actionText: task?.type,
+                    //                      });
+                    //                      setIsMyTaskPopupOpen((prev) => !prev);
+                    //                      setCompletedTask((prev) => ({
+                    //                        ...prev,
+                    //                        upload: true,
+                    //                      }));
+                    //                    }
+                    //                  }}
+                    //                >
+                    //                  {isSignReqLoading === task?.title ? (
+                    //                    <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                    //                  ) : task?.status === TaskStatus.COMPLETED ? (
+                    //                    <span className="italic">Completed</span>
+                    //                  ) : (
+                    //                    <span>{task?.type.charAt(0).toUpperCase() + task?.type.slice(1)}</span>
+                    //                  )}
+                    //                </p>
+                    //              </td>
+                    //            </tr>
+                    //          ))}
+                    //       </tbody>
+                    //     </table>
+                    //   </div>
+                    // </>
+                    <TasksSection />
                   )}
 
                 {isMyTaskPopupOpen && (

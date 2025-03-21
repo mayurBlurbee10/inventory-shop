@@ -1,6 +1,8 @@
 import "reflect-metadata";
 import { connectDatabase, getConnection } from "@/config/db";
 import { Tasks } from "@/entities/Tasks";
+import { getSignRequest } from "@/app/api/box/e-sign/route";
+import { TaskStatus } from "@/config/constants";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -21,6 +23,19 @@ const getTasks = async (portalId, userId) => {
         status: "ASC",
       },
     });
+    const completedStatuses = ["signed", "completed", "finalizing"];
+
+    // Fetch all sign requests in parallel
+    await Promise.all(
+      tasks.map(async (task) => {
+        if (!task.uploads || task.uploads.length === 0) return;
+
+        const signRequest = await getSignRequest(task.uploads[0]); // Fetch in parallel
+        if (signRequest && completedStatuses.includes(signRequest?.status)) {
+          await updateTask(task.id, { status: TaskStatus.COMPLETED });
+        }
+      })
+    );
     return tasks;
   } catch (error) {
     console.error("Error geting task:", error.message);
