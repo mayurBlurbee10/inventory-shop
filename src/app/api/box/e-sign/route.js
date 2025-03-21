@@ -132,9 +132,22 @@ export async function DELETE(req) {
 }
 
 export const getSignRequest = async (signRequestId) => {
-  return await client.signRequests.getById({
-    sign_request_id: signRequestId,
-  });
+  try {
+    return await client.signRequests.getById({
+      sign_request_id: signRequestId,
+    });
+  } catch (error) {
+    console.error(
+      `Error fetching sign request [${signRequestId}]:`,
+      error.message
+    );
+
+    if (error.response?.status === 404) {
+      return null;
+    }
+
+    throw error;
+  }
 };
 
 export async function GET(req) {

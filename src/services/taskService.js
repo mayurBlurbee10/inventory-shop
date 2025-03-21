@@ -19,26 +19,33 @@ const getTasks = async (portalId, userId) => {
         user: { id: userId },
       },
       relations: ["user"],
-      order: {
-        status: "ASC",
-      },
+      order: { status: "ASC" },
     });
+
     const completedStatuses = ["signed", "completed", "finalizing"];
 
-    // Fetch all sign requests in parallel
+    // Process sign requests in parallel
     await Promise.all(
       tasks.map(async (task) => {
         if (!task.uploads || task.uploads.length === 0) return;
 
-        const signRequest = await getSignRequest(task.uploads[0]); // Fetch in parallel
-        if (signRequest && completedStatuses.includes(signRequest?.status)) {
+        const signRequest = await getSignRequest(task.uploads[0]);
+
+        if (signRequest === null) {
+          console.warn(`Sign request missing for task ${task.id}, marking as FILE_DELETED`);
+          await updateTask(task.id, { status: TaskStatus.FILE_DELETED });
+          return;
+        }
+
+        if (completedStatuses.includes(signRequest?.status)) {
           await updateTask(task.id, { status: TaskStatus.COMPLETED });
         }
       })
     );
+
     return tasks;
   } catch (error) {
-    console.error("Error geting task:", error.message);
+    console.error("Error getting tasks:", error.message);
     throw error;
   }
 };
