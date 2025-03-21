@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import {
     RotateCw
 } from "lucide-react";
-import { Line } from "react-chartjs-2";
+import { Doughnut, Line } from "react-chartjs-2";
 import {
     Chart as ChartModule,
     LineElement,
@@ -24,110 +24,36 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import TasksSection from "@/components/Common/TasksSection";
 import MessageSection from "@/components/Common/MessageSection";
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
-const labels = ["Mon, 11PM", "Tue, 3AM", "Tue, 7AM", "Tue, 11AM", "Tue, 3PM"];
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const data = {
-    labels,
+    labels: ['Equity', 'Real Estate', 'Fixed Income', "S&P 500", "NASDAQ",],
     datasets: [
         {
-            label: "S&P500",
-            data: [30000, 29000, 28000, 32000, 33000],
-            borderColor: "rgb(255, 99, 132)",
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-        },
-        {
-            label: "NASDAQ",
-            data: [20000, 21000, 22000, 23000, 24000],
-            borderColor: "rgb(53, 162, 235)",
-            backgroundColor: "rgba(53, 162, 235, 0.5)",
-        },
-        {
-            label: "Dow Jones",
-            data: [25000, 26000, 25500, 26500, 27000],
-            borderColor: "rgb(255, 205, 86)",
-            backgroundColor: "rgba(255, 205, 86, 0.5)",
-        },
-        {
-            label: "Russell 3000",
-            data: [15000, 16000, 15500, 16500, 17000],
-            borderColor: "rgb(75, 192, 192)",
-            backgroundColor: "rgba(75, 192, 192, 0.5)",
-        },
-        {
-            label: "Box",
-            data: [5000, 5200, 5400, 5600, 5800],
-            borderColor: "rgb(54, 162, 235)",
-            backgroundColor: "rgba(54, 162, 235, 0.5)",
-        },
-        {
-            label: "MSCI ACWI",
-            data: [13000, 13500, 14000, 14500, 15000],
-            borderColor: "rgb(201, 203, 207)",
-            backgroundColor: "rgba(201, 203, 207, 0.5)",
-        },
-        {
-            label: "MSCI EAFE",
-            data: [11000, 11500, 12000, 12500, 13000],
-            borderColor: "rgb(153, 102, 255)",
-            backgroundColor: "rgba(153, 102, 255, 0.5)",
-        },
-        {
-            label: "MSCI World",
-            data: [17000, 17500, 18000, 18500, 19000],
-            borderColor: "rgb(255, 159, 64)",
-            backgroundColor: "rgba(255, 159, 64, 0.5)",
-        },
-        {
-            label: "Wilshire 5000",
-            data: [9000, 9500, 10000, 10500, 11000],
-            borderColor: "rgb(255, 99, 71)",
-            backgroundColor: "rgba(255, 99, 71, 0.5)",
-        },
-        {
-            label: "Box",
-            data: [7000, 7200, 7400, 7600, 7800],
-            borderColor: "rgb(102, 205, 170)",
-            backgroundColor: "rgba(102, 205, 170, 0.5)",
+            data: [40.15, 25.78, 15.07, 14, 5],
+            backgroundColor: ['#3d95cc','#63577d','#43C6DB', "#3cba9f", "#e8c4ba",],
+            hoverOffset: 4,
         },
     ],
 };
 
-
 const options = {
-    responsive: true,
-    maintainAspectRatio: false, // Allows dynamic height
     plugins: {
-        legend: {
-            position: "top",
-            labels: {
-                font: {
-                    size: 14, // Makes legend text larger for readability
-                },
-            },
-        },
         tooltip: {
-            mode: "index",
-            intersect: false,
-        },
-    },
-    scales: {
-        x: {
-            ticks: {
-                font: {
-                    size: 12,
-                },
+            callbacks: {
+                label: (tooltipItem) => `${tooltipItem.raw}%`,
             },
         },
-        y: {
-            beginAtZero: true,
-            ticks: {
-                font: {
-                    size: 12,
-                },
-            },
+        legend: {
+            display: true,
+            position: 'top',
+            labels: {
+                boxWidth: 20,
+                padding: 15,
+            }
         },
     },
+    cutout: '50%',
 };
 
 const LoadingSpinner = () => (
@@ -208,7 +134,7 @@ export default function AdvisorViewDashboard() {
 
     return (
         // <Container>
-        <div className="max-w-[1140px] mx-auto px-4">
+        <div className="max-w-[1820px] mx-auto px-4">
             {/* <div className="grid grid-cols-1 lg:grid-cols-2 pt-12 pb-4 border-b">
                 <div>
                     <h2 className="text-xl font-light text-black font-lato">
@@ -275,8 +201,8 @@ export default function AdvisorViewDashboard() {
                             </div>
 
                             {/* Chart Section */}
-                            <div className="w-full h-[400px]">
-                                <Line data={data} options={options} />
+                            <div className="w-full h-[400px] flex justify-center items-center">
+                            <Doughnut data={data} options={options} />
                             </div>
                         </div>
                 </div>

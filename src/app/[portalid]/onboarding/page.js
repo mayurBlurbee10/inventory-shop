@@ -434,8 +434,8 @@ export default function OnBoardingPage() {
       </div>
 
       {/* Preview Page */}
-      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-x-hidden bg-background min-h-[50vh] md:min-h-screen overflow-y-auto flex flex-col justify-between">
-        <div className="max-w-[1140px] w-full pt-[50px] mx-auto">
+      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-hidden bg-background  flex flex-col justify-between">
+        <div className="max-w-[1140px] w-full pt-[70px] mx-auto">
           <nav className="flex flex-wrap gap-2 justify-between items-center bg-secondary py-2 sm:px-[14px]">
             <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
@@ -459,7 +459,7 @@ export default function OnBoardingPage() {
                 className="h-[52px] mr-2"
               /> */}
 
-              <span className="text-3xl text-[#000000e6] mb-1 font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+              <span className="text-3xl text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                 <div
                   className="absolute top-0 right-0 p-1 cursor-pointer"
                   onClick={() => handleModalOpenForEdit("Header Text")}
@@ -520,7 +520,7 @@ export default function OnBoardingPage() {
                   style={{ backgroundColor: config?.primaryColor }}
                   className="p-[1px] w-full my-2"
                 ></div>
-                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 relative ">
+                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative ">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Paragraph")}

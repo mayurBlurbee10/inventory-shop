@@ -41,7 +41,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task }) => {
                 <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
                     {/* Avatar */}
                     <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
-                    {user?.name
+                    {task?.user?.name
                     ?.split(" ")
                     .map((word) => word.charAt(0).toUpperCase())
                     .slice(0, 2)
@@ -338,9 +338,9 @@ const TasksSection = () => {
       <div className="reletive mt-1">
         {filterVisibility("My Task Section") && (
           <>
-            <div className="grid grid-cols-3">
+            <div className={`flex justify-between items-start ${user?.role === UserRole.MODERATOR ? "" : "mb-4"}`}>
               <div></div>
-              <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+              <h3 className="text-xl font-light text-center text-[#212529] font-lato">
                 {user?.role === UserRole.MODERATOR ? "Your Tasks" : "My Tasks"}
               </h3>
               <div
@@ -354,15 +354,20 @@ const TasksSection = () => {
                   })
                 }
               >
-                <RotateCw className="h-4 w-4" />
+                  {
+                    user.role === 'moderator' ? (
+                      <Button
+                        iconClassName="w-5 h-5"
+                        className='text-gray-600 w-24 h-10 ml-auto mb-2'
+                        label={"Add"}
+                        icon={Plus}
+                        onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
+                      />
+                    ) : (
+                      <div className='mt-4'><RotateCw className="h-4 w-4" /></div>
+                    )
+                  }
               </div>
-              {/* <Button 
-                iconClassName="w-5 h-5"
-                className='text-gray-600 w-24 h-10 ml-auto'
-                label={"Add"}
-                icon={Plus}
-                onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
-              /> */}
             </div>
 
             <div className="mb-7 max-h-[300px] overflow-y-auto border border-[#dee2e6]">
@@ -498,7 +503,6 @@ const TasksSection = () => {
         {isOpenAddTaskModal && (
             <CreateTaskPopUp
                 onClose={() => setIsOpenAddTaskModal(false)}
-                user={user}
                 onTaskCreated={fetchTasks}
             />
         )}

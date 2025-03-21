@@ -345,11 +345,8 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
                         </div>
                       )}
                       <hr className="my-5"/>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 ">
-                    {renderPagesList(pagesData.filter((item) => item.isCustomPage))}
-                  </div>
                       {!loading && (
-                        <div className="flex sm:justify-between justify-center items-center w-full space-x-4 p-1 md:p-2 lg:p-3 flex-wrap gap-2">
+                        <div className="flex justify-end items-center w-full space-x-4 flex-wrap gap-2">
                           <Button
                             onClick={() => {
                               setEditData(null);
@@ -358,11 +355,14 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
                               }
                             }}
                             icon={PlusCircle}
-                            type="Secondary"
+                            type="Primary"
                             label="Add Page"
                           />
                         </div>
                       )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 ">
+                    {renderPagesList(pagesData.filter((item) => item.isCustomPage))}
+                  </div>
                 </>
               )}
             </>

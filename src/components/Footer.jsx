@@ -141,7 +141,7 @@ const Footer = ({
           /> */}
 
           <div className="flex justify-between items-end flex-wrap">
-            <div className="flex items-end">
+            <div>
               <div className="text-sm text-[#6c757d] font-medium font-lato">
                 <div>
                   {isFromAvailable ? (
@@ -177,7 +177,7 @@ const Footer = ({
                       {!links && <div className="text-xs">Footer Links</div>}
                     </div>
                   ) : (
-                    <div className="flex items-end">
+                    <div>
                       {links &&
                         links.length > 0 &&
                         links.slice(0, 5).map((item, index) => (
@@ -205,7 +205,7 @@ const Footer = ({
             </div>
 
             <div>
-              <div className="mb-2 md:mb-0">
+              <div className="md:mb-0">
                 <div className="flex items-end gap-1">
                   <p className="text-xs text-[#6c757d] font-medium font-lato">
                     Powered By MStrategygroup © 2025

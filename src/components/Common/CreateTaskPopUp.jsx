@@ -8,9 +8,9 @@ import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
-import { TaskType } from "@/config/constants";
+import { TaskType, UserRole } from "@/config/constants";
 
-const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
+const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
     const isForImport = false;
     const params = useParams();
     const [submitLoading, setSubmitLoading] = useState(false) 
@@ -19,7 +19,12 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
     const [title, setTitle] = useState("");
     const [filesUploaded, setFilesUploaded]=useState([])
     const [resetUpload, setResetUpload] = useState(false);
+    const [usersList, setUsersList] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [userID, setUserID] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
+      userID: "",
       title: task?.title || "",
       description: task?.description || "",
       dueDate: task?.dueDate
@@ -235,7 +240,7 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
           description: formData.description,
           dueDate: new Date(formData.dueDate),
           type: formData.type,
-          user: user?.id,
+          user: user && user?.id ? user?.id : formData.userID?.id,
           createdBy: loggedInUser?.id,
           uploads: fileIds || [],
           portalId: params.portalid,
@@ -284,7 +289,44 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
         await handleSubmit();
       }
     };
+    const fetchUser = async () => {
+      try {
+          setIsLoading(true);
+          const url = params.portalid
+              ? `/api/users?portalid=${params.portalid || "default"}`
+              : "/api/users";
+          const response = await fetchWrapper(url, {}, "fetchUserList");
+          if (!response.ok) throw new Error("Download failed");
+          const data = await response.json();
+          console.log("UsersList:", data);
+          setUsersList(data);
+      } catch (error) {
+          console.error("Download error:", error);
+      } finally {
+          setIsLoading(false);
+      }
+  };
 
+  useEffect(() => {
+      const users = usersList.map((user) => ({
+        ...user,
+        value: user.boxUserId,
+        label: `${user.name} (${user.email})`,
+      }));
+  
+      const loggedInUserId = loggedInUser?.boxUserId;
+  
+      const filteredUsers = users.filter((user) => user.role !== UserRole.MODERATOR);
+  
+      setUsers(filteredUsers);
+    }, [usersList]);
+
+  useEffect(() => {
+   fetchUser()
+  }, [])
+  console.log("users:", users);
+  
+  
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
             <div className="bg-white rounded-lg w-full max-w-[800px]">
@@ -318,6 +360,23 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
                             </div>
                         </div>
                     </div>
+                      <div className="flex flex-col">
+                        <label className="block text-sm font-medium text-gray-700 pb-1">
+                          Select User
+                        </label>
+                        <div>
+                          <Select
+                            className="flex-1 bg-white text-[#495057] text-sm focus:outline-none w-full"
+                            isClearable={true}
+                            isSearchable={true}
+                            value={formData.userID}
+                            onChange={(selectedOption) => setFormData((prev) => ({ ...prev, userID: selectedOption || null }))}
+                            options={users}
+                            placeholder="Create task for..."
+                            required
+                          />
+                        </div>
+                      </div>
                     {
                         formData.type &&  (
                             <div className="z-10">
@@ -390,7 +449,7 @@ const CreateTaskPopUp = ({ onClose, user, onTaskCreated, task={} }) => {
                             label="Submit"
                             onClick={handleCreate}
                             isLoading={submitLoading}
-                            disabled={!formData.type || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
+                            disabled={!formData.type || (user?.role === UserRole.MODERATOR  ? !formData.userID : false) || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
                         />
                     </div>
                 </form>

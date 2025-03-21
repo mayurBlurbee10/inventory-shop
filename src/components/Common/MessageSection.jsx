@@ -632,14 +632,16 @@ const MessageSection = () => {
       )}
 
       {/* New Message Button Below Table */}
-      <div className="flex justify-end">
-        <div
-          className="flex items-center justify-end text-sm text-blue-500 cursor-pointer"
-          onClick={() => setIsOpenAllMessageSection((prev) => !prev)}
-        >
-          View More
+      {messages && messages?.length > 5 && (
+        <div className="flex justify-end">
+          <div
+            className="flex items-center justify-end text-sm text-blue-500 cursor-pointer"
+            onClick={() => setIsOpenAllMessageSection((prev) => !prev)}
+          >
+            View More
+          </div>
         </div>
-      </div>
+      )}
 
       {/* New Message Modal */}
       <NewMessageModal

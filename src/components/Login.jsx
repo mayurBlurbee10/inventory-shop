@@ -318,7 +318,7 @@ function Login() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
-      <div className="max-w-[1140px] w-full py-[70px] mx-auto">
+      <div className="max-w-[1140px] w-full pt-[70px] mx-auto">
         <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
           {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
