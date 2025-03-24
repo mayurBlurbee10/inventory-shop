@@ -221,3 +221,69 @@ export const sendSetPasswordEmail = async (
     throw new Error("Failed to send set password email");
   }
 };
+
+export const sendSuccessPortalEmail = async (
+  userEmail,
+  userName,
+  resetToken,
+  portalName,
+  userExist = false
+) => {
+  try {
+    const portal = portalName !== '' ? reverseSanitizeName(portalName) : 'Mstrategy';
+
+    const resetLink = portalName !== '' 
+      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}`
+      : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/setpassword/${resetToken}`;
+
+    const redirectLink = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/login`;
+
+    const successEmailContent = {
+      senderAddress: process.env.AZURE_COMMUNICATION_SENDER_EMAIL, // Sender email
+      recipients: {
+        to: [{ address: userEmail }],
+      }, // Recipient email address
+      content: {
+        subject: `Your <strong>${portal}</strong> portal has been created successfully`,
+        html: `
+          <div style="background-color: #F4F4F4; padding: 40px; font-family: Arial, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; border: 1px solid #E0E0E0;">
+   
+              <div style="background-color: #28a745; color: white; padding: 15px; border-top-left-radius: 8px; border-top-right-radius: 8px; text-align: center;">
+                <strong>Success! Your portal has been created successfully.</strong>
+              </div>
+
+              <div style="padding: 30px; text-align: center;">
+                <p style="color: #333333; font-size: 16px; line-height: 1.6;">
+                  Congratulations! Your <strong>${portal}</strong> portal has been successfully created.
+                </p>
+                <a 
+                href="${userExist ? redirectLink : resetLink}"
+                target="_blank"
+                style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;"
+                >
+                ${
+                  userExist
+                    ? `Visit ${portal} Portal`
+                    : "Reset your password"
+                }
+                </a>
+              </div>
+
+              <div style="padding: 20px; text-align: center; color: #888888; font-size: 12px;">
+                <p style="margin: 0;">© 2024 ${portal} Portal. All rights reserved.</p>
+                <p style="margin: 0;">This is an automated message. Please do not reply directly to this email.</p>
+              </div>
+            </div>
+          </div>
+      `,
+      },
+    };
+
+    await client.beginSend(successEmailContent);
+    console.log("Success email sent");
+  } catch (error) {
+    console.error("Error sending email: ", error);
+    throw new Error("Failed to send success email");
+  }
+};

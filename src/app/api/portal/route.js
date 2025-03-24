@@ -6,6 +6,8 @@ import portalService from "@/services/portalService";
 import userService from "@/services/userService";
 import { UserRole } from "@/config/constants";
 import permissionService from "@/services/permissionService";
+import { sendSuccessPortalEmail } from "@/app/lib/email";
+import { generateNanoToken } from "@/app/lib/jwt";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -72,6 +74,17 @@ export async function POST(req) {
         { status: 404 }
       );
     }
+    const user = userService.getUserById(portal?.portalCreatedAdmin);
+    const token = user?.resetPasswordToken
+      ? user.resetPasswordToken
+      : await generateNanoToken();
+    sendSuccessPortalEmail(
+      user.email,
+      user.name,
+      token,
+      sanitizeName(portal.legalName),
+      user?.resetPasswordToken !== null
+    );
     return NextResponse.json({
       message: `portal created successfully.`,
       data: portal,
