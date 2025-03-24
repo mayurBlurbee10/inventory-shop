@@ -10,7 +10,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
 import { TaskType, UserRole } from "@/config/constants";
 
-const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
+const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={} }) => {
     const isForImport = false;
     const params = useParams();
     const [submitLoading, setSubmitLoading] = useState(false) 
@@ -42,8 +42,8 @@ const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
       try {
         const signers = [
           {
-            signerEmail: user?.email,
-            signerId: user?.id,
+            signerEmail: user ? user?.email : formData?.userID?.email,
+            signerId: user ? user?.id : formData?.userID?.id,
           },
         ];
 
@@ -57,7 +57,7 @@ const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
             body: JSON.stringify({
               fileId: fileId,
               signers,
-              boxUserId: user?.boxUserId,
+              boxUserId: user ? user?.boxUserId : formData?.userID?.boxUserId,
               portal: params.portalid,
               onSameDoc: false,
             }),
@@ -77,14 +77,14 @@ const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
 
      const handleCreateDuplicateFiles = async (duplicateFiles) => {
        try {
-         let destinationFolder = user?.folderId;
+         let destinationFolder = user ? user?.folderId : formData?.userID?.folderId;
 
          const requestOptions = {
            method: "POST",
            body: JSON.stringify({
              items: duplicateFiles,
              destinationFolderId: destinationFolder,
-             userId: user?.boxUserId,
+             userId: user ? user?.boxUserId : formData?.userID?.boxUserId,
            }),
          };
 
@@ -205,9 +205,9 @@ const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
             uploadData.append("file", file);
         })
 
-        uploadData.append("boxFolderId", user?.folderId);
-        uploadData.append("email", user?.email);
-        uploadData.append("userId", user?.boxUserId);
+        uploadData.append("boxFolderId", formData?.userID?.folderId);
+        uploadData.append("email", formData?.userID?.email);
+        uploadData.append("userId", formData?.userID?.boxUserId);
 
         const requestOptions = {
            method: "POST",
@@ -240,7 +240,7 @@ const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
           description: formData.description,
           dueDate: new Date(formData.dueDate),
           type: formData.type,
-          user: user && user?.id ? user?.id : formData.userID?.id,
+          user: user ? user?.id : formData.userID?.id,
           createdBy: loggedInUser?.id,
           uploads: fileIds || [],
           portalId: params.portalid,
@@ -360,6 +360,7 @@ const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
                             </div>
                         </div>
                     </div>
+                    {!user && (
                       <div className="flex flex-col">
                         <label className="block text-sm font-medium text-gray-700 pb-1">
                           Select User
@@ -377,6 +378,17 @@ const CreateTaskPopUp = ({ onClose, user =[], onTaskCreated, task={} }) => {
                           />
                         </div>
                       </div>
+                    )}
+                    {user && user?.id && (
+                      <div className="w-full">
+                        <label className="block text-sm text-gray-600 mb-1">Selected User</label>
+                        <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
+                          <div className="text-sm text-[#495057]">
+                            {user?.name} ({user?.email})
+                          </div>
+                        </div>
+                    </div>
+                    )}
                     {
                         formData.type &&  (
                             <div className="z-10">

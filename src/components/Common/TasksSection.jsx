@@ -7,7 +7,7 @@ import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType, UserRole } from '@/config/constants';
 import { Dialog } from '@headlessui/react';
 import { Calendar, CheckCircle, FileText, Loader2, Plus, RotateCw, X } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -37,7 +37,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task }) => {
               </button>
             </div>
             
-             {user?.role === UserRole?.MODERATOR && ( 
+             {user && user?.role === UserRole?.MODERATOR && ( 
                 <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
                     {/* Avatar */}
                     <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
@@ -118,6 +118,7 @@ const TasksSection = () => {
     const [page, setPage] = useState(null);
     const params = useParams();
     const router = useRouter();
+    const pathname = usePathname();
     const { data: user } = useSelector((state) => state.user);
     const { data: config } = useSelector((state) => state.portal);
     const [isPageLoading, setIsPageLoading] = useState(false)
@@ -331,17 +332,15 @@ const TasksSection = () => {
     const modelClose = () => {
         setCreateTask(false);
     }
-    console.log("user:", user?.role);
-    console.log("tasks:", tasks);
    
     return (
       <div className="reletive mt-1">
         {filterVisibility("My Task Section") && (
           <>
-            <div className={`flex justify-between items-start ${user?.role === UserRole.MODERATOR ? "" : "mb-4"}`}>
+            <div className={`flex justify-between items-start ${user && user?.role === UserRole.MODERATOR ? "" : "mb-4"}`}>
               <div></div>
               <h3 className="text-xl font-light text-center text-[#212529] font-lato">
-                {user?.role === UserRole.MODERATOR ? "Your Tasks" : "My Tasks"}
+                {user && user?.role === UserRole.MODERATOR ? "Your Tasks" : "My Tasks"}
               </h3>
               <div
                 className="flex items-center justify-end text-[#dc3545] cursor-pointer"
@@ -355,7 +354,7 @@ const TasksSection = () => {
                 }
               >
                   {
-                    user.role === 'moderator' ? (
+                    user && user.role === UserRole?.MODERATOR ? (
                       <Button
                         iconClassName="w-5 h-5"
                         className='text-gray-600 w-24 h-10 ml-auto mb-2'

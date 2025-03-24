@@ -1137,7 +1137,7 @@ function Documents({
       className={`max-w-[1820px] ${
         fileType === "loan" || fileType === "advisor"
           ? ""
-          : "mx-auto sm:mt-14 mt-14"
+          : "mx-auto sm:pt-14 pt-14"
       }`}
     >
       <div>

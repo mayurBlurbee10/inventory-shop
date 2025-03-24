@@ -20,6 +20,7 @@ import Select from "react-select";
 import { Dialog } from "@headlessui/react";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import AllTaskModal from "./AllTaskModal";
+import { toast } from "react-toastify";
 
 const formatDate = (timestamp) => {
   const date = new Date(timestamp);
@@ -38,6 +39,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
   const menuRef = useRef(null);
   const [isMessageDeleteModalOpen, setIsMessageDeleteModalOpen] =
     useState(false);
+  const { data : user } = useSelector((state) => state?.user);
 
   const handleEditMessage = async () => {
     if (!editedMessage.text.trim() || !editedMessage.subject.trim()) {
@@ -93,6 +95,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
       setIsMessageDeleteModalOpen(false);
       await onMessageUpdate();
       onClose();
+      toast.success("Message deleted successfully")
     } catch (error) {
       console.error("Error updating message:", error);
     } finally {
@@ -113,7 +116,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
 
   useEffect(() => {
     setEditedMessage({
-      subject: message?.subject,
+      subject: message?.subject ? message?.subject : "",
       text: message?.text,
     });
   }, [message]);
@@ -129,12 +132,14 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
               📩 Message Details
             </h2>
             <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="text-gray-500 hover:text-gray-700 transition"
-              >
-                <MoreVertical className="size-5" />
-              </button>
+              {message?.receiver?.id !== user?.id && (
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="text-gray-500 hover:text-gray-700 transition"
+                >
+                  <MoreVertical className="size-5" />
+                </button>
+              )}
               {showMenu && (
                 <div className="absolute right-0 mt-2 w-32 bg-white shadow-md rounded-lg border border-gray-200 z-10">
                   <button
@@ -168,6 +173,14 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
               <span className="font-medium">Date:</span>
               <span className="text-gray-600">
                 {formatDate(message?.createdAt)}
+              </span>
+            </div>
+
+             {/* Sender */}
+             <div className="flex items-center space-x-2">
+              <span className="font-medium">Sender:</span>
+              <span className="text-gray-600">
+                {message?.sender?.name || "Unknown"}
               </span>
             </div>
 
@@ -271,6 +284,15 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend }) => {
   const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
+  const handleClose = () => {
+    setMessage({
+      subject : "",
+      text : ""
+    })
+    onClose();
+    setUserID("");
+  }
+
   const fetchUser = async () => {
     try {
       const url = params.portalid
@@ -322,6 +344,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend }) => {
       setUserID("");
       onClose();
       await onMessageSend();
+      toast.success("Message sent successfully")
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -357,7 +380,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend }) => {
               Add New Message
             </Dialog.Title>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-gray-400 hover:text-gray-500"
             >
               <X className="w-5 h-5" />
@@ -400,7 +423,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend }) => {
             </div>
             <div className="flex justify-between space-x-3 mt-3">
               <Button
-                onClick={onClose}
+                onClick={handleClose}
                 disabled={isSendMessageLoading}
                 type="Secondary"
                 label="Cancel"
