@@ -302,6 +302,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
       </React.Fragment>
     ));
   };
+console.log("pagesData:", pagesData);
 
   return (
     <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto">

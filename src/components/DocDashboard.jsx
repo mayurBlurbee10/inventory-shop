@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from "react-redux";
 import TasksSection from "./Common/TasksSection";
 import AdvisorSection from "./Common/CollaboratorSection";
 import CollaboratorSection from "./Common/CollaboratorSection";
+import MessageSection from "./Common/MessageSection";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -502,6 +503,10 @@ export default function DocDashboard() {
                )}
             </div>
           )}
+            {filterVisibility("Messaging") && (
+              // <Messaging />
+              <MessageSection />
+            )}
           </div>
         </div>
       </div>
