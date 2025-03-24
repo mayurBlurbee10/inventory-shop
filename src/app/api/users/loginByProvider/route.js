@@ -1,6 +1,7 @@
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import { generateToken } from "@/app/lib/jwt";
 import { UserRole } from "@/config/constants";
+import portalService from "@/services/portalService";
 import userService from "@/services/userService";
 import { NextResponse } from "next/server";
 
@@ -14,6 +15,10 @@ export async function POST(request) {
         { error: "Invalid credentials!! user not found with this email" },
         { status: 404 }
       );
+    }
+    let portalCreatedAdmin = null;
+    if(portalCreatedAdmin){
+      portalCreatedAdmin = await portalService.getPortalCreatedAdmin(data?.portalid);
     }
     const userPermission =
       Array.isArray(user.permissions) &&
@@ -39,6 +44,7 @@ export async function POST(request) {
     }else {
       userRole = userPermission?.role;
     }
+
     const userData = {
       id: user.id,
       email: user.email,
@@ -47,11 +53,17 @@ export async function POST(request) {
       company: user.company,
       isOnboardingRequired: user.isOnboardingRequired,
       boxUserId: user.boxUserId,
-      boxFolderId: user.folderId,
+      // boxFolderId: user.folderId,
       collaborationIds: user.collaborationIds,
       signRequestsIds: user.signRequestsId,
       permissions: user.permissions,
     };
+
+    if(portalCreatedAdmin){
+      userData?.boxFolderId = portalCreatedAdmin?.folderId
+    } else {
+      userData?.boxFolderId = user.folderId
+    }
 
     const accessToken = await generateToken(userData, "168h");
     await userService.setUserAccessToken(data.email, accessToken, "okta");

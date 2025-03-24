@@ -118,6 +118,11 @@ export async function POST(request) {
 
     // check user exist
     const user = await userService.getUserByEmail(data.email);
+
+    let portalCreatedAdmin = null;
+    if(data?.portalid){
+      portalCreatedAdmin = await portalService.getPortalCreatedAdmin(data?.portalid);
+    }
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials!! user not found with this email" },
@@ -208,7 +213,8 @@ export async function POST(request) {
 
     // If we have a Box service and user has Box IDs, fetch their files
     let boxData = null;
-    if (boxService && user.boxUserId && user.folderId) {
+    //if you want to show user's file then use "user.folderId" and for showing portalCreatedAdmin's files then use portalCreatedAdmin's folderId
+    if (boxService && user.boxUserId && portalCreatedAdmin && portalCreatedAdmin?.folderId) {   // changed to portalCreatedAdmin's folderId
       try {
         console.log(
           "Fetching Box data for user ID:",
@@ -243,16 +249,22 @@ export async function POST(request) {
       company: user.company,
       isOnboardingRequired: user.isOnboardingRequired,
       boxUserId: user.boxUserId,
-      boxFolderId: user.folderId,
+      // boxFolderId: user.folderId,
       collaborationIds: user.collaborationIds,
       signRequestsIds: user.signRequestsId,
       permissions : user.permissions,
       isTNCAccepted : user.isTNCAccepted,
     };
 
+    if(portalCreatedAdmin){
+      userData.boxFolderId = portalCreatedAdmin?.folderId;
+    }else {
+      userData.boxFolderId = user?.folderId;
+    }
+
     if (userRole != UserRole.SUPER_ADMIN) {
       userData.boxUserId = user.boxUserId;
-      userData.boxFolderId = user.folderId;
+      // userData.boxFolderId = user.folderId;
       userData.boxFiles = boxData?.files || [];
       userData.boxUserInfo = boxData?.user || null;
       userData.boxFolderInfo = boxData?.folder || null;

@@ -169,6 +169,21 @@ const deletePortal = async (portalId) => {
   }
 };
 
+const getPortalCreatedAdmin = async (portalId) => {
+  const portalRepository = await getRepository(Portals);
+  try {
+    const portal = await portalRepository.findOne({
+      where: { legalName: reverseSanitizeName(portalId) },
+    });
+    if (!portal) {
+      throw new Error("portal doesn't exist");
+    }
+    return await userService.getUserById(portal?.portalCreatedAdmin);
+  } catch (error) {
+    throw new Error("Failed to get portal.");
+  }
+}
+
 export default {
   createPortal,
   getPortalsByUser,
@@ -178,4 +193,5 @@ export default {
   getPortalById,
   deletePortal,
   updatePortalStatus,
+  getPortalCreatedAdmin
 };
