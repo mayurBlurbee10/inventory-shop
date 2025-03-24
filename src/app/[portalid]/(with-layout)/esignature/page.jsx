@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import SettingsModal from "@/components/Settings";
 import Sidepanel from "@/components/Sidepanel";
 import SignRequestModal from "@/components/SignRequestModal";
-import { Eye, Loader2 } from "lucide-react";
+import { Bell, ChevronDown, ChevronUp, Eye, Loader2, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -13,6 +13,156 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
+import { Dialog } from "@headlessui/react";
+import Button from "@/components/Common/Elements/Button";
+
+const TrackStatus = ({ pendingRequests }) => {
+  const params = useParams();
+  const [expandedRow, setExpandedRow] = useState(null);
+  const [isSendReminderLoading, setIsSendReminderLoading] = useState(null);
+
+  const { data : user } = useSelector((state) => state?.user);
+
+  const toggleRow = (reqId) => {
+    setExpandedRow(expandedRow?.id === reqId ? null : reqId);
+  };
+
+  const handleSendReminder = async (signer, signRequest) => {
+
+      const messageData = {
+        sender: user?.id,
+        receiver: signer?.embed_url_external_user_id,
+        portalId: params.portalid,
+        subject: `Sign Document`,
+        text: `Please sign "${signRequest?.source_files[0].name}"`,
+      };
+      setIsSendReminderLoading(signer?.embed_url_external_user_id);
+      try {
+        const response = await fetchWrapper(
+          "/api/messages",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(messageData),
+          },
+          "create-message"
+        );
+  
+        if (!response.ok) throw new Error("Failed to send message");
+        toast.success("Reminder sent successfully")
+      } catch (error) {
+        console.error("Error sending message:", error);
+      } finally {
+        setIsSendReminderLoading(null);
+      }
+    };
+
+  return (
+    <div className="p-4 bg-white text-gray-800 font-lato">
+      {pendingRequests?.length > 0 ? (
+        <table className="w-full text-sm text-left border border-gray-200 rounded-md overflow-hidden table-fixed">
+          <thead className="border-b bg-gray-100 text-gray-600">
+            <tr>
+              <th className="p-3 w-1/3">Document</th>
+              <th className="p-3 w-1/4">Signers</th>
+              <th className="p-3 w-1/6">Status</th>
+              <th className="p-3 w-1/6"></th>
+            </tr>
+          </thead>
+          <tbody className="">
+            {pendingRequests.map((req) => {
+              const signers = req?.signers?.filter(
+                (signer) => req.sender_email !== signer.email
+              );
+
+              return signers.length > 0 ? (
+                <React.Fragment key={req.id}>
+                  {/* Default Row */}
+                  <tr className={`hover:bg-gray-50 transition ${expandedRow?.id !== req?.id && "border-b border-gray-200"}`}>
+                    {/* Document Name */}
+                    <td className="p-3 font-medium text-gray-900 align-middle truncate w-1/3">
+                      {req?.source_files[0]?.name}
+                    </td>
+
+                    {/* Signers Initials */}
+                    <td className="p-3 w-1/4">
+                      <div className="flex -space-x-2">
+                        {signers.map((signer, index) => (
+                          <span
+                            key={index}
+                            className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-800 font-semibold border border-white"
+                          >
+                            {signer?.email[0].toUpperCase()}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="p-3 w-1/6">
+                      {signers.some((signer) => !signer?.signer_decision !== null) ? (
+                        <span className="text-yellow-600 font-semibold">Pending</span>
+                      ) : (
+                        <span className="text-green-600 font-semibold">Completed</span>
+                      )}
+                    </td>
+
+                    {/* View Button */}
+                    <td className="p-3 w-1/6">
+                      <button
+                        onClick={() => {toggleRow((prev) => prev?.id === req?.id ? null : req)}}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        {expandedRow?.id === req?.id ? <ChevronUp /> : <ChevronDown />}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {/* Expanded Row */}
+                  {expandedRow?.id === req.id &&
+                    signers.map((signer, idx) => (
+                      <tr key={`${req.id}-${signer.email}`} className="hover:bg-gray-50 transition border-b border-gray-200">
+                        {/* Merge document name cell */}
+                        {idx === 0 && (
+                          <td rowSpan={signers.length} className="p-3 font-medium text-gray-900 align-middle w-1/3"></td>
+                        )}
+
+                        {/* Signer Email */}
+                        <td className="p-3 w-1/4">{signer?.email}</td>
+
+                        {/* Status */}
+                        <td className="p-3 w-1/6">
+                          {signer?.signer_decision !== null ? (
+                            <span className="text-green-600 font-semibold">Completed</span>
+                          ) : (
+                            <p className="flex items-center gap-2">
+                              <span className="text-yellow-600 font-semibold">Pending</span>
+                              <button title="Send Reminder" onClick={() => handleSendReminder(signer, expandedRow)}>
+                                {isSendReminderLoading === signer?.embed_url_external_user_id ? (
+                                  <Loader2 className="text-blue-500 hover:text-blue-700 animate-spin size-5 ml-5"/>
+                                ) : (
+                                <Bell className="text-gray-500 hover:text-gray-700 cursor-pointer size-5 ml-5" />
+                                )}
+                              </button>
+                            </p>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                    }
+                </React.Fragment>
+              ) : null;
+           
+            })}
+          </tbody>
+        </table>
+      ) : (
+        <p className="text-gray-500 text-center p-3">No pending requests</p>
+      )}
+      
+    </div>
+  );
+};
 
 function ESignature() {
   const router = useRouter();
@@ -172,6 +322,15 @@ function ESignature() {
           >
             Completed Requests ({completedRequests?.length || 0})
           </button>
+          <button
+            className={`px-4 py-2 text-md sm:text-lg font-lato ${activeTab === "track_status"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-600"
+              }`}
+            onClick={() => setActiveTab("track_status")}
+          >
+            Track Status
+          </button>
         </div>
 
         {/* Display List of Requests */}
@@ -239,6 +398,9 @@ function ESignature() {
                   </p>
                 )}
               </div>
+            )}
+           {activeTab === "track_status" && (
+              <TrackStatus pendingRequests={pendingRequests}/>
             )}
           </div>
         )}
