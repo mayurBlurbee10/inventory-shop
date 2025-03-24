@@ -6,24 +6,80 @@ import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType, UserRole } from '@/config/constants';
 import { Dialog } from '@headlessui/react';
-import { Calendar, CheckCircle, FileText, Loader2, Plus, RotateCw, X } from 'lucide-react';
+import { Calendar, CheckCircle, Edit, FileText, Loader2, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import DeleteConfirmDialog from '../DeleteConfirmDialog';
 
-export const TaskNoteModal = ({ isOpen, onClose, task }) => {
+export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks }) => {
     const router = useRouter();
+    const menuRef = useRef(null);
+    const [showMenu, setShowMenu] = useState(false);
+    const [isTaskDeleteModalOpen, setIsTaskDeleteModalOpen] = useState(false);
+    const [isTaskUpdateModalOpen, setIsTaskUpdateModalOpen] = useState(false);
+    const [isDeleteTaskLoading, setIsDeleteTaskLoading] = useState(false);
+
     const { data : user } = useSelector((state) => state.user);
 
     const formatDate = (timestamp) => {
         const date = new Date(timestamp);
         return date.toLocaleDateString("en-GB");
       };
+    
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (menuRef.current && !menuRef.current.contains(event.target)) {
+            setShowMenu(false);
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleClose = () => {
+      setIsTaskDeleteModalOpen(false);
+      setIsTaskUpdateModalOpen(false);
+      onClose();
+    }
+
+    const handleDeleteTask = async () => {
+      try {
+        if (!task) {
+          return;
+        }
+        const requestOptions = {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ taskId: task?.id }),
+        };
+        setIsDeleteTaskLoading(true);
+        const response = await fetchWrapper(
+          `/api/tasks`,
+          requestOptions,
+          "delete-tasks"
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error || "Something went wrong!");
+        }
+        await fetchTasks();
+        setIsTaskDeleteModalOpen(false);
+        onClose();
+        toast.success("Task deleted Successfully");
+      } catch (error) {
+        toast.error(error?.message);
+      } finally {
+        setIsDeleteTaskLoading(false);
+      }
+    };
   
     return (
-      <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-6">
           <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-lg bg-white p-8 shadow-lg border border-gray-300">
@@ -32,9 +88,34 @@ export const TaskNoteModal = ({ isOpen, onClose, task }) => {
               <Dialog.Title className="text-2xl text-gray-700 font-semibold font-lato">
                 📝 Task Details
               </Dialog.Title>
-              <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition">
-                <X className="w-6 h-6" />
-              </button>
+              <div className="relative" ref={menuRef}>
+                {user && user?.role === UserRole?.MODERATOR && (
+                  <button
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="text-gray-500 hover:text-gray-700 transition"
+                  >
+                    <MoreVertical className="size-5" />
+                  </button>
+                )}
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white shadow-md rounded-lg border border-gray-200 z-10">
+                    <button
+                      onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                    >
+                      <Edit className="size-4 text-blue-500" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
+                    >
+                      <Trash2 className="size-4 text-red-500" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             
              {user && user?.role === UserRole?.MODERATOR && ( 
@@ -98,7 +179,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task }) => {
   
             {/* Actions */}
             <div className="mt-6 flex justify-end space-x-4">
-              <Button onClick={onClose} type="Secondary" label="Close" />
+              <Button onClick={handleClose} type="Secondary" label="Close" />
   
               {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && (
                 <Button
@@ -110,6 +191,23 @@ export const TaskNoteModal = ({ isOpen, onClose, task }) => {
             </div>
           </Dialog.Panel>
         </div>
+        {isTaskUpdateModalOpen && (
+          <CreateTaskPopUp
+            onClose={() => setIsTaskUpdateModalOpen(false)}
+            user={task?.user}
+            onTaskCreated={fetchTasks}
+            task={task}
+            onTaskUpdated = {handleClose}
+          />
+        )}
+        <DeleteConfirmDialog
+          isModalOpen={isTaskDeleteModalOpen}
+          setIsModalOpen={setIsTaskDeleteModalOpen}
+          title="Delete Task"
+          content="Deleting this task cannot be undone. Do you want to continue?"
+          handleDelete={handleDeleteTask}
+          isLoading={isDeleteTaskLoading}
+        />
       </Dialog>
     );
   };
@@ -487,6 +585,7 @@ const TasksSection = () => {
             isOpen={isOpenTaskModal}
             onClose={() => {setIsOpenTaskModal(false); setSelectedTask(null);}}
             task={selectedTask}
+            fetchTasks={fetchTasks}
         />
         <CompleteForms
           onClose={() => setIsCompleteFormPopupOpen(false)}

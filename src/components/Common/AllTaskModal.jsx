@@ -1,17 +1,21 @@
 import { Dialog } from "@headlessui/react";
 import React, { useEffect, useState } from "react";
 import Button from "./Elements/Button";
-import { Edit, Loader2, X } from "lucide-react";
+import { Edit, Loader2, Trash2, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import CreateTaskPopUp from "./CreateTaskPopUp";
+import DeleteConfirmDialog from "../DeleteConfirmDialog";
 
 const AllTaskModal = ({ isOpen, onClose }) => {
   const params = useParams();
   const [tasks, setTasks] = useState([]);
   const [isTasksLoading, setIsTasksLoading] = useState(false);
   const [selectTaskToUpdate, setSelectTaskToUpdate] = useState(null);
+  const [selectTaskToDelete, setSelectTaskToDelete] = useState(null);
+  const [isTaskDeleteModalOpen, setIsTaskDeleteModalOpen] = useState(false);
+  const [isDeleteTaskLoading, setIsDeleteTaskLoading] = useState(false);
 
   const fetchAllTasks = async () => {
     try {
@@ -30,6 +34,39 @@ const AllTaskModal = ({ isOpen, onClose }) => {
       toast.error(error?.message);
     } finally {
       setIsTasksLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    try {
+      if(!selectTaskToDelete){
+        return;
+      }
+      const requestOptions = {
+        method : "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body : JSON.stringify({taskId : selectTaskToDelete?.id})
+      }
+      setIsDeleteTaskLoading(true);
+      const response = await fetchWrapper(
+        `/api/tasks`,
+        requestOptions,
+        "delete-tasks"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Something went wrong!");
+      }
+      await fetchAllTasks();
+      setSelectTaskToDelete(null);
+      setIsTaskDeleteModalOpen(false);
+      toast.success("Task deleted Successfully");
+    } catch (error) {
+      toast.error(error?.message);
+    } finally {
+      setIsDeleteTaskLoading(false);
     }
   };
 
@@ -92,10 +129,14 @@ const AllTaskModal = ({ isOpen, onClose }) => {
                         <td className="py-3 px-4">{task?.title}</td>
                         <td className="py-3 px-4">{task?.status}</td>
                         <td className="py-3 px-4">{formatDate(task?.dueDate)}</td>
-                        <td className="py-3 px-4 cursor-pointer">
+                        <td className="py-3 px-4 cursor-pointer flex items-center gap-2">
                           <Edit
-                            className="size-5 text-gray-800 ml-3"
+                            className="size-5 text-gray-800"
                             onClick={() => setSelectTaskToUpdate(task)}
+                          />
+                          <Trash2 
+                            className="size-5 text-red-800 ml-3"
+                            onClick={() => {setSelectTaskToDelete(task);setIsTaskDeleteModalOpen((prev) => !prev)}}
                           />
                         </td>
                       </tr>
@@ -123,6 +164,14 @@ const AllTaskModal = ({ isOpen, onClose }) => {
             task={selectTaskToUpdate}
           />
         )}
+       <DeleteConfirmDialog 
+          isModalOpen={isTaskDeleteModalOpen}
+          setIsModalOpen={setIsTaskDeleteModalOpen}
+          title="Delete Task"
+          content="Deleting this task cannot be undone. Do you want to continue?"
+          handleDelete={handleDeleteTask}
+          isLoading={isDeleteTaskLoading}
+        />
       </div>
     </div>
   );

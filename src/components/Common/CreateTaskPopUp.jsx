@@ -10,7 +10,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
 import { TaskType, UserRole } from "@/config/constants";
 
-const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={} }) => {
+const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskUpdated = () => {} }) => {
     const isForImport = false;
     const params = useParams();
     const [submitLoading, setSubmitLoading] = useState(false) 
@@ -190,6 +190,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={} }) => {
       } finally {
         setSubmitLoading(false);
         onClose();
+        onTaskUpdated();
       }
     };
 

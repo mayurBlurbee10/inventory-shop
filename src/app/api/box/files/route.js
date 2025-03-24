@@ -193,11 +193,17 @@ export async function POST(req) {
   }
 }
 
+export const deleteFile = async (fileId) => {
+  const accessToken = await client._session.getAccessToken();
+  const newClient = sdk.getBasicClient(accessToken);
+
+  await newClient.files.delete(fileId);
+};
+
 export async function DELETE(req) {
   try {
     await logApiCall(req, () => {});
-    const accessToken = await client._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
+   
     const { searchParams } = new URL(req.url);
     const fileId = searchParams.get("fileId");
 
@@ -208,7 +214,7 @@ export async function DELETE(req) {
       );
     }
 
-    await newClient.files.delete(fileId);
+    await deleteFile(fileId);
 
     return NextResponse.json({
       message: "File deleted successfully",

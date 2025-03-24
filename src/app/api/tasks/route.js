@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import taskService from "@/services/taskService";
 import { TaskType } from "@/config/constants";
+import { deleteFile } from "../box/files/route";
 
 function sanitizeName(name) {
   let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
@@ -113,6 +114,10 @@ export async function PUT(req) {
     //   taskObj.uploads = data.uploads;
     // }
 
+    if(rest?.file && taskExist?.file){
+      await deleteFile(taskExist?.file?.id);
+    }
+
     const task = await taskService.updateTask(taskId, taskObj);
 
     return NextResponse.json({
@@ -127,3 +132,35 @@ export async function PUT(req) {
     );
   }
 }
+
+export async function DELETE(req) {
+  try {
+    await logApiCall(req);
+    const {taskId} = await req.json();
+
+    const taskExist = await taskService.getTaskById(taskId);
+
+    if (!taskExist) {
+      return NextResponse.json(
+        { error: `task with taskId ${taskId} not found.` },
+        { status: 404 }
+      );
+    }
+    if(taskExist?.file){
+      await deleteFile(taskExist?.file?.id)
+    }
+    await taskService.deleteTask(taskId);
+
+    return NextResponse.json({
+      message: `task deleted successfully.`,
+      data: taskExist,
+    });
+  } catch (error) {
+    console.error("Error delete task:", error.message);
+    return NextResponse.json(
+      { error: "Failed to delete task.", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+

@@ -103,10 +103,21 @@ const updateTask = async (taskId, updatedData) => {
   }
 };
 
+const deleteTask = async (taskId) => {
+  const taskRepository = await getRepository(Tasks);
+  try {
+    await taskRepository.delete(taskId);
+    return;
+  } catch (error) {
+    throw new Error("Failed to delete task.");
+  }
+};
+
 export default {
   getTasks,
   getTaskById,
   createTask,
   updateTask,
   getTasksByPortalId,
+  deleteTask
 };
