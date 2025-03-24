@@ -1,60 +1,25 @@
 "use client";
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { usePathname, useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import {
-    RotateCw
-} from "lucide-react";
-import { Doughnut, Line } from "react-chartjs-2";
-import {
-    Chart as ChartModule,
-    LineElement,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-
-
-} from 'chart.js';
 import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 import Link from "next/link";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import TasksSection from "@/components/Common/TasksSection";
 import MessageSection from "@/components/Common/MessageSection";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+  } from "recharts";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-const data = {
-    labels: ['Equity', 'Real Estate', 'Fixed Income', "S&P 500", "NASDAQ",],
-    datasets: [
-        {
-            data: [40.15, 25.78, 15.07, 14, 5],
-            backgroundColor: ['#3d95cc','#63577d','#43C6DB', "#3cba9f", "#e8c4ba",],
-            hoverOffset: 4,
-        },
-    ],
-};
-
-const options = {
-    plugins: {
-        tooltip: {
-            callbacks: {
-                label: (tooltipItem) => `${tooltipItem.raw}%`,
-            },
-        },
-        legend: {
-            display: true,
-            position: 'top',
-            labels: {
-                boxWidth: 20,
-                padding: 15,
-            }
-        },
-    },
-    cutout: '50%',
-};
 
 const LoadingSpinner = () => (
     <div className="min-h-full flex justify-center items-center py-8">
@@ -70,6 +35,9 @@ export default function AdvisorViewDashboard() {
     const [usersList, setUsersList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const params = useParams();
+  const [data, setData] = useState(null);
+    const [config, setConfig] = useState(null);
+  
 
     const [dayAndDate, setDayAndDate] = useState({
         day: "",
@@ -132,6 +100,40 @@ export default function AdvisorViewDashboard() {
         fetchUser();
     }, []);
 
+    const fetchConfig = async () => {
+        try {
+          const response = await fetchWrapper(
+            `/api/portal?portalid=${params.portalid}`,
+            {},
+            "fetch-portal"
+          );
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to fetch portal");
+          }
+          setConfig(data?.data);
+          return data?.data
+        } catch (error) {
+          console.log("error: ", error);
+        }
+      };
+      const generateMockData = async (year, portalId) => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return months.map(month => ({
+          name: month,
+          apiCalls: Math.floor(Math.random() * 1000) + 100,
+          activeUsers: Math.floor(Math.random() * 100) + 50
+        }));
+      };
+     useEffect(() => {
+        fetchConfig().then((portal) => {
+        //   getChartData(2025, portal?.id).then((data) => setData(data));
+          generateMockData(2025, portal?.id).then((data) => setData(data));
+        });
+      }, []);
+      console.log("Data:", data);
+      
+
     return (
         // <Container>
         <div className="max-w-[1820px] mx-auto px-4">
@@ -156,13 +158,13 @@ export default function AdvisorViewDashboard() {
                             <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5 text-black">
                                 {
                                     !isLoading && usersList.length > 0 &&
-                                    <div className="overflow-x-auto border rounded-lg max-h-[300px] overflow-y-auto w-full">
+                                    <div className="overflow-x-auto border max-h-[300px] overflow-y-auto w-full">
                                         <table className="w-full bg-white border-collapse">
                                             <thead className="sticky top-0 bg-gray-50 w-full">
                                                 <tr>
-                                                    <th className="py-2 px-4 border-b text-left text-sm">Name</th>
-                                                    <th className="py-2 px-4 border-b text-left text-sm">Message</th>
-                                                    <th className="py-2 px-4 border-b text-left text-sm">Phone</th>
+                                                    <th className="p-4 border-b text-left text-sm">Name</th>
+                                                    <th className="p-4 border-b text-left text-sm">Message</th>
+                                                    <th className="p-4 border-b text-left text-sm">Phone</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -173,10 +175,10 @@ export default function AdvisorViewDashboard() {
                                                                 {user?.name}
                                                             </Link>
                                                         </td>
-                                                        <td className="py-2 px-4 border-b text-sm">
+                                                        <td className="p4 border-b text-sm">
                                                             {`Message ${Math.floor(Math.random() * 100)}`}
                                                         </td>
-                                                        <td className="py-2 px-4 border-b text-sm">
+                                                        <td className="p-4 border-b text-sm">
                                                             {`+1-${Math.floor(1000000000 + Math.random() * 9000000000)}`}
                                                         </td>
                                                     </tr>
@@ -196,14 +198,45 @@ export default function AdvisorViewDashboard() {
                             {/* Title Section */}
                             <div className="grid grid-cols-1">
                                 <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                                    Your Market at a Glance
+                                    Activities
                                 </h3>
                             </div>
 
                             {/* Chart Section */}
-                            <div className="w-full h-[400px] flex justify-center items-center">
-                            <Doughnut data={data} options={options} />
-                            </div>
+                            <div className="sm:h-[350px] h-[250px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                          <LineChart
+                                            data={data}
+                                            margin={{
+                                              top: 5,
+                                              right: 30,
+                                              left: 20,
+                                              bottom: 5,
+                                            }}
+                                          >
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="name" />
+                                            <YAxis yAxisId="left" />
+                                            <YAxis yAxisId="right" orientation="right" />
+                                            <Tooltip />
+                                            <Legend />
+                                            <Line
+                                              yAxisId="left"
+                                              type="monotone"
+                                              dataKey="apiCalls"
+                                              stroke="#0061D5"
+                                              name="API Calls"
+                                            />
+                                            <Line
+                                              yAxisId="right"
+                                              type="monotone"
+                                              dataKey="activeUsers"
+                                              stroke="#16a34a"
+                                              name="Active Users"
+                                            />
+                                          </LineChart>
+                                        </ResponsiveContainer>
+                                      </div>
                         </div>
                 </div>
                 <div className="w-full">
@@ -282,7 +315,7 @@ export default function AdvisorViewDashboard() {
                             </div>
                     </div> */}
 
-                    <MessageSection />
+                    {/* <MessageSection /> */}
                 </div>
             </div>
         </div>
