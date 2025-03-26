@@ -1,10 +1,10 @@
 version: '3'
 services:
- box-wealth-portal-app:
+ box-nu-wealth-app:
     build: .
-    container_name: box-wealth-portal-app
+    container_name: box-nu-wealth-app
     ports:
-      - "3003:3003"  # Host port 3000 mapped to container port 3000
-    command: ["next", "start", "-H", "0.0.0.0", "-p", "3003"]  # Ensure it binds to 0.0.0.0 and uses port 3000
+      - "3007:3007"  # Host port 3007 mapped to container port 3007
+    command: ["next", "start", "-H", "0.0.0.0", "-p", "3007"]  # Ensure it binds to 0.0.0.0 and uses port 3007
     environment:
       - NODE_ENV=production
