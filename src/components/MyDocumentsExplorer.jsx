@@ -1156,18 +1156,6 @@ function SharedFolderExplorer({
                                     )}
                                   </div>
                                 )}
-
-                                <DeleteConfirmDialog
-                                  isLoading={isLoading}
-                                  isModalOpen={isDeleteModalOpen}
-                                  setIsModalOpen={setIsDeleteModalOpen}
-                                  handleDelete={
-                                    deleteDropdown?.type === "file"
-                                      ? () => handleDeleteFile(deleteDropdown)
-                                      : () => handleDeleteFolder(deleteDropdown)
-                                  }
-                                  modalRef={deleteModalRef}
-                                />
                               </div>
                             </div>
                           </td>
@@ -1378,17 +1366,7 @@ function SharedFolderExplorer({
                               </div>
                             )}
 
-                            <DeleteConfirmDialog
-                              isModalOpen={isDeleteModalOpen}
-                              setIsModalOpen={setIsDeleteModalOpen}
-                              handleDelete={
-                                deleteDropdown?.type === "file"
-                                  ? () => handleDeleteFile(deleteDropdown)
-                                  : () => handleDeleteFolder(deleteDropdown)
-                              }
-                              isLoading={isLoading}
-                              modalRef={deleteModalRef}
-                            />
+                           
                           </div>
                         </div>
                         <p className="text-xs text-gray-500 font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full">
@@ -1405,6 +1383,17 @@ function SharedFolderExplorer({
           )}
         </div>
       )}
+       <DeleteConfirmDialog
+          isModalOpen={isDeleteModalOpen}
+          setIsModalOpen={setIsDeleteModalOpen}
+          handleDelete={
+            deleteDropdown?.type === "file"
+              ? () => handleDeleteFile(deleteDropdown)
+              : () => handleDeleteFolder(deleteDropdown)
+          }
+          isLoading={isLoading}
+          modalRef={deleteModalRef}
+        />
 
       {/* {currentFilesList && currentFilesList?.length === 0 && (
         <tr className="px-3">
