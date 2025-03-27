@@ -60,9 +60,9 @@ export async function POST(request) {
     };
 
     if(portalCreatedAdmin){
-      userData?.boxFolderId = portalCreatedAdmin?.folderId
+      userData.boxFolderId = portalCreatedAdmin?.folderId
     } else {
-      userData?.boxFolderId = user.folderId
+      userData.boxFolderId = user.folderId
     }
 
     const accessToken = await generateToken(userData, "168h");
