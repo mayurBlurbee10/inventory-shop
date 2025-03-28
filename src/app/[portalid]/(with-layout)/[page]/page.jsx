@@ -36,13 +36,15 @@ function Page() {
 
   const { data: config } = useSelector((state) => state.portal);
   const { data: user } = useSelector((state) => state.user);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const fetchPlugins = async () => {
     try {
       setIsLoading(true);
       const response = await fetchWrapper(
-        `/api/pages?portalId=${params?.portalid}&page=${params?.page || ""}`,
+        `/api/pages?portalId=${params?.portalid}&page=${
+          reverseSanitizeName(params?.page) || ""
+        }`,
         {},
         "fetch-page"
       );
@@ -64,6 +66,20 @@ function Page() {
     toast.success("User signout successfully");
     router.push("login");
   };
+
+  function reverseSanitizeName(sanitizedName) {
+    let reversedName = sanitizedName.endsWith("-")
+      ? sanitizedName.slice(0, -1)
+      : sanitizedName;
+
+    reversedName = reversedName.replace(/-/g, " ");
+    reversedName = reversedName
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+    return reversedName;
+  }
 
   const fetchConfig = async () => {
     try {
@@ -100,7 +116,7 @@ function Page() {
       const data = await response.json();
       const userData = data.user;
       // setUserData(userData);
-      dispatch(setCurrentUser(userData))
+      dispatch(setCurrentUser(userData));
       if (typeof window !== "undefined") {
         // localStorage.setItem("portal", params.portalid);
         localStorage.setItem("accessToken", data.accessToken);
@@ -139,55 +155,25 @@ function Page() {
       // <div className="flex justify-center py-8 h-full w-full">
       //   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
       // </div>
-      <LoadingSpinner/>
+      <LoadingSpinner />
     );
   }
   const userIsAdmin = isAdmin();
   return (
-    <div className="flex flex-col min-h-screen text-gray-800">
+    <div className="p-4 bg-white text-gray-800 font-lato">
       <div className="bg-gray-50 flex-1">
-        <Header
-          user={user}
-          config={config}
-          userIsAdmin={userIsAdmin}
-          router={router}
-          accountDropdown={accountDropdown}
-          setAccountDropdown={setAccountDropdown}
-          handleLogout={handleLogout}
-          handelSettings={() => setIsSettingsOpen(true)}
-          setIsNewFolderModalOpen={setIsNewFolderModalOpen}
-          setShowUploadArea={setShowUploadArea}
-        />
-
-        <div className="flex flex-row">
-          <Sidepanel
-            userIsAdmin={userIsAdmin}
-            sidepanelDropdown={sidepanelDropdown}
-            setSidepanelDropdown={setSidepanelDropdown}
-            setIsNewFolderModalOpen={setIsNewFolderModalOpen}
-            showUploadArea={showUploadArea}
-            setShowUploadArea={setShowUploadArea}
-            router={router}
-            isSettingsOpen={isSettingsOpen}
-            handelSettings={() => setIsSettingsOpen(true)}
+        {page && page?.description ? (
+          <div
+            className="bg-white pt-5 pb-3 px-5 page"
+            dangerouslySetInnerHTML={{
+              __html: page.description,
+            }}
+            suppressHydrationWarning={true}
           />
-          {page && page?.description ? (
-            <div
-              className="bg-white rounded-2xl w-full xl:mr-5 pt-5 pb-3 px-5 page"
-              dangerouslySetInnerHTML={{
-                __html: page.description,
-              }}
-              suppressHydrationWarning={true}
-            />
-          ) : (
-            <div>No Content Available</div>
-          )}
-        </div>
+        ) : (
+          <div>No Content Available</div>
+        )}
       </div>
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
     </div>
   );
 }

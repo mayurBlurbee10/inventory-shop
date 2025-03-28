@@ -224,7 +224,7 @@ function Login() {
       // localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
 
-      if (!tncPage || userData?.isTNCAccepted) {
+      if (!tncPage || (tncPage && userData?.isTNCAccepted)) {
         const targetRoute =
           userData?.role === UserRole.MODERATOR
             ? "advisor/dashboard"

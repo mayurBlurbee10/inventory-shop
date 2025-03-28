@@ -144,7 +144,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
                   ) : (
                     <tr>
                       <td
-                        colSpan="3"
+                        colSpan="6"
                         className="text-center py-5 text-gray-500"
                       >
                         No records found

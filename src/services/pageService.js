@@ -51,9 +51,11 @@ const checkIfPageWithTitleExist = async (portalId, pageTitle) => {
     }
 
     for (const plugin of plugins) {
-      const page = plugin.pages.find((page) => page.title === pageTitle);
+      const page = plugin.pages.find((page) =>
+        page.title.trim().toLowerCase() === pageTitle.trim().toLowerCase()
+      );
       if (page) {
-        return page;
+        return page; // Return the found page
       }
     }
 
@@ -95,7 +97,9 @@ const getPageByTitle = async (portalId, pageTitle) => {
 
     // Find the first page with the matching title
     for (const plugin of plugins) {
-      const page = plugin.pages.find((page) => page.title === pageTitle);
+      const page = plugin.pages.find((page) =>
+        page.title.trim().toLowerCase() === pageTitle.trim().toLowerCase()
+      );
       if (page) {
         return page; // Return the found page
       }

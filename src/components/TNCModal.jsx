@@ -8,6 +8,7 @@ import { setUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { setCurrentUser } from "@/store/services/userService";
 import { useDispatch } from "react-redux";
+import { UserRole } from "@/config/constants";
 
 function TNCModal({ onClose, user, email, password, page }) {
   const params = useParams();
@@ -71,11 +72,15 @@ function TNCModal({ onClose, user, email, password, page }) {
 
       // console.log("Redirecting to home");
 
-      toast.success("Redirecting to home");
       if (user.isOnboardingRequired) {
         router.push(`onboarding`);
       } else {
-        router.push(`dashboard`);
+        const targetRoute =
+          user?.role === UserRole.MODERATOR
+            ? "advisor/dashboard"
+            : "dashboard";
+        router.push(targetRoute);
+        toast.success("Redirecting to dashboard");
       }
     } catch (error) {
       console.error("Error fetching plugins:", error);

@@ -13,6 +13,8 @@ import {
 import {
   Bolt,
   CircleUserRound,
+  Ellipsis,
+  File,
   Headset,
   LogOut,
   Settings,
@@ -48,8 +50,11 @@ function Navbar({ content, config, filterValue }) {
   const [isAdvisorViewOpen, setIsAdvisorViewOpen] = useState(false);
   // const isAdvisorViewOpen = pathname.includes("advisor");
   const dropdownRef = useRef(null);
+  const moreLinksDropdownRef = useRef(null);
   const [logo, setLogo] = useState(null);
   const [pages, setPages] = useState([]);
+  const [customPages, setCustomPages] = useState([]);
+  const [isOpenMoreLinksDropdown, setIsOpenMoreLinksDropdown] = useState(false);
 
   const { data: loanData } = useSelector((state) => state.loans);
   const { data: user } = useSelector((state) => state.user);
@@ -64,6 +69,10 @@ function Navbar({ content, config, filterValue }) {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setAccountDropdown(false);
+      }
+
+      if (moreLinksDropdownRef.current && !moreLinksDropdownRef.current.contains(event.target)) {
+        setIsOpenMoreLinksDropdown(false);
       }
     };
 
@@ -127,7 +136,11 @@ function Navbar({ content, config, filterValue }) {
     const filterPages =
       pageData?.filter((item) => item.isCustomPage === false) || [];
 
+    const filterCustomPages =
+      pageData?.filter((item) => item.isCustomPage === true) || [];
+
     setPages(filterPages);
+    setCustomPages(filterCustomPages);
   }, [pageData]);
 
    const fetchPages = async () => {
@@ -147,7 +160,9 @@ function Navbar({ content, config, filterValue }) {
        Array.isArray(data?.data) && data.data.length > 0
          ? data.data[0]?.pages?.filter((item) => item.isCustomPage === false) || []
          : [];
-       setPages(filterPages);
+      //  setPages(filterPages);
+       dispatch(setReduxPages(Array.isArray(data?.data) && data.data.length > 0
+       && data.data[0]?.pages))
      } catch (error) {
        console.error("Error fetching plugins:", error);
      }
@@ -157,10 +172,18 @@ function Navbar({ content, config, filterValue }) {
     const page = pages?.length && pages?.find((page) => page.title === pageTitle);
     return page ?  page.isPageVisible : true
   }
+  
+  function sanitizeName(name) {
+    let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
+    return sanitizeName.endsWith(".")
+      ? sanitizeName.slice(0, -1)
+      : sanitizeName;
+  }
 
   useEffect(() => {
     setUserIsAdmin(user?.role !== UserRole.USER);
     setUserIsModerator(user?.role === UserRole.MODERATOR);
+    fetchPages();
   }, []);
 
   return (
@@ -265,6 +288,37 @@ function Navbar({ content, config, filterValue }) {
                      }
                    />
                  )}
+                 {customPages?.length > 0 && (
+                    <div className="relative text-gray-800 cursor-pointer mr-5" ref={moreLinksDropdownRef}>
+                      <div onClick={() => setIsOpenMoreLinksDropdown((prev) => !prev)}>
+                        <Ellipsis />
+                      </div>
+
+                      {isOpenMoreLinksDropdown && (
+                        <div className="absolute right-0 mt-2 max-w-60 min-w-48 bg-white shadow-lg rounded-lg border z-30 text-sm">
+                          {customPages.map((page) => (
+                            <div
+                              key={page?.id || page?.title}
+                              className="p-2 hover:bg-gray-100 flex items-center gap-2 px-3"
+                              onClick={() => {
+                                setIsOpenMoreLinksDropdown(false);
+                                router.push(
+                                  params.portalid
+                                    ? `/${params.portalid}/${sanitizeName(
+                                        page?.title
+                                      )}`
+                                    : "/loans"
+                                )
+                              }}
+                            >
+                              <File className="size-5" />
+                              {page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 {/* {userIsAdmin && (
                   <NavBarItem
                     title="Settings"

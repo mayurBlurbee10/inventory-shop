@@ -47,7 +47,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       const response = await fetchWrapper(
         `/api/box/files/proxy-file?url=${encodeURIComponent(
           url
-        )}&&fileType=${fileType}&&token=${token}`,
+        )}&fileType=${fileType}&token=${token}`,
         { responseType: "blob" }
       );
 
@@ -82,7 +82,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       setFileType(fileType);
       const userData = getUserData();
       const secretKey = new TextEncoder().encode(
-        "9bce206dc17d48548d37a329732a3c88"
+        "705ce05dc4e144a69a1fcbb48b5cf853"
       );
 
       const tokenPayload = {
@@ -512,7 +512,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                   className="flex items-center mt-auto cursor-pointer"
                   onClick={() => setIsOpenCommentBox((prev) => !prev)}
                 >
-                  <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
+                  <div className="flex items-center justify-center size-8 p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
                     {user?.name
                       ?.split(" ")
                       .map((word) => word.charAt(0).toUpperCase())
