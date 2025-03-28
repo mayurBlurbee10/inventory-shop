@@ -17,6 +17,7 @@ import { setPortal } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
 import { setPages } from "@/store/services/pageService";
+import * as LucideIcons from "lucide-react";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500 ">
@@ -316,6 +317,15 @@ function Login() {
 
   if (!config || !content) return <LoadingSpinner />;
 
+  const iconComponent = (title) => {
+      const iconName = filterValue(title);
+      const Icon = LucideIcons[iconName];
+  
+      if (!Icon) return null;
+  
+      return <Icon className="w-7 h-7 text-gray-700" />;
+    }
+
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <div className="max-w-[1140px] w-full pt-[70px] mx-auto">
@@ -613,15 +623,17 @@ function Login() {
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                    </svg>
+                    {iconComponent("Card 1 Icon") || (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="28"
+                        height="28"
+                        fill="currentColor"
+                      >
+                        <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                      </svg>
+                    )}
                   </div>
                   {filterValue("Card 1 Title")}
                 </h5>
@@ -634,15 +646,17 @@ function Login() {
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                    </svg>
+                    {iconComponent("Card 2 Icon") || (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="28"
+                        height="28"
+                        fill="currentColor"
+                      >
+                        <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                      </svg>
+                    )}
                   </div>
                   {filterValue("Card 2 Title")}
                 </h5>
@@ -655,15 +669,17 @@ function Login() {
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="28"
-                      height="28"
-                      fill="currentColor"
-                    >
-                      <path d="M10.9999 12L3.92886 19.0711L2.51465 17.6569L8.1715 12L2.51465 6.34317L3.92886 4.92896L10.9999 12ZM10.9999 19H20.9999V21H10.9999V19Z"></path>
-                    </svg>
+                    {iconComponent("Card 3 Icon") || (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="28"
+                        height="28"
+                        fill="currentColor"
+                      >
+                        <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                      </svg>
+                    )}
                   </div>
                   {filterValue("Card 3 Title")}
                 </h5>

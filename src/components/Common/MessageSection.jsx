@@ -517,7 +517,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                           </td>
                         </tr>
                       ) : (
-                        messages.map((row, index) => (
+                        [...messages].reverse().map((row, index) => (
                           <tr
                             key={index}
                             className={`border-b text-gray-800 ${
@@ -630,7 +630,7 @@ const MessageSection = () => {
                     </td>
                   </tr>
                 ) : (
-                  messages.slice(0, 5).map((row, index) => (
+                  messages.slice(-5).reverse().map((row, index) => (
                     <tr
                       key={index}
                       className="border-t last:border-b hover:bg-gray-50 text-sm cursor-pointer transition"

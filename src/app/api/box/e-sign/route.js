@@ -58,6 +58,7 @@ export async function POST(req) {
           redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
         })),
         is_document_prepared: false,
+        external_id : boxUserId
       });
       signRequests.push(signRequest);
       await Promise.all(
@@ -79,6 +80,7 @@ export async function POST(req) {
             },
           ],
           is_document_prepared: false,
+          external_id : boxUserId
         });
 
         signRequests.push(signRequest);
@@ -181,6 +183,8 @@ export async function GET(req) {
         });
       }
 
+      const response = await getSignRequestsByExternalId(user.boxUserId)
+      
       const signRequestsData = await Promise.all(
         user.signRequestsId.map(async (request) => {
           try {
@@ -209,6 +213,7 @@ export async function GET(req) {
         pending: [],
         completed: [],
         rejected: [],
+        tracked: response,
       };
 
       validSignRequests.forEach((req) => {
@@ -257,5 +262,19 @@ export async function GET(req) {
       },
       { status: 500 }
     );
+  }
+}
+
+async function getSignRequestsByExternalId(externalId) {
+  try {
+    // Fetch all sign requests
+    const signRequests = await client.signRequests.getAll();
+    // Filter sign requests based on external_id
+    const filteredRequests = signRequests.entries.filter(
+      (request) => request.external_id === externalId
+    );
+    return filteredRequests;
+  } catch (error) {
+    console.error("Error fetching sign requests:", error);
   }
 }

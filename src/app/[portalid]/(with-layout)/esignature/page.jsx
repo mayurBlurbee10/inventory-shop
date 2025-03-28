@@ -16,7 +16,7 @@ import PreviewModal from "@/components/FileExplorer/PreviewModal";
 import { Dialog } from "@headlessui/react";
 import Button from "@/components/Common/Elements/Button";
 
-const TrackStatus = ({ pendingRequests }) => {
+const TrackStatus = ({ trackedRequests }) => {
   const params = useParams();
   const [expandedRow, setExpandedRow] = useState(null);
   const [isSendReminderLoading, setIsSendReminderLoading] = useState(null);
@@ -59,7 +59,7 @@ const TrackStatus = ({ pendingRequests }) => {
 
   return (
     <div className="p-4 bg-white text-gray-800 font-lato">
-      {pendingRequests?.length > 0 ? (
+      {trackedRequests?.length > 0 ? (
         <table className="w-full text-sm text-left border border-gray-200 rounded-md overflow-hidden table-fixed">
           <thead className="border-b bg-gray-100 text-gray-600">
             <tr>
@@ -70,7 +70,7 @@ const TrackStatus = ({ pendingRequests }) => {
             </tr>
           </thead>
           <tbody className="">
-            {pendingRequests.map((req) => {
+            {trackedRequests.map((req) => {
               const signers = req?.signers?.filter(
                 (signer) => req.sender_email !== signer.email
               );
@@ -100,7 +100,7 @@ const TrackStatus = ({ pendingRequests }) => {
 
                     {/* Status */}
                     <td className="p-3 w-1/6">
-                      {signers.some((signer) => !signer?.signer_decision !== null) ? (
+                      {signers.some((signer) => signer?.signer_decision === null && signer.role !== "final_copy_reader") ? (
                         <span className="text-yellow-600 font-semibold">Pending</span>
                       ) : (
                         <span className="text-green-600 font-semibold">Completed</span>
@@ -173,6 +173,7 @@ function ESignature() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [completedRequests, setCompletedRequests] = useState([]);
+  const [trackedRequests, setTrackedRequest] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
   const userIsAdmin = isAdmin();
@@ -230,6 +231,7 @@ function ESignature() {
       if (response.ok) {
         setPendingRequests(data.data.pending);
         setCompletedRequests(data.data.completed);
+        setTrackedRequest(data.data.tracked)
       } else {
         console.error("Failed to fetch sign requests");
       }
@@ -400,7 +402,7 @@ function ESignature() {
               </div>
             )}
            {activeTab === "track_status" && (
-              <TrackStatus pendingRequests={pendingRequests}/>
+              <TrackStatus trackedRequests={trackedRequests}/>
             )}
           </div>
         )}
