@@ -6,7 +6,7 @@ import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType, UserRole } from '@/config/constants';
 import { Dialog } from '@headlessui/react';
-import { Calendar, CheckCircle, Edit, FileText, Loader2, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
+import { Calendar, Check, CheckCircle, Edit, Ellipsis, FileText, Loader2, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmDialog from '../DeleteConfirmDialog';
 
-export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks }) => {
+export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskStatus, isTaskUpdateLoading }) => {
     const router = useRouter();
     const menuRef = useRef(null);
     const [showMenu, setShowMenu] = useState(false);
@@ -98,7 +98,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks }) => {
                   </button>
                 )}
                 {showMenu && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white shadow-md rounded-lg border border-gray-200 z-10">
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg border border-gray-200 z-10">
                     <button
                       onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}
                       className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
@@ -106,6 +106,19 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks }) => {
                       <Edit className="size-4 text-blue-500" />
                       <span>Edit</span>
                     </button>
+                    {task?.status !== TaskStatus?.COMPLETED && (
+                      isTaskUpdateLoading ? (
+                        <Loader2 className='size-4 mx-auto animate-spin text-blue-500'/>
+                      ) : (
+                        <button
+                          onClick={() => updateTaskStatus(task)}
+                          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-green-100 flex items-center space-x-2"
+                        >
+                          <Check className="size-4 text-green-500" />
+                          <span>Mark Complete</span>
+                        </button>
+                      )
+                    )}
                     <button
                       onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
@@ -217,6 +230,7 @@ const TasksSection = () => {
     const params = useParams();
     const router = useRouter();
     const pathname = usePathname();
+    const actionDropdownRef = useRef();
     const { data: user } = useSelector((state) => state.user);
     const { data: config } = useSelector((state) => state.portal);
     const [isPageLoading, setIsPageLoading] = useState(false)
@@ -234,6 +248,8 @@ const TasksSection = () => {
     const [isOpenTaskModal, setIsOpenTaskModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [isOpenAddTaskModal, setIsOpenAddTaskModal] = useState(false);
+    const [isTaskUpdateLoading, setIsTaskUpdateLoading] = useState(false);
+    const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
 
     const [completedTask, setCompletedTask] = useState({
         upload: false,
@@ -251,6 +267,19 @@ const TasksSection = () => {
         const section = page.find((item) => item.label === label);
         return section?.visible ?? false;
     };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+          if (actionDropdownRef.current && !actionDropdownRef.current.contains(event.target)) {
+            setIsActionDropdownOpen(false);
+          }
+        };
+    
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+        };
+      }, []);
 
     const fetchPage = async () => {
         try {
@@ -371,9 +400,9 @@ const TasksSection = () => {
         }
     }
 
-    const updateTaskStatus = async () => {
+    const updateTaskStatus = async (task) => {
         try {
-            setIsTaskLoading(true);
+            setIsTaskUpdateLoading(true);
             const response = await fetchWrapper(
                 `/api/tasks`,
                 {
@@ -382,7 +411,7 @@ const TasksSection = () => {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        taskId: taskToUpdate?.id,
+                        taskId: task?.id,
                         status: TaskStatus.COMPLETED
                     })
                 },
@@ -390,11 +419,12 @@ const TasksSection = () => {
             );
 
             if (!response.ok) throw new Error("Something went wrong!!");
+            setIsOpenTaskModal(false);
             await fetchTasks();
         } catch (error) {
             console.error("Download error:", error);
         } finally {
-            setIsTaskLoading(false);
+            setIsTaskUpdateLoading(false);
         }
     };
 
@@ -421,7 +451,7 @@ const TasksSection = () => {
         const completed = ["signed", "completed", "finalizing"];
         if (signRequest && completed.includes(signRequest?.status)) {
             if (taskToUpdate.uploads[0] === signRequest?.id) {
-                updateTaskStatus();
+                updateTaskStatus(taskToUpdate);
                 setSignRequest(null);
             }
         }
@@ -432,13 +462,13 @@ const TasksSection = () => {
     }
    
     return (
-      <div className="reletive mt-1">
+      <div className="relative mt-1">
         {filterVisibility("My Task Section") && (
           <>
-            <div className={`flex justify-between items-start ${user && user?.role === UserRole.MODERATOR ? "" : "mb-4"}`}>
+            <div className={`flex justify-between items-start mb-4`}>
               <div></div>
               <h3 className="text-xl font-light text-center text-[#212529] font-lato">
-                {user && user?.role === UserRole.MODERATOR ? "Your Tasks" : "My Tasks"}
+                My Tasks
               </h3>
               <div
                 className="flex items-center justify-end text-[#dc3545] cursor-pointer"
@@ -451,24 +481,20 @@ const TasksSection = () => {
                   })
                 }
               >
-                  {
-                    user && user.role === UserRole?.MODERATOR ? (
-                      <Button
-                        iconClassName="w-5 h-5"
-                        className='text-gray-600 w-24 h-10 ml-auto mb-2'
-                        label={"Add"}
-                        icon={Plus}
-                        onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
-                      />
-                    ) : (
-                      <div className='mt-4'><RotateCw className="h-4 w-4" /></div>
-                    )
-                  }
+                  
+                <Button
+                  iconClassName="w-5 h-5"
+                  className='text-gray-600 w-24 h-10 ml-auto mb-2'
+                  label={"Add"}
+                  icon={Plus}
+                  onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
+                />
+                  {/* <div className='mt-4'><RotateCw className="h-4 w-4" /></div> */}
               </div>
             </div>
 
-            <div className={`mb-7 overflow-y-auto border border-[#dee2e6] ${pathname.includes('advisor') ? "max-h-[650px]" : "max-h-[300px]"}`}>
-              <table className="min-w-full divide-y divide-gray-200 overflow-auto ">
+            <div className={`mb-7 ${tasks?.length < 5 ? "" : "overflow-y-auto"} border border-[#dee2e6] ${pathname.includes('advisor') ? "max-h-[650px]" : "max-h-[300px]"}`}>
+              <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
                 <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
                   <tr>
                     <th></th>
@@ -478,7 +504,7 @@ const TasksSection = () => {
                     <th className="text-start px-3 py-4">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 ">
+                <tbody className="divide-y divide-gray-200" ref={actionDropdownRef}>
                   {isTaskLoading ? (
                     <tr>
                       <td colSpan={"5"}>
@@ -510,7 +536,7 @@ const TasksSection = () => {
                               <p
                                 className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer`}
                                 onClick={() => {
-                                  if (task?.status === TaskStatus.COMPLETED || user?.role === UserRole?.MODERATOR) {
+                                  if (task?.status === TaskStatus.COMPLETED) {
                                     return;
                                   }
                                   setTaskToUpdate(task);
@@ -551,10 +577,42 @@ const TasksSection = () => {
                                   : new Date().toLocaleDateString("en-GB")}
                               </p>
                             </td>
-                            <td className="px-3 py-4 cursor-pointer" onClick={() => {setIsOpenTaskModal((prev) => !prev); setSelectedTask(task)}}>
-                              <p className="font-lato text-[#212529] text-sm hover:text-blue-500">
-                                View Details
-                              </p>
+                            <td className="relative px-3 py-4 cursor-pointer">
+                              <div onClick={() => {
+                                setIsActionDropdownOpen((prev) => (selectedTask?.id === task?.id ? !prev : true));
+                                setSelectedTask(task);
+                                }} className="p-2 rounded">
+                                <Ellipsis className="w-5 h-5 text-gray-600" />
+                              </div>
+
+                              {/* Dropdown Menu */}
+                              {isActionDropdownOpen && selectedTask?.id === task?.id && (
+                                <div className="absolute right-10 top-10 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50 text-sm">
+                                  {/* View Details */}
+                                  <div
+                                    onClick={(e) => {
+                                      e.stopPropagation(); 
+                                      setIsOpenTaskModal(true); 
+                                      setIsActionDropdownOpen(false); 
+                                    }}
+                                    className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
+                                  >
+                                    View Details
+                                  </div>
+                                    {task?.status !== TaskStatus.COMPLETED && (
+                                      <div
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          updateTaskStatus(task);
+                                          setIsActionDropdownOpen(false);
+                                        }}
+                                        className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
+                                      >
+                                        Mark Complete
+                                      </div>
+                                    )}
+                                </div>
+                              )}
                             </td>
                           </tr>
                         ))
@@ -586,6 +644,8 @@ const TasksSection = () => {
             onClose={() => {setIsOpenTaskModal(false); setSelectedTask(null);}}
             task={selectedTask}
             fetchTasks={fetchTasks}
+            updateTaskStatus={updateTaskStatus}
+            isTaskUpdateLoading={isTaskUpdateLoading}
         />
         <CompleteForms
           onClose={() => setIsCompleteFormPopupOpen(false)}

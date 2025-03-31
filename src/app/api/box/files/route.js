@@ -193,6 +193,52 @@ export async function POST(req) {
   }
 }
 
+async function updateName(itemId, newName, type) {
+  const isFile = type === 'file';
+  try {
+    const accessToken = await client._session.getAccessToken();
+    const newClient = sdk.getBasicClient(accessToken);
+    const updatedItem = isFile
+      ? await newClient.files.update(itemId, { name: newName }) // Update File Name
+      : await newClient.folders.update(itemId, { name: newName }); // Update Folder Name
+
+    console.log(`Updated ${isFile ? "File" : "Folder"} Name:`, updatedItem.name);
+    return updatedItem;
+  } catch (error) {
+    console.error("Error updating name:", error.message);
+    throw error;
+  }
+}
+
+export async function PUT(req) {
+  try {
+    await logApiCall(req, () => {});
+    const { itemId, newName, type } = await req.json();
+
+   
+
+    if (!itemId || !newName || !type) {
+      return NextResponse.json(
+        { error: "Missing required parameters: itemId, newName, or type" },
+        { status: 400 }
+      );
+    }
+
+    const updatedItem = await updateName(itemId, newName, type);
+
+    return NextResponse.json({
+      message: "File deleted successfully",
+      data: updatedItem,
+    });
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    return NextResponse.json(
+      { error: error.response?.body.message, details: error.message },
+      { status: error.response?.statusCode || 500 }
+    );
+  }
+}
+
 export const deleteFile = async (fileId) => {
   const accessToken = await client._session.getAccessToken();
   const newClient = sdk.getBasicClient(accessToken);

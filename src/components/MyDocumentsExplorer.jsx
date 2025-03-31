@@ -24,6 +24,7 @@ import {
   UserRound,
   UsersRoundIcon,
   FilePenLine,
+  Pencil,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
@@ -43,6 +44,7 @@ import { Menu, MenuItem, MenuItems, MenuButton } from "@headlessui/react";
 import { useSelector } from "react-redux";
 import Button from "./Common/Elements/Button";
 import Editor from "./Editor";
+import RenameDocumentModal from "./Common/RenameDocumentModal";
 
 const ShareModal = ({
   isOpen,
@@ -513,6 +515,8 @@ function SharedFolderExplorer({
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
   const [editorFile, setEditorFile] = useState(null);
   const [esignAvailable, setEsignAvailable] = useState(true)
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [selectFileToRename, setSelectFileToRename] = useState(null);
  
   const fetchPage = async () => {
     try {
@@ -1143,6 +1147,17 @@ function SharedFolderExplorer({
                                           className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
                                           onClick={(e) => {
                                             e.stopPropagation();
+                                            setIsRenameModalOpen((prev) => !prev);
+                                            setSelectFileToRename((prev) => prev?.id === file?.id ? null : file);
+                                          }}
+                                        >
+                                          <Pencil className="h-4 w-4 text-gray-600" />
+                                          Rename
+                                        </button>
+                                        <button
+                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
                                             setIsDeleteModalOpen(
                                               (prev) => !prev
                                             );
@@ -1351,6 +1366,19 @@ function SharedFolderExplorer({
                                     Edit
                                   </button>
                                 )}
+                                {listType !== "shared" && (
+                                  <button
+                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     setIsRenameModalOpen((prev) => !prev);
+                                     setSelectFileToRename(file);
+                                   }}
+                                  >
+                                    <Pencil className="h-4 w-4 text-gray-600" />
+                                    Rename
+                                  </button>
+                                )}
                                 <button
                                   className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
                                   }`}
@@ -1440,6 +1468,13 @@ function SharedFolderExplorer({
           selectedItem={selectedItem}
         />
       )}
+
+      <RenameDocumentModal 
+        isOpen={isRenameModalOpen}
+        onClose={() => {setIsRenameModalOpen(false); setSelectFileToRename(null)}}
+        item={selectFileToRename}
+        onFileRename={onFileChanges}
+      />
     </div>
   );
 }
