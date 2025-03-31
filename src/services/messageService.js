@@ -38,7 +38,6 @@ const getUserMessages = async (senderId, portalId) => {
       relations: ["sender", "receiver", "replies", "replies.sender"],
       order: { createdAt: "ASC" },
     });
-
     return messages;
   } catch (error) {
     throw error;

@@ -124,15 +124,17 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+ 
+
   const handleReplyMessage = async () => {
-    if (!replyMessage?.subject || !replyMessage?.text) {
+    if (!replyMessage?.text) {
       return;
     }
     const messageData = {
       sender: user?.id,
       receiver: message?.sender?.id === user?.id ? message?.receiver?.id : message?.sender?.id,
       portalId: params.portalid,
-      subject: replyMessage.subject,
+      subject: message.subject,
       text: replyMessage.text,
       parentMessage: message?.id
     };
@@ -151,8 +153,8 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
       if (!response.ok) throw new Error("Failed to send message");
 
       setReplyMessage({
-        subject: "",
-        body: "",
+        // subject: "",
+        text: "",
       });
       await onMessageUpdate();
       onClose();
@@ -162,6 +164,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
       console.error("Error sending message:", error);
     } finally {
       setIsMessageReplyLoading(false);
+      
     }
   };
 
@@ -171,12 +174,13 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
       text: message?.text,
     });
   }, [message]);
+console.log("sendTo:", message?.receiver?.id);
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="max-w-2xl mx-auto p-6 bg-white shadow-xl rounded-lg border border-gray-300 w-full">
+        <Dialog.Panel className="max-w-2xl mx-auto p-6 bg-white shadow-xl rounded-lg border border-gray-300 w-full max-h-[800px] overflow-auto">
           {/* Header */}
           <div className="flex justify-between items-center border-b pb-3">
             <h2 className="text-2xl font-semibold text-gray-800">
@@ -286,45 +290,69 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                     )}
                 </div>
             </div>
-            </div>
-            {isReplying && (
-              <div className="space-y-4">
-                {message && message?.sender?.id && (
-                  <div className="w-full">
-                    <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
-                      <div className="text-sm text-[#495057]">
-                        {message?.sender?.name} ({message?.sender?.email})
-                      </div>
+          </div>
+          <div className="max-h-[200px] sm:max-h-[250px] overflow-auto">
+            {message?.replies?.length > 0 ? (
+              message.replies.map((reply) => (
+                <div key={reply.id} className="flex mt-3">
+                  <div className="flex gap-3">
+                    <span
+                      className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-800 font-semibold border border-white"
+                    >
+                      {reply?.sender?.name[0].toUpperCase()}
+                    </span>
+
+                  </div>
+                  <span className="text-gray-200 mx-3">|</span>
+                  <div className="border-gray-300 rounded-md text-gray-700">
+                    <div className="text-gray-500 text-sm font-lato ">{reply.sender?.name}</div>
+                    <div><p>{reply.text}</p></div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="w-full flex justify-center text-gray-800 text-sm"><p>No replies yet</p></div>
+            )}
+          </div>
+          {isReplying && (
+            <div className="space-y-4 mt-5">
+              {/* {message && message?.sender?.id && (
+                <div className="w-full">
+                  <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
+                    <div className="text-sm text-[#495057]">
+                      {message?.sender?.name} ({message?.sender?.email})
                     </div>
                   </div>
-                )}
-                <div className="cursor-pointer w-full text-gray-700 text-sm px-4 py-2 border border-gray-300 rounded-md flex justify-between items-center placeholder-gray-400">
-                  <input
-                    type="text"
-                    value={replyMessage.subject}
-                    onChange={(e) =>
-                      setReplyMessage((prev) => ({ ...prev, subject: e.target.value }))
-                    }
-                    required
-                    placeholder="Enter Subject"
-                    className="w-full focus:outline-none cursor-pointer"
-                  />
                 </div>
+              )}
 
-                <textarea
-                  placeholder="Write a message..."
-                  rows={"10"}
-                  className="border w-full cursor-pointer h-24 rounded-md px-4 py-2 text-sm outline-none text-gray-700 resize-none placeholder-gray-400"
-                  value={replyMessage.text}
+              <div className="cursor-pointer w-full text-gray-700 text-sm px-4 py-2 border border-gray-300 rounded-md flex justify-between items-center placeholder-gray-400">
+                <input
+                  type="text"
+                  value={replyMessage.subject}
                   onChange={(e) =>
-                    setReplyMessage((prev) => ({ ...prev, text: e.target.value }))
+                    setReplyMessage((prev) => ({ ...prev, subject: e.target.value }))
                   }
+                  required
+                  placeholder="Enter Subject"
+                  className="w-full focus:outline-none cursor-pointer"
                 />
-              </div>
-            )}
+              </div> */}
+
+              <textarea
+                placeholder="Write a message..."
+                rows="10"
+                className="border w-full cursor-pointer h-16 rounded-md px-4 py-2 text-sm outline-none text-gray-700 resize-none placeholder-gray-400"
+                value={replyMessage.text}
+                onChange={(e) =>
+                  setReplyMessage((prev) => ({ ...prev, text: e.target.value }))
+                }
+              />
+            </div>
+          )}
 
           {/* Footer Buttons */}
-          <div className="mt-6 flex justify-end space-x-3">
+          <div className=" flex justify-end space-x-3">
             <Button
               onClick={() => {
                 if (isEditing) {
@@ -337,9 +365,9 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
               }}
               label="Close"
               type="Secondary"
-              disabled={isMessageUpdateLoading}
+              disabled={isMessageUpdateLoading || isMessageReplyLoading}
             />
-            {!isReplying && (
+             {!isReplying && (
               <Button
                 onClick={() => setIsReplying(true)}
                 icon={Reply}
@@ -348,18 +376,25 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                 isLoading={isMessageReplyLoading}
                 disabled={isMessageReplyLoading}
               />
-            )}
-            {(isEditing || isReplying) && (
+             )}
+           {(isEditing || isReplying) && (
               <Button
                 onClick={isEditing ? handleEditMessage : handleReplyMessage}
                 icon={Save}
                 label="Save"
                 type="Primary"
-                isLoading={isMessageUpdateLoading}
-                disabled={isMessageUpdateLoading}
+                isLoading={isMessageReplyLoading}
+                disabled={isMessageReplyLoading}
               />
             )}
+            {/* <NewMessageModal
+              isOpen={isReplying}
+              onClose={() => setIsReplying(false)}
+              onSubmit={handleReplyMessage}
+              sendTo={message?.sender}
+            /> */}
           </div>
+
         </Dialog.Panel>
       </div>
       <DeleteConfirmDialog
@@ -374,7 +409,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
   );
 };
 
-const NewMessageModal = ({ isOpen, onClose, onMessageSend }) => {
+const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
   const params = useParams();
   const [message, setMessage] = useState({
     subject: "",
@@ -492,16 +527,27 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend }) => {
           </div>
           <div className="">
             <div className="space-y-4">
-              <Select
-                className="flex-1 bg-white text-[#495057] text-sm focus:outline-none min-w-[250px] rounded-md"
-                classNamePrefix="Enter email address"
-                isClearable={true}
-                isSearchable={true}
-                value={userID}
-                onChange={(e) => setUserID(e)}
-                options={users}
-                placeholder="To"
-              />
+              {
+                sendTo ?
+                  <div className="w-full">
+                    <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
+                      <div className="text-sm text-[#495057]">
+                        {sendTo?.name} ({sendTo?.email})
+                      </div>
+                    </div>
+                  </div>
+                  : <Select
+                    className="flex-1 bg-white text-[#495057] text-sm focus:outline-none min-w-[250px] rounded-md"
+                    classNamePrefix="Enter email address"
+                    isClearable={true}
+                    isSearchable={true}
+                    value={users.find(user => user.value === sendTo) || userID}
+                    onChange={(e) => setUserID(e)}
+                    options={users}
+                    placeholder="To"
+                  />
+              }
+              
               <div className="cursor-pointer w-full text-gray-700 text-sm px-4 py-2 border border-gray-300 rounded-md flex justify-between items-center placeholder-gray-400">
                 <input
                   type="text"
@@ -772,6 +818,9 @@ const MessageSection = () => {
   useEffect(() => {
     fetchMessages();
   }, []);
+
+  console.log("messages:", messages);
+  
 
   const sortedMessages = [...messages].sort((a, b) => {
     if (sortConfig.key === "createdAt"){

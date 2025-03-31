@@ -557,10 +557,9 @@ const TasksSection = () => {
                   })
                 }
               >
-                  
                 <Button
                   iconClassName="w-5 h-5"
-                  className='text-gray-600 w-24 h-10 ml-auto mb-2'
+                  className='text-gray-600 w-24 h-10 ml-auto'
                   label={"Add"}
                   icon={Plus}
                   onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
@@ -569,7 +568,7 @@ const TasksSection = () => {
               </div>
             </div>
 
-            <div className={`mb-7 ${tasks?.length < 4 ? "" : "overflow-y-auto"} border border-[#dee2e6] ${pathname.includes('advisor') ? "max-h-[650px]" : "max-h-[300px]"}`}>
+            <div className={`mb-7 ${tasks?.length < 5 ? "" : "overflow-y-auto"} border border-[#dee2e6] max-h-[300px]`}>
               <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
                 <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
                   <tr>

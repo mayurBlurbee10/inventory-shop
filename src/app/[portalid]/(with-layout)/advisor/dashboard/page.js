@@ -315,7 +315,7 @@ export default function AdvisorViewDashboard() {
                             </div>
                     </div> */}
 
-                    {/* <MessageSection /> */}
+                    <MessageSection />
                 </div>
             </div>
         </div>
