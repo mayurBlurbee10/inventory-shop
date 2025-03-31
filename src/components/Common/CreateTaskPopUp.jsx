@@ -315,11 +315,11 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
         label: `${user.name} (${user.email})`,
       }));
   
-      const loggedInUserId = loggedInUser?.boxUserId;
+      // const loggedInUserId = loggedInUser?.boxUserId;
   
-      const filteredUsers = users.filter((user) => user.role !== UserRole.MODERATOR);
+      // const filteredUsers = users.filter((user) => user.role !== UserRole.MODERATOR);
   
-      setUsers(filteredUsers);
+      setUsers(users);
     }, [usersList]);
 
   useEffect(() => {
@@ -358,6 +358,12 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
                                 onClick={() => setFormData((prev)=>({...prev, type : TaskType.UPLOAD}))}
                             >
                                 Upload
+                            </div>
+                            <div
+                                className={`border py-2 px-3 flex items-center justify-center gap-3 rounded-lg cursor-pointer hover:border-[#0061D5] ${formData.type === TaskType.GENERAL ? "text-[#0061D5] border-[#0061D5]": "text-black"}`}
+                                onClick={() => setFormData((prev)=>({...prev, type : TaskType.GENERAL}))}
+                            >
+                                General
                             </div>
                         </div>
                     </div>
@@ -462,7 +468,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
                             label="Submit"
                             onClick={handleCreate}
                             isLoading={submitLoading}
-                            disabled={!formData.type || (user?.role === UserRole.MODERATOR  ? !formData.userID : false) || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
+                            disabled={!formData.type || !formData.userID || !formData.title || !formData.description || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
                         />
                     </div>
                 </form>

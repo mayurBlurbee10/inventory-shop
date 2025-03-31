@@ -163,7 +163,7 @@ export default function AdvisorViewDashboard() {
                                             <thead className="sticky top-0 bg-gray-50 w-full">
                                                 <tr>
                                                     <th className="p-4 border-b text-left text-sm">Name</th>
-                                                    <th className="p-4 border-b text-left text-sm">Message</th>
+                                                    <th className="p-4 border-b text-left text-sm">Email</th>
                                                     <th className="p-4 border-b text-left text-sm">Phone</th>
                                                 </tr>
                                             </thead>
@@ -176,7 +176,7 @@ export default function AdvisorViewDashboard() {
                                                             </Link>
                                                         </td>
                                                         <td className="p4 border-b text-sm">
-                                                            {`Message ${Math.floor(Math.random() * 100)}`}
+                                                           {user?.email}
                                                         </td>
                                                         <td className="p-4 border-b text-sm">
                                                             {`+1-${Math.floor(1000000000 + Math.random() * 9000000000)}`}

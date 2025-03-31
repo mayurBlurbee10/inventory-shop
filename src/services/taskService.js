@@ -18,7 +18,7 @@ const getTasks = async (portalId, userId) => {
         portalId: portalId,
         user: { id: userId },
       },
-      relations: ["user"],
+      relations: ["user", "createdBy"],
       order: { status: "ASC" },
     });
 
@@ -57,7 +57,7 @@ const getTasksByPortalId = async (portalId) => {
       where: {
         portalId: portalId,
       },
-      relations: ["user"],
+      relations: ["user", "createdBy"],
       order: {
         status: "ASC",
       },

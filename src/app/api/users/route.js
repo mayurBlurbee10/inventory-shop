@@ -70,6 +70,8 @@ export async function GET(request) {
     users = await userService.getUserByRole(role, userId);
   } else if(boxUserId){
     users = await userService.getUserByBoxUserId(boxUserId)
+  } else if (userId) { 
+    users = await userService.getUserById(userId);
   } else {
     users = await userService.getUsers();
   }

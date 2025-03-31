@@ -1,6 +1,8 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import {
   Calendar,
+  ChevronDown,
+  ChevronUp,
   Edit,
   Loader2,
   MoreVertical,
@@ -25,7 +27,7 @@ import { toast } from "react-toastify";
 
 const formatDate = (timestamp) => {
   const date = new Date(timestamp);
-  return date.toLocaleDateString("en-GB");
+  return date.toLocaleDateString("en-US");
 };
 
 const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
@@ -313,7 +315,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                   placeholder="Write a message..."
                   rows={"10"}
                   className="border w-full cursor-pointer h-24 rounded-md px-4 py-2 text-sm outline-none text-gray-700 resize-none placeholder-gray-400"
-                  value={replyMessage.body}
+                  value={replyMessage.text}
                   onChange={(e) =>
                     setReplyMessage((prev) => ({ ...prev, text: e.target.value }))
                   }
@@ -551,6 +553,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
   const { data: user } = useSelector((state) => state?.user);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: "createdAt", direction: "asc" });
 
   const fetchMessages = async () => {
     try {
@@ -574,6 +577,56 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
       fetchMessages();
     }
   }, [isOpen]);
+
+  const sortedMessages = [...messages].sort((a, b) => {
+    if (sortConfig.key === "createdAt"){
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
+    } else if (sortConfig.key === "type") {
+      // Sort by Message Type (Send / Received)
+      const typeA = a?.sender?.id === user?.id ? "Send" : "Received";
+      const typeB = b?.sender?.id === user?.id ? "Send" : "Received";
+      return sortConfig.direction === "asc"
+        ? typeA.localeCompare(typeB) // Sort Send First
+        : typeB.localeCompare(typeA); // Sort Received First
+    }
+    return 0;
+  });
+
+  const toggleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const handleReadMessage = async (message) => {
+    if (message?.receiver?.id === user?.id && !message.seen) {
+    console.log("message.id:", message.id);
+    const messageData = {
+      messageId: message?.id,
+      seen: true 
+    };
+    try {
+      await fetch(`/api/messages?messageId=${message.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(messageData),
+      });
+  
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === message.id ? { ...msg, seen: true } : msg
+        )
+      );
+      setSelectedMessage(messages.find((msg) => msg.id === message.id));
+    } catch (error) {
+      console.error("Error marking message as seen:", error);
+    }
+    }
+    return setSelectedMessage(messages.find((msg) => msg.id === message.id));
+  };
 
   return (
     <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
@@ -600,15 +653,42 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
               <div className="h-[97%] overflow-y-auto hidden-scrollbar">
                 <div className="border border-gray-200 bg-white shadow-sm rounded-lg">
                   <table className="w-full text-sm font-lato shadow-md overflow-hidden rounded-lg">
-                    <thead className="bg-gray-100 text-gray-700 text-left sticky top-0">
-                      <tr className="bg-gray-100 text-sm text-gray-700">
-                        <th className="p-4 text-left font-semibold">Date</th>
-                        <th className="p-4 text-left font-semibold">
-                          Receiver
-                        </th>
-                        <th className="p-4 text-left font-semibold">Subject</th>
-                      </tr>
-                    </thead>
+                      <thead>
+                        <tr className="bg-gray-200 text-sm text-gray-700 border-b">
+                          <th className="p-4 text-left font-semibold">
+                            <div className="flex items-center justify-start gap-2">
+                              <span className="block">Date</span>
+                              <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
+                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                              </button>
+                              <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
+                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                              </button>
+                            </div>
+                          </th>
+                          <th className="p-4 text-left font-semibold">
+                            <div className="flex items-center justify-start gap-2">
+                              <span className="block">Contact</span>
+                            </div>
+                          </th>
+                          <th className="p-4 text-left font-semibold">
+                            <div className="flex items-center justify-start gap-2">
+                              <span className="block">Subject</span>
+                            </div>
+                          </th>
+                          <th className="p-4 text-left font-semibold">
+                            <div className="flex items-center justify-start gap-2">
+                              <span className="block">Type</span>
+                              <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
+                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                              </button>
+                              <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
+                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                              </button>
+                            </div>
+                          </th>
+                        </tr>
+                      </thead>
                     <tbody className="overflow-y-auto">
                       {!messages || messages.length === 0 ? (
                         <tr className="text-center">
@@ -619,13 +699,14 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                           </td>
                         </tr>
                       ) : (
-                        [...messages].reverse().map((row, index) => (
+                        [...sortedMessages].reverse().map((row, index) => (
                           <tr
                             key={index}
-                            className={`border-b text-gray-800 ${
-                              index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                            } hover:bg-gray-100 transition`}
-                            onClick={() => setSelectedMessage(row)}
+                            className={`border-b text-gray-800 hover:bg-gray-50 transition ${row?.receiver?.id === user?.id && !row?.seen
+                                ? "bg-gray-100 font-bold"
+                                : "bg-white font-normal"
+                              }`}
+                            onClick={() => handleReadMessage(row)}
                           >
                             <td className="p-4 whitespace-nowrap">
                               {formatDate(row?.createdAt)}
@@ -633,8 +714,11 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                             <td className="p-4 whitespace-nowrap">
                               {row?.receiver?.name || "Unknown"}
                             </td>
-                            <td className="p-4 font-medium whitespace-nowrap">
+                            <td className="p-4 whitespace-nowrap">
                               {row?.subject || "No Subject"}
+                            </td>
+                            <td className="p-4 whitespace-nowrap">
+                              {row?.sender?.id === user?.id ? "Send" : "Received"}
                             </td>
                           </tr>
                         ))
@@ -665,7 +749,7 @@ const MessageSection = () => {
   const [isOpenNewMessageModal, setIsOpenNewMessageModal] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [isOpenAllMessageSection, setIsOpenAllMessageSection] = useState(false);
-
+  const [sortConfig, setSortConfig] = useState({ key: "createdAt", direction: "asc" });
   const { data: user } = useSelector((state) => state.user);
 
   const fetchMessages = async () => {
@@ -689,6 +773,55 @@ const MessageSection = () => {
     fetchMessages();
   }, []);
 
+  const sortedMessages = [...messages].sort((a, b) => {
+    if (sortConfig.key === "createdAt"){
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
+    } else if (sortConfig.key === "type") {
+      // Sort by Message Type (Send / Received)
+      const typeA = a?.sender?.id === user?.id ? "Send" : "Received";
+      const typeB = b?.sender?.id === user?.id ? "Send" : "Received";
+      return sortConfig.direction === "asc"
+        ? typeA.localeCompare(typeB) // Sort Send First
+        : typeB.localeCompare(typeA); // Sort Received First
+    }
+    return 0;
+  });
+
+  const toggleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const handleReadMessage = async (message) => {
+    if (message?.receiver?.id === user?.id && !message.seen) {
+    console.log("message.id:", message.id);
+    const messageData = {
+      messageId: message?.id,
+      seen: true 
+    };
+    try {
+      await fetch(`/api/messages?messageId=${message.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(messageData),
+      });
+  
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === message.id ? { ...msg, seen: true } : msg
+        )
+      );
+      setSelectedMessage(messages.find((msg) => msg.id === message.id));
+    } catch (error) {
+      console.error("Error marking message as seen:", error);
+    }
+    }
+    return setSelectedMessage(messages.find((msg) => msg.id === message.id));
+  };
   return (
     <div className="mt-7 relative text-gray-700">
       {/* Header */}
@@ -717,26 +850,58 @@ const MessageSection = () => {
             <table className="min-w-full bg-white">
               <thead>
                 <tr className="bg-gray-100 text-sm text-gray-700">
-                  <th className="p-4 text-left font-semibold">Date</th>
-                  <th className="p-4 text-left font-semibold">Receiver</th>
-                  <th className="p-4 text-left font-semibold">Subject</th>
+                    <th className="p-4 text-left font-semibold">
+                      <div className="flex items-center justify-start gap-2">
+                        <span className="block">Date</span>
+                        <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
+                          <ChevronUp className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "asc" ?  "text-black" : "text-gray-400"}`}  />
+                        </button>
+                        <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
+                          <ChevronDown className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "desc" ?  "text-black" : "text-gray-400"}`}  />
+                        </button>
+                      </div>
+                    </th>
+                    <th className="p-4 text-left font-semibold">
+                      <div className="flex items-center justify-start gap-2">
+                        <span className="block">Contact</span>
+                      </div>
+                    </th>
+                    <th className="p-4 text-left font-semibold">
+                      <div className="flex items-center justify-start gap-2">
+                        <span className="block">Subject</span>
+                      </div>
+                    </th>
+                    <th className="p-4 text-left font-semibold">
+                      <div className="flex items-center justify-start gap-2">
+                        <span className="block">Type</span>
+                        <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
+                          <ChevronUp className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                        </button>
+                        <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
+                          <ChevronDown className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                        </button>
+                      </div>
+                    </th>
                 </tr>
               </thead>
               <tbody className="overflow-y-auto">
                 {!messages || messages.length === 0 ? (
                   <tr className="text-center">
-                    <td colSpan="3">
+                    <td colSpan="4">
                       <p className="font-lato text-[#212529] text-sm py-4">
                         No Messages to Show !!!
                       </p>
                     </td>
                   </tr>
                 ) : (
-                  messages.slice(-5).reverse().map((row, index) => (
+                  sortedMessages.slice(-5).reverse().map((row, index) => (
                     <tr
                       key={index}
-                      className="border-t last:border-b hover:bg-gray-50 text-sm cursor-pointer transition"
-                      onClick={() => setSelectedMessage(row)}
+                      className={`border-t last:border-b hover:bg-gray-50 text-sm cursor-pointer transition ${row?.receiver?.id === user?.id && !row?.seen
+                        ? "bg-gray-50 font-bold"
+                        : "bg-white font-normal"
+                      }`}
+                      onClick={() => handleReadMessage(row)}
                     >
                       <td className="p-4 whitespace-nowrap">
                         {formatDate(row?.createdAt)}
@@ -744,8 +909,11 @@ const MessageSection = () => {
                       <td className="p-4 whitespace-nowrap">
                         {row?.receiver?.name || "Unknown"}
                       </td>
-                      <td className="p-4 font-medium whitespace-nowrap">
+                      <td className="p-4 whitespace-nowrap">
                         {row?.subject || "No Subject"}
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        {row?.sender?.id === user?.id ? "Send" :  "Received"}
                       </td>
                     </tr>
                   ))

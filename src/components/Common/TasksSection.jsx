@@ -21,7 +21,6 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
     const [isTaskDeleteModalOpen, setIsTaskDeleteModalOpen] = useState(false);
     const [isTaskUpdateModalOpen, setIsTaskUpdateModalOpen] = useState(false);
     const [isDeleteTaskLoading, setIsDeleteTaskLoading] = useState(false);
-
     const { data : user } = useSelector((state) => state.user);
 
     const formatDate = (timestamp) => {
@@ -77,6 +76,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
         setIsDeleteTaskLoading(false);
       }
     };
+  console.log("selected Task: ", task);
   
     return (
       <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
@@ -130,25 +130,46 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                 )}
               </div>
             </div>
-            
-             {user && user?.role === UserRole?.MODERATOR && ( 
+            <div>
+              <div>
+                <h3 className='text-gray-800 text-sm font-semibold'>Receiver :</h3>
                 <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
+                  {/* Avatar */}
+                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
                     {task?.user?.name
-                    ?.split(" ")
-                    .map((word) => word.charAt(0).toUpperCase())
-                    .slice(0, 2)
-                    .join("")}
-                    </div>
+                      ?.split(" ")
+                      .map((word) => word.charAt(0).toUpperCase())
+                      .slice(0, 2)
+                      .join("")}
+                  </div>
 
-                    {/* User Info */}
-                    <div>
+                  {/* User Info */}
+                  <div>
                     <p className="text-lg font-semibold text-gray-800">{task?.user?.name || "Unknown User"}</p>
                     <p className="text-gray-500 text-sm">{task?.user?.email || "No Email Provided"}</p>
-                    </div>
+                  </div>
                 </div>
-             )}
+              </div>
+              <div>
+                <h3 className='text-gray-800 text-sm font-semibold'>Sender :</h3>
+                <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+                  {/* Avatar */}
+                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
+                    {task?.createdBy?.name
+                      ?.split(" ")
+                      .map((word) => word.charAt(0).toUpperCase())
+                      .slice(0, 2)
+                      .join("")}
+                  </div>
+
+                  {/* User Info */}
+                  <div>
+                    <p className="text-lg font-semibold text-gray-800">{task?.createdBy?.name || "Unknown User"}</p>
+                    <p className="text-gray-500 text-sm">{task?.createdBy?.email || "No Email Provided"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             {/* Task Content */}
             <div className="space-y-5 font-lato text-gray-800">
               {/* Title */}
@@ -431,7 +452,7 @@ const TasksSection = () => {
     const fetchTasks = async () => {
         try {
             setIsTaskLoading(true);
-            const url = user?.role === UserRole.MODERATOR ? `/api/tasks?portalId=${params.portalid}` : `/api/tasks?portalId=${params.portalid}&userId=${user?.id}`
+            const url = `/api/tasks?portalId=${params.portalid}&userId=${user?.id}`
             const response = await fetchWrapper(url, {}, "fetch-tasks");
             if (!response.ok) throw new Error("Something went wrong!!");
             const data = await response.json();
@@ -460,7 +481,7 @@ const TasksSection = () => {
     const modelClose = () => {
         setCreateTask(false);
     }
-   
+  
     return (
       <div className="relative mt-1">
         {filterVisibility("My Task Section") && (
@@ -540,10 +561,10 @@ const TasksSection = () => {
                                     return;
                                   }
                                   setTaskToUpdate(task);
-                                  if (task?.type === TaskType.SIGN) {
+                                  if (task?.type === TaskType.SIGN && user?.role !== UserRole?.MODERATOR) {
                                     // handleOpenSignModal(task);
                                     router.push("esignature");
-                                  } else {
+                                  } else if (task?.type === TaskType.UPLOAD ) {
                                     setMyTaskPopupBoxContent({
                                       title: task?.title,
                                       actionText: task?.type,
