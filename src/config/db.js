@@ -1,4 +1,5 @@
 import { ApiLogs } from "@/entities/ApiLogs";
+import { CheckLists } from "@/entities/CheckLists";
 import { ContentManagement } from "@/entities/ContentManagement";
 import { Messages } from "@/entities/Messages";
 import { Pages } from "@/entities/Pages";
@@ -14,7 +15,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [ApiLogs, ContentManagement, Portals, Users, Plugins, Pages, Tasks, Messages],
+  entities: [ApiLogs, ContentManagement, Portals, Users, Plugins, Pages, Tasks, Messages, CheckLists],
   logging: false,
   synchronize: true,
 });

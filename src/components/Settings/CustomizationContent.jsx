@@ -4,6 +4,7 @@ import MyPageContent from "./MyPageContent";
 import ContentManagementContent from "./ContentManagementContent";
 import ProductsContent from "./ProductsContent";
 import { useSelector } from "react-redux";
+import CheckListContent from "./CheckListContent";
 
 const CustomizationContent = () => {
   const { data: user } = useSelector((state) => state.user);
@@ -31,6 +32,7 @@ const CustomizationContent = () => {
       <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
         <ProductsContent isQueryFetched={isQueryFetched} setIsQueryFetched={setIsQueryFetched}/>
       </div>
+      <CheckListContent />
     </div>
   );
 };

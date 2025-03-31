@@ -344,16 +344,19 @@ function Navbar({ content, config, filterValue }) {
                   className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
                     }`}
                 >
-                  {
+                  {/* {
                     isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
+                  } */}
+                  {
+                    user?.name?.charAt(0).toUpperCase() || "U"
                   }
-
                 </div>
                 <div className="flex flex-col text-sm xl:text-base">
                   <span className="text-gray-900 font-medium">
-                    {
+                    {/* {
                       isAdvisorViewOpen ? "Erica Smith" : user?.name
-                    }
+                    } */}
+                    {user?.name}
                   </span>
                 </div>
 

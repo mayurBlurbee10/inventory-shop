@@ -271,6 +271,8 @@ const TasksSection = () => {
     const [isOpenAddTaskModal, setIsOpenAddTaskModal] = useState(false);
     const [isTaskUpdateLoading, setIsTaskUpdateLoading] = useState(false);
     const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
+    const [checklists, setCheckLists] = useState([]);
+    const [isChecklistLoading, setIsChecklistLoading] = useState(false);
 
     const [completedTask, setCompletedTask] = useState({
         upload: false,
@@ -328,9 +330,24 @@ const TasksSection = () => {
             setIsPageLoading(false);
         }
     };
-    useEffect(() => {
-      fetchPage();
-    }, []);
+
+    const fetchChecklists = async () => {
+      try {
+        setIsChecklistLoading(true);
+        const url = `/api/checklists?portalId=${params.portalid}`;
+
+        const response = await fetchWrapper(url, {}, "fetch-checklist");
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.error || "Failed fetch checklists");
+        setCheckLists(data?.data);
+      } catch (error) {
+        toast.error(error?.message);
+      } finally {
+        setIsChecklistLoading(false);
+      }
+    };
+
     const firstFileToSign = () => {
         return filesList?.find((file) => file.type === "file") || null;
     };
@@ -441,7 +458,7 @@ const TasksSection = () => {
 
             if (!response.ok) throw new Error("Something went wrong!!");
             setIsOpenTaskModal(false);
-            await fetchTasks();
+            await fetchData();
         } catch (error) {
             console.error("Download error:", error);
         } finally {
@@ -464,8 +481,46 @@ const TasksSection = () => {
             setIsTaskLoading(false);
         }
     };
+
+    const fetchData = async () => {
+      setIsChecklistLoading(true);
+      setIsTaskLoading(true);
+      try {
+        // Fetch checklists
+        const checklistUrl = `/api/checklists?portalId=${params.portalid}`;
+        const checklistResponse = await fetchWrapper(checklistUrl, {}, "fetch-checklist");
+        const checklistData = await checklistResponse.json();
+        if (!checklistResponse.ok) throw new Error(checklistData.error || "Failed to fetch checklists");
+        setCheckLists(checklistData?.data);
+  
+        // Collect all tasks from checklists
+        const allCheckListsTasks = checklistData?.data?.flatMap(item => item?.isActive ? item?.tasks : []);
+  
+        // If checklists have tasks, set them; otherwise, fetch independent tasks
+        if (allCheckListsTasks.length > 0) {
+          setTasks(allCheckListsTasks);
+        } else {
+          const taskUrl = `/api/tasks?portalId=${params.portalid}&userId=${user?.id}`;
+          const taskResponse = await fetchWrapper(taskUrl, {}, "fetch-tasks");
+          const taskData = await taskResponse.json();
+          if (!taskResponse.ok) throw new Error("Failed to fetch tasks");
+          setTasks(taskData.data);
+        }
+      } catch (error) {
+        toast.error(error?.message || "Something went wrong!");
+      } finally {
+        setIsChecklistLoading(false);
+        setIsTaskLoading(false);
+      }
+    };
+
     useEffect(() => {
-        fetchTasks()
+      fetchData();
+    }, [params.portalid, user?.id]); // Only fetch when portalId or user changes    
+
+    useEffect(() => {
+      fetchPage();
+      // fetchChecklists();
     }, [])
 
     useEffect(() => {
@@ -514,7 +569,7 @@ const TasksSection = () => {
               </div>
             </div>
 
-            <div className={`mb-7 ${tasks?.length < 5 ? "" : "overflow-y-auto"} border border-[#dee2e6] ${pathname.includes('advisor') ? "max-h-[650px]" : "max-h-[300px]"}`}>
+            <div className={`mb-7 ${tasks?.length < 4 ? "" : "overflow-y-auto"} border border-[#dee2e6] ${pathname.includes('advisor') ? "max-h-[650px]" : "max-h-[300px]"}`}>
               <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
                 <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
                   <tr>
@@ -664,7 +719,7 @@ const TasksSection = () => {
             isOpen={isOpenTaskModal}
             onClose={() => {setIsOpenTaskModal(false); setSelectedTask(null);}}
             task={selectedTask}
-            fetchTasks={fetchTasks}
+            fetchTasks={fetchData}
             updateTaskStatus={updateTaskStatus}
             isTaskUpdateLoading={isTaskUpdateLoading}
         />
@@ -682,7 +737,7 @@ const TasksSection = () => {
         {isOpenAddTaskModal && (
             <CreateTaskPopUp
                 onClose={() => setIsOpenAddTaskModal(false)}
-                onTaskCreated={fetchTasks}
+                onTaskCreated={fetchData}
             />
         )}
       </div>

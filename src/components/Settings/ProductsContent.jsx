@@ -312,7 +312,7 @@ const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) =
                       <File className="w-6 h-6 text-blue-600" />
                       <div>
                         <h4 className="text-lg font-medium text-gray-900">
-                          {plugin?.type.charAt(0).toUpperCase() +
+                          {plugin?.type === PluginType.TNC ? plugin?.type.toUpperCase() : plugin?.type.charAt(0).toUpperCase() +
                             plugin?.type.slice(1)}
                         </h4>
                         <p className="text-sm text-gray-500">

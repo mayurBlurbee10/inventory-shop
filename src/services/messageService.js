@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { IsNull } from "typeorm";
 import { connectDatabase, getConnection } from "@/config/db";
 import { Messages } from "@/entities/Messages";
 
@@ -31,8 +32,8 @@ const getUserMessages = async (senderId, portalId) => {
   try {
     const messages = await messageRepository.find({
       where: [
-        { portalId : portalId, sender: { id: senderId }, parentMessage: null},
-        { portalId : portalId, receiver: { id: senderId }, parentMessage: null },
+        { portalId : portalId, sender: { id: senderId }, parentMessage: IsNull()},
+        { portalId : portalId, receiver: { id: senderId }, parentMessage: IsNull() },
       ],
       relations: ["sender", "receiver", "replies", "replies.sender"],
       order: { createdAt: "ASC" },

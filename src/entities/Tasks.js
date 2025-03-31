@@ -3,6 +3,7 @@ import "reflect-metadata";
  import BaseTable from "./BaseTable";
  import { Users } from "./Users";
  import { TaskStatus, TaskType } from "@/config/constants";
+import { CheckLists } from "./CheckLists";
  
  export
  @Entity("tasks")
@@ -47,4 +48,8 @@ import "reflect-metadata";
    @ManyToOne(() => Users, { nullable: true })
    @JoinColumn({ name: "createdBy" })
    createdBy;
+
+   @ManyToOne(() => CheckLists, (checklist) => checklist.tasks, { nullable: true, onDelete: "SET NULL" }) 
+   @JoinColumn({ name: "checklist" })
+   checklist;
  }

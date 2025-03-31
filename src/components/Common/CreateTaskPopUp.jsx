@@ -31,7 +31,11 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
       ? new Date(task?.dueDate).toISOString().split("T")[0]
       : "",
       type: task?.type || TaskType.SIGN,
+      checkList : ""
     });
+    const [checkLists, setCheckLists] = useState([]);
+    const [checkListData, setCheckListData] = useState([]);
+    const [isChecklistLoading, setIsChecklistLoading] = useState(false);
     const { data : loggedInUser } = useSelector((state)=> state.user);
    
     const handleFileChange = (fileList) => {
@@ -157,6 +161,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
           description: formData.description,
           dueDate: new Date(formData.dueDate),
           type: formData.type,
+          checklist : formData?.checkList?.id
         };
         if(fileIds?.length > 0){
           payload.uploads = fileIds
@@ -245,6 +250,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
           createdBy: loggedInUser?.id,
           uploads: fileIds || [],
           portalId: params.portalid,
+          checklist : formData?.checkList?.id
         };
         if (filedata?.files?.length > 0) {
           payload.file =  {
@@ -308,6 +314,23 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
       }
   };
 
+  const fetchChecklists = async () => {
+    try {
+      setIsChecklistLoading(true);
+      const url = `/api/checklists?portalId=${params.portalid}`;
+
+      const response = await fetchWrapper(url, {}, "fetch-checklist");
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Failed fetch checklists");
+      setCheckListData(data?.data);
+    } catch (error) {
+      toast.error(error?.message);
+    } finally {
+      setIsChecklistLoading(false);
+    }
+  };
+
   useEffect(() => {
       const users = usersList.map((user) => ({
         ...user,
@@ -320,17 +343,29 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
       // const filteredUsers = users.filter((user) => user.role !== UserRole.MODERATOR);
   
       setUsers(users);
+
     }, [usersList]);
 
   useEffect(() => {
-   fetchUser()
+    const checklists = checkListData.map((checkList) => ({
+      ...checkList,
+      value: checkList.id,
+      label: `${checkList.name}`,
+    }));
+
+    setCheckLists(checklists);
+  }, [checkListData]);
+
+  useEffect(() => {
+   fetchUser();
+   fetchChecklists();
   }, [])
   console.log("users:", users);
   
   
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
-            <div className="bg-white rounded-lg w-full max-w-[800px]">
+            <div className="bg-white rounded-lg w-full max-w-[800px] max-h-[90vh] overflow-y-scroll hidden-scrollbar">
                 <div className="flex justify-between items-center mb-4 border-b py-4 px-6">
                     <h2 className="text-xl text-gray-800 font-semibold">Create Task</h2>
                     <button
@@ -396,6 +431,23 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
                         </div>
                     </div>
                     )}
+                    <div className="flex flex-col">
+                        <label className="block text-sm font-medium text-gray-700 pb-1">
+                          Select Check List
+                        </label>
+                        <div>
+                          <Select
+                            className="flex-1 bg-white text-[#495057] text-sm focus:outline-none w-full"
+                            isClearable={true}
+                            isSearchable={true}
+                            value={formData?.checkList}
+                            onChange={(selectedOption) => setFormData((prev) => ({ ...prev, checkList: selectedOption || null }))}
+                            options={checkLists}
+                            placeholder="Create task in checklist"
+                            required
+                          />
+                        </div>
+                      </div>
                     {
                         formData.type &&  (
                             <div className="z-10">
