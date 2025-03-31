@@ -31,10 +31,10 @@ const getUserMessages = async (senderId, portalId) => {
   try {
     const messages = await messageRepository.find({
       where: [
-        { portalId : portalId, sender: { id: senderId }},
-        { portalId : portalId, receiver: { id: senderId } },
+        { portalId : portalId, sender: { id: senderId }, parentMessage: null},
+        { portalId : portalId, receiver: { id: senderId }, parentMessage: null },
       ],
-      relations: ["sender", "receiver"],
+      relations: ["sender", "receiver", "replies", "replies.sender"],
       order: { createdAt: "ASC" },
     });
 
@@ -51,7 +51,7 @@ const createMessage = async (message) => {
     await messageRepository.save(newMsg);
     return newMsg;
   } catch (error) {
-    throw new Error("Failed to create message.");
+    throw new Error(error?.message);
   }
 };
 

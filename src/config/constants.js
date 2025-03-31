@@ -14,6 +14,7 @@ export const PluginType = {
 export const TaskType = {
   SIGN: "sign",
   UPLOAD: "upload",
+  GENERAL: "general"
 };
 
 export const TaskStatus = {

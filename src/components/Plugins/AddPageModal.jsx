@@ -79,24 +79,24 @@ function AddPageModal({
         description: values.description,
       };
 
-      // const response = await fetchWrapper(
-      //   "/api/pages",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(data),
-      //   },
-      //   "save-page"
-      // );
+      const response = await fetchWrapper(
+        "/api/pages",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        },
+        "save-page"
+      );
 
-      // const savedData = await response.json();
-      // if (!response.ok) {
-      //   throw new Error(savedData.error || "Failed to save page");
-      // }
+      const savedData = await response.json();
+      if (!response.ok) {
+        throw new Error(savedData.error || "Failed to save page");
+      }
 
-      // toast.success("Page created successfully");
+      toast.success("Page created successfully");
     } catch (error) {
       toast.error(error.message);
       console.error("Error creating plugin:", error);

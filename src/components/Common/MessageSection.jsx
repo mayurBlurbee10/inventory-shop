@@ -5,6 +5,7 @@ import {
   Loader2,
   MoreVertical,
   Plus,
+  Reply,
   Save,
   Tag,
   Trash,
@@ -28,6 +29,7 @@ const formatDate = (timestamp) => {
 };
 
 const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
+  const params = useParams();
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isMessageUpdateLoading, setIsMessageUpdateLoading] = useState(false);
@@ -39,6 +41,12 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
   const menuRef = useRef(null);
   const [isMessageDeleteModalOpen, setIsMessageDeleteModalOpen] =
     useState(false);
+  const [isMessageReplyLoading, setIsMessageReplyLoading] = useState(false);
+  const [replyMessage, setReplyMessage] = useState({
+    subject: "",
+    text: "",
+  });
+  const [isReplying, setIsReplying] = useState(false);
   const { data : user } = useSelector((state) => state?.user);
 
   const handleEditMessage = async () => {
@@ -113,6 +121,47 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleReplyMessage = async () => {
+    if (!replyMessage?.subject || !replyMessage?.text) {
+      return;
+    }
+    const messageData = {
+      sender: user?.id,
+      receiver: message?.sender?.id === user?.id ? message?.receiver?.id : message?.sender?.id,
+      portalId: params.portalid,
+      subject: replyMessage.subject,
+      text: replyMessage.text,
+      parentMessage: message?.id
+    };
+    setIsMessageReplyLoading(true);
+    try {
+      const response = await fetchWrapper(
+        "/api/messages",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(messageData),
+        },
+        "reply-message"
+      );
+
+      if (!response.ok) throw new Error("Failed to send message");
+
+      setReplyMessage({
+        subject: "",
+        body: "",
+      });
+      await onMessageUpdate();
+      onClose();
+      setIsReplying(false);
+      toast.success("Message sent successfully")
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setIsMessageReplyLoading(false);
+    }
+  };
 
   useEffect(() => {
     setEditedMessage({
@@ -236,18 +285,71 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                 </div>
             </div>
             </div>
+            {isReplying && (
+              <div className="space-y-4">
+                {message && message?.sender?.id && (
+                  <div className="w-full">
+                    <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
+                      <div className="text-sm text-[#495057]">
+                        {message?.sender?.name} ({message?.sender?.email})
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="cursor-pointer w-full text-gray-700 text-sm px-4 py-2 border border-gray-300 rounded-md flex justify-between items-center placeholder-gray-400">
+                  <input
+                    type="text"
+                    value={replyMessage.subject}
+                    onChange={(e) =>
+                      setReplyMessage((prev) => ({ ...prev, subject: e.target.value }))
+                    }
+                    required
+                    placeholder="Enter Subject"
+                    className="w-full focus:outline-none cursor-pointer"
+                  />
+                </div>
+
+                <textarea
+                  placeholder="Write a message..."
+                  rows={"10"}
+                  className="border w-full cursor-pointer h-24 rounded-md px-4 py-2 text-sm outline-none text-gray-700 resize-none placeholder-gray-400"
+                  value={replyMessage.body}
+                  onChange={(e) =>
+                    setReplyMessage((prev) => ({ ...prev, text: e.target.value }))
+                  }
+                />
+              </div>
+            )}
 
           {/* Footer Buttons */}
           <div className="mt-6 flex justify-end space-x-3">
             <Button
-              onClick={isEditing ? () => setIsEditing(false) : onClose}
+              onClick={() => {
+                if (isEditing) {
+                  setIsEditing(false);
+                } else if (isReplying) {
+                  setIsReplying(false);
+                } else {
+                  onClose();
+                }
+              }}
               label="Close"
               type="Secondary"
               disabled={isMessageUpdateLoading}
             />
-            {isEditing && (
+            {!isReplying && (
               <Button
-                onClick={handleEditMessage}
+                onClick={() => setIsReplying(true)}
+                icon={Reply}
+                label="Reply"
+                type="Primary"
+                isLoading={isMessageReplyLoading}
+                disabled={isMessageReplyLoading}
+              />
+            )}
+            {(isEditing || isReplying) && (
+              <Button
+                onClick={isEditing ? handleEditMessage : handleReplyMessage}
                 icon={Save}
                 label="Save"
                 type="Primary"

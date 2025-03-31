@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import BaseTable from "./BaseTable";
 import { Users } from "./Users";
 
@@ -25,4 +25,11 @@ class Messages extends BaseTable {
 
   @Column({ type: "nvarchar", length: "MAX", nullable: true })
   subject;
+
+  @ManyToOne(() => Messages, (message) => message.replies, { nullable: true })
+  @JoinColumn({ name: "parentMessage" })
+  parentMessage;
+
+  @OneToMany(() => Messages, (message) => message.parentMessage)
+  replies;
 }
