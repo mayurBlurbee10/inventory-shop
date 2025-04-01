@@ -10,6 +10,7 @@ function DeleteConfirmDialog({
   config,
   title = "Delete File",
   content = "Confirm delete?",
+  buttonText = "Delete",
   isLoading,
   modalRef
 }) {
@@ -76,7 +77,7 @@ function DeleteConfirmDialog({
                disabled={isLoading}
                isLoading={isLoading}
                type="Primary"
-               label="Delete"
+               label={buttonText}
                icon={Trash2}
               />
             </div>

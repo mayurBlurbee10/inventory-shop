@@ -3,7 +3,6 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import "./Plugins/RTE/tiptap-style.css";
 import { setUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { setCurrentUser } from "@/store/services/userService";

@@ -106,7 +106,7 @@ export default function DocDashboard() {
       setIsPageLoading(true);
       if (!params?.portalid) return;
       const response = await fetchWrapper(
-        `/api/pages?portalId=${params.portalid || "default"}&&page=${pathname
+        `/api/pages?portalId=${params.portalid || "default"}&page=${pathname
           .split("/")
           .pop()}`,
         {},

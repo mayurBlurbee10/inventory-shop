@@ -13,7 +13,7 @@ class Pages extends BaseTable {
   @Column({ type: "text" })
   description;
 
-  @ManyToOne(() => Plugins, (plugin) => plugin.pages)
+  @ManyToOne(() => Plugins, (plugin) => plugin.pages, { onDelete: "CASCADE" })
   plugin;
 
   @Column({ type: "bit", nullable: false, default: 1 })
