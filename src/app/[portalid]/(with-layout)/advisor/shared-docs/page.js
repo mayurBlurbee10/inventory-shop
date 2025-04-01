@@ -629,10 +629,15 @@ export default function AdvisorViewSharedDocsPage() {
         }
       };
     const filterVisibility = (label) => {
+        if (isPageLoading) return false;
         if (!page || !page.length) return true;     
         const section = page.find((item) => item.label === label);
         return section?.visible ?? false; 
       };
+
+    useEffect(() => {
+        fetchPage();
+    },[]);
 
       const LoadingSpinner = () => (
         <div className="h-screen flex justify-center items-center bg-white">
