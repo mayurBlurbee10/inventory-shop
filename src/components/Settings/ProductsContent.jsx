@@ -407,61 +407,66 @@ const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) =
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-1 md:p-2 lg:p-3">
             {pagesData &&
               pagesData.length > 0 &&
-              pagesData.map((page, idx) => (
-                <div
-                  key={idx}
-                  className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
-                      {page?.title === "esignature" ? (
-                        <Fingerprint className="w-6 h-6 text-blue-600" />
-                      ) : (
-                        <File className="w-6 h-6 text-blue-600" />
-                      )}
-                      <div>
-                        <h4 className="text-lg font-medium text-gray-900">
-                          {page?.title.charAt(0).toUpperCase() +
-                            page?.title.slice(1)}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          {page.description}
-                        </p>
-                      </div>
-                    </div>
-                    {page.title !== "dashboard" && (
-                      <div className="flex items-center">
-                        {isUpdateLoading === page?.id && (
-                          <div className="mr-3">
-                            <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                          </div>
+              pagesData.map((page, idx) => {
+                if(page?.title.includes("advisor")){
+                  return;
+                }
+                return (
+                  <div
+                    key={idx}
+                    className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-start gap-3">
+                        {page?.title === "esignature" ? (
+                          <Fingerprint className="w-6 h-6 text-blue-600" />
+                        ) : (
+                          <File className="w-6 h-6 text-blue-600" />
                         )}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleUpdatePageStatus(page?.id, !page.isPageVisible)
-                          }
-                          className={`
-                          relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                          ${page?.isPageVisible ? "bg-blue-600" : "bg-gray-200"}
-                        `}
-                        >
-                          <span
-                            className={`
-                            pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                            ${
-                              page?.isPageVisible
-                                ? "translate-x-5"
-                                : "translate-x-0"
-                            }
-                          `}
-                          />
-                        </button>
+                        <div>
+                          <h4 className="text-lg font-medium text-gray-900">
+                            {page?.title.charAt(0).toUpperCase() +
+                              page?.title.slice(1)}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {page.description}
+                          </p>
+                        </div>
                       </div>
-                    )}
+                      {page.title !== "dashboard" && (
+                        <div className="flex items-center">
+                          {isUpdateLoading === page?.id && (
+                            <div className="mr-3">
+                              <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleUpdatePageStatus(page?.id, !page.isPageVisible)
+                            }
+                            className={`
+                            relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                            ${page?.isPageVisible ? "bg-blue-600" : "bg-gray-200"}
+                          `}
+                          >
+                            <span
+                              className={`
+                              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
+                              ${
+                                page?.isPageVisible
+                                  ? "translate-x-5"
+                                  : "translate-x-0"
+                              }
+                            `}
+                            />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
           </div>
         </>
       )}
