@@ -76,7 +76,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString("en-GB");
+    return date.toLocaleDateString("en-US");
   };
 
   return (

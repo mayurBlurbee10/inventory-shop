@@ -105,7 +105,7 @@ function Navbar({ content, config, filterValue }) {
           </button>
           {/* Line Below Button */}
           <div
-            className={`h-1 w-full absolute left-0 transition-all duration-300 -bottom-6 ${
+            className={`h-1 w-full absolute left-0 transition-all duration-300 ${isOpenNavbar ? " -bottom-1" : "-bottom-6 "} ${
               pathname.includes(href) ? "opacity-100" : "opacity-0"
             }`}
             style={{
@@ -181,7 +181,7 @@ function Navbar({ content, config, filterValue }) {
   }
 
   useEffect(() => {
-    setUserIsAdmin(user?.role !== UserRole.USER);
+    setUserIsAdmin(user?.role !== UserRole.USER && user?.role !== UserRole.MODERATOR);
     setUserIsModerator(user?.role === UserRole.MODERATOR);
     fetchPages();
   }, []);
@@ -205,20 +205,20 @@ function Navbar({ content, config, filterValue }) {
               className="text-3xl text-[#000000e6] mb-1 font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
               style={{
                 fontSize:
-                  content?.portalContent?.find(
-                    (item) => item.title === "Header Text"
-                  )?.fontSize || "30px",
+                  content?.portalContent?.find((item) => item.title === "Header Text")
+                    ?.fontSize || "30px",
               }}
             >
-              {filterValue("Header Text") &&
+              {content?.portalContent === undefined ? ( 
+                <span className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded block"></span>
+              ) : filterValue("Header Text") &&
                 filterValue("Header Text") !== "Premier Customer Portal" ? (
-                filterValue("Header Text")
-              ) : params?.portalid ? (
-                params.portalid
+                filterValue("Header Text") 
               ) : (
-                <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
+                params?.portalid 
               )}
             </span>
+
           </div>
 
           <div className="hidden lg:flex items-center">
@@ -363,27 +363,33 @@ function Navbar({ content, config, filterValue }) {
                 {/* DROPDOWN SECTION DONE*/}
                 {accountDropdown && (
                   <>
-                    {userIsModerator ? (
+                    {isAdvisorViewOpen ? (
                       <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                        {/* <button
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          onClick={() =>
-                            router.push(
-                              params.portalid
-                                ? `/${params.portalid}/dashboard`
-                                : "/dashboard"
-                            )
-                          }
-                        >
-                          <UserRoundPen className="h-5 w-5" /> Client View
-                        </button> */}
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        >
-                          <LogOut className="h-5 w-5" />
-                          Sign out
-                        </button>
+                        {!userIsModerator && (
+                          <button
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                            onClick={() =>
+                              router.push(
+                                params.portalid
+                                  ? `/${params.portalid}/dashboard`
+                                  : "/dashboard"
+                              )
+                            }
+                          >
+                            <UserRoundPen className="h-5 w-5" /> Client View
+                          </button>
+                        )}
+                        {
+                          userIsModerator && (
+                            <button
+                              onClick={handleLogout}
+                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                            >
+                              <LogOut className="h-5 w-5" />
+                              Sign out
+                            </button>
+                          )
+                        }
                       </div>
                     ) : (
                       <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
@@ -422,18 +428,22 @@ function Navbar({ content, config, filterValue }) {
                             Tools
                           </button>
                         )}
-                        {/* <button
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          onClick={() =>
-                            router.push(
-                              params.portalid
-                                ? `/${params.portalid}/advisor/dashboard`
-                                : "/advisor/dashboard"
-                            )
-                          }
-                        >
-                          <UserRoundPen className="h-5 w-5" /> Advisor View
-                        </button> */}
+                        {
+                          userIsAdmin && (
+                              <button
+                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                                onClick={() =>
+                                  router.push(
+                                    params.portalid
+                                      ? `/${params.portalid}/advisor/dashboard`
+                                      : "/advisor/dashboard"
+                                  )
+                                }
+                              >
+                                <UserRoundPen className="h-5 w-5" /> Advisor View
+                              </button>
+                          )
+                        }
                         <button
                           onClick={handleLogout}
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
@@ -580,15 +590,12 @@ function Navbar({ content, config, filterValue }) {
                         }`}
                     >
                       {
-                        isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
+                        user?.name?.charAt(0).toUpperCase() || "U"
                       }
                     </div>
                     <div className="flex flex-col text-sm xl:text-base">
                       <span className="text-gray-900 font-medium">
-                        {
-                          isAdvisorViewOpen ? "Erica Smith" : user?.name
-                        }
-
+                        {user?.name}
                       </span>
                     </div>
 
@@ -596,18 +603,31 @@ function Navbar({ content, config, filterValue }) {
                       <>
                         {isAdvisorViewOpen ? (
                           <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                            <button
-                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                              onClick={() =>
-                                router.push(
-                                  params.portalid
-                                    ? `/${params.portalid}/dashboard`
-                                    : "/dashboard"
-                                )
-                              }
-                            >
-                              <UserRoundPen className="h-5 w-5" /> Client View
-                            </button>
+                            {!userIsModerator && (
+                              <button
+                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                                onClick={() =>
+                                  router.push(
+                                    params.portalid
+                                      ? `/${params.portalid}/dashboard`
+                                      : "/dashboard"
+                                  )
+                                }
+                              >
+                                <UserRoundPen className="h-5 w-5" /> Client View
+                              </button>
+                            )}
+                            {
+                              userIsModerator && (
+                                <button
+                                  onClick={handleLogout}
+                                  className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                                >
+                                  <LogOut className="h-5 w-5" />
+                                  Sign out
+                                </button>
+                              )
+                            }
                           </div>
                         ) : (
                           <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
@@ -647,19 +667,22 @@ function Navbar({ content, config, filterValue }) {
                                 Tools
                               </button>
                             )}
-                            <button
-                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                              onClick={() =>
-                                router.push(
-                                  params.portalid
-                                    ? `/${params.portalid}/advisor/dashboard`
-                                    : "/advisor/dashboard"
-                                )
-                              }
-                            >
-                              <UserRoundPen className="h-5 w-5" /> Advisor View
-                            </button>
-
+                            {
+                              userIsAdmin && (
+                                  <button
+                                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                                    onClick={() =>
+                                      router.push(
+                                        params.portalid
+                                          ? `/${params.portalid}/advisor/dashboard`
+                                          : "/advisor/dashboard"
+                                      )
+                                    }
+                                  >
+                                    <UserRoundPen className="h-5 w-5" /> Advisor View
+                                  </button>
+                              )
+                            }
                             <button
                               onClick={handleLogout}
                               className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"

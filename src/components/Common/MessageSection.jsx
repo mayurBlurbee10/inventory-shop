@@ -624,7 +624,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const sortedMessages = [...messages].sort((a, b) => {
+  const sortedMessages = messages && [...messages].sort((a, b) => {
     if (sortConfig.key === "createdAt"){
       const dateA = new Date(a.createdAt);
       const dateB = new Date(b.createdAt);

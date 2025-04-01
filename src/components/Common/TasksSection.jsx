@@ -25,7 +25,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
 
     const formatDate = (timestamp) => {
         const date = new Date(timestamp);
-        return date.toLocaleDateString("en-GB");
+        return date.toLocaleDateString("en-US");
       };
     
     useEffect(() => {
@@ -541,22 +541,12 @@ const TasksSection = () => {
       <div className="relative mt-1">
         {filterVisibility("My Task Section") && (
           <>
-            <div className={`flex justify-between items-start mb-4`}>
+            <div className={`grid grid-cols-3 mb-2`}>
               <div></div>
               <h3 className="text-xl font-light text-center text-[#212529] font-lato">
                 My Tasks
               </h3>
-              <div
-                className="flex items-center justify-end text-[#dc3545] cursor-pointer"
-                onClick={() =>
-                  setCompletedTask({
-                    upload: false,
-                    completeForm: false,
-                    sign: false,
-                    autoLoan: false,
-                  })
-                }
-              >
+              <div>
                 <Button
                   iconClassName="w-5 h-5"
                   className='text-gray-600 w-24 h-10 ml-auto'
@@ -564,7 +554,6 @@ const TasksSection = () => {
                   icon={Plus}
                   onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
                 />
-                  {/* <div className='mt-4'><RotateCw className="h-4 w-4" /></div> */}
               </div>
             </div>
 
@@ -575,14 +564,15 @@ const TasksSection = () => {
                     <th></th>
                     <th className="text-start px-3 py-4">Task</th>
                     <th className="text-start px-3 py-4">Status</th>
-                    <th className="text-start px-3 py-4">Due Date</th>
+                    <th className="text-start px-3 py-4">From</th>
+                    <th className="text-start px-3 py-4">To</th>
                     <th className="text-start px-3 py-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200" ref={actionDropdownRef}>
                   {isTaskLoading ? (
                     <tr>
-                      <td colSpan={"5"}>
+                      <td colSpan={"6"}>
                         <div className="min-h-[100px] flex items-center justify-center">
                           <Loader2 className="text-blue-500 animate-spin" />
                         </div>
@@ -602,8 +592,8 @@ const TasksSection = () => {
                                 }`}
                               ></div>
                             </td>
-                            <td className="px-3 py-4">
-                              <p className="font-lato text-[#212529] text-sm">
+                            <td className="px-3 py-4 max-w-[100px]">
+                              <p className="font-lato text-[#212529] text-sm truncate">
                                 {task?.title}
                               </p>
                             </td>
@@ -643,13 +633,19 @@ const TasksSection = () => {
                                 )}
                               </p>
                             </td>
-                            <td className="px-3 py-4">
-                              <p className="font-lato text-[#212529] text-sm">
-                                {task?.dueDate
+                            <td className="px-3 py-4 max-w-[100px]">
+                              <p className="font-lato text-[#212529] text-sm truncate">
+                                {/* {task?.dueDate
                                   ? new Date(task?.dueDate).toLocaleDateString(
-                                      "en-GB"
+                                      "en-US"
                                     )
-                                  : new Date().toLocaleDateString("en-GB")}
+                                  : new Date().toLocaleDateString("en-US")} */}
+                                  {task?.createdBy?.name}
+                              </p>
+                            </td>
+                            <td className="px-3 py-4 max-w-[100px]">
+                              <p className="font-lato text-[#212529] text-sm truncate">
+                                  {task?.user?.name}
                               </p>
                             </td>
                             <td className="relative px-3 py-4 cursor-pointer">

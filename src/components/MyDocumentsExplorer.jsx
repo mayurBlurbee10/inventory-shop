@@ -517,7 +517,7 @@ function SharedFolderExplorer({
   const [esignAvailable, setEsignAvailable] = useState(true)
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectFileToRename, setSelectFileToRename] = useState(null);
- 
+  const [sortedFilesList, setSortedFilesList] = useState([])
   const fetchPage = async () => {
     try {
       if (!params?.portalid) return;
@@ -904,6 +904,21 @@ function SharedFolderExplorer({
   //   );
   // }
 
+useEffect(() => {
+    if (currentFilesList && currentFilesList.length > 0) {
+      setSortedFilesList([...currentFilesList]); // Set sorted files when data is available
+    }
+}, [currentFilesList]);
+const sortAscending = () => {
+    const sortedList = [...currentFilesList].sort((a, b) => a.name.localeCompare(b.name));
+    setSortedFilesList(sortedList);
+};
+
+const sortDescending = () => {
+    const sortedList = [...currentFilesList].sort((a, b) => b.name.localeCompare(a.name));
+    setSortedFilesList(sortedList);
+};
+
   return (
     <div>
       {view === "list" && (
@@ -926,10 +941,10 @@ function SharedFolderExplorer({
                     <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
                       <div className="flex items-center justify-start gap-2  mx-4">
                         <span className="block">Name</span>
-                        <button className="flex items-center justify-center">
+                        <button className="flex items-center justify-center" onClick={sortAscending}>
                           <ChevronUp className="h-4 w-4" />
                         </button>
-                        <button className="flex items-center justify-center">
+                        <button className="flex items-center justify-center" onClick={sortDescending}>
                           <ChevronDown className="h-4 w-4" />
                         </button>
                       </div>
@@ -948,9 +963,9 @@ function SharedFolderExplorer({
                 </thead>
 
                 <tbody className="w-full divide-y divide-y-gray-200">
-                  {currentFilesList &&
-                    currentFilesList.length > 0 &&
-                    currentFilesList.map((file, index) => (
+                  {sortedFilesList &&
+                    sortedFilesList.length > 0 &&
+                    sortedFilesList.map((file, index) => (
                       <tr
                         key={index}
                         className={`group hover:bg-[#e4f4ff66] border-l-2 border-l-white hover:border-l-cyan-700 active:bg-[#E4F4FF] ${selectedBulkItems.includes(file?.id) && "bg-[#e4f4ff66]"}`}
