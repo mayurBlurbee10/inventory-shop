@@ -266,39 +266,36 @@ const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) =
             ].map((widget, idx) => (
               <div
                 key={idx}
-                className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                className="border rounded-lg p-4 bg-gray-50 shadow-sm opacity-70 pointer-events-none"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-3">
                     {widget.icon}
                     <div>
-                      <h4 className="text-lg font-medium text-gray-900">
-                        {widget.name}
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        {widget.description}
-                      </p>
+                      <h4 className="text-lg font-medium text-gray-600">{widget.name}</h4>
+                      <p className="text-sm text-gray-600">{widget.description}</p>
                     </div>
                   </div>
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       widget.status === "Beta"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
+                        ? "bg-yellow-100 text-yellow-400"
+                        : "bg-green-100 text-green-400"
                     }`}
                   >
                     {widget.status}
                   </span>
                 </div>
                 <div className="mt-4 flex space-x-2">
-                  <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                  <button className="text-gray-600 text-sm font-medium cursor-not-allowed">
                     Configure
                   </button>
-                  <button className="text-gray-600 hover:text-gray-900 text-sm font-medium">
+                  <button className="text-gray-600 text-sm font-medium cursor-not-allowed">
                     Documentation
                   </button>
                 </div>
               </div>
+
             ))}
 
             {plugins &&

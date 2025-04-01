@@ -246,7 +246,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
     );
   };
 
-const TasksSection = () => {
+const TasksSection = ({ client = null }) => {
     const [page, setPage] = useState(null);
     const params = useParams();
     const router = useRouter();
@@ -475,7 +475,7 @@ const TasksSection = () => {
     const fetchTasks = async () => {
         try {
             setIsTaskLoading(true);
-            const url = `/api/tasks?portalId=${params.portalid}&userId=${user?.id}`
+            const url = `/api/tasks?portalId=${params.portalid}&userId=${client?.id}`
             const response = await fetchWrapper(url, {}, "fetch-tasks");
             if (!response.ok) throw new Error("Something went wrong!!");
             const data = await response.json();
@@ -490,7 +490,11 @@ const TasksSection = () => {
 
     useEffect(() => {
       fetchPage();
-      fetchChecklists();
+      if(client !== null){
+        fetchTasks();
+      }else {
+        fetchChecklists();
+      }
     }, [])
 
     useEffect(() => {

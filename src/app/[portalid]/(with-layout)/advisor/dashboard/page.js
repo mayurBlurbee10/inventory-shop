@@ -35,9 +35,10 @@ export default function AdvisorViewDashboard() {
     const [usersList, setUsersList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const params = useParams();
-  const [data, setData] = useState(null);
+    const [data, setData] = useState(null);
     const [config, setConfig] = useState(null);
-  
+    const [isPageLoading, setIsPageLoading] = useState(false)
+    const [page, setPage] = useState(null);
 
     const [dayAndDate, setDayAndDate] = useState({
         day: "",
@@ -98,6 +99,7 @@ export default function AdvisorViewDashboard() {
 
     useEffect(() => {
         fetchUser();
+        fetchPage();
     }, []);
 
     const fetchConfig = async () => {
@@ -125,6 +127,42 @@ export default function AdvisorViewDashboard() {
           activeUsers: Math.floor(Math.random() * 100) + 50
         }));
       };
+
+    const filterVisibility = (label) => {
+      if (isPageLoading) return false;
+      if (!page || !page.length) return true;
+
+      const section = page.find((item) => item.label === label);
+      return section?.visible ?? false;
+    };
+
+    const fetchPage = async () => {
+      try {
+        setIsPageLoading(true);
+        if (!params?.portalid) return;
+        const page = encodeURIComponent("advisor dashboard")
+        const response = await fetchWrapper(
+          `/api/pages?portalId=${params.portalid || "default"}&page=${page}`,
+          {},
+          "fetch-page"
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch page");
+        }
+
+        const pageData = data?.data?.visibility || [];
+
+        setPage(pageData);
+      } catch (error) {
+        console.log("error: ", error);
+      } finally {
+        setIsPageLoading(false);
+      }
+    };
+
+
      useEffect(() => {
         fetchConfig().then((portal) => {
         //   getChartData(2025, portal?.id).then((data) => setData(data));
@@ -149,6 +187,7 @@ export default function AdvisorViewDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-10 w-full">
                 <div className="flex flex-col w-full">
+                    {filterVisibility("Your Clients Section") && (
                         <div >
                             <div className="w-full flex justify-center items-center">
                                 <h3 className="text-xl font-light font-lato text-black mb-4">
@@ -194,6 +233,8 @@ export default function AdvisorViewDashboard() {
                                 }
                             </div>
                         </div>
+                    )}
+                    {filterVisibility("Activity Section") && (
                         <div className="bg-white w-full mx-auto mt-8">
                             {/* Title Section */}
                             <div className="grid grid-cols-1">
@@ -238,9 +279,12 @@ export default function AdvisorViewDashboard() {
                                         </ResponsiveContainer>
                                       </div>
                         </div>
+                    )}
                 </div>
                 <div className="w-full">
-                    <TasksSection />
+                    {filterVisibility("My Task Section") && (
+                        <TasksSection />
+                    )}
                     {/* <div>
                             <div className="grid grid-cols-3">
                                 <div></div>
@@ -314,8 +358,9 @@ export default function AdvisorViewDashboard() {
                                 }
                             </div>
                     </div> */}
-
-                    <MessageSection />
+                    {filterVisibility("Messaging") && (
+                        <MessageSection />
+                    )}
                 </div>
             </div>
         </div>
