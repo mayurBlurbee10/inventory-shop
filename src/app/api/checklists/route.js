@@ -43,17 +43,24 @@ export async function GET(req) {
     await logApiCall(req);
     const { searchParams } = new URL(req.url);
     const portalId = searchParams.get("portalId");
+    const sorted = searchParams.get("sorted");
 
-    if (!!portalId) {
-      const checklists = await checkListService.getCheckListByPortalId(
-        portalId
+    if (!portalId) {
+      return NextResponse.json(
+        { error: "portalId is required." },
+        { status: 400 }
       );
-
-      return NextResponse.json({
-        message: `checklists retrieved successfully.`,
-        data: checklists || [],
-      });
     }
+
+    // Use sorted query param to determine which function to call
+    const checklists = sorted
+      ? await checkListService.getCheckListByPortalIdSorted(portalId)
+      : await checkListService.getCheckListByPortalId(portalId);
+
+    return NextResponse.json({
+      message: "Checklists retrieved successfully.",
+      data: checklists || [],
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to retrieve checklists.", details: error.message },

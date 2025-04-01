@@ -8,16 +8,9 @@ const getRepository = async (entity) => {
   return connection.getRepository(entity);
 };
 
-const getCheckListByPortalId = async (portalId) => {
+const getCheckListByPortalIdSorted = async (portalId) => {
   const checkListRepository = await getRepository(CheckLists);
   try {
-    // const checklists = await checkListRepository.find({
-    //   where: {
-    //     portalId: portalId,
-    //   },
-    //   relations: ["tasks", "tasks.user", "tasks.createdBy"],
-    // });
-
     // Nested level sorting is not supported by typeORM in .find() method.
     const checklists = await checkListRepository
       .createQueryBuilder("checklist")
@@ -25,8 +18,26 @@ const getCheckListByPortalId = async (portalId) => {
       .leftJoinAndSelect("task.user", "user")
       .leftJoinAndSelect("task.createdBy", "createdBy")
       .where("checklist.portalId = :portalId", { portalId })
-      .orderBy("task.createdAt", "ASC") 
+      .orderBy("task.createdAt", "DESC") 
       .getMany();
+
+    return checklists;
+  } catch (error) {
+    console.error("Error getting checklists:", error.message);
+    throw error;
+  }
+};
+
+const getCheckListByPortalId = async (portalId) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const checklists = await checkListRepository.find({
+      where: {
+        portalId: portalId,
+      },
+      relations: ["tasks", "tasks.user", "tasks.createdBy"],
+    });
+    
     return checklists;
   } catch (error) {
     console.error("Error getting checklists:", error.message);
@@ -87,6 +98,7 @@ const deleteCheckList = async (checkListId) => {
 };
 
 export default {
+  getCheckListByPortalIdSorted,
   getCheckListByPortalId,
   getCheckListById,
   createCheckList,

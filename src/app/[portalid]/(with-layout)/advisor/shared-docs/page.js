@@ -640,7 +640,7 @@ export default function AdvisorViewSharedDocsPage() {
         </div>
       );
       
-    if(!user) return <LoadingSpinner />;
+    if(boxUserId && !user) return <LoadingSpinner />;
 
     return (
         <div className="max-w-[1820px] mx-auto px-4">

@@ -334,7 +334,7 @@ const TasksSection = ({ client = null }) => {
     const fetchChecklists = async () => {
       try {
         setIsChecklistLoading(true);
-        const url = `/api/checklists?portalId=${params.portalid}`;
+        const url = `/api/checklists?portalId=${params.portalid}&sorted=${true}`;
 
         const response = await fetchWrapper(url, {}, "fetch-checklist");
         const data = await response.json();
@@ -567,7 +567,7 @@ const TasksSection = ({ client = null }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200" ref={actionDropdownRef}>
-                  {isTaskLoading ? (
+                  {isChecklistLoading ? (
                     <tr>
                       <td colSpan={"6"}>
                         <div className="min-h-[100px] flex items-center justify-center">
