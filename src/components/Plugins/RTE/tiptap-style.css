@@ -19,8 +19,8 @@
 }
 
 .editor {
-    min-height: 500px;
-    max-height: 500px;
+    min-height: 30vh;
+    max-height: 30vh;
     padding: 0 1rem;
     border-radius: 4px;
     background: #fdfdfd;

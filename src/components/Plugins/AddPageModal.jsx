@@ -196,8 +196,8 @@ function AddPageModal({
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/10 bg-opacity-80 flex items-center justify-center" style={{marginTop : 0}}>
-          <div className="bg-white rounded-lg w-[90%] max-w-[1000px] flex flex-col relative">
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/10 bg-opacity-80 flex items-center justify-center z-10" style={{marginTop : 0}}>
+          <div className="bg-white rounded-lg w-[90%] max-w-[1000px] flex flex-col relative max-h-[80vh] overflow-y-auto">
             <button
               onClick={onClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-500"
@@ -234,23 +234,23 @@ function AddPageModal({
                 )}
               </div>
 
-              <div className="flex flex-col w-full max-h-[450px] overflow-y-auto sm:max-h-none sm:overflow-visible custom-scrollbar">
+              <div className="flex flex-col w-full max-h-[500px] overflow-y-auto custom-scrollbar">
                 <label className="text-xl font-semibold mb-1">
                   Description
                 </label>
-                <Controller
-                  name="description"
-                  control={control}
-                  render={({ field }) => (
-                    <TextEditor
-                      content={field.value || ""}
-                      onChange={(value) => setValue("description", value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") e.preventDefault();
-                      }}
-                    />
-                  )}
-                />
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field }) => (
+                      <TextEditor
+                        content={field.value || ""}
+                        onChange={(value) => setValue("description", value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") e.preventDefault();
+                        }}
+                      />
+                    )}s
+                  />
                 {errors.description && (
                   <p className="text-sm text-red-600 mt-1">
                     {errors.description.message}

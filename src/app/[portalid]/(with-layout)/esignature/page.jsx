@@ -78,6 +78,7 @@ const TrackStatus = ({ trackedRequests }) => {
               return signers.length > 0 ? (
                 <React.Fragment key={req.id}>
                   {/* Default Row */}
+                  {req.source_files.length > 0 && (
                   <tr className={`hover:bg-gray-50 transition ${expandedRow?.id !== req?.id && "border-b border-gray-200"}`}>
                     {/* Document Name */}
                     <td className="p-3 font-medium text-gray-900 align-middle truncate w-1/3">
@@ -117,7 +118,7 @@ const TrackStatus = ({ trackedRequests }) => {
                       </button>
                     </td>
                   </tr>
-
+                  )}
                   {/* Expanded Row */}
                   {expandedRow?.id === req.id &&
                     signers.map((signer, idx) => (

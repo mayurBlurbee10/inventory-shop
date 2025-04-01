@@ -114,6 +114,11 @@ export default function PreviewModal({ isOpen, onClose, fileId }) {
     };
   }, [isOpen, fileId]);
 
+  const handleClose = () => {
+    onClose();
+    setFileInfo(null)
+  }
+
   return (
     <Dialog
       open={isOpen}
@@ -129,7 +134,7 @@ export default function PreviewModal({ isOpen, onClose, fileId }) {
           {fileInfo?.name || 'File Preview'}
             </Dialog.Title>
             <button 
-              onClick={onClose}
+              onClick={handleClose}
               className="p-1 hover:bg-gray-100 rounded-full text-black"
             >
               <X className="h-5 w-5" />
