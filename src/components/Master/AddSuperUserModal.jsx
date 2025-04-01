@@ -9,6 +9,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     companyName: "",
     logo: null,
@@ -21,6 +22,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
     setFormData({
       name: "",
       email: "",
+      phone: "",
       password: "",
       companyName: "",
       logo: null,
@@ -80,6 +82,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
       // Prepare user data for storage
       const userData = {
         email: formData.email,
+        phone: formData.phone,
         name: formData.name,
         password: "admin123",
         companyName: formData.companyName,
@@ -181,6 +184,17 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
               className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.email}
               onChange={(e) => handleFormChange("email", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Phone No
+            </label>
+            <input
+              type="text"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+              value={formData.phone}
+              onChange={(e) => handleFormChange("phone", e.target.value)}
             />
           </div>
           {/* <div>

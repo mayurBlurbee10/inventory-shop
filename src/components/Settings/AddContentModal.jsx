@@ -50,6 +50,10 @@ const AddContentModal = ({
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
+    if (!newContent.value.trim()) {
+      handleModalClose();
+      return;
+    }
 
     try {
       let imageUrl = "";
@@ -503,7 +507,7 @@ const AddContentModal = ({
             <Button
               buttonType="submit"
               type="Primary"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !newContent.value.trim()}
               label={isEditMode ? "Update" : "Add"}
               isLoading={isSubmitting}
             />
