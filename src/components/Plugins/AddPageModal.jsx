@@ -8,6 +8,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog } from "@headlessui/react";
 import { useParams } from "next/navigation";
 import Button from "../Common/Elements/Button";
+import { customPageSectionTemplate } from "@/app/lib/data/existingPages";
 
 const TextEditor = dynamic(() => import("./RTE/TextEditor"), { ssr: false });
 
@@ -77,6 +78,8 @@ function AddPageModal({
       const data = {
         title: values.title,
         description: values.description,
+        visibility: customPageSectionTemplate?.sections,
+        isCustomPage: false 
       };
 
       const response = await fetchWrapper(
@@ -129,7 +132,11 @@ function AddPageModal({
       const method = isEditMode ? "PUT" : "POST";
       const url = "/api/pages";
 
-      if (isEditMode) payload.id = editData.id;
+      if (isEditMode) {
+        payload.id = editData.id
+      }else {
+        payload.visibility = customPageSectionTemplate.sections
+      }
 
       const response = await fetchWrapper(
         url,

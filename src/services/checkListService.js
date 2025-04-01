@@ -11,12 +11,22 @@ const getRepository = async (entity) => {
 const getCheckListByPortalId = async (portalId) => {
   const checkListRepository = await getRepository(CheckLists);
   try {
-    const checklists = await checkListRepository.find({
-      where: {
-        portalId: portalId,
-      },
-      relations: ["tasks", "tasks.user", "tasks.createdBy"],
-    });
+    // const checklists = await checkListRepository.find({
+    //   where: {
+    //     portalId: portalId,
+    //   },
+    //   relations: ["tasks", "tasks.user", "tasks.createdBy"],
+    // });
+
+    // Nested level sorting is not supported by typeORM in .find() method.
+    const checklists = await checkListRepository
+      .createQueryBuilder("checklist")
+      .leftJoinAndSelect("checklist.tasks", "task")
+      .leftJoinAndSelect("task.user", "user")
+      .leftJoinAndSelect("task.createdBy", "createdBy")
+      .where("checklist.portalId = :portalId", { portalId })
+      .orderBy("task.createdAt", "ASC") 
+      .getMany();
     return checklists;
   } catch (error) {
     console.error("Error getting checklists:", error.message);

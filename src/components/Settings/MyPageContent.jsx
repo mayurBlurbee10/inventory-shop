@@ -202,20 +202,20 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
     }
   };
 
-  const renderPagesList = (pagesList) => {
+  const renderPagesList = (pagesList, showItem) => {
     return pagesList?.map((page, index) => (
       <React.Fragment key={page?.id}>
-        {((!page?.isCustomPage && page?.visibility?.length > 0 ) || page?.isCustomPage) && (
+        {((page?.visibility?.length > 0 ) || page?.isCustomPage) && (
       <div
         className={`text-base flex gap-2 w-full border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow ${
-          page?.isCustomPage ? "justify-between items-center" : "flex-col"
+          showItem === "pages" ? "justify-between items-center" : "flex-col"
         }`}
         key={index}
       >
         <h3 className="font-lato font-semibold text-lg">
           {page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
         </h3>
-        {page?.isCustomPage && (
+        {showItem === "pages" && page?.isCustomPage && (
           <>
             <div className="flex items-center ml-auto gap-2 ">
               <button
@@ -254,8 +254,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
           </>
         )}
         <div className="flex flex-col divide-y divide-gray-200">
-          {!page?.isCustomPage &&
-            page?.visibility &&
+          {showItem === "sections" && page?.visibility &&
             page?.visibility.map((section, idx) => (
               <div
                 key={idx}
@@ -302,97 +301,114 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
       </React.Fragment>
     ));
   };
-console.log("pagesData:", pagesData);
 
   return (
     <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto">
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
-        <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
-          <div className=" text-center sm:text-left">
-            <h3 className="text-lg font-medium text-gray-900">
-              Page Content
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Easily manage and customize the sections displayed on your page.
-            </p>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
           </div>
-        </div>  
-        <div className="py-2 text-gray-900">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        ) : (
+          <>
+            <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
+              <div className=" text-center sm:text-left">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    User Page Content
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Easily manage and customize the sections displayed on your page.
+                  </p>
+              </div>
             </div>
-          ) : (
-            <>
-              {!pagesData?.length ? (
-                <p>No page content found.</p>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
-                    {renderPagesList(
-                      pagesData.filter((item) => !item.isCustomPage)
-                    )}
-                  </div>
-                      {!loading && (
-                        <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
-                          <Button
-                            onClick={handleDone}
-                            type="Primary"
-                            label="Save"
-                            isLoading={isSubmitting}
-                            disabled={isSubmitting}
-                            className="ml-auto"
-                          />
-                        </div>
-                      )}
-                      <hr className="my-5"/>
-                      {!loading && (
-                        <div className="flex justify-end items-center w-full space-x-4 flex-wrap gap-2">
-                          <Button
-                            onClick={() => {
-                              setEditData(null);
-                              if (!editData) {
-                                setIsOpenAddPageModal((prev) => !prev);
-                              }
-                            }}
-                            icon={PlusCircle}
-                            type="Primary"
-                            label="Add Page"
-                          />
-                        </div>
-                      )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 ">
-                    {renderPagesList(pagesData.filter((item) => item.isCustomPage))}
-                  </div>
-                </>
+            <div className="py-2 text-gray-900">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
+                {renderPagesList(
+                  pagesData.filter(
+                    (item) =>
+                      item.visibility.length > 0 && !item.title.includes("advisor")
+                  ),
+                  "sections"
+                )}
+              </div>
+              {/* {!loading && (
+                <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
+                  <Button
+                    onClick={handleDone}
+                    type="Primary"
+                    label="Save"
+                    isLoading={isSubmitting}
+                    disabled={isSubmitting}
+                    className="ml-auto"
+                  />
+                </div>
+              )} */}
+              <hr className="my-5" />
+            </div>
+            <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
+              <div className=" text-center sm:text-left">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Advisor Page Content
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Easily manage and customize the sections displayed on your page.
+                </p>
+              </div>
+            </div>
+            <div className="py-2 text-gray-900">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
+                {renderPagesList(
+                  pagesData.filter(
+                    (item) =>
+                      item.visibility.length > 0 && item.title.includes("advisor")
+                  ),
+                  "sections"
+                )}
+              </div>
+              {!loading && (
+                <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
+                  <Button
+                    onClick={handleDone}
+                    type="Primary"
+                    label="Save"
+                    isLoading={isSubmitting}
+                    disabled={isSubmitting}
+                    className="ml-auto"
+                  />
+                </div>
               )}
-            </>
-          )}
-        </div>
-
-        {/* {!loading && (
-          <div className="flex sm:justify-between justify-center items-center w-full space-x-4 mt-12 p-1 md:p-2 lg:p-3 flex-wrap gap-2">
-            <Button
-              onClick={() => {
-                setEditData(null);
-                if (!editData) {
-                  setIsOpenAddPageModal((prev) => !prev);
-                }
-              }}
-              icon={PlusCircle}
-              type="Secondary"
-              label="Add Page"
-            />
-            <Button
-              onClick={handleDone}
-              type="Primary"
-              label="Done"
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-              className="ml-auto"
-            />
-          </div>
-        )} */}
+              <hr className="my-5" />
+            </div>
+            <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 pb-5">
+              <div className=" text-center sm:text-left">
+                <h3 className="text-lg font-medium text-gray-900">Custom Pages</h3>
+                <p className="text-gray-600 text-sm">
+                  Easily create and view custom pages tailored to your needs.
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  setEditData(null);
+                  if (!editData) {
+                    setIsOpenAddPageModal((prev) => !prev);
+                  }
+                }}
+                icon={PlusCircle}
+                type="Primary"
+                label="Add Page"
+              />
+            </div>
+            <div className="py-2 text-gray-900">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 ">
+                {renderPagesList(
+                  pagesData.filter((item) => item.isCustomPage),
+                  "pages"
+                )}
+              </div>
+            </div>
+          </>
+        )}
+    
 
         <AddPageModal
           isOpen={isOpenAddPageModal}

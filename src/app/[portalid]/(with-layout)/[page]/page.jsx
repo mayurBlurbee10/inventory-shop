@@ -13,6 +13,9 @@ import TNCModal from "@/components/TNCModal";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
+import TasksSection from "@/components/Common/TasksSection";
+import MessageSection from "@/components/Common/MessageSection";
+import AdvisorSection from "@/components/Common/AdvisorSection";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -127,6 +130,22 @@ function Page() {
     }
   };
 
+  const filterVisibility = (label) => {
+    if (isLoading) return false;
+    if (!page) return true;
+
+    const section = page?.visibility.find((item) => item.label === label);
+    return section?.visible ?? false;
+  };
+
+  const isAnySideSectionVisible = () => {
+    if (isLoading) return true; 
+    if (!page) return true; 
+    
+    return page?.visibility.some((item) => item.visible);
+  };
+
+
   useEffect(() => {
     const fetchSession = async () => {
       const sessionData = await getSession();
@@ -161,18 +180,33 @@ function Page() {
   const userIsAdmin = isAdmin();
   return (
     <div className="p-4 bg-white text-gray-800 font-lato">
-      <div className="bg-gray-50 flex-1">
-        {page && page?.description ? (
-          <div
-            className="bg-white pt-5 pb-3 px-5 page"
-            dangerouslySetInnerHTML={{
-              __html: page.description,
-            }}
-            suppressHydrationWarning={true}
-          />
-        ) : (
-          <div>No Content Available</div>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
+        <div className={`col-span-5 ${isAnySideSectionVisible() ? "lg:col-span-3" : "lg:col-span-5"}`}>
+          <div className="bg-gray-50 flex-1">
+            {page && page?.description ? (
+              <div
+                className="bg-white pt-5 pb-3 px-5 page"
+                dangerouslySetInnerHTML={{
+                  __html: page.description,
+                }}
+                suppressHydrationWarning={true}
+              />
+            ) : (
+              <div>No Content Available</div>
+            )}
+          </div>
+        </div>
+        <div className="col-span-2">
+          {filterVisibility("My Task Section") && (
+            <TasksSection />
+          )}
+          {filterVisibility("Advisor Section") && (
+            <AdvisorSection />
+          )}
+          {filterVisibility("Messaging") && (
+            <MessageSection />
+          )}
+        </div>
       </div>
     </div>
   );

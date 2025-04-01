@@ -341,6 +341,12 @@ const TasksSection = () => {
         if (!response.ok)
           throw new Error(data.error || "Failed fetch checklists");
         setCheckLists(data?.data);
+        const allCheckListsTasks = data?.data?.flatMap(item => item?.isActive ? item?.tasks : []);
+  
+        // If checklists have tasks, set them; otherwise, fetch independent tasks
+        if (allCheckListsTasks.length > 0) {
+          setTasks(allCheckListsTasks);
+        }
       } catch (error) {
         toast.error(error?.message);
       } finally {
@@ -458,7 +464,7 @@ const TasksSection = () => {
 
             if (!response.ok) throw new Error("Something went wrong!!");
             setIsOpenTaskModal(false);
-            await fetchData();
+            await fetchChecklists();
         } catch (error) {
             console.error("Download error:", error);
         } finally {
@@ -482,45 +488,9 @@ const TasksSection = () => {
         }
     };
 
-    const fetchData = async () => {
-      setIsChecklistLoading(true);
-      setIsTaskLoading(true);
-      try {
-        // Fetch checklists
-        const checklistUrl = `/api/checklists?portalId=${params.portalid}`;
-        const checklistResponse = await fetchWrapper(checklistUrl, {}, "fetch-checklist");
-        const checklistData = await checklistResponse.json();
-        if (!checklistResponse.ok) throw new Error(checklistData.error || "Failed to fetch checklists");
-        setCheckLists(checklistData?.data);
-  
-        // Collect all tasks from checklists
-        const allCheckListsTasks = checklistData?.data?.flatMap(item => item?.isActive ? item?.tasks : []);
-  
-        // If checklists have tasks, set them; otherwise, fetch independent tasks
-        if (allCheckListsTasks.length > 0) {
-          setTasks(allCheckListsTasks);
-        } else {
-          const taskUrl = `/api/tasks?portalId=${params.portalid}&userId=${user?.id}`;
-          const taskResponse = await fetchWrapper(taskUrl, {}, "fetch-tasks");
-          const taskData = await taskResponse.json();
-          if (!taskResponse.ok) throw new Error("Failed to fetch tasks");
-          setTasks(taskData.data);
-        }
-      } catch (error) {
-        toast.error(error?.message || "Something went wrong!");
-      } finally {
-        setIsChecklistLoading(false);
-        setIsTaskLoading(false);
-      }
-    };
-
-    useEffect(() => {
-      fetchData();
-    }, [params.portalid, user?.id]); // Only fetch when portalId or user changes    
-
     useEffect(() => {
       fetchPage();
-      // fetchChecklists();
+      fetchChecklists();
     }, [])
 
     useEffect(() => {
@@ -539,7 +509,7 @@ const TasksSection = () => {
   
     return (
       <div className="relative mt-1">
-        {filterVisibility("My Task Section") && (
+        {/* {filterVisibility("My Task Section") && ( */}
           <>
             <div className={`grid grid-cols-3 mb-2`}>
               <div></div>
@@ -557,7 +527,7 @@ const TasksSection = () => {
               </div>
             </div>
 
-            <div className={`mb-7 ${tasks?.length < 5 ? "" : "overflow-y-auto"} border border-[#dee2e6] max-h-[300px]`}>
+            <div className={`mb-7 ${tasks?.length < 4 ? "" : "overflow-y-auto"} border border-[#dee2e6] max-h-[300px]`}>
               <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
                 <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
                   <tr>
@@ -702,7 +672,7 @@ const TasksSection = () => {
               </table>
             </div>
           </>
-        )}
+        {/* )} */}
         {isMyTaskPopupOpen && (
           <MyTaskPopupBox
             onClose={() => setIsMyTaskPopupOpen(false)}
@@ -714,7 +684,7 @@ const TasksSection = () => {
             isOpen={isOpenTaskModal}
             onClose={() => {setIsOpenTaskModal(false); setSelectedTask(null);}}
             task={selectedTask}
-            fetchTasks={fetchData}
+            fetchTasks={fetchChecklists}
             updateTaskStatus={updateTaskStatus}
             isTaskUpdateLoading={isTaskUpdateLoading}
         />
@@ -732,7 +702,7 @@ const TasksSection = () => {
         {isOpenAddTaskModal && (
             <CreateTaskPopUp
                 onClose={() => setIsOpenAddTaskModal(false)}
-                onTaskCreated={fetchData}
+                onTaskCreated={fetchChecklists}
             />
         )}
       </div>

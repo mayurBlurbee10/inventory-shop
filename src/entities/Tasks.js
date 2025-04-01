@@ -49,7 +49,7 @@ import { CheckLists } from "./CheckLists";
    @JoinColumn({ name: "createdBy" })
    createdBy;
 
-   @ManyToOne(() => CheckLists, (checklist) => checklist.tasks, { nullable: true, onDelete: "SET NULL" }) 
+   @ManyToOne(() => CheckLists, (checklist) => checklist.tasks, { nullable: true, onDelete: "CASCADE" }) 
    @JoinColumn({ name: "checklist" })
    checklist;
- }
+}

@@ -10,7 +10,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
 import { TaskType, UserRole } from "@/config/constants";
 
-const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskUpdated = () => {} }) => {
+const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTaskUpdated = () => {}, allowedCheckLists=[] }) => {
     const isForImport = false;
     const params = useParams();
     const [submitLoading, setSubmitLoading] = useState(false) 
@@ -347,11 +347,22 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
     }, [usersList]);
 
   useEffect(() => {
-    const checklists = checkListData.map((checkList) => ({
-      ...checkList,
-      value: checkList.id,
-      label: `${checkList.name}`,
-    }));
+    let checklists;
+    if(allowedCheckLists.length > 0){
+       checklists = allowedCheckLists.map((checkList) => ({
+        ...checkList,
+        value: checkList.id,
+        label: `${checkList.name}`,
+      }));
+    }else {
+      const activeChecklists = checkListData.filter((checkList) => checkList.isActive);
+
+      checklists = (activeChecklists.length > 0 ? activeChecklists : checkListData).map((checkList) => ({
+        ...checkList,
+        value: checkList.id,
+        label: checkList.name,
+      }));
+    }
 
     setCheckLists(checklists);
   }, [checkListData]);
@@ -367,7 +378,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
             <div className="bg-white rounded-lg w-full max-w-[800px] max-h-[90vh] overflow-y-scroll hidden-scrollbar">
                 <div className="flex justify-between items-center mb-4 border-b py-4 px-6">
-                    <h2 className="text-xl text-gray-800 font-semibold">Create Task</h2>
+                    <h2 className="text-xl text-gray-800 font-semibold">{task ? "Edit" : "Create"} Task</h2>
                     <button
                         className="p-1 hover:bg-gray-100 rounded-full text-black"
                         onClick={onClose}
@@ -517,10 +528,10 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task={}, onTaskU
                         />
                         <Button
                             type="Primary"
-                            label="Submit"
+                            label={task ? "Edit" : "Submit"}
                             onClick={handleCreate}
                             isLoading={submitLoading}
-                            disabled={!formData.type || !formData.userID || !formData.title || !formData.description || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
+                            disabled={!formData.type || !formData.title || !formData.description || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
                         />
                     </div>
                 </form>

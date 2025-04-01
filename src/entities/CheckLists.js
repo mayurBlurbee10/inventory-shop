@@ -2,7 +2,6 @@ import "reflect-metadata";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import BaseTable from "./BaseTable";
 import { Users } from "./Users";
-import { TaskStatus, TaskType } from "@/config/constants";
 import { Tasks } from "./Tasks";
 
 export
@@ -27,6 +26,6 @@ class CheckLists extends BaseTable {
   @Column({ type:"bit", nullable: false, default: 0})
   isActive;
 
-  @OneToMany(() => Tasks, (task) => task.checklist, { cascade: true })
+  @OneToMany(() => Tasks, (task) => task.checklist, { cascade: true, onDelete: "CASCADE" })
   tasks;
 }

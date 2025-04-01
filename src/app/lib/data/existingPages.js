@@ -24,6 +24,25 @@ export const existingPages = [
     ],
   },
   {
+    title: "advisor dashboard",
+    description: "Overview of key metrics and activities.",
+    sections: [
+      { label: "Activity Section", visible: true },
+      { label: "My Task Section", visible: true },
+      { label: "Messaging", visible: true },
+      { label: "Your Clients Section", visible: true}
+    ],
+  },
+  {
+    title: "advisor shared-docs",
+    description: "Store and collaborate on documents.",
+    sections: [
+      { label: "My Task Section", visible: true },
+      { label: "Advisor Section", visible: true },
+      { label: "Messaging", visible: true },
+    ],
+  },
+  {
     title: "loans",
     description: "Track and manage loan details.",
     sections: [],
@@ -34,3 +53,14 @@ export const existingPages = [
     sections: [],
   },
 ];
+
+
+export const customPageSectionTemplate = {
+  title: "",
+  description: "",
+  sections: [
+    { label: "My Task Section", visible: true },
+    { label: "Advisor Section", visible: true },
+    { label: "Messaging", visible: true },
+  ],
+};
