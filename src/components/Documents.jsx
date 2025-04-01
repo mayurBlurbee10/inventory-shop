@@ -1154,7 +1154,7 @@ function Documents({
                 : "lg:col-span-3"
             }`}
           >
-            {fileType !== "loan" && fileType !== "advisor" && (
+            {fileType !== "loan" && (
               <>
                 <div className="flex items-center gap-10">
                   <p className="text-sm font-lato">

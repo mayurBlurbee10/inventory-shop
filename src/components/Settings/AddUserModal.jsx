@@ -12,6 +12,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     title: "",
     companyName: "",
     role: UserRole.USER,
@@ -33,6 +34,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
     setFormData({
       name: "",
       email: "",
+      phone: "",
       title: "",
       companyName: "",
       role: "user",
@@ -122,6 +124,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
       const user = getUserData();
       const userData = {
         email: formData.email,
+        phone: formData.phone,
         name: formData.name,
         title: formData.title,
         companyName: formData.companyName,
@@ -262,6 +265,17 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.email}
               onChange={(e) => handleFormChange("email", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Phone No
+            </label>
+            <input
+              type="text"
+              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+              value={formData.phone}
+              onChange={(e) => handleFormChange("phone", e.target.value)}
             />
           </div>
           <div>

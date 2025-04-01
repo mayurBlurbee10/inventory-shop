@@ -52,7 +52,7 @@ export async function GET(req) {
     const taskId = searchParams.get("id");
 
     if (!!portalId && !!userId) {
-      const tasks = await taskService.getTasksByPortalId(portalId);
+      const tasks = await taskService.getTasks(portalId, userId);
 
       return NextResponse.json({
         message: `tasks retrieved successfully.`,

@@ -96,4 +96,7 @@ export @Entity("users")
       this.password = await bcrypt.hash(this.password, salt);
     }
   }
+
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
+  phoneNo;
 }

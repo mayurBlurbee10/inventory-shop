@@ -34,6 +34,9 @@ import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
 import Tasks from "@/components/Common/Tasks";
+import MessageSection from "@/components/Common/MessageSection";
+import TasksSection from "@/components/Common/TasksSection";
+import AdvisorSection from "@/components/Common/AdvisorSection";
 
 const LoadingSpinner = () => (
   <div className="min-h-[60vh] flex justify-center items-center py-8">
@@ -72,7 +75,8 @@ export default function AdvisorViewSharedDocsPage() {
     const [duplicateFiles, setDuplicateFiles] = useState([]);
     const [isDeleting, setIsDeleting] = useState(false);
     const [activeTab, setActiveTab] = useState('documents');
-
+    const [page, setPage] = useState(null)
+    const [isPageLoading, setIsPageLoading] = useState(false)
     const { data: config } = useSelector((state) => state.portal);
     const { data: loggedInUser } = useSelector((state) => state.user);
     const searchParams = useSearchParams();
@@ -602,10 +606,45 @@ export default function AdvisorViewSharedDocsPage() {
             router.push("login");
         }
     };
+    const fetchPage = async () => {
+        try {
+          setIsPageLoading(true);
+          if (!params?.portalid) return;
+          const page = encodeURIComponent("advisor shared-docs")
+          const response = await fetchWrapper(
+            `/api/pages?portalId=${params.portalid || "default"}&page=${page}`,
+            {},
+            "fetch-page"
+          );
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error("Failed to fetch page");
+          }
+          const pageData = data?.data?.visibility || [];
+          setPage(pageData);
+        } catch (error) {
+          console.log("error: ", error);
+        } finally {
+          setIsPageLoading(false);
+        }
+      };
+    const filterVisibility = (label) => {
+        if (!page || !page.length) return true;     
+        const section = page.find((item) => item.label === label);
+        return section?.visible ?? false; 
+      };
+
+      const LoadingSpinner = () => (
+        <div className="h-screen flex justify-center items-center bg-white">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      );
+      
+    if(!user) return <LoadingSpinner />;
 
     return (
-        <div className="max-w-[1140px] mx-auto px-4 pb-[70px]">
-            <div className="grid grid-cols-1 lg:grid-cols-4 pt-8 gap-7">
+        <div className="max-w-[1820px] mx-auto px-4">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-4 pt-8 gap-7">
 
                 <div className="col-span-1">
                     <h3 className="text-xl font-light font-lato text-black mb-4">Your Clients</h3>
@@ -660,7 +699,48 @@ export default function AdvisorViewSharedDocsPage() {
                     <div className="mt-3">{getActiveContent()}</div>
                     )}
                 </div>
+            </div> */}
+
+            <div className="grid gap-7 grid-cols-5  pt-12">
+                <div className="col-span-3 ">
+                    <Documents fileType={"advisor"} clientFolderId={user ? user?.folderId : loggedInUser?.folderId} key={user ? user.id : loggedInUser.id}/>
+                </div>
+                <div className="col-span-2">
+                    {filterVisibility("My Task Section") && (
+                        <div>
+                            <TasksSection client={user ? user : loggedInUser} key={user ? user.id : loggedInUser.id} />
+                        </div>
+                    )}
+                    {filterVisibility("Advisor Section") && (
+                        <div>
+                            <div className="mb-7">
+                                <AdvisorSection
+                                    title="Your Client"
+                                    userName={user ? user?.name : loggedInUser?.name}
+                                    role={user ? user?.email : loggedInUser?.email}
+                                />
+                            </div>
+                        </div>
+                    )}
+                    {filterVisibility("Messaging") && (
+                        <div>
+                            <MessageSection clientId={user ? user.id : loggedInUser.id} key={user ? user.id : loggedInUser.id} />
+                        </div>
+                    )}
+                </div>
             </div>
+            {/* {isMyTaskPopupOpen && (
+                <MyTaskPopupBox
+                    onClose={() => setIsMyTaskPopupOpen(false)}
+                    content={myTaskPopupBoxContent}
+                    config={config}
+                />
+            )}
+            <CompleteForms
+                onClose={() => setIsCompleteFormPopupOpen(false)}
+                isOpen={isCompleteFormPopupOpen}
+            /> */}
+
         </div>
     );
 }

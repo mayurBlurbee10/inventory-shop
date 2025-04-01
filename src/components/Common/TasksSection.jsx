@@ -273,7 +273,7 @@ const TasksSection = ({ client = null }) => {
     const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
     const [checklists, setCheckLists] = useState([]);
     const [isChecklistLoading, setIsChecklistLoading] = useState(false);
-
+    const [error, setError] = useState(null)
     const [completedTask, setCompletedTask] = useState({
         upload: false,
         completeForm: false,
@@ -473,19 +473,42 @@ const TasksSection = ({ client = null }) => {
     };
 
     const fetchTasks = async () => {
-        try {
-            setIsTaskLoading(true);
-            const url = `/api/tasks?portalId=${params.portalid}&userId=${client?.id}`
-            const response = await fetchWrapper(url, {}, "fetch-tasks");
-            if (!response.ok) throw new Error("Something went wrong!!");
-            const data = await response.json();
-            console.log("User:", data);
-            setTasks(data.data);
-        } catch (error) {
-            console.error("Download error:", error);
-        } finally {
-            setIsTaskLoading(false);
+      try {
+        setIsTaskLoading(true);
+        
+        // Validate required parameters first
+        if (!params.portalid || !client?.id) {
+          throw new Error("Missing required parameters");
         }
+    
+        // Construct URL with encoded parameters
+        const url = new URL(`/api/tasks`, window.location.origin);
+        url.searchParams.append('portalId', params.portalid);
+        url.searchParams.append('userId', client.id);
+    
+        console.log("API URL:", url.toString()); // Debugging
+    
+        const response = await fetchWrapper(url, {}, "fetch-tasks");
+        
+        if (!response.ok) {
+          // Handle 404 specifically
+          if (response.status === 404) {
+            throw new Error(`Resource not found: ${url.pathname}`);
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    
+        const data = await response.json();
+        setTasks(data.data);
+    
+      } catch (error) {
+        console.error("Fetch error:", error);
+        // Add error state handling here
+        setError(error.message);
+        
+      } finally {
+        setIsTaskLoading(false);
+      }
     };
 
     useEffect(() => {
@@ -663,7 +686,7 @@ const TasksSection = ({ client = null }) => {
                         ))
                       ) : (
                         <tr className="text-center">
-                          <td colSpan="5">
+                          <td colSpan="6">
                             <p className="font-lato text-[#212529] text-sm py-4">
                               No Tasks to Show !!!
                             </p>

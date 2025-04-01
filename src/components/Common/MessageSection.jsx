@@ -15,7 +15,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Button from "./Elements/Button";
@@ -787,7 +787,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
   );
 };
 
-const MessageSection = () => {
+const MessageSection = ({clientId}) => {
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -797,12 +797,12 @@ const MessageSection = () => {
   const [isOpenAllMessageSection, setIsOpenAllMessageSection] = useState(false);
   const [sortConfig, setSortConfig] = useState({ key: "createdAt", direction: "asc" });
   const { data: user } = useSelector((state) => state.user);
-
+  const router = useRouter();
   const fetchMessages = async () => {
     try {
       setIsMessagesLoading(true);
       const res = await fetchWrapper(
-        `/api/messages?portalId=${params?.portalid}&senderId=${user?.id}`,
+        `/api/messages?portalId=${params?.portalid}&senderId=${clientId ? clientId : user?.id}`,
         {},
         "fetch-messages"
       );
@@ -871,6 +871,20 @@ const MessageSection = () => {
     }
     return setSelectedMessage(messages.find((msg) => msg.id === message.id));
   };
+
+//   const LoadingSpinner = () => (
+//     <div className="flex justify-center items-center py-8">
+//       <div className="spinner"/>
+//     </div>
+//   );
+  
+//   if(isMessagesLoading){
+//     return <LoadingSpinner/>
+// }
+useEffect(() => {
+  setMessages([])
+}, [router])
+
   return (
     <div className="mt-7 relative text-gray-700">
       {/* Header */}
@@ -935,13 +949,26 @@ const MessageSection = () => {
               </thead>
               <tbody className="overflow-y-auto">
                 {!messages || messages.length === 0 ? (
-                  <tr className="text-center">
-                    <td colSpan="4">
-                      <p className="font-lato text-[#212529] text-sm py-4">
-                        No Messages to Show !!!
-                      </p>
-                    </td>
-                  </tr>
+                  // <tr>
+                  //   <td colSpan={'4'} >
+                  //   {isMessagesLoading ? 
+                  //   <div className="spinner"/> 
+                  //   : <p className="font-lato text-[#212529] text-sm py-4">
+                  //       No Messages to Show !!!
+                  //     </p>}
+                  //   </td>
+                  // </tr>
+                    <tr>
+                      <td colSpan={"6"}>
+                        <div className="min-h-[100px] flex items-center justify-center">
+                          {isMessagesLoading
+                            ? <Loader2 className="text-blue-500 animate-spin" />
+                            : <p className="font-lato text-[#212529] text-sm py-4">
+                              No Messages to Show !!!
+                            </p>}
+                        </div>
+                      </td>
+                    </tr>
                 ) : (
                   sortedMessages.slice(-5).reverse().map((row, index) => (
                     <tr

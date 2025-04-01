@@ -10,7 +10,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const LoadingSpinner = () => (
-  <div className="min-h-[60vh] flex justify-center items-center py-8">
+  <div className="flex justify-center items-center py-8">
     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
   </div>
 );
@@ -68,13 +68,13 @@ function Tasks({ user }) {
                         icon={PlusCircle}
                     />
                 </div>
-                <div className="flex flex-col h-[500px] overflow-y-auto custom-scrollbar">   
+                <div className="flex flex-col max-h-[300px] overflow-y-auto custom-scrollbar border border-[#dee2e6]">   
                 {!tasks?.length ? (
                     <p className="text-gray-500 text-center">
                         No tasks available !!
                    </p>
                 ) : (
-                    <table className="border border-[#dee2e6] text-sm font-lato">
+                    <table className="text-sm font-lato">
                         <thead>
                             <tr>
                                 <th className="p-5 w-1"></th>
@@ -86,7 +86,7 @@ function Tasks({ user }) {
                         </thead>
                         <tbody>
                             {tasks?.length && tasks.map((task)=>(
-                                 <tr key={task?.id} className="border border-[#dee2e6] text-center">
+                                 <tr key={task?.id} className="border-t border-[#dee2e6] text-center">
                                     <td className="ps-3 py-4">
                                         <div className={`h-3 w-3 rounded-full  pulse-animation ${task?.status === TaskStatus.PENDING ? "bg-[#ffc107]" : "bg-[#1ec0cb]"}`}></div>
                                     </td>

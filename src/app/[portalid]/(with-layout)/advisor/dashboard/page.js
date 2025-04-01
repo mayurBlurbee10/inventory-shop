@@ -214,11 +214,11 @@ export default function AdvisorViewDashboard() {
                                                                 {user?.name}
                                                             </Link>
                                                         </td>
-                                                        <td className="p4 border-b text-sm">
+                                                        <td className="p-4 border-b text-sm">
                                                            {user?.email}
                                                         </td>
                                                         <td className="p-4 border-b text-sm">
-                                                            {`+1-${Math.floor(1000000000 + Math.random() * 9000000000)}`}
+                                                            {user?.phoneNo}
                                                         </td>
                                                     </tr>
                                                 ))}

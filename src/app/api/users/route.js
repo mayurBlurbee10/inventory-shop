@@ -209,6 +209,7 @@ export async function POST(request) {
     let newUser = {
       // id: Date.now().toString(),
       email: userData.email,
+      phoneNo: userData.phone,
       name: userData.name || userData.email.split("@")[0],
       password: userData.password, // Default password as requested
       extra: process.env.NODE_ENV === "development" ? userData.password : null, // Default password as requested
