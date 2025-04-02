@@ -389,7 +389,7 @@ const ContentManagementContent = ({
          ...config,
          primaryColor: colors.primaryColor,
          secondaryColor: colors.secondaryColor,
-        //  accentColor: colors.accentColor,
+         accentColor: colors.accentColor,
        };
 
        const response = await fetchWrapper(
@@ -500,7 +500,7 @@ const ContentManagementContent = ({
         </div>
         <div className="pt-6 p-1 md:p-2 lg:p-3">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Header Links
@@ -525,9 +525,9 @@ const ContentManagementContent = ({
                   className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
                 />
               </div>
-              {/* <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Accent Color
+                  Header Background
                 </label>
                 <input
                   type="color"
@@ -536,7 +536,7 @@ const ContentManagementContent = ({
                   onChange={handleChange}
                   className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
                 />
-              </div> */}
+              </div>
             </div>
           </div>
         </div>

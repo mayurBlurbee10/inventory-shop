@@ -193,9 +193,9 @@ function Navbar({ content, config, filterValue }) {
   }, []);
 
   return (
-    <div className="border-b border-[#0000001a] relative">
+    <div className="border-b border-[#0000001a] relative" style={{ backgroundColor: config?.accentColor}}>
       <div className="w-full mx-auto px-2">
-        <nav className="flex justify-between bg-secondary">
+        <nav className="flex justify-between">
           <div className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2">
             {logo ? (
               <img

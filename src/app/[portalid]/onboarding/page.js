@@ -435,9 +435,20 @@ export default function OnBoardingPage() {
 
       {/* Preview Page */}
       <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-hidden bg-background  flex flex-col justify-between">
-        <div className="max-w-[1140px] w-full pt-[70px] mx-auto">
-          <nav className="flex flex-wrap gap-2 justify-between items-center bg-secondary py-2 sm:px-[14px]">
-            <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+        <div>
+          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border h-[70px]" style={{ backgroundColor: config?.accentColor}}>
+          {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+            <img
+              // src="/default_logo_purple.png"
+              src={config?.logo || "/logo.png"}
+              alt="Wealthportal"
+              className="h-[52px] mr-2"
+            />
+            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
+              {filterValue("Header Text")}
+            </span>
+          </a> */}
+          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
                 <div
                   className="absolute top-0 right-0 p-1 cursor-pointer"
@@ -471,23 +482,24 @@ export default function OnBoardingPage() {
                 </span>
               </span>
             </a>
-            {/* <div className="hidden lg:flex items-center justify-center gap-x-6">
-              <div className="flex items-center transition-transform transform hover:scale-105 ">
-                <User className="w-5 h-5 text-gray-500 pb-[2px]" />
-                <NavBarItem title="Individual" />
-              </div>
-              <div className="flex items-center transition-transform transform hover:scale-105 ">
-                <Building className="w-5 h-5 text-gray-500 pb-[2px]" />
-                <NavBarItem title="Business" />
-              </div>
-              <div className="flex items-center transition-transform transform hover:scale-105 ">
-                <NavBarItem title="About Us" />
-              </div>
-              <div className="flex items-center transition-transform transform hover:scale-105 ">
-                <NavBarItem title="Contact" />
-              </div>
+
+          {/* <div className="hidden md:flex items-center gap-x-6">
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <User className="w-5 h-5 text-gray-500 pb-[2px]" />
+              <NavBarItem title="Individual" />
             </div>
-            <button className="lg:hidden text-text">
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <Building className="w-5 h-5 text-gray-500 pb-[2px]" />
+              <NavBarItem title="Business" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <NavBarItem title="About Us" />
+            </div>
+            <div className="flex items-center transition-transform transform hover:scale-105 ">
+              <NavBarItem title="Contact" />
+            </div>
+
+            <button className="md:hidden text-text">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -501,10 +513,11 @@ export default function OnBoardingPage() {
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-            </button> */}
-          </nav>
-
-          <div className="flex-1 flex flex-col xl:flex-row  pt-12">
+            </button>
+          </div> */}
+        </nav>
+        <div className="max-w-[1140px] w-full mx-auto mt-10">
+          <div className="flex-1 flex flex-col xl:flex-row pt-12">
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
               <div className="px-[15px]">
                 <h2 className="text-[56px] font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2">
@@ -730,7 +743,7 @@ export default function OnBoardingPage() {
             </div>
           </div>
         </div>
-
+        </div>
         <div className="w-full ">
           <Footer
             config={config}

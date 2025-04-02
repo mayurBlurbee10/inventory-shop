@@ -33,6 +33,7 @@ const CustomizationContent = () => {
   const [colors, setColors] = useState({
     primaryColor: config.primaryColor,
     secondaryColor: config.secondaryColor,
+    accentColor: config.accentColor,
   });
 
   const clearStoreData = () => {

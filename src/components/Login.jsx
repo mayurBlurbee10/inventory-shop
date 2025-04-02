@@ -328,8 +328,8 @@ function Login() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
-      <div className="max-w-[1140px] w-full pt-[70px] mx-auto">
-        <nav className="flex justify-between items-center bg-secondary py-2 px-[14px]">
+      <div>
+      <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.accentColor}}>
           {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
               // src="/default_logo_purple.png"
@@ -341,7 +341,7 @@ function Login() {
               {filterValue("Header Text")}
             </span>
           </a> */}
-          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+          <a className="flex items-center py-1 gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             {user?.company?.logo || config?.logo ? (
               <img
                 src={config?.logo || "/logo.png"}
@@ -353,25 +353,26 @@ function Login() {
               <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
             )}
 
-            <span
-              className="text-3xl text-[#000000e6] mb-1 font-lato"
-              style={{
-                fontSize:
-                  content.portalContent.find((item) => item.title === "Header Text")?.fontSize || '30px',
-              }}
-            >
-              {filterValue("Header Text") && filterValue("Header Text") !== "Premier Customer Portal" ? (
-                filterValue("Header Text")
-              ) : params?.portalid ? (
-                params.portalid
-              ) : (
-                <div className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded" />
-              )}
-            </span>
-
-
-
-
+          <span
+            className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
+            style={{
+              fontSize:
+                content?.portalContent?.find((item) => item.title === "Header Text")
+                  ?.fontSize || "30px",
+              lineHeight: "1.2",
+              paddingBottom: "2px",
+              paddingInline: "2px"
+            }}
+          >
+            {content?.portalContent === undefined ? (
+              <span className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded block"></span>
+            ) : filterValue("Header Text") &&
+              filterValue("Header Text") !== "Premier Customer Portal" ? (
+              filterValue("Header Text")
+            ) : (
+              params?.portalid
+            )}
+          </span>
           </a>
 
           {/* <div className="hidden md:flex items-center gap-x-6">
@@ -407,7 +408,7 @@ function Login() {
             </button>
           </div> */}
         </nav>
-
+      <div className="max-w-[1140px] w-full mx-auto mt-10">
         <div className="flex-1 flex flex-col md:flex-row pt-12">
           <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
@@ -690,6 +691,7 @@ function Login() {
             </div>
           </div>
         </div>
+      </div>
       </div>
       <div>
         <Footer config={config} filterValue={filterValue} />
