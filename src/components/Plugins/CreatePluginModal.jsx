@@ -182,7 +182,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
             <div className="flex -items-center justify-between border-b border-solid">
               <label className="text-xl font-semibold text-gray-700 mb-3">
-                {plugin?.type.charAt(0).toUpperCase() + plugin?.type.slice(1)}
+                {plugin?.type === PluginType.TNC ? plugin?.type.toUpperCase() : plugin?.type.charAt(0).toUpperCase() + plugin?.type.slice(1)}
               </label>
               <button
                 onClick={handleModalClose}

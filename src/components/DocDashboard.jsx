@@ -52,11 +52,7 @@ export default function DocDashboard() {
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
-  const [dayAndDate, setDayAndDate] = useState({
-    day: "",
-    date: "",
-    month: "",
-  });
+  const [dayAndDate, setDayAndDate] = useState("");
   const [page, setPage] = useState(null);
   const [isPageLoading, setIsPageLoading] = useState(false)
   
@@ -230,35 +226,23 @@ export default function DocDashboard() {
   };
   
   useEffect(() => {
-    const date = new Date();
-    const dayIndex = date.getDay();
-    const monthIndex = date.getMonth();
-    const days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    setDayAndDate((prev) => ({ ...prev, day: days[dayIndex] }));
-    setDayAndDate((prev) => ({ ...prev, month: months[monthIndex] }));
-    setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
+    const getOrdinalSuffix = (day) => {
+      if (day > 3 && day < 21) return "th"; // Covers 11th, 12th, 13th
+      switch (day % 10) {
+        case 1: return "st";
+        case 2: return "nd";
+        case 3: return "rd";
+        default: return "th";
+      }
+    };
+    
+    const today = new Date();
+    const day = today.getDate();
+    const weekday = today.toLocaleDateString("en-US", { weekday: "long" }); // Wednesday
+    const month = today.toLocaleDateString("en-US", { month: "long" }); // April
+    
+    const formattedDate = `${weekday}, ${month} ${day}${getOrdinalSuffix(day)}`;
+    setDayAndDate(formattedDate);
   }, []);
   const LoadingSpinner = () => (
     <div className="min-h-[84vh] flex justify-center items-center py-8">
@@ -283,17 +267,7 @@ export default function DocDashboard() {
                 <div>
                   <h2 className="text-xl font-light text-black font-lato">
                     {/* Hello, David West! Today is Wednesday, January 15th. */}
-                    {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${
-                      dayAndDate.month
-                    } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${
-                      dayAndDate.date === 2 ? "nd" : ""
-                    }${dayAndDate.date === 3 ? "rd" : ""}${
-                      dayAndDate.date !== 1 &&
-                      dayAndDate.date !== 2 &&
-                      dayAndDate.date !== 3
-                        ? "th"
-                        : ""
-                    }`}
+                    {`Hello, ${user?.name}! Today is ${dayAndDate}`}
                   </h2>
                 </div>
               )}

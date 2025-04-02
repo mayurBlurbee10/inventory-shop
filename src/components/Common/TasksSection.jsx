@@ -215,7 +215,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
             <div className="mt-6 flex justify-end space-x-4">
               <Button onClick={handleClose} type="Secondary" label="Close" />
   
-              {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && (
+              {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && task?.user?.id === user?.id && (
                 <Button
                   onClick={() => router.push("esignature")}
                   type="Primary"

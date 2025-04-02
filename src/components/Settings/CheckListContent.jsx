@@ -99,13 +99,6 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
             />
             <div className="flex items-center justify-end pt-4 gap-2">
               <Button
-                disabled={isLoading || !checkListName?.trim()}
-                onClick={handleCreateCheckList}
-                label={checklist ? "Edit" : "Create"}
-                type="Primary"
-                isLoading={isLoading}
-              />
-              <Button
                 onClick={() => {
                   onClose();
                   setCheckListName("");
@@ -114,6 +107,14 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
                 type="Secondary"
                 label="Cancel"
               />
+              <Button
+                disabled={isLoading || !checkListName?.trim()}
+                onClick={handleCreateCheckList}
+                label={checklist ? "Edit" : "Add"}
+                type="Primary"
+                isLoading={isLoading}
+              />
+              
             </div>
           </div>
         </Dialog.Panel>
