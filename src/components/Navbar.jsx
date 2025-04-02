@@ -94,7 +94,13 @@ function Navbar({ content, config, filterValue }) {
 
     return (
       <Link href={href} passHref>
-        <div className="relative flex flex-col items-center mx-2">
+        <div
+          className={`relative mx-2 h-full flex items-center border-b-2 transition-all justify-center`}
+          style={{
+            borderBottomColor: pathname.includes(href) ? config?.primaryColor : "transparent",
+            borderBottomWidth: pathname.includes(href) ? "3px" : "",
+          }}
+        >
           <button
             className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
               pathname.includes(href) ? "font-bold" : "text-black"
@@ -104,14 +110,14 @@ function Navbar({ content, config, filterValue }) {
             {title}
           </button>
           {/* Line Below Button */}
-          <div
+          {/* <div
             className={`h-1 w-full absolute left-0 transition-all duration-300 ${isOpenNavbar ? " -bottom-1" : "-bottom-6 "} ${
               pathname.includes(href) ? "opacity-100" : "opacity-0"
             }`}
             style={{
               backgroundColor: pathname.includes(href) ? config?.primaryColor : "transparent",
             }}
-          ></div>
+          ></div> */}
         </div>
       </Link>
     );
@@ -188,9 +194,9 @@ function Navbar({ content, config, filterValue }) {
 
   return (
     <div className="border-b border-[#0000001a] relative">
-      <div className="w-full mx-auto px-3">
-        <nav className="flex justify-between items-center bg-secondary py-2">
-          <div className="flex items-center py-1 pr-[18px] hover:scale-105 transition-all ease-in-out duration-300">
+      <div className="w-full mx-auto px-2">
+        <nav className="flex justify-between bg-secondary">
+          <div className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2">
             {logo ? (
               <img
                 src={logo.replace("/api/upload", "/uploads")}
@@ -202,11 +208,14 @@ function Navbar({ content, config, filterValue }) {
             )}
 
             <span
-              className="text-3xl text-[#000000e6] mb-1 font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
+              className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
               style={{
                 fontSize:
                   content?.portalContent?.find((item) => item.title === "Header Text")
                     ?.fontSize || "30px",
+                lineHeight: "1.2", 
+                paddingBottom: "2px",
+                paddingInline:"2px" 
               }}
             >
               {content?.portalContent === undefined ? ( 
@@ -221,7 +230,7 @@ function Navbar({ content, config, filterValue }) {
 
           </div>
 
-          <div className="hidden lg:flex items-center">
+          <div className="hidden lg:flex">
             {isAdvisorViewOpen ? (
               <>
                 <NavBarItem

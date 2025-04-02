@@ -82,14 +82,14 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
       <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-6">
-          <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-lg bg-white p-8 shadow-lg border border-gray-300">
+          <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-lg bg-white shadow-lg border border-gray-300 max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="flex justify-between items-center mb-5 border-b pb-3 border-gray-200">
-              <Dialog.Title className="text-2xl text-gray-700 font-semibold font-lato">
+            <div className="flex justify-between items-center mb-5 border-b p-5 border-gray-200">
+              <Dialog.Title className="text-2xl text-gray-700 font-semibold font-lato ">
                 📝 Task Details
               </Dialog.Title>
               <div className="relative" ref={menuRef}>
-                {user && user?.role === UserRole?.MODERATOR && (
+                {user && user?.id === task?.createdBy?.id && (
                   <button
                     onClick={() => setShowMenu(!showMenu)}
                     className="text-gray-500 hover:text-gray-700 transition"
@@ -130,7 +130,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                 )}
               </div>
             </div>
-            <div>
+            <div className='px-8 max-h-[80vh]'>
               <div>
                 <h3 className='text-gray-800 text-sm font-semibold'>Receiver :</h3>
                 <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
@@ -171,7 +171,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
               </div>
             </div>
             {/* Task Content */}
-            <div className="space-y-5 font-lato text-gray-800">
+            <div className="space-y-5 font-lato text-gray-800 px-8">
               {/* Title */}
               <h3 className="text-xl font-semibold">{task?.title || "Untitled Task"}</h3>
   
@@ -212,7 +212,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
             </div>
   
             {/* Actions */}
-            <div className="mt-6 flex justify-end space-x-4">
+            <div className="mt-6 flex justify-end space-x-4 px-8 pb-4">
               <Button onClick={handleClose} type="Secondary" label="Close" />
   
               {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && task?.user?.id === user?.id && (
@@ -533,6 +533,11 @@ const TasksSection = ({ client = null }) => {
     const modelClose = () => {
         setCreateTask(false);
     }
+  console.log("tasks: ", tasks);
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US");
+  };
   
     return (
       <div className="relative mt-1">
@@ -554,7 +559,7 @@ const TasksSection = ({ client = null }) => {
               </div>
             </div>
 
-            <div className={`mb-7 ${tasks?.length < 4 ? "" : "overflow-y-auto"} border border-[#dee2e6] max-h-[300px]`}>
+            <div className={`mb-7 border border-[#dee2e6] max-h-[300px]`}>
               <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
                 <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
                   <tr>
@@ -563,7 +568,7 @@ const TasksSection = ({ client = null }) => {
                     <th className="text-start px-3 py-4">Status</th>
                     <th className="text-start px-3 py-4">From</th>
                     <th className="text-start px-3 py-4">To</th>
-                    <th className="text-start px-3 py-4">Actions</th>
+                    <th className="text-start px-3 py-4">Due Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200" ref={actionDropdownRef}>
@@ -579,7 +584,15 @@ const TasksSection = ({ client = null }) => {
                     <>
                       {tasks?.length > 0 ? (
                         tasks?.map((task) => (
-                          <tr key={task?.id}>
+                          <tr key={task?.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsOpenTaskModal(true);
+                              setIsActionDropdownOpen(false);
+                              setSelectedTask(task)
+                            }}
+                            className='hover:bg-gray-100 cursor-pointer'
+                          >
                             <td className="ps-3 py-4">
                               <div
                                 className={`h-3 w-3 rounded-full  pulse-animation ${
@@ -597,7 +610,8 @@ const TasksSection = ({ client = null }) => {
                             <td className="px-3 py-4">
                               <p
                                 className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer`}
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation()
                                   if (task?.status === TaskStatus.COMPLETED) {
                                     return;
                                   }
@@ -645,18 +659,18 @@ const TasksSection = ({ client = null }) => {
                                   {task?.user?.name}
                               </p>
                             </td>
-                            <td className="relative px-3 py-4 cursor-pointer">
-                              <div onClick={() => {
+                            <td className="relative px-3 py-4 cursor-pointer text-gray-800 text-sm">
+                              {formatDate(task?.dueDate)}
+                              {/* <div onClick={() => {
                                 setIsActionDropdownOpen((prev) => (selectedTask?.id === task?.id ? !prev : true));
                                 setSelectedTask(task);
                                 }} className="p-2 rounded">
                                 <Ellipsis className="w-5 h-5 text-gray-600" />
-                              </div>
+                              </div> */}
 
                               {/* Dropdown Menu */}
-                              {isActionDropdownOpen && selectedTask?.id === task?.id && (
+                              {/* {isActionDropdownOpen && selectedTask?.id === task?.id && (
                                 <div className="absolute right-10 top-10 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50 text-sm">
-                                  {/* View Details */}
                                   <div
                                     onClick={(e) => {
                                       e.stopPropagation(); 
@@ -680,7 +694,7 @@ const TasksSection = ({ client = null }) => {
                                       </div>
                                     )}
                                 </div>
-                              )}
+                              )} */}
                             </td>
                           </tr>
                         ))

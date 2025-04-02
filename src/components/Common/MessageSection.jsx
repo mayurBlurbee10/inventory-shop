@@ -894,11 +894,11 @@ useEffect(() => {
           Messaging
         </h3>
         <Button
-          label={"New Message"}
+          label={"New"}
           icon={Plus}
           onClick={() => setIsOpenNewMessageModal((prev) => !prev)}
           type={"Secondary"}
-          className="mb-2 w-40 ml-auto"
+          className="mb-2 w-24 h-10 ml-auto"
         />
       </div>
 
@@ -989,7 +989,7 @@ useEffect(() => {
                         {row?.subject || "No Subject"}
                       </td>
                       <td className="p-4 whitespace-nowrap">
-                        {row?.sender?.id === user?.id ? "Send" :  "Received"}
+                        {row?.sender?.id === user?.id ? "Sent" :  "Received"}
                       </td>
                     </tr>
                   ))

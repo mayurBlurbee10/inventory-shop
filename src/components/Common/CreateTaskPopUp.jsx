@@ -30,7 +30,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
       dueDate: task?.dueDate
       ? new Date(task?.dueDate).toISOString().split("T")[0]
       : "",
-      type: task?.type || TaskType.SIGN,
+      type: task?.type || TaskType.GENERAL,
       checkList : ""
     });
     const [checkLists, setCheckLists] = useState([]);
@@ -376,7 +376,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
   
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
-            <div className="bg-white rounded-lg w-full max-w-[800px] max-h-[90vh] overflow-y-scroll hidden-scrollbar">
+            <div className="bg-white rounded-lg w-full max-w-[800px] ">
                 <div className="flex justify-between items-center mb-4 border-b py-4 px-6">
                     <h2 className="text-xl text-gray-800 font-semibold">{task ? "Edit" : "Create"} Task</h2>
                     <button
@@ -387,12 +387,18 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
                     </button>
                 </div>
 
-                  <form className="space-y-4 p-6">
+                  <form className="space-y-4 px-6 pb-6 max-h-[80vh] overflow-y-scroll hidden-scrollbar">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
                            Please select Task Type
                         </label>
                         <div className="flex gap-3 mt-1 pl-2 ">
+                            <div
+                                className={`border py-2 px-3 flex items-center justify-center gap-3 rounded-lg cursor-pointer hover:border-[#0061D5] ${formData.type === TaskType.GENERAL ? "text-[#0061D5] border-[#0061D5]": "text-black"}`}
+                                onClick={() => setFormData((prev)=>({...prev, type : TaskType.GENERAL}))}
+                            >
+                                General
+                            </div>
                             <div
                                 className={`border py-2 px-3 flex items-center justify-center gap-3 rounded-lg cursor-pointer hover:border-[#0061D5] ${formData.type === TaskType.SIGN ? "text-[#0061D5] border-[#0061D5]": "text-black"}`}
                                 onClick={() => setFormData((prev)=>({...prev, type : TaskType.SIGN}))}
@@ -404,12 +410,6 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
                                 onClick={() => setFormData((prev)=>({...prev, type : TaskType.UPLOAD}))}
                             >
                                 Upload
-                            </div>
-                            <div
-                                className={`border py-2 px-3 flex items-center justify-center gap-3 rounded-lg cursor-pointer hover:border-[#0061D5] ${formData.type === TaskType.GENERAL ? "text-[#0061D5] border-[#0061D5]": "text-black"}`}
-                                onClick={() => setFormData((prev)=>({...prev, type : TaskType.GENERAL}))}
-                            >
-                                General
                             </div>
                         </div>
                     </div>
