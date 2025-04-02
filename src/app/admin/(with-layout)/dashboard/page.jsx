@@ -367,7 +367,7 @@ const AdminDashboardPage = () => {
         theme: formData.theme || "minimal",
         primaryColor: formData.primaryColor || "#000000",
         secondaryColor: formData.secondaryColor || "#4F46E5",
-        accentColor: formData.accentColor || "#000000",
+        accentColor: formData.accentColor || "#ffffff",
         faviconUrl: formData.faviconUrl || "",
         security: {
           mfa: formData.security?.mfa || true,

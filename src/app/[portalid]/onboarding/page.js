@@ -302,6 +302,7 @@ export default function OnBoardingPage() {
         type: content.type,
         title: contentTitle,
         fontSize: fontSize?.size,
+        value: ""
       });
       setIsDialogOpen(true);
     } else {

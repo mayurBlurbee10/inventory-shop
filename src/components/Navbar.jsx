@@ -31,6 +31,7 @@ import { setPortal } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
 import { UserRole } from "@/config/constants";
 import { setPages as setReduxPages } from "@/store/services/pageService";
+import { logoSizeRatio } from "@/app/lib/data/font_size";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -192,17 +193,42 @@ function Navbar({ content, config, filterValue }) {
     fetchPages();
   }, []);
 
+  const LogoImage = () => {
+      const baseSize = 100; // Set a reasonable base size (in pixels)
+  
+      const logoSize =
+        (content?.portalContent?.find((item) => item.title === "Logo")?.fontSize &&
+          logoSizeRatio[
+            content?.portalContent?.find((item) => item.title === "Logo")?.fontSize
+          ]) ||
+        logoSizeRatio.medium;
+      return (
+        <div className="block min-w-16" >
+          <img
+            src={logo.replace("/api/upload", "/uploads")}
+            alt={params.portalid}
+            className="mr-2"
+            style={{
+              height: `${baseSize * logoSize}px`,
+              width: `${baseSize * logoSize}px`,
+            }}
+          />
+        </div>
+      );
+    };
+
   return (
     <div className="border-b border-[#0000001a] relative" style={{ backgroundColor: config?.accentColor}}>
       <div className="w-full mx-auto px-2">
         <nav className="flex justify-between">
           <div className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2">
             {logo ? (
-              <img
-                src={logo.replace("/api/upload", "/uploads")}
-                alt={params.portalid}
-                className="mr-2 max-h-[60px] max-w-[150px]"
-              />
+              // <img
+              //   src={logo.replace("/api/upload", "/uploads")}
+              //   alt={params.portalid}
+              //   className="mr-2 max-h-[60px] max-w-[150px]"
+              // />
+              <LogoImage />
             ) : (
               <div className="h-[60px] w-[150px] mr-2 bg-gray-300 animate-pulse rounded" />
             )}

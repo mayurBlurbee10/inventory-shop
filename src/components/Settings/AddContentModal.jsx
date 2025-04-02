@@ -581,7 +581,7 @@ const AddContentModal = ({
             <Button
               buttonType="submit"
               type="Primary"
-              disabled={isSubmitting || (newContent?.type !== "Image"  && !newContent.value.trim()) || (newContent?.type !== "Links"  && !newContent.value.length)}
+              disabled={isSubmitting || (newContent?.type !== "Image"  && !newContent.value.trim()) || (newContent?.type !== "Links" && !newContent.value.length)}
               label={isEditMode ? "Update" : "Add"}
               isLoading={isSubmitting}
             />
