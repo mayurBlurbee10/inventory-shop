@@ -450,6 +450,7 @@ const AdminDashboardPage = () => {
           portalId: sanitizeName(formData.legalName),
           role: UserRole.ADMIN,
         },
+        phone: formData.phoneNumber
       };
 
       const UserResponse = await fetchWrapper(
@@ -468,6 +469,61 @@ const AdminDashboardPage = () => {
 
       newSubsidiary.portalCreatedAdmin = data?.id
 
+      // Create end user for portal.
+      const boxEndUserResponse = await fetchWrapper(
+        "/api/box/create-user",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userName: `user_${formData.adminEmail}`,
+            externalId: `user_${Date.now()}`,
+          }),
+        },
+        "create-user-box"
+      );
+      
+      const boxEndUserData = await boxEndUserResponse.json();
+
+      if (!boxEndUserResponse.ok) {
+        throw new Error(boxEndUserData.error || "Failed to create Box end user");
+      }
+
+      const endUser = {
+        email: `user_${formData.adminEmail}`,
+        name: `${sanitizeName(formData.legalName)} user`,
+        title: formData.jobTitle,
+        companyName: formData.legalName,
+        role: UserRole.USER,
+        password: "000",
+        logo: null,
+        boxUserId: boxEndUserData.user.userId,
+        folderId: boxEndUserData.user.folderId,
+        portal: sanitizeName(formData.legalName) || "",
+        isOnboardingRequired: false,
+        createdBy: user.id,
+        permissions: {
+          portalId: sanitizeName(formData.legalName),
+          role: UserRole.USER,
+        },
+        phone: formData.phoneNumber
+      }
+
+      const endUserResponse = await fetchWrapper(
+        "/api/users",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(endUser),
+        },
+        "save-user"
+      );
+      const endUserData = await endUserResponse.json();
+      if (!endUserResponse.ok) {
+        throw new Error(endUserData.error || "Failed to create end user data");
+      }
+
+      // Create portal
       const saveResponse = await fetchWrapper(
         "/api/portal",
         {

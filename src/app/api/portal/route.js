@@ -74,7 +74,7 @@ export async function POST(req) {
         { status: 404 }
       );
     }
-    const user = userService.getUserById(portal?.portalCreatedAdmin);
+    const user = await userService.getUserById(portal?.portalCreatedAdmin);
     const token = user?.resetPasswordToken
       ? user.resetPasswordToken
       : await generateNanoToken();
