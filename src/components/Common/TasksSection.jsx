@@ -6,7 +6,7 @@ import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType, UserRole } from '@/config/constants';
 import { Dialog } from '@headlessui/react';
-import { Calendar, Check, CheckCircle, Edit, Ellipsis, FileText, Loader2, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
+import { Calendar, Check, CheckCircle, ChevronDown, ChevronUp, Edit, Ellipsis, FileText, Loader2, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
@@ -274,6 +274,8 @@ const TasksSection = ({ client = null }) => {
     const [checklists, setCheckLists] = useState([]);
     const [isChecklistLoading, setIsChecklistLoading] = useState(false);
     const [error, setError] = useState(null)
+    const [sortedTasksList, setSortedTasksList] = useState([])
+    const [sortConfig, setSortConfig] = useState({ key: "createdAt", direction: "asc" });
     const [completedTask, setCompletedTask] = useState({
         upload: false,
         completeForm: false,
@@ -538,6 +540,33 @@ const TasksSection = ({ client = null }) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString("en-US");
   };
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      setSortedTasksList(tasks)
+    }
+  }, [tasks])
+  
+  const sortTaskAscending = () => {
+    const sortedTasks = [...tasks].sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    setSortedTasksList(sortedTasks);
+  };
+  
+  const sortTaskDescending = () => {
+    const sortedTasks = [...tasks].sort((a, b) => (b.title || "").localeCompare(a.title || ""));
+    setSortedTasksList(sortedTasks);
+  };
+
+const sortDueDateAscending = () => {
+  const sortedTasks = [...tasks].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  setSortedTasksList(sortedTasks);
+};
+
+const sortDueDateDescending = () => {
+  const sortedTasks = [...tasks].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  setSortedTasksList(sortedTasks);
+};
+
   
     return (
       <div className="relative mt-1">
@@ -561,16 +590,36 @@ const TasksSection = ({ client = null }) => {
 
             <div className={`mb-7 border border-[#dee2e6] max-h-[300px]`}>
               <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
-                <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
-                  <tr>
-                    <th></th>
-                    <th className="text-start px-3 py-4">Task</th>
-                    <th className="text-start px-3 py-4">Status</th>
-                    <th className="text-start px-3 py-4">From</th>
-                    <th className="text-start px-3 py-4">To</th>
-                    <th className="text-start px-3 py-4">Due Date</th>
-                  </tr>
-                </thead>
+              <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
+                <tr>
+                  <th></th>
+                  <th className="text-start px-3 py-4">
+                    <div className="flex items-center gap-2">
+                      <span>Task</span>
+                      <button onClick={sortTaskAscending}>
+                        <ChevronUp className="h-4 w-4 text-gray-400 hover:text-black" />
+                      </button>
+                      <button onClick={sortTaskDescending}>
+                        <ChevronDown className="h-4 w-4 text-gray-400 hover:text-black" />
+                      </button>
+                    </div>
+                  </th>
+                  <th className="text-start px-3 py-4">Status</th>
+                  <th className="text-start px-3 py-4">From</th>
+                  <th className="text-start px-3 py-4">To</th>
+                  <th className="p-4 text-left font-semibold">
+                    <div className="flex items-center gap-2">
+                      <span>Due Date</span>
+                      <button onClick={sortDueDateAscending}>
+                        <ChevronUp className="h-4 w-4 text-gray-400 hover:text-black" />
+                      </button>
+                      <button onClick={sortDueDateDescending}>
+                        <ChevronDown className="h-4 w-4 text-gray-400 hover:text-black" />
+                      </button>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
                 <tbody className="divide-y divide-gray-200" ref={actionDropdownRef}>
                   {isChecklistLoading ? (
                     <tr>
@@ -582,8 +631,8 @@ const TasksSection = ({ client = null }) => {
                     </tr>
                   ) : (
                     <>
-                      {tasks?.length > 0 ? (
-                        tasks?.map((task) => (
+                      {sortedTasksList?.length > 0 ? (
+                        sortedTasksList?.map((task) => (
                           <tr key={task?.id}
                             onClick={(e) => {
                               e.stopPropagation();
