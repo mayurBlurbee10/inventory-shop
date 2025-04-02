@@ -31,7 +31,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
       ? new Date(task?.dueDate).toISOString().split("T")[0]
       : "",
       type: task?.type || TaskType.GENERAL,
-      checkList : ""
+      checkList : null
     });
     const [checkLists, setCheckLists] = useState([]);
     const [checkListData, setCheckListData] = useState([]);
@@ -531,7 +531,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
                             label={task ? "Edit" : "Submit"}
                             onClick={handleCreate}
                             isLoading={submitLoading}
-                            disabled={!formData.type || !formData.title || !formData.description || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
+                            disabled={!formData.type || !formData.title || !formData.description || !formData.checkList || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
                         />
                     </div>
                 </form>

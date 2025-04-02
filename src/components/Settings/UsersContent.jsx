@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Import, Plus, PlusCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, Import, Plus, PlusCircle } from "lucide-react";
 import AddUserModal from "./AddUserModal";
 import FileViewerModal from "./FileViewerModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -22,6 +22,7 @@ const UsersContent = () => {
   const [onDeleteUser, setOnDeleteUser] = useState(false);
   const fileInputRef = useRef(null);
   const params = useParams();
+  const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
 
   const fetchUsers = async () => {
     try {
@@ -125,6 +126,29 @@ const UsersContent = () => {
     }
   };
 
+  const sortedUsers =
+    users &&
+    [...users].sort((a, b) => {
+      if (sortConfig.key === "name") {
+        return sortConfig.direction === "asc"
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
+      } else if (sortConfig.key === "email") {
+        return sortConfig.direction === "asc"
+          ? a.email.localeCompare(b.email)
+          : b.email.localeCompare(a.email);
+      }
+      return 0;
+    });
+
+  const toggleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+
   return (
     <div className="space-b-6">
       <div className="flex justify-between items-center space-x-4 ">
@@ -194,10 +218,26 @@ const UsersContent = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Company
+                  <div className="flex items-center justify-start gap-2">
+                    <span className="block">Company</span>
+                    <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
+                      <ChevronUp className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                    </button>
+                    <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
+                      <ChevronDown className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                    </button>
+                  </div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Email
+                  <div className="flex items-center justify-start gap-2">
+                    <span className="block">Email</span>
+                    <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
+                      <ChevronUp className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                    </button>
+                    <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
+                      <ChevronDown className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                    </button>
+                  </div>
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                   Actions
@@ -205,7 +245,7 @@ const UsersContent = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users.map((user) => (
+              {sortedUsers.map((user) => (
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">

@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as LucideIcons from "lucide-react";
+import { fontSizes, logoSizeMap, logoSizeRatio } from "@/app/lib/data/font_size";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -294,18 +295,19 @@ export default function OnBoardingPage() {
 
   const handleModalOpenForEdit = (contentTitle) => {
     const contentToEdit = content?.find((item) => item.title === contentTitle);
+    let fontSize = fontSizes.find((item) => item.key === contentTitle)
     if (!contentToEdit) {
       const content = contentTypes.find((item) => item.title === contentTitle);
       setNewContent({
         type: content.type,
         title: contentTitle,
-        fontSize: "30px",
+        fontSize: fontSize?.size,
       });
       setIsDialogOpen(true);
     } else {
       setNewContent({
         ...contentToEdit,
-        fontSize: contentToEdit?.fontSize || "30px",
+        fontSize: contentToEdit?.fontSize || fontSize?.size,
       });
       setIsEditMode(true);
       setIsDialogOpen(true);
@@ -335,6 +337,30 @@ export default function OnBoardingPage() {
   );
 
   if (!config || !content) return <LoadingSpinner />;
+
+  const LogoImage = () => {
+    const baseSize = 100; // Set a reasonable base size (in pixels)
+
+    const logoSize =
+      (content?.find((item) => item.title === "Logo")?.fontSize &&
+        logoSizeRatio[
+          content.find((item) => item.title === "Logo")?.fontSize
+        ]) ||
+      logoSizeRatio.medium;
+    return (
+      <div className="block min-w-16" >
+        <img
+          src={filterContent("Logo") || config?.logo}
+          alt={params.portalid || "Default"}
+          className="mr-2"
+          style={{
+            height: `${baseSize * logoSize}px`,
+            width: `${baseSize * logoSize}px`,
+          }}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">
@@ -436,7 +462,7 @@ export default function OnBoardingPage() {
       {/* Preview Page */}
       <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-hidden bg-background  flex flex-col justify-between">
         <div>
-          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border h-[70px]" style={{ backgroundColor: config?.accentColor}}>
+          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border" style={{ backgroundColor: config?.accentColor}}>
           {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
               // src="/default_logo_purple.png"
@@ -456,11 +482,18 @@ export default function OnBoardingPage() {
                 >
                   <Pen className="size-4" />
                 </div>
-                <div className="block min-w-16"><img
+                {/* <div className="block min-w-16"><img
                   src={filterContent("Logo") || config?.logo}
                   alt={params.portalid || "Default"}
                   className="h-[52px] mr-2"
-                /></div>
+                  style={{
+                    height:
+                    logoSizeMap[
+                      content?.find((item) => item.title === "Logo")?.fontSize || "medium"
+                    ]
+                  }}
+                /></div> */}
+                <LogoImage />
                 {/* {filterContent("Logo")} */}
               </span>
               {/* <img
@@ -470,7 +503,13 @@ export default function OnBoardingPage() {
                 className="h-[52px] mr-2"
               /> */}
 
-              <span className="text-3xl text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+              <span 
+                className="text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative" 
+                style={{
+                  fontSize:
+                    content?.find((item) => item.title === "Header Text")?.fontSize || '30px',
+                }}
+              >
                 <div
                   className="absolute top-0 right-0 p-1 cursor-pointer"
                   onClick={() => handleModalOpenForEdit("Header Text")}
@@ -520,7 +559,12 @@ export default function OnBoardingPage() {
           <div className="flex-1 flex flex-col xl:flex-row pt-12">
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
               <div className="px-[15px]">
-                <h2 className="text-[56px] font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2">
+                <h2 
+                  className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
+                  style={{
+                    fontSize:
+                      content?.find((item) => item.title === "Title")?.fontSize || '56px',
+                  }}>
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("Title")}
@@ -540,7 +584,12 @@ export default function OnBoardingPage() {
                   >
                     <Pen className="size-4" />
                   </div>
-                  <p className="font-light text-xl leading-7 font-lato mb-3 mt-5 line-clamp-3">
+                  <p 
+                    className="font-light leading-7 font-lato mb-3 mt-5 line-clamp-3"  
+                    style={{
+                          fontSize:
+                            content?.find((item) => item.title === "Paragraph")?.fontSize || '20px',
+                        }}>
                     {filterContent("Paragraph")}
                   </p>
                 </div>
@@ -604,11 +653,11 @@ export default function OnBoardingPage() {
           {/* cards */}
 
           <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-3">
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
               <div className="px-5 py-4">
-                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
-                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+              <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
+                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
                       <div
                         className="absolute top-2 right-0 p-1 cursor-pointer"
                         onClick={() => handleModalOpenForEdit("Card 1 Icon")}
@@ -628,14 +677,21 @@ export default function OnBoardingPage() {
                       )}
                     </span>
                   </div>
-                  <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                  <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-8 py-1 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("Card 1 Title")}
                     >
                       <Pen className="size-4" />
                     </div>
-                    <div className="line-clamp-2 leading-6">{filterContent("Card 1 Title")}</div>
+                    <div
+                      className="line-clamp-2 leading-6"
+                      style={{
+                        fontSize: content?.find((item) => item.title === "Card 1 Title")?.fontSize || '20px',
+                      }}
+                    >
+                      {filterContent("Card 1 Title")}
+                    </div>
                   </span>
                 </h5>
                 <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
@@ -645,16 +701,20 @@ export default function OnBoardingPage() {
                   >
                     <Pen className="size-4" />
                   </div>
-                  <div className="line-clamp-2">{filterContent("Card 1 Content")}</div>
+                  <div className="line-clamp-2"  
+                    style={{
+                        fontSize:
+                          content?.find((item) => item.title === "Card 1 Content")?.fontSize || '14px',
+                      }}>{filterContent("Card 1 Content")}</div>
                 </span>
               </div>
             </div>
 
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
               <div className="px-5 py-4">
-                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
-                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                  <div className="border border-dashed border-gray-400 h-10 w-12 flex items-center justify-center shrink-0">
+                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
                       <div
                         className="absolute top-2 right-0 p-1 cursor-pointer"
                         onClick={() => handleModalOpenForEdit("Card 2 Icon")}
@@ -674,14 +734,21 @@ export default function OnBoardingPage() {
                       )}
                     </span>
                   </div>
-                  <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                  <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-6 py-1 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("Card 2 Title")}
                     >
                       <Pen className="size-4" />
                     </div>
-                    <div className="line-clamp-2 leading-6">{filterContent("Card 2 Title")}</div>
+                    <div
+                      className="line-clamp-2 leading-6"
+                      style={{
+                        fontSize: content?.find((item) => item.title === "Card 2 Title")?.fontSize || '20px',
+                      }}
+                    >
+                      {filterContent("Card 2 Title")}
+                    </div>
                   </span>
                 </h5>
                 <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
@@ -691,16 +758,20 @@ export default function OnBoardingPage() {
                   >
                     <Pen className="size-4" />
                   </div>
-                  <div className="line-clamp-2">{filterContent("Card 2 Content")}</div>
+                  <div className="line-clamp-2" 
+                    style={{
+                        fontSize:
+                          content?.find((item) => item.title === "Card 2 Content")?.fontSize || '14px',
+                      }}>{filterContent("Card 2 Content")}</div>
                 </span>
               </div>
             </div>
 
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-hidden">
+            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
               <div className="px-5 py-4">
-                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center">
-                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-8 py-3 relative">
+              <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
+                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
                       <div
                         className="absolute top-2 right-0 p-1 cursor-pointer"
                         onClick={() => handleModalOpenForEdit("Card 3 Icon")}
@@ -720,14 +791,21 @@ export default function OnBoardingPage() {
                       )}
                     </span>
                   </div>
-                  <span className="border border-dashed border-gray-400 pl-3 pr-8 py-1 relative">
+                  <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-8 py-1 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("Card 3 Title")}
                     >
                       <Pen className="size-4" />
                     </div>
-                    <div className="line-clamp-2 leading-6">{filterContent("Card 3 Title")}</div>
+                    <div
+                      className="line-clamp-2 leading-6"
+                      style={{
+                        fontSize: content?.find((item) => item.title === "Card 3 Title")?.fontSize || '20px',
+                      }}
+                    >
+                      {filterContent("Card 3 Title")}
+                    </div>
                   </span>
                 </h5>
                 <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
@@ -737,7 +815,11 @@ export default function OnBoardingPage() {
                   >
                     <Pen className="size-4" />
                   </div>
-                  <div className="line-clamp-2">{filterContent("Card 3 Content")}</div>
+                  <div className="line-clamp-2" 
+                    style={{
+                        fontSize:
+                          content?.find((item) => item.title === "Card 3 Content")?.fontSize || '14px',
+                      }}>{filterContent("Card 3 Content")}</div>
                 </span>
               </div>
             </div>

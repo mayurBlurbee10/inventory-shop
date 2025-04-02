@@ -8,6 +8,7 @@ import AddContentModal from "./AddContentModal";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
 import { getUserData } from "@/lib/auth";
+import { fontSizes } from "@/app/lib/data/font_size";
 
 const ContentManagementContent = ({
   isAddRequired,
@@ -30,7 +31,7 @@ const ContentManagementContent = ({
     title: "",
     type: "",
     value: "",
-    fontSize: "30px",
+    fontSize: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -214,9 +215,10 @@ const ContentManagementContent = ({
 
   const handleModalOpenForEdit = (contentId) => {
     const contentToEdit = content.find((item) => item.id === contentId);
+    const fontSize = fontSizes.find((item) => item.key === contentToEdit.title)
     setNewContent({
       ...contentToEdit,
-      fontSize: contentToEdit.fontSize || "30px",
+      fontSize: contentToEdit.fontSize || fontSize?.size,
     });
     setIsEditMode(true);
     setIsDialogOpen(true);
@@ -236,7 +238,7 @@ const ContentManagementContent = ({
       title: "",
       type: "",
       value: "",
-      fontSize: "30px",
+      fontSize: "",
     });
     setLinkFields([{ label: "", link: "" }]);
     setIsEditMode(false);
@@ -255,7 +257,7 @@ const ContentManagementContent = ({
         ...prev,
         title: "",
         type: "",
-        fontSize: "30px",
+        fontSize: "",
       }));
     } else {
       const selectedType =

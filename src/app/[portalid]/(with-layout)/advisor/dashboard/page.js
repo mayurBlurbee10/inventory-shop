@@ -19,6 +19,8 @@ import {
     Legend,
     ResponsiveContainer,
   } from "recharts";
+import { useSelector } from "react-redux";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 
 const LoadingSpinner = () => (
@@ -31,7 +33,7 @@ const LoadingSpinner = () => (
 export default function AdvisorViewDashboard() {
     const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
     const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState('');
-    const [user, setUser] = useState(null);
+    // const [user, setUser] = useState(null);
     const [usersList, setUsersList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const params = useParams();
@@ -39,6 +41,9 @@ export default function AdvisorViewDashboard() {
     const [config, setConfig] = useState(null);
     const [isPageLoading, setIsPageLoading] = useState(false)
     const [page, setPage] = useState(null);
+    const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
+
+    const { data : user } = useSelector((state) => state.user);
 
     const [dayAndDate, setDayAndDate] = useState({
         day: "",
@@ -89,7 +94,8 @@ export default function AdvisorViewDashboard() {
             if (!response.ok) throw new Error("Download failed");
             const data = await response.json();
             console.log("UsersList:", data);
-            setUsersList(data);
+            const flteredUsers = data.filter((item) => item?.id !== user?.id);
+            setUsersList(flteredUsers);
         } catch (error) {
             console.error("Download error:", error);
         } finally {
@@ -162,6 +168,26 @@ export default function AdvisorViewDashboard() {
       }
     };
 
+    const sortedClients = usersList && [...usersList].sort((a, b) => {
+        if (sortConfig.key === "name") {
+          return sortConfig.direction === "asc" 
+            ? a.name.localeCompare(b.name) 
+            : b.name.localeCompare(a.name);
+        } else if (sortConfig.key === "email"){
+            return sortConfig.direction === "asc" 
+            ? a.email.localeCompare(b.email) 
+            : b.email.localeCompare(a.email);
+        }
+        return 0;
+    });
+
+    const toggleSort = (key) => {
+        setSortConfig((prev) => ({
+          key,
+          direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+        }));
+    };
+
 
      useEffect(() => {
         fetchConfig().then((portal) => {
@@ -196,18 +222,38 @@ export default function AdvisorViewDashboard() {
                             </div>
                             <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5 text-black">
                                 {
-                                    !isLoading && usersList.length > 0 &&
+                                    !isLoading && sortedClients.length > 0 &&
                                     <div className="overflow-x-auto border max-h-[300px] overflow-y-auto w-full">
                                         <table className="w-full bg-white border-collapse">
                                             <thead className="sticky top-0 bg-gray-50 w-full">
                                                 <tr>
-                                                    <th className="p-4 border-b text-left text-sm">Name</th>
-                                                    <th className="p-4 border-b text-left text-sm">Email</th>
+                                                    <th className="p-4 border-b text-left text-sm">
+                                                        <div className="flex items-center justify-start gap-2">
+                                                            <span className="block">Name</span>
+                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
+                                                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                                                            </button>
+                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
+                                                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                                                            </button>
+                                                        </div>
+                                                    </th>
+                                                    <th className="p-4 border-b text-left text-sm">
+                                                        <div className="flex items-center justify-start gap-2">
+                                                            <span className="block">Email</span>
+                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
+                                                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                                                            </button>
+                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
+                                                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                                                            </button>
+                                                        </div>
+                                                    </th>
                                                     <th className="p-4 border-b text-left text-sm">Phone</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {usersList.map((user) => (
+                                                {sortedClients.map((user) => (
                                                     <tr key={user?.id} className="hover:bg-gray-100 transition-colors">
                                                         <td className="py-2 px-4 border-b text-blue-600 text-sm">
                                                             <Link href={`shared-docs?userId=${user?.boxUserId}`} passHref>

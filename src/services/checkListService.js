@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { connectDatabase, getConnection } from "@/config/db";
 import { CheckLists } from "@/entities/CheckLists";
+import portalService from "./portalService";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -61,6 +62,17 @@ const getCheckListById = async (checkListId) => {
   }
 };
 
+const getCheckListByName = async (checkListName) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const checklist = await checkListRepository.findOneBy({ name: checkListName });
+    return checklist;
+  } catch (error) {
+    console.error("Error getting checklist:", error.message);
+    throw error;
+  }
+};
+
 const createCheckList = async (checklist) => {
   const checkListRepository = await getRepository(CheckLists);
   try {
@@ -97,6 +109,29 @@ const deleteCheckList = async (checkListId) => {
   }
 };
 
+const createGeneralCheckList = async (checklist) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const existingChecklist = await getCheckListByName(checklist?.name);
+    if (!existingChecklist) {
+      const portalAdmin = await portalService.getPortalCreatedAdmin(
+        checklist?.portalId
+      );
+      const data = {
+        ...checklist,
+        createdBy: portalAdmin?.id,
+      };
+      const newCheckList = checkListRepository.create(data);
+      await checkListRepository.save(newCheckList);
+      return newCheckList;
+    }
+    return existingChecklist;
+  } catch (error) {
+    throw new Error("Failed to create checklist.");
+  }
+};
+
+
 export default {
   getCheckListByPortalIdSorted,
   getCheckListByPortalId,
@@ -104,4 +139,6 @@ export default {
   createCheckList,
   updateCheckList,
   deleteCheckList,
+  getCheckListByName,
+  createGeneralCheckList
 };

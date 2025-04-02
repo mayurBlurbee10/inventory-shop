@@ -18,6 +18,7 @@ import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
 import { setPages } from "@/store/services/pageService";
 import * as LucideIcons from "lucide-react";
+import { logoSizeRatio } from "@/app/lib/data/font_size";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500 ">
@@ -325,6 +326,30 @@ function Login() {
   
       return <Icon className="w-7 h-7 text-gray-700" />;
     }
+  
+  const LogoImage = () => {
+    const baseSize = 100; // Set a reasonable base size (in pixels)
+
+    const logoSize =
+      (content?.portalContent?.find((item) => item.title === "Logo")?.fontSize &&
+        logoSizeRatio[
+          content?.portalContent?.find((item) => item.title === "Logo")?.fontSize
+        ]) ||
+      logoSizeRatio.medium;
+    return (
+      <div className="block min-w-16">
+        <img
+          src={config?.logo || "/logo.png"}
+          alt={params.portalid}
+          className="mr-2"
+          style={{
+            height: `${baseSize * logoSize}px`,
+            width: `${baseSize * logoSize}px`,
+          }}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
@@ -341,39 +366,42 @@ function Login() {
               {filterValue("Header Text")}
             </span>
           </a> */}
-          <a className="flex items-center py-1 gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-            {user?.company?.logo || config?.logo ? (
-              <img
-                src={config?.logo || "/logo.png"}
-                alt={params.portalid}
-                className="h-[52px] mr-2"
-              />
-            ) : (
-              // Skeleton for logo
-              <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
-            )}
+          <div className="max-w-[1140px] w-full mx-auto">
+            <a className=" flex items-center py-1 gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+              {user?.company?.logo || config?.logo ? (
+                // <img
+                //   src={config?.logo || "/logo.png"}
+                //   alt={params.portalid}
+                //   className="h-[52px] mr-2"
+                // />
+                <LogoImage />
+              ) : (
+                // Skeleton for logo
+                <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
+              )}
 
-          <span
-            className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
-            style={{
-              fontSize:
-                content?.portalContent?.find((item) => item.title === "Header Text")
-                  ?.fontSize || "30px",
-              lineHeight: "1.2",
-              paddingBottom: "2px",
-              paddingInline: "2px"
-            }}
-          >
-            {content?.portalContent === undefined ? (
-              <span className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded block"></span>
-            ) : filterValue("Header Text") &&
-              filterValue("Header Text") !== "Premier Customer Portal" ? (
-              filterValue("Header Text")
-            ) : (
-              params?.portalid
-            )}
-          </span>
-          </a>
+            <span
+              className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
+              style={{
+                fontSize:
+                  content?.portalContent?.find((item) => item.title === "Header Text")
+                    ?.fontSize || "30px",
+                lineHeight: "1.2",
+                paddingBottom: "2px",
+                paddingInline: "2px"
+              }}
+            >
+              {content?.portalContent === undefined ? (
+                <span className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded block"></span>
+              ) : filterValue("Header Text") &&
+                filterValue("Header Text") !== "Premier Customer Portal" ? (
+                filterValue("Header Text")
+              ) : (
+                params?.portalid
+              )}
+            </span>
+            </a>
+          </div>
 
           {/* <div className="hidden md:flex items-center gap-x-6">
             <div className="flex items-center transition-transform transform hover:scale-105 ">
@@ -413,7 +441,11 @@ function Login() {
           <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
               <div className="px-[15px]">
-                <h2 className="text-[56px] font-light leading-tight text-text font-lato mb-2">
+                <h2 
+                  className="font-light leading-tight text-text font-lato mb-2" style={{
+                      fontSize:
+                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '56px',
+                    }}>
                   {/* Ethree - Deep energy expertise */}
                   {filterValue("Title")}
                   {/* Wealth Management */}
@@ -427,7 +459,12 @@ function Login() {
                   className="p-[1px] w-full"
                 ></div>
 
-                <p className="font-light text-xl text-black leading-7 font-lato mb-3 mt-5">
+                <p 
+                  className="font-light text-black leading-7 font-lato mb-3 mt-5"
+                  style={{
+                        fontSize:
+                        content?.portalContent?.find((item) => item.title === "Paragraph")?.fontSize || '20px',
+                      }}>
                   {/* Financial decisions are complicated. But they don't have to
                   be. Whether you're planning for retirement or growing your
                   business, let us help you reach your financial goals. */}
@@ -577,7 +614,7 @@ function Login() {
                   />
                   <div className="w-full flex justify-center items-center text-sm mt-2 text-black hover:text-blue-700  cursor-pointer">
                     <p onClick={() => router.push(`forgot-password`)}>
-                      forgot password?
+                      Forgot Password?
                     </p>
                   </div>
                   {/* <button
@@ -636,9 +673,16 @@ function Login() {
                       </svg>
                     )}
                   </div>
-                  {filterValue("Card 1 Title")}
+                  <div 
+                    style={{
+                        fontSize:
+                          content?.portalContent?.find((item) => item.title === "Card 1 Title")?.fontSize || '20px',
+                      }}>{filterValue("Card 1 Title")}</div>
                 </h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6">
+                <p className="text-[#6c757d] font-normal leading-6" style={{
+                        fontSize:
+                          content?.portalContent?.find((item) => item.title === "Card 1 Content")?.fontSize || '14px',
+                      }}>
                   {filterValue("Card 1 Content")}
                 </p>
               </div>
@@ -659,9 +703,16 @@ function Login() {
                       </svg>
                     )}
                   </div>
-                  {filterValue("Card 2 Title")}
+                  <div 
+                    style={{
+                        fontSize:
+                          content?.portalContent?.find((item) => item.title === "Card 2 Title")?.fontSize || '20px',
+                      }}>{filterValue("Card 2 Title")}</div>
                 </h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6">
+                <p className="text-[#6c757d] font-normal leading-6" style={{
+                        fontSize:
+                          content?.portalContent?.find((item) => item.title === "Card 2 Content")?.fontSize || '14px',
+                      }}>
                   {filterValue("Card 2 Content")}
                 </p>
               </div>
@@ -682,9 +733,16 @@ function Login() {
                       </svg>
                     )}
                   </div>
-                  {filterValue("Card 3 Title")}
+                  <div 
+                    style={{
+                        fontSize:
+                          content?.portalContent?.find((item) => item.title === "Card 3 Title")?.fontSize || '20px',
+                      }}>{filterValue("Card 3 Title")}</div>
                 </h5>
-                <p className="text-[#6c757d] text-sm font-normal leading-6 font-lato">
+                <p className="text-[#6c757d] font-normal leading-6 font-lato" style={{
+                        fontSize:
+                          content?.portalContent?.find((item) => item.title === "Card 3 Content")?.fontSize || '14px',
+                      }}>
                   {filterValue("Card 3 Content")}
                 </p>
               </div>

@@ -18,6 +18,7 @@ import {
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
+import { fontSizeOptions, logoSizeRatio } from "@/app/lib/data/font_size";
 
 const AddContentModal = ({
   contentTypes,
@@ -50,7 +51,7 @@ const AddContentModal = ({
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
-    if (!newContent.value.trim()) {
+    if (newContent?.type !== "Image" && !newContent.value.trim()) {
       handleModalClose();
       return;
     }
@@ -178,7 +179,7 @@ const AddContentModal = ({
         ...prev,
         title: "",
         type: "",
-        fontSize: "30px",
+        fontSize: "",
       }));
     } else {
       const selectedType =
@@ -237,7 +238,7 @@ const AddContentModal = ({
       title: "",
       type: "",
       value: "",
-      fontSize: "30px",
+      fontSize: "",
     });
     setLinkFields([{ label: "", link: "" }]);
     setIsEditMode(false);
@@ -260,6 +261,31 @@ const AddContentModal = ({
     { name: "Cloud", component: Cloud },
     { name: "Sun", component: Sun }
   ];
+
+   const LogoImage = () => {
+      const baseSize = 100; // Set a reasonable base size (in pixels)
+  
+      const logoSize =
+        (newContent?.fontSize &&
+          logoSizeRatio[
+            newContent?.fontSize
+          ]) ||
+        logoSizeRatio.medium;
+
+      return (
+        <div className="mt-2" >
+          <img
+            src={previewUrl}
+            alt="Logo preview"
+            className="object-contain rounded border"
+            style={{
+              height: `${baseSize * logoSize}px`,
+              width: `${baseSize * logoSize}px`,
+            }}
+          />
+        </div>
+      );
+  };
 
   return (
     <div
@@ -328,44 +354,98 @@ const AddContentModal = ({
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100 text-gray-500"
           />
         </div> */}
-
-          {newContent?.title === "Header Text" && (
-            <div className="mb-4">
-              <label
-                htmlFor="fontSize"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Font Size
-              </label>
-              <select
-                id="fontSize"
-                name="fontSize"
-                className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                value={newContent?.fontSize} // Default value
-                onChange={(e) =>
-                  setNewContent((prev) => ({
-                    ...prev,
-                    fontSize: e.target.value, // Add font size only for Header Text
-                  }))
-                }
-                required
-              >
-                <option value="12px">12px</option>
-                <option value="14px">14px</option>
-                <option value="16px">16px</option>
-                <option value="18px">18px</option>
-                <option value="20px">20px</option>
-                <option value="22px">22px</option>
-                <option value="24px">24px</option>
-                <option value="26px">26px</option>
-                <option value="28px">28px</option>
-                <option value="30px">30px</option>
-                <option value="32px">32px</option>
-                <option value="34px">34px</option>
-                <option value="36px">36px</option>
-              </select>
-            </div>
+          {newContent?.type !== "Links" && (
+            <>
+              {newContent.title !== "Title" && newContent?.type !== "Icons" && !newContent?.title.includes("Card") && fontSizeOptions[newContent?.type] !== null && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="fontSize"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Font Size
+                  </label>
+                  <select
+                    id="fontSize"
+                    name="fontSize"
+                    className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                    value={newContent?.fontSize} // Default value
+                    onChange={(e) =>
+                      setNewContent((prev) => ({
+                        ...prev,
+                        fontSize: e.target.value, // Add font size only for Logo
+                      }))
+                    }
+                    required
+                  >
+                    {fontSizeOptions[newContent?.type].map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {newContent?.title.includes("Card") && fontSizeOptions["Card"] !== null && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="fontSize"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Font Size
+                  </label>
+                  <select
+                    id="fontSize"
+                    name="fontSize"
+                    className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                    value={newContent?.fontSize} // Default value
+                    onChange={(e) =>
+                      setNewContent((prev) => ({
+                        ...prev,
+                        fontSize: e.target.value, // Add font size only for Logo
+                      }))
+                    }
+                    required
+                  >
+                    {fontSizeOptions["Card"].map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {newContent.title === "Title" && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="fontSize"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Font Size
+                  </label>
+                  <select
+                    id="fontSize"
+                    name="fontSize"
+                    className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                    value={newContent?.fontSize} // Default value
+                    onChange={(e) =>
+                      setNewContent((prev) => ({
+                        ...prev,
+                        fontSize: e.target.value, // Add font size only for Logo
+                      }))
+                    }
+                    required
+                  >
+                    {fontSizeOptions["Header"].map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </>
           )}
+         
           {/* Icons */}
           {newContent.type === "Icons" && (
             <div className="mb-4">
@@ -445,13 +525,7 @@ const AddContentModal = ({
             </div>
           )}
           {previewUrl && (
-            <div className="mt-2">
-              <img
-                src={previewUrl}
-                alt="Logo preview"
-                className="h-20 w-20 object-contain rounded border"
-              />
-            </div>
+            <LogoImage />
           )}
 
           {/* Links */}
@@ -507,7 +581,7 @@ const AddContentModal = ({
             <Button
               buttonType="submit"
               type="Primary"
-              disabled={isSubmitting || !newContent.value.trim()}
+              disabled={isSubmitting || (newContent?.type !== "Image"  && !newContent.value.trim()) || (newContent?.type !== "Links"  && !newContent.value.length)}
               label={isEditMode ? "Update" : "Add"}
               isLoading={isSubmitting}
             />
