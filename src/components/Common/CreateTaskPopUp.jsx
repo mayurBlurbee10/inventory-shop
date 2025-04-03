@@ -365,6 +365,16 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
     }
 
     setCheckLists(checklists);
+    if(task){
+      setFormData((prev) => ({
+        ...prev, 
+        checkList : {
+          ...task?.checklist,
+          value : task?.checklist?.id,
+          label : task?.checklist?.name
+        }
+      }))
+    }
   }, [checkListData]);
 
   useEffect(() => {
@@ -427,6 +437,8 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
                             onChange={(selectedOption) => setFormData((prev) => ({ ...prev, userID: selectedOption || null }))}
                             options={users}
                             placeholder="Create task for..."
+                            loadingMessage={() => "Fetching users..."}
+                            isLoading={isLoading}
                             required
                           />
                         </div>
@@ -442,23 +454,37 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
                         </div>
                     </div>
                     )}
-                    <div className="flex flex-col">
-                        <label className="block text-sm font-medium text-gray-700 pb-1">
-                          Select Check List
-                        </label>
-                        <div>
-                          <Select
-                            className="flex-1 bg-white text-[#495057] text-sm focus:outline-none w-full"
-                            isClearable={true}
-                            isSearchable={true}
-                            value={formData?.checkList}
-                            onChange={(selectedOption) => setFormData((prev) => ({ ...prev, checkList: selectedOption || null }))}
-                            options={checkLists}
-                            placeholder="Create task in checklist"
-                            required
-                          />
-                        </div>
+                    {!task && !task?.checklist && (
+                      <div className="flex flex-col">
+                          <label className="block text-sm font-medium text-gray-700 pb-1">
+                            Select Check List
+                          </label>
+                          <div>
+                            <Select
+                              className="flex-1 bg-white text-[#495057] text-sm focus:outline-none w-full"
+                              isClearable={true}
+                              isSearchable={true}
+                              value={formData?.checkList}
+                              onChange={(selectedOption) => setFormData((prev) => ({ ...prev, checkList: selectedOption || null }))}
+                              options={checkLists}
+                              placeholder="Create task in checklist"
+                              loadingMessage={() => "Fetching checklists..."}
+                              isLoading={isChecklistLoading}
+                              required
+                            />
+                          </div>
                       </div>
+                    )}
+                    {task && task?.checklist && (
+                      <div className="w-full">
+                        <label className="block text-sm text-gray-600 mb-1">Selected Check List</label>
+                        <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
+                          <div className="text-sm text-[#495057]">
+                            {task?.checklist?.name}
+                          </div>
+                        </div>
+                    </div>
+                    )}
                     {
                         formData.type &&  (
                             <div className="z-10">

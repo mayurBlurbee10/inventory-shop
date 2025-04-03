@@ -349,11 +349,7 @@ const TasksSection = ({ client = null }) => {
           throw new Error(data.error || "Failed fetch checklists");
         setCheckLists(data?.data);
         const allCheckListsTasks = data?.data?.flatMap(item => item?.isActive ? item?.tasks : []);
-  
-        // If checklists have tasks, set them; otherwise, fetch independent tasks
-        if (allCheckListsTasks.length > 0) {
-          setTasks(allCheckListsTasks);
-        }
+        setTasks(allCheckListsTasks);
       } catch (error) {
         toast.error(error?.message);
       } finally {

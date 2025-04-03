@@ -125,7 +125,7 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
 
 const CheckListContent = () => {
   const params = useParams();
-  const [checklists, setCheckLists] = useState([]);
+  const [checkLists, setCheckLists] = useState([]);
   const [isChecklistLoading, setIsChecklistLoading] = useState(false);
   const [isOpenAddCheckListModal, setIsOpenAddCheckListModal] = useState(false);
   const [isUpdateLoading, setIsUpdateLoading] = useState(null);
@@ -138,6 +138,7 @@ const CheckListContent = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(null);
   const [isUpdateTaskModalOpen, setIsUpdateTaskModalOpen] = useState(false);
+  const [isChecklistLastActive, setIsChecklistLastActive] = useState(false);
 
   const fetchChecklists = async () => {
     try {
@@ -188,6 +189,12 @@ const CheckListContent = () => {
 
   const handleUpdateCheckList = async (checklist) => {
     try {
+      const filteredCheckList = checkLists.filter((item) => item?.isActive);
+      if(filteredCheckList.length === 1 && checklist?.isActive){
+        setIsChecklistLastActive(true);
+        return;
+      }
+      setIsChecklistLastActive(false);
       setCheckLists((prevLists) =>
         prevLists.map((p) =>
           p.id === checklist?.id ? { ...p, isActive: !checklist?.isActive } : p
@@ -227,6 +234,7 @@ const CheckListContent = () => {
 
    const handleDeleteTask = async () => {
       try {
+        setIsChecklistLastActive(false);
         if(!selectedTask){
           return;
         }
@@ -286,17 +294,17 @@ const CheckListContent = () => {
             </div>
           ) : (
             <>
-              {!checklists?.length ? (
+              {!checkLists?.length ? (
                 <p>No check list found.</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
-                  {checklists?.map((checklist) => {
+                  {checkLists?.map((checklist) => {
                     const isExpanded = expandedChecklist === checklist?.id;
 
                     return (
                       <div
                         key={checklist?.id}
-                        className="border rounded-lg p-4 shadow-md bg-white space-y-4 pb-20 relative"
+                        className="border rounded-lg p-4 shadow-md bg-white space-y-4 relative"
                       >
                         {/* Header Section */}
                         <div className="flex justify-between items-center">
@@ -328,6 +336,7 @@ const CheckListContent = () => {
                                 onClick={() => {
                                   setIsOpenAddCheckListModal((prev) => !prev);
                                   setSelectedCheckList(checklist);
+                                  setIsChecklistLastActive(false);
                                 }}
                               >
                                 <Edit className="size-4 text-blue-700" />
@@ -337,6 +346,7 @@ const CheckListContent = () => {
                                 onClick={() => {
                                   setIsDeleteModalOpen((prev) => !prev);
                                   setSelectedCheckList(checklist);
+                                  setIsChecklistLastActive(false);
                                 }}
                               >
                                 <Trash2 className="size-4 text-red-700" />
@@ -369,7 +379,7 @@ const CheckListContent = () => {
 
                         {/* Tasks List (Expandable) */}
                         {/* {isExpanded && ( */}
-                        <div className="mt-4 bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <div className="mt-4 bg-gray-50 p-4 rounded-lg shadow-sm  min-h-[360px] max-h-[360px] overflow-y-auto">
                           {checklist?.tasks?.length > 0 ? (
                             <ul className="space-y-3">
                               {checklist?.tasks.map((task) => (
@@ -408,7 +418,7 @@ const CheckListContent = () => {
                                   </div>
                                   {/* Task Status */}
                                   <span
-                                    className={`text-xs font-semibold px-2 py-1 ${
+                                    className={`text-xs font-semibold text-right min-w-[80px] px-2 py-1 ${
                                       task?.status === TaskStatus.COMPLETED
                                         ? " text-green-600"
                                         : " text-yellow-600"
@@ -429,7 +439,7 @@ const CheckListContent = () => {
                           label={"Add Task"}
                           icon={PlusCircle}
                           type="Secondary"
-                          className="absolute bottom-5 right-4"
+                          className="ml-auto"
                         />
                       </div>
                     );
@@ -437,6 +447,9 @@ const CheckListContent = () => {
                 </div>
               )}
             </>
+          )}
+          {isChecklistLastActive && (
+            <p className="text-red-600 text-sm p-1 md:p-2 lg:pt-4 lg:px-4"><span className="font-semibold">Note*:</span> Atleast one checklist should be enabled.</p>
           )}
         </div>
       </div>

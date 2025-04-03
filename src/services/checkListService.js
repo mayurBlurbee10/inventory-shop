@@ -18,6 +18,7 @@ const getCheckListByPortalIdSorted = async (portalId) => {
       .leftJoinAndSelect("checklist.tasks", "task")
       .leftJoinAndSelect("task.user", "user")
       .leftJoinAndSelect("task.createdBy", "createdBy")
+      .leftJoinAndSelect("task.checklist", "checklistId")
       .where("checklist.portalId = :portalId", { portalId })
       .orderBy("task.createdAt", "DESC") 
       .getMany();
@@ -36,7 +37,7 @@ const getCheckListByPortalId = async (portalId) => {
       where: {
         portalId: portalId,
       },
-      relations: ["tasks", "tasks.user", "tasks.createdBy"],
+      relations: ["tasks", "tasks.user", "tasks.createdBy", "tasks.checklist"],
     });
     
     return checklists;
@@ -62,10 +63,10 @@ const getCheckListById = async (checkListId) => {
   }
 };
 
-const getCheckListByName = async (checkListName) => {
+const getCheckListByName = async (checkListName, portalId) => {
   const checkListRepository = await getRepository(CheckLists);
   try {
-    const checklist = await checkListRepository.findOneBy({ name: checkListName });
+    const checklist = await checkListRepository.findOneBy({ name: checkListName, portalId: portalId });
     return checklist;
   } catch (error) {
     console.error("Error getting checklist:", error.message);
@@ -112,7 +113,7 @@ const deleteCheckList = async (checkListId) => {
 const createGeneralCheckList = async (checklist) => {
   const checkListRepository = await getRepository(CheckLists);
   try {
-    const existingChecklist = await getCheckListByName(checklist?.name);
+    const existingChecklist = await getCheckListByName(checklist?.name, checklist?.portalId);
     if (!existingChecklist) {
       const portalAdmin = await portalService.getPortalCreatedAdmin(
         checklist?.portalId

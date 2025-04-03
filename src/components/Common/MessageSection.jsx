@@ -419,6 +419,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
   const [users, setUsers] = useState([]);
   const [userID, setUserID] = useState("");
   const [isSendMessageLoading, setIsSendMessageLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -434,6 +435,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
 
   const fetchUser = async () => {
     try {
+      setIsLoading(true);
       const url = params.portalid
         ? `/api/users?portalid=${params.portalid || "default"}`
         : "/api/users";
@@ -443,6 +445,8 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
       setUsersList(data);
     } catch (error) {
       console.error("Download error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -545,6 +549,8 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
                     onChange={(e) => setUserID(e)}
                     options={users}
                     placeholder="To"
+                    loadingMessage={() => "Fetching users..."}
+                    isLoading={isLoading}
                   />
               }
               
