@@ -57,7 +57,13 @@ const deleteCustomPages = async (pageRepository, pluginId) => {
 };
 
 const deleteChecklists = async (checkListRepository, portalId) => {
-  await checkListRepository.delete({ portalId: portalId });
+  const checklists = await checkListRepository.find({
+    where: { portalId },
+  });
+
+  const filteredChecklists = checklists.filter(c => c.title !== "general");
+
+  await checkListRepository.remove(filteredChecklists);
 };
 
 const deleteMessages = async (messageRepository, portalId) => {

@@ -63,7 +63,7 @@ function Navbar({ content, config, filterValue }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    setLogo(user?.company?.logo || config?.logo || null);
+    setLogo(config?.logo || null);
   }, [user, config]);
 
   useEffect(() => {
@@ -204,15 +204,15 @@ function Navbar({ content, config, filterValue }) {
         logoSizeRatio.medium;
       return (
         <div className="block min-w-16" >
-          <img
-            src={logo.replace("/api/upload", "/uploads")}
-            alt={params.portalid}
-            className="mr-2"
-            style={{
-              height: `${baseSize * logoSize}px`,
-              width: `${baseSize * logoSize}px`,
-            }}
-          />
+              <img
+                src={logo.replace("/api/upload", "/uploads")}
+                alt={params.portalid}
+                className="mr-2"
+                style={{
+                  height: `${baseSize * logoSize}px`,
+                  width: `${baseSize * logoSize}px`,
+                }}
+              />
         </div>
       );
     };
@@ -245,7 +245,7 @@ function Navbar({ content, config, filterValue }) {
               }}
             >
               {content?.portalContent === undefined ? ( 
-                <span className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded block"></span>
+                <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
               ) : filterValue("Header Text") &&
                 filterValue("Header Text") !== "Premier Customer Portal" ? (
                 filterValue("Header Text") 
