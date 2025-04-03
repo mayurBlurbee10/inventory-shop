@@ -21,6 +21,8 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
   const [companySearched, setCompanySearched] = useState("");
   const params = useParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   // const handleModalClose = () => {
   //   // reset state on modal close
@@ -225,6 +227,42 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
       }
     };
 
+    const validateEmail = (email) => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email format validation
+      if (!emailRegex.test(email)) {
+        setEmailError("Invalid email format");
+      } else {
+        setEmailError("");
+      }
+    };
+    
+    const handleEmailChange = (e) => {
+      const email = e.target.value;
+      handleFormChange("email", email);
+      validateEmail(email);
+    };
+
+    const validatePhoneNumber = (phone) => {
+      if (!phone.trim()) {
+        setPhoneError(""); // Clear error if input is empty
+        return;
+      }
+      const usCanadaRegex = /^\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // US & Canada: 10 digits
+      const mexicoRegex = /^(\+52|52)[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // Mexico: 10-12 digits
+    
+      if (usCanadaRegex.test(phone) || mexicoRegex.test(phone)) {
+        setPhoneError(""); // Valid number
+      } else {
+        setPhoneError("Enter a valid phone number");
+      }
+    };
+    
+    const handlePhoneChange = (e) => {
+      let phone = e.target.value;
+      phone = phone.replace(/[^0-9\s-.+]/g, "");
+      handleFormChange("phone", phone);
+      validatePhoneNumber(phone);
+    };
 
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -232,7 +270,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Full Name
+              Full Name <span className="text-red-600">*</span>
             </label>
             <input
               type="text"
@@ -244,30 +282,32 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Email
+              Email <span className="text-red-600">*</span>
             </label>
             <input
               type="email"
               required
               className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
               value={formData.email}
-              onChange={(e) => handleFormChange("email", e.target.value)}
+              onChange={handleEmailChange}
             />
           </div>
+          {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Phone No
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Phone No</label>
             <input
               type="text"
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+              maxLength={16}
+              className={`mt-1 pl-2 block w-full text-gray-500 rounded-md border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300 text-gray-500"
+                }`}
               value={formData.phone}
-              onChange={(e) => handleFormChange("phone", e.target.value)}
+              onChange={handlePhoneChange}
             />
           </div>
+          {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Title
+              Title <span className="text-red-600">*</span>
             </label>
             <input
               type="text"
@@ -278,7 +318,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Company Name
+              Company Name <span className="text-red-600">*</span>
             </label>
             <input
               type="text"
@@ -340,7 +380,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
           </div> */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Role
+              Role <span className="text-red-600">*</span>
             </label>
             <select
               className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
@@ -399,7 +439,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
             </button> */}
         <Button
           onClick={handelNext}
-          disabled={isLoading || !formData.name || !formData.email || !formData.title || !formData.companyName || !formData.logo}
+          disabled={isLoading || !formData.name || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
           isLoading={isLoading}
           type="Primary"
           label="Next"
@@ -430,6 +470,8 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
   });
 
   const [storageLimit, setStorageLimit] = useState(100);
+  const [apiLimit, setApiLimit] = useState(100);
+  const [apiOption, setApiOption] = useState(100);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -588,13 +630,53 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <input
-              type="number"
-              value={storageLimit}
-              onChange={(e) => setStorageLimit(e.target.value)}
-              placeholder="1000"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Storage Limit (GB) <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="number"
+                value={storageLimit}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    setStorageLimit(value);
+                  }
+                }}
+                placeholder="1000"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700">API Limit <span className="text-red-600">*</span></label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <input
+                    type="number"
+                    value={apiLimit}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*$/.test(value)) {
+                        setApiLimit(value);
+                      }
+                    }}
+                    placeholder="100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={formData.retentionApi}
+                    onChange={(e) => setFormData({ ...formData, retentionApi: e.target.value })}
+                    className="w-full px-3 py-[10px] border border-gray-300 rounded-md"
+                  >
+                    <option value="100 p/m">Daily</option>
+                    <option value="500 p/m">Weekly</option>
+                    <option value="1000 p/m">Monthly</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -667,9 +749,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
           onClick={handleSubmit}
           buttonType="submit"
           type="Primary"
-          disabled={
-            !formData.name || !formData.email || !formData.title || !formData.companyName || !formData.logo
-          }
+          disabled={loading}
           isLoading={loading}
           label="Add User"
         />
@@ -818,7 +898,7 @@ const handleModalClose = () => {
               ))}
             </div>
           </div>
-          <div className="w-full px-6 pb-6 h-[70vh] max-h-[650px] overflow-y-auto">{getActiveStepContent()}</div>
+          <div className="w-full px-6 pb-6 max-h-[72vh] overflow-y-auto">{getActiveStepContent()}</div>
         </div>
       </div>
     </>

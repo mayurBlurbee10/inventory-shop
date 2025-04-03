@@ -14,10 +14,9 @@ import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmDialog from '../DeleteConfirmDialog';
 
-export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskStatus, isTaskUpdateLoading }) => {
+export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskStatus, isTaskUpdateLoading, setShowMenu, showMenu }) => {
     const router = useRouter();
     const menuRef = useRef(null);
-    const [showMenu, setShowMenu] = useState(false);
     const [isTaskDeleteModalOpen, setIsTaskDeleteModalOpen] = useState(false);
     const [isTaskUpdateModalOpen, setIsTaskUpdateModalOpen] = useState(false);
     const [isDeleteTaskLoading, setIsDeleteTaskLoading] = useState(false);
@@ -41,6 +40,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
     const handleClose = () => {
       setIsTaskDeleteModalOpen(false);
       setIsTaskUpdateModalOpen(false);
+      setShowMenu(false)
       onClose();
     }
 
@@ -89,7 +89,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                 📝 Task Details
               </Dialog.Title>
               <div className="relative" ref={menuRef}>
-                {user && user?.id === task?.createdBy?.id && (
+                {user && (user?.id === task?.createdBy?.id || (user?.id === task?.user?.id && task?.status !== TaskStatus?.COMPLETED)) && (
                   <button
                     onClick={() => setShowMenu(!showMenu)}
                     className="text-gray-500 hover:text-gray-700 transition"
@@ -99,13 +99,15 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                 )}
                 {showMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg border border-gray-200 z-10">
-                    <button
-                      onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                    >
-                      <Edit className="size-4 text-blue-500" />
-                      <span>Edit</span>
-                    </button>
+                    {user && user?.id === task?.createdBy?.id && (
+                      <button
+                        onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}
+                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      >
+                        <Edit className="size-4 text-blue-500" />
+                        <span>Edit</span>
+                      </button>
+                    )}
                     {task?.status !== TaskStatus?.COMPLETED && (
                       isTaskUpdateLoading ? (
                         <Loader2 className='size-4 mx-auto animate-spin text-blue-500'/>
@@ -119,13 +121,15 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                         </button>
                       )
                     )}
-                    <button
-                      onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}
-                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
-                    >
-                      <Trash2 className="size-4 text-red-500" />
-                      <span>Delete</span>
-                    </button>
+                    {user && user?.id === task?.createdBy?.id && (
+                      <button
+                        onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}
+                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
+                      >
+                        <Trash2 className="size-4 text-red-500" />
+                        <span>Delete</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -275,7 +279,8 @@ const TasksSection = ({ client = null }) => {
     const [isChecklistLoading, setIsChecklistLoading] = useState(false);
     const [error, setError] = useState(null)
     const [sortedTasksList, setSortedTasksList] = useState([])
-    const [sortConfig, setSortConfig] = useState({ key: "createdAt", direction: "asc" });
+    const [sortConfig, setSortConfig] = useState({ key: "title", direction: "asc" });
+    const [showMenu, setShowMenu] = useState(false);
     const [completedTask, setCompletedTask] = useState({
         upload: false,
         completeForm: false,
@@ -466,7 +471,9 @@ const TasksSection = ({ client = null }) => {
 
             if (!response.ok) throw new Error("Something went wrong!!");
             setIsOpenTaskModal(false);
+            setShowMenu(false)
             await fetchChecklists();
+            
         } catch (error) {
             console.error("Download error:", error);
         } finally {
@@ -567,6 +574,30 @@ const sortDueDateDescending = () => {
   setSortedTasksList(sortedTasks);
 };
 
+const sortedTasks =
+  tasks &&
+  [...tasks].sort((a, b) => {
+    if (sortConfig.key === "title") {
+      const titleA = a.title || ""; // Default to empty string if undefined
+      const titleB = b.title || "";
+      return sortConfig.direction === "asc"
+        ? titleA.localeCompare(titleB)
+        : titleB.localeCompare(titleA);
+    } else if (sortConfig.key === "dueDate") {
+      const dateA = new Date(a.dueDate || 0); // Default to 0 if undefined
+      const dateB = new Date(b.dueDate || 0);
+      return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
+    }
+    return 0;
+  });
+
+  const toggleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
   
     return (
       <div className="relative mt-1">
@@ -588,33 +619,33 @@ const sortDueDateDescending = () => {
               </div>
             </div>
 
-            <div className={`mb-7 border border-[#dee2e6] max-h-[300px]`}>
+            <div className={`mb-7 border border-[#dee2e6] max-h-[300px] overflow-y-auto`}>
               <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
               <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
                 <tr>
                   <th></th>
                   <th className="text-start px-3 py-4">
-                    <div className="flex items-center gap-2">
-                      <span>Task</span>
-                      <button onClick={sortTaskAscending}>
-                        <ChevronUp className="h-4 w-4 text-gray-400 hover:text-black" />
+                    <div className="flex items-center justify-start gap-2">
+                      <span className="block">Tasks</span>
+                      <button className="flex items-center justify-center" onClick={() => toggleSort("title")}>
+                        <ChevronUp className={`h-4 w-4 ${sortConfig.key === "title" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
                       </button>
-                      <button onClick={sortTaskDescending}>
-                        <ChevronDown className="h-4 w-4 text-gray-400 hover:text-black" />
+                      <button className="flex items-center justify-center" onClick={() => toggleSort("title")}>
+                        <ChevronDown className={`h-4 w-4 ${sortConfig.key === "title" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
                       </button>
                     </div>
                   </th>
                   <th className="text-start px-3 py-4">Status</th>
                   <th className="text-start px-3 py-4">From</th>
                   <th className="text-start px-3 py-4">To</th>
-                  <th className="p-4 text-left font-semibold">
-                    <div className="flex items-center gap-2">
-                      <span>Due Date</span>
-                      <button onClick={sortDueDateAscending}>
-                        <ChevronUp className="h-4 w-4 text-gray-400 hover:text-black" />
+                  <th className="text-start px-3 py-4">
+                    <div className="flex items-center justify-start gap-2">
+                      <span className="block">Due Date</span>
+                      <button className="flex items-center justify-center" onClick={() => toggleSort("dueDate")}>
+                        <ChevronUp className={`h-4 w-4 ${sortConfig.key === "dueDate" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
                       </button>
-                      <button onClick={sortDueDateDescending}>
-                        <ChevronDown className="h-4 w-4 text-gray-400 hover:text-black" />
+                      <button className="flex items-center justify-center" onClick={() => toggleSort("dueDate")}>
+                        <ChevronDown className={`h-4 w-4 ${sortConfig.key === "dueDate" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
                       </button>
                     </div>
                   </th>
@@ -631,8 +662,8 @@ const sortDueDateDescending = () => {
                     </tr>
                   ) : (
                     <>
-                      {sortedTasksList?.length > 0 ? (
-                        sortedTasksList?.map((task) => (
+                      {sortedTasks?.length > 0 ? (
+                        sortedTasks?.map((task) => (
                           <tr key={task?.id}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -777,6 +808,8 @@ const sortDueDateDescending = () => {
             fetchTasks={fetchChecklists}
             updateTaskStatus={updateTaskStatus}
             isTaskUpdateLoading={isTaskUpdateLoading}
+            showMenu={showMenu}
+            setShowMenu={setShowMenu}
         />
         <CompleteForms
           onClose={() => setIsCompleteFormPopupOpen(false)}

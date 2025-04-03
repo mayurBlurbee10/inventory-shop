@@ -208,7 +208,7 @@ const Footer = ({
               <div className="md:mb-0">
                 <div className="flex items-end gap-1">
                   <p className="text-xs text-[#6c757d] font-medium font-lato">
-                    Powered By MStrategygroup © 2025
+                    Powered By M Strategy Group © 2025
                   </p>
                   <span>
                       <img
