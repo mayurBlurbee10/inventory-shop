@@ -242,28 +242,43 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
       validateEmail(email);
     };
 
-    const validatePhoneNumber = (phone) => {
-      if (!phone.trim()) {
-        setPhoneError(""); // Clear error if input is empty
-        return;
-      }
-      const usCanadaRegex = /^\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // US & Canada: 10 digits
-      const mexicoRegex = /^(\+52|52)[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // Mexico: 10-12 digits
+    // const validatePhoneNumber = (phone) => {
+    //   if (!phone.trim()) {
+    //     setPhoneError(""); // Clear error if input is empty
+    //     return;
+    //   }
+    //   const usCanadaRegex = /^\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // US & Canada: 10 digits
+    //   const mexicoRegex = /^(\+52|52)[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // Mexico: 10-12 digits
     
-      if (usCanadaRegex.test(phone) || mexicoRegex.test(phone)) {
-        setPhoneError(""); // Valid number
-      } else {
-        setPhoneError("Enter a valid phone number");
-      }
+    //   if (usCanadaRegex.test(phone) || mexicoRegex.test(phone)) {
+    //     setPhoneError(""); // Valid number
+    //   } else {
+    //     setPhoneError("Enter a valid phone number");
+    //   }
+    // };
+    
+    // const handlePhoneChange = (e) => {
+    //   let phone = e.target.value;
+    //   phone = phone.replace(/[^0-9\s-.+]/g, "");
+    //   handleFormChange("phone", phone);
+    //   validatePhoneNumber(phone);
+    // };
+    const validateOnlyDigits = (value) => {
+      return /^\d*$/.test(value); // Allows only digits and empty string
     };
     
     const handlePhoneChange = (e) => {
-      let phone = e.target.value;
-      phone = phone.replace(/[^0-9\s-.+]/g, "");
-      handleFormChange("phone", phone);
-      validatePhoneNumber(phone);
+      const phone = e.target.value;
+    
+      if (validateOnlyDigits(phone)) {
+        handleFormChange("phone", phone);
+        setPhoneError(phone.length > 0 ? "" : null); // Clear error if valid or empty
+      } else {
+        setPhoneError("Only digits are allowed");
+      }
     };
-
+    
+    
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     //   <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -297,7 +312,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
             <label className="block text-sm font-medium text-gray-700">Phone No</label>
             <input
               type="text"
-              maxLength={16}
+              // maxLength={16}
               className={`mt-1 pl-2 block w-full text-gray-500 rounded-md border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300 text-gray-500"
                 }`}
               value={formData.phone}
