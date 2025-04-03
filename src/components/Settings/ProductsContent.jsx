@@ -266,7 +266,7 @@ const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) =
             ].map((widget, idx) => (
               <div
                 key={idx}
-                className="border rounded-lg p-4 bg-gray-50 shadow-sm opacity-70 pointer-events-none"
+                className="border rounded-lg p-4 bg-gray-200 select-none shadow-sm opacity-50 pointer-events-none"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-3">
