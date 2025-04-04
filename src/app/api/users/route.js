@@ -130,6 +130,7 @@ export async function POST(request) {
         email: userData.email,
         name: userData.name || userData.email.split("@")[0],
         role: userData.role,
+        phoneNo: userData.phoneNo,
         // permissions: userData.permissions, //updated Field
       };
 
@@ -209,7 +210,7 @@ export async function POST(request) {
     let newUser = {
       // id: Date.now().toString(),
       email: userData.email,
-      phoneNo: userData.phone,
+      phoneNo: userData.phoneNo,
       name: userData.name || userData.email.split("@")[0],
       password: userData.password, // Default password as requested
       extra: process.env.NODE_ENV === "development" ? userData.password : null, // Default password as requested
@@ -320,6 +321,36 @@ export async function PUT(request) {
     console.error("Error in PUT /api/users:", error);
     return NextResponse.json(
       { error: "Failed to edit user", details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request) {
+  try {
+    await logApiCall(request);
+
+    const body = await request.json();
+    const { id, ...updatedData } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const updatedUser = await userService.updateUser(id, updatedData);
+
+    return NextResponse.json({
+      message: "User updated successfully",
+      user: updatedUser,
+    });
+
+  } catch (error) {
+    console.error("Error in PATCH /api/users:", error);
+    return NextResponse.json(
+      { error: "Failed to update user", details: error.message },
       { status: 500 }
     );
   }

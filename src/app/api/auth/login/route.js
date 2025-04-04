@@ -254,6 +254,8 @@ export async function POST(request) {
       signRequestsIds: user.signRequestsId,
       permissions : user.permissions,
       isTNCAccepted : user.isTNCAccepted,
+      title: user.title,
+      phoneNo:user.phoneNo,
     };
 
     if(portalCreatedAdmin){

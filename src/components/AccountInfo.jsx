@@ -6,11 +6,13 @@ import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 import { clearUserData } from "@/app/lib/auth";
 import Button from "./Common/Elements/Button";
+import AddUserModal from "./Settings/AddUserModal";
 
 function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
   const params = useParams();
   const router = useRouter();
   const [isChangePassModalOpen, setIsChangePassModalOpen] = useState(false);
+  const [editProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -131,6 +133,13 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                     {user?.role}
                   </p>
                 </div>
+                {/* PhoneNo */}
+                <div className="flex items-center">
+                  <p className="text-sm text-gray-500 w-20">Phone No:</p>
+                  <p className="text-xs sm:text-sm text-gray-700">
+                    {user?.phoneNo}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -143,11 +152,14 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
               <div className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] border flex-shrink-0 bg-gray-200">
                 {user?.company?.logo || config?.logo ? (
                   <img
-                    src={
-                      user?.company?.logo
+                  src={
+                    typeof user?.logo === "string" && user.logo
+                      ? user.logo
+                      : typeof user?.company?.logo === "string" && user.company.logo
                         ? user.company.logo.replace("/api/upload", "/uploads")
                         : config?.logo
-                    }
+                  }
+                  
                     alt={params.portalid}
                     className="h-full mr-2"
                   />
@@ -180,6 +192,11 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                onClick={() => setIsChangePassModalOpen((prev) => !prev)}
                type="Secondary"
                label="Change Password"
+            />
+            <Button
+               onClick={() => setIsEditProfileModalOpen((prev) => !prev)}
+               type="Secondary"
+               label="Edit Profile"
             />
             {/* <button
                             type="button"
@@ -285,6 +302,16 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
           </div>
         </div>
       )}
+      {
+        editProfileModalOpen && (
+          <AddUserModal
+            user={user}
+            isOpen={editProfileModalOpen}
+            onClose={() => setIsEditProfileModalOpen(false)}
+            from='editProfile'
+          />
+        )
+      }
     </div>
   );
 }

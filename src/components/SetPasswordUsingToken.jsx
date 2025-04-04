@@ -104,27 +104,15 @@ export default function SetPasswordUsingToken() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
         <h2 className="text-xl font-bold text-center text-gray-800">
-          Finish setting up your account for the {params.portalid} Portal
+         Please create a password to sign into the "{params.portalid} Portal"
         </h2>
-        <p className="text-sm text-gray-600 text-center mt-2">
-          If you have an OKTA account, we can directly sign you in. Click the
-          button below:
-        </p>
-        <div className="flex justify-center mt-4">
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-            onClick={(e)=>{handleSetPassword(e,'okta')}}
-            // disabled={loading}
-            disabled
-          >
-            Sign in with OKTA
-          </button>
+        <hr className="my-3 border-gray-200" />
+        <div className=" text-center mb-4">
+          {/* Welcome to the {params.portalid} Portal! Please create a password to sign in. Once completed, you will be redirected  to the {params.portalid} Portal home page. Use your email address and password to login! */}
+          <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p>
+          <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the {params.portalid} Portal homepage. Use your email address and newly created password to log in.</p>
+
         </div>
-        <hr className="my-6 border-gray-200" />
-        <p className="text-sm text-gray-600 text-center mb-4">
-          To create a standard user, please finish setting up your account by
-          creating a password below:
-        </p>
         <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
           {success ? (
             <p className="text-green-500 text-center mb-4">
@@ -177,13 +165,15 @@ export default function SetPasswordUsingToken() {
               >
                 {loading ? "Setting..." : "Set Password"}
               </button> */}
-              <Button
-                buttonType="submit"
-                disabled={loading}
-                isLoading={loading}
-                type="Primary"
-                label="Set Password"
-              />
+                <div className="w-full flex justify-center items-center">
+                  <Button
+                    buttonType="submit"
+                    disabled={loading}
+                    isLoading={loading}
+                    type="Primary"
+                    label="Set Password"
+                  />
+                </div>
             </>
           )}
         </form>

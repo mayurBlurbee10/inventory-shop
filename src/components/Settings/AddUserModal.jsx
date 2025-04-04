@@ -7,12 +7,14 @@ import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { UserRole } from "@/config/constants";
 import Button from "../Common/Elements/Button";
+import { useDispatch, useSelector } from "react-redux";
+import { setCurrentUser } from "@/store/services/userService";
 
-const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , setFormData, handleModalClose}) => {
+const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , setFormData, handleModalClose, from}) => {
   
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(formData?.logo || "");
   const [companyOptions, setCompanyOptions] = useState({
     visible: false,
     data: [],
@@ -23,7 +25,26 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
-
+  const{data:user} = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const [initialFormData, setInitialFormData] = useState({
+    id: user.id || "" ,
+    name: user.name || "" ,
+    email: user.email || "" ,
+    phoneNo:user.phoneNo || "" , 
+    title: user.title || "" ,
+    companyName: user.company?.name || "",
+    role:user.role || UserRole.USER,
+    logo: user.company?.logo || null,
+  })
+  const isFormChanged = () => {
+    const keys = Object.keys(formData);
+    return keys.some((key) => {
+      if (formData[key] instanceof File) return true; // logo changed
+      return formData[key] !== initialFormData[key];
+    });
+  };
+  
   // const handleModalClose = () => {
   //   // reset state on modal close
   //   setFormData({
@@ -271,18 +292,90 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
       const phone = e.target.value;
     
       if (validateOnlyDigits(phone)) {
-        handleFormChange("phone", phone);
+        handleFormChange("phoneNo", phone);
         setPhoneError(phone.length > 0 ? "" : null); // Clear error if valid or empty
       } else {
         setPhoneError("Only digits are allowed");
       }
     };
+
+    const handelUpdateProfile = async () => {
+      try {
+        setIsLoading(true);
+        let logoUrl = user.company?.logo || "";
+        if (formData.logo instanceof File) {
+          const uploadData = new FormData();
+          uploadData.append("file", formData.logo);
+  
+          const uploadResponse = await fetchWrapper(
+            "/api/upload",
+            {
+              method: "POST",
+              body: uploadData,
+            },
+            "user-logo"
+          );
+  
+          if (!uploadResponse.ok) {
+            throw new Error("Failed to upload logo");
+          }
+  
+          const uploadResult = await uploadResponse.json();
+          logoUrl = uploadResult.url;
+        }
+        const requestOptions = {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        };
+        const response = await fetchWrapper(
+          "/api/users", 
+          requestOptions,
+          "Update User"
+        );
+    
+        const result = await response.json();
+    
+        if (!response.ok) {
+          throw new Error(result.error || "Something went wrong");
+        }
+        const updatedUserData = {
+          ...user,
+          ...formData,
+          company: {
+            ...user.company,
+            name: formData.companyName,
+            logo: logoUrl,
+          },
+        };
+        
+        // Optionally clean up formData extras
+        delete updatedUserData.companyName;
+        delete updatedUserData.logo;
+        
+        dispatch(setCurrentUser(updatedUserData));
+        
+        // ✅ Optional: show success toast or update local user state
+        console.log("User updated:", result.user);
+        toast.success("Profile updated successfully");
+        handleModalClose()
+      } catch (error) {
+        console.error("Failed to update user:", error);
+        alert("Failed to update profile: " + error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    console.log("Updated User Details:", formData);
+    
     
     
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     //   <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className={`space-y-4 ${from === 'editProfile' ? "mt-2": ""}`}>
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Full Name <span className="text-red-600">*</span>
@@ -302,7 +395,8 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
             <input
               type="email"
               required
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+              disabled={from === 'editProfile'}
+              className={`mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed`}
               value={formData.email}
               onChange={handleEmailChange}
             />
@@ -315,7 +409,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
               // maxLength={16}
               className={`mt-1 pl-2 block w-full text-gray-500 rounded-md border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300 text-gray-500"
                 }`}
-              value={formData.phone}
+              value={formData.phoneNo ?? ""}
               onChange={handlePhoneChange}
             />
           </div>
@@ -398,7 +492,8 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
               Role <span className="text-red-600">*</span>
             </label>
             <select
-              className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+              disabled={from === 'editProfile'}
+              className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
               value={formData.role}
               onChange={(e) => handleFormChange("role", e.target.value)}
               style={{ height: "2.5rem" }}
@@ -452,13 +547,25 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
             >
               {loading ? "Creating..." : "Add User"}
             </button> */}
-        <Button
-          onClick={handelNext}
-          disabled={isLoading || !formData.name || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
-          isLoading={isLoading}
-          type="Primary"
-          label="Next"
-        />
+        {
+          from === "editProfile" ? (
+            <Button
+              onClick={handelUpdateProfile}
+              disabled={isLoading || !isFormChanged()}
+              isLoading={isLoading}
+              type="Primary"
+              label="Update"
+            />
+          ) : (
+            <Button
+              onClick={handelNext}
+              disabled={isLoading || !formData.name || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
+              isLoading={isLoading}
+              type="Primary"
+              label="Next"
+            />
+          )
+        }
           </div>
         </form>
     //   </div>
@@ -544,7 +651,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
       const user = getUserData();
       const userData = {
         email: formData.email,
-        phone: formData.phone,
+        phoneNo: formData.phoneNo,
         name: formData.name,
         title: formData.title,
         companyName: formData.companyName,
@@ -773,18 +880,20 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
   )
 }
 
-const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
+const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
   const [activeStep, setActiveStep] = useState("User Details");
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    title: "",
-    companyName: "",
-    role: UserRole.USER,
-    logo: null,
+    id: from === 'editProfile' ? user.id || "" : "",
+    name: from === 'editProfile' ? user.name || "" : "",
+    email: from === 'editProfile' ? user.email || "" : "",
+    phoneNo: from === 'editProfile' ? user.phoneNo || "" : "", 
+    title: from === 'editProfile' ? user.title || "" : "",
+    companyName: from === 'editProfile' ? user.company?.name || "" : "",
+    role: from === 'editProfile' ? user.role || UserRole.USER : UserRole.USER,
+    logo: from === 'editProfile' ? user.company?.logo || null : null,
   });
+  
 
     const finalStep = () => {
       dispatch(setNewLoan(newLoanData));
@@ -802,6 +911,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd }) => {
               onClose={onClose}
               setActiveStep={setActiveStep}
               handleModalClose={handleModalClose}
+              from={from}
             />
           );
         case "Permissions":
@@ -892,7 +1002,9 @@ const handleModalClose = () => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg  w-full max-w-2xl">
           <div className="flex justify-between items-center border-b px-4 pt-4 pb-3">
-            <h2 className="text-xl text-gray-800 font-semibold">Add New User</h2>
+            <h2 className="text-xl text-gray-800 font-semibold">
+              {from === 'editProfile' ? "Edit Profile" : "Add New User"}
+            </h2>
             <button
               onClick={handleClose}
               className="text-gray-400 hover:text-gray-500"
@@ -900,19 +1012,22 @@ const handleModalClose = () => {
               <X className="h-6 w-6" />
             </button>
           </div>
-
-          <div ref={scrollContainerRef} className="px-6 py-4 overflow-auto flex w-full sm:justify-center">
-            <div className="flex justify-between items-center space-x-8">
-              {[0, 1].map((step) => (
-                <div key={step} className="flex items-center" ref={(el) => (stepRefs.current[step] = el)}>
-                  <WizardStep step={step} currentStep={activeStepIndex} />
-                  {step < 1 && (
-                    <ChevronRight size={16} className="mx-2 text-gray-300" />
-                  )}
+          {
+            from !== 'editProfile' && (
+              <div ref={scrollContainerRef} className="px-6 py-4 overflow-auto flex w-full sm:justify-center">
+                <div className="flex justify-between items-center space-x-8">
+                  {[0, 1].map((step) => (
+                    <div key={step} className="flex items-center" ref={(el) => (stepRefs.current[step] = el)}>
+                      <WizardStep step={step} currentStep={activeStepIndex} />
+                      {step < 1 && (
+                        <ChevronRight size={16} className="mx-2 text-gray-300" />
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            )
+          }
           <div className="w-full px-6 pb-6 max-h-[72vh] overflow-y-auto">{getActiveStepContent()}</div>
         </div>
       </div>

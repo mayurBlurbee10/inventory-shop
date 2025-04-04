@@ -2,7 +2,7 @@ import React from "react";
 
 const AdvisorSection = ({
   title = "My Advisor",
-  userName = "Erica Smith",
+  userName = "Eva Character",
   role = "Senior Financial Advisor",
 }) => {
   return (
