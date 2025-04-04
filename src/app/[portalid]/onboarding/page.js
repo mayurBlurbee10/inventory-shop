@@ -783,15 +783,15 @@ export default function OnBoardingPage() {
               </div>
             </div>
           </div>
+            <Button
+              onClick={() => router.back()}
+              disabled={isSubmitting}
+              label={"Continue"}
+              type="Primary"
+              className="ml-auto mt-10 mr-5"
+            />
         </div>
         </div>
-        <Button
-          onClick={() => router.back()}
-          disabled={isSubmitting}
-          label={"Continue"}
-          type="Primary"
-          className="ml-auto mt-10 mx-10"
-        />
         <div className="w-full ">
           <Footer
             config={config}

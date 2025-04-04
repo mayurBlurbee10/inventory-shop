@@ -819,6 +819,9 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
         if (!formData.region) errors.region = "Required";
         if (!formData.domain) errors.domain = "Required";
         break;
+      case 1:
+        if (!formData.logo) errors.logo = "Required";
+        break;
       case 2:
         if (!formData.firstName) errors.firstName = "Required";
         if (!formData.lastName) errors.lastName = "Required";
