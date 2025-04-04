@@ -19,6 +19,7 @@ import Button from "./Common/Elements/Button";
 import { setPages } from "@/store/services/pageService";
 import * as LucideIcons from "lucide-react";
 import { logoSizeRatio } from "@/app/lib/data/font_size";
+import { setContent } from "@/store/services/contentService";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500 ">
@@ -39,7 +40,7 @@ function Login() {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [content, setContent] = useState(null);
+  // const [content, setContent] = useState(null);
   // const [config, setConfig] = useState(null);
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isLoadingOkta, setIsLoadingOkta] = useState(false);
@@ -49,6 +50,7 @@ function Login() {
   const [tncPage, setTncPage] = useState(null);
 
   const { data: config } = useSelector((state) => state.portal);
+  const { data: content } = useSelector((state) => state.content);
   const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch()
 
@@ -172,22 +174,25 @@ function Login() {
     const fetchConfig = async () => {
       dispatch(setPortal(params.portalid || "default"));
     };
+    const fetchContent = async () => {
+      dispatch(setContent(params?.portalid ?? "default"));
+    };
     fetchConfig();
     fetchContent();
     fetchPage();
   }, []);
 
   const fetchContent = async () => {
-    const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
-      { method: "GET" },
-      "fetchContentManagement"
-    );
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to fetch Content Management");
-    }
-    setContent(data);
+    // const response = await fetchWrapper(
+    //   `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+    //   { method: "GET" },
+    //   "fetchContentManagement"
+    // );
+    // const data = await response.json();
+    // if (!response.ok) {
+    //   throw new Error(data.error || "Failed to fetch Content Management");
+    // }
+    dispatch(setContent(params?.portalid ?? "default"));
   };
 
   const handleLogin = async (e) => {
@@ -245,13 +250,13 @@ function Login() {
 
   const filterValue = (title) => {
     if (!content) return null;
-    const contentItem = content.portalContent.find(
+    const contentItem = content && content?.portalContent.find(
       (item) => item.title === title
     );
     const value = contentItem ? contentItem.value : null;
 
     if (!value) {
-      const defaultItem = content.defaultContent.find(
+      const defaultItem = content && content?.defaultContent.find(
         (item) => item.title === title
       );
       return defaultItem ? defaultItem.value : null;
@@ -341,10 +346,11 @@ function Login() {
         <img
           src={config?.logo || "/logo.png"}
           alt={params.portalid}
-          className="mr-2"
-          style={{
-            height: `${baseSize * logoSize}px`,
-            width: `${baseSize * logoSize}px`,
+          className="object-contain mr-2"
+            style={{
+              height: `${baseSize * logoSize}px`, 
+              width: "auto",                      
+              maxWidth: "100%",                  
           }}
         />
       </div>

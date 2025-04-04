@@ -51,7 +51,7 @@ export async function GET(req) {
         { status: 400 }
       );
     }
-    const generalChecklist = await checkListService.createGeneralCheckList({ name : "general", portalId : portalId, isActive : true })
+    const generalChecklist = await checkListService.createGeneralCheckList({ name : "General", portalId : portalId, isActive : true })
     // Use sorted query param to determine which function to call
     const checklists = sorted
       ? await checkListService.getCheckListByPortalIdSorted(portalId)

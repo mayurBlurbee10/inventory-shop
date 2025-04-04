@@ -18,7 +18,8 @@ import {
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
-import { fontSizeOptions, logoSizeRatio } from "@/app/lib/data/font_size";
+import { fontSizeOptions, fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
+import { setContent } from "@/store/services/contentService";
 
 const AddContentModal = ({
   contentTypes,
@@ -51,7 +52,9 @@ const AddContentModal = ({
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
-    if (newContent?.type !== "Image" && !newContent.value.trim()) {
+    if (((newContent?.type !== "Image" && newContent?.type !== "Links") && !newContent?.value?.trim()) || (newContent?.type === "Links" && (linkFields.length > 0 &&
+      linkFields[linkFields.length - 1].label === "" ||
+      linkFields[linkFields.length - 1].link === ""))) {
       handleModalClose();
       return;
     }
@@ -93,7 +96,7 @@ const AddContentModal = ({
         ? {
             ...newContent,
             value: JSON.stringify(linkFields),
-            fontSize: newContent.fontSize, // Add fontSize here
+            fontSize: "14px", // Add fontSize here
             portalId: params.portalid ?? "default",
           }
         : {
@@ -153,21 +156,22 @@ const AddContentModal = ({
 
       // Refresh data and close the modal
       await fetchData();
+      dispatch(setContent(params?.portalid));
+      
       setIsContentAdded && setIsContentAdded(true)
-      handleModalClose();
-
-      toast.success(
-        `${apiType === "updateContentManagement"
-          ? "Content updated successfully"
-          : "Content added successfully"
-        }`
-      );
+      
+        handleModalClose();
+        setIsSubmitting(false);
+        toast.success(
+          `${apiType === "updateContentManagement"
+            ? "Content updated successfully"
+            : "Content added successfully"
+          }`
+        );
     } catch (error) {
       toast.error(error.message);
       console.error("Error adding content:", error);
       setError(error.message || "An unexpected error occurred");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -184,11 +188,12 @@ const AddContentModal = ({
     } else {
       const selectedType =
         contentTypes.find((type) => type.title === selectedTitle)?.type || "";
+      const fontSize = fontSizes.find((item) => item.key === selectedTitle)
       setNewContent((prev) => ({
         ...prev,
         title: selectedTitle,
         type: selectedType,
-        fontSize: newContent.fontSize,
+        fontSize: fontSize ? fontSize.size : "",
       }));
       setPreviewUrl("");
       setFile(null);
@@ -262,29 +267,27 @@ const AddContentModal = ({
     { name: "Sun", component: Sun }
   ];
 
-   const LogoImage = () => {
-      const baseSize = 100; // Set a reasonable base size (in pixels)
+  const LogoImage = () => {
+    const baseSize = 99; // Set a base height
   
-      const logoSize =
-        (newContent?.fontSize &&
-          logoSizeRatio[
-            newContent?.fontSize
-          ]) ||
-        logoSizeRatio.medium;
-
-      return (
-        <div className="mt-2" >
-          <img
-            src={previewUrl}
-            alt="Logo preview"
-            className="object-contain rounded border"
-            style={{
-              height: `${baseSize * logoSize}px`,
-              width: `${baseSize * logoSize}px`,
-            }}
-          />
-        </div>
-      );
+    const logoSize =
+      (newContent?.fontSize && logoSizeRatio[newContent?.fontSize]) ||
+      logoSizeRatio.medium;
+  
+    return (
+      <div className="">
+        <img
+          src={previewUrl}
+          alt="Logo preview"
+          className="object-contain rounded border"
+          style={{
+            height: `${baseSize * logoSize}px`, 
+            width: "auto",                      
+            maxWidth: "100%",                   
+          }}
+        />
+      </div>
+    );
   };
 
   return (
@@ -295,7 +298,7 @@ const AddContentModal = ({
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl text-gray-800 font-semibold">
-            {`${isEditMode ? "Update" : "Add"} Content`}{" "}
+            {`${isEditMode ? "Edit" : "Add"} Content`}{" "}
           </h2>
           <button
             onClick={handleModalClose}
@@ -354,9 +357,9 @@ const AddContentModal = ({
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100 text-gray-500"
           />
         </div> */}
-          {newContent?.type !== "Links" && (
+          {newContent?.type !== "Links" && newContent?.type !== "Icons" && (
             <>
-              {newContent.title !== "Title" && newContent?.type !== "Icons" && !newContent?.title.includes("Card") && fontSizeOptions[newContent?.type] !== null && (
+              {newContent.title !== "Title" && !newContent?.title.includes("Card") && fontSizeOptions[newContent?.type] && (
                 <div className="mb-4">
                   <label
                     htmlFor="fontSize"
@@ -377,7 +380,7 @@ const AddContentModal = ({
                     }
                     required
                   >
-                    {fontSizeOptions[newContent?.type].map((size) => (
+                    {(fontSizeOptions[newContent?.type] || []).map((size) => (
                       <option key={size} value={size}>
                         {size}
                       </option>
@@ -464,6 +467,9 @@ const AddContentModal = ({
                   setNewContent((prev) => ({ ...prev, value: e.target.value }))
                 }
               >
+                <option value="" disabled>
+                  Select Icon
+                </option>
                 {iconOptions.map((icon) => (
                   <option key={icon.name} value={icon.name}>
                     {icon.name}
@@ -581,8 +587,13 @@ const AddContentModal = ({
             <Button
               buttonType="submit"
               type="Primary"
-              disabled={isSubmitting || (newContent?.type !== "Image"  && !newContent.value.trim()) || (newContent?.type !== "Links" && !newContent.value.length)}
-              label={isEditMode ? "Update" : "Add"}
+              disabled={isSubmitting || 
+                ((newContent?.type !== "Image" && newContent?.type !== "Links") && !newContent?.value?.trim()) || (newContent?.type === "Links" && (linkFields.length > 0 &&
+                  linkFields[linkFields.length - 1].label === "" ||
+                  linkFields[linkFields.length - 1].link === ""))
+              }
+              // label={isEditMode ? "Save" : "Add"}
+              label={"Save"}
               isLoading={isSubmitting}
             />
           </div>

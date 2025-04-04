@@ -207,10 +207,11 @@ function Navbar({ content, config, filterValue }) {
               <img
                 src={logo.replace("/api/upload", "/uploads")}
                 alt={params.portalid}
-                className="mr-2"
+                className="object-contain mr-2"
                 style={{
-                  height: `${baseSize * logoSize}px`,
-                  width: `${baseSize * logoSize}px`,
+                  height: `${baseSize * logoSize}px`, 
+                  width: "auto",                     
+                  maxWidth: "100%",                   
                 }}
               />
         </div>
@@ -244,9 +245,11 @@ function Navbar({ content, config, filterValue }) {
                 paddingInline:"2px" 
               }}
             >
-              {content?.portalContent === undefined ? ( 
-                <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
-              ) : filterValue("Header Text") &&
+              {
+              // content?.portalContent === undefined ? ( 
+              //   <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
+              // ) : 
+              filterValue("Header Text") &&
                 filterValue("Header Text") !== "Premier Customer Portal" ? (
                 filterValue("Header Text") 
               ) : (

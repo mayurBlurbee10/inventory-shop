@@ -45,6 +45,7 @@ import { useSelector } from "react-redux";
 import Button from "./Common/Elements/Button";
 import Editor from "./Editor";
 import RenameDocumentModal from "./Common/RenameDocumentModal";
+import moment from "moment";
 
 const ShareModal = ({
   isOpen,
@@ -1009,7 +1010,7 @@ const sortDescending = () => {
                                 {/* today by Wealthportal Service Account */}
                                 {listType === "shared"
                                   ? getUserName(file)
-                                  : `today by Wealthportal Service Account`}
+                                  : moment(file?.modified_at).fromNow(false)}
                               </p>
                             </td>
                             <td>

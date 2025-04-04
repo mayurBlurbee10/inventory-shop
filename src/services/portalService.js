@@ -176,11 +176,11 @@ const getPortalCreatedAdmin = async (portalId) => {
       where: { legalName: reverseSanitizeName(portalId) },
     });
     if (!portal) {
-      throw new Error("portal doesn't exist");
+      throw new Error("Portal doesn't exist");
     }
     return await userService.getUserById(portal?.portalCreatedAdmin);
   } catch (error) {
-    throw new Error("Failed to get portal.");
+    throw new Error(error?.message);
   }
 }
 

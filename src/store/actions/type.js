@@ -20,3 +20,9 @@ export const SET_LOANS = "SET_LOANS";
 export const SET_NEW_LOAN = "SET_NEW_LOAN";
 
 export const SET_MESSAGES = "SET_MESSAGES";
+
+export const SET_CONTENT = "SET_CONTENT";
+
+export const SET_TASKS = "SET_TASKS";
+export const SET_TASKS_LOADING = "SET_TASKS_LOADING";
+export const CLEAR_TASKS = "CLEAR_TASKS";

@@ -554,7 +554,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
                         />
                         <Button
                             type="Primary"
-                            label={task ? "Edit" : "Submit"}
+                            label={task ? "Save" : "Submit"}
                             onClick={handleCreate}
                             isLoading={submitLoading}
                             disabled={!formData.type || !formData.title || !formData.description || !formData.checkList || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}

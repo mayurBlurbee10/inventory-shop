@@ -76,7 +76,6 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
         setIsDeleteTaskLoading(false);
       }
     };
-  console.log("selected Task: ", task);
   
     return (
       <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
@@ -538,37 +537,10 @@ const TasksSection = ({ client = null }) => {
     const modelClose = () => {
         setCreateTask(false);
     }
-  console.log("tasks: ", tasks);
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString("en-US");
   };
-
-  useEffect(() => {
-    if (tasks.length > 0) {
-      setSortedTasksList(tasks)
-    }
-  }, [tasks])
-  
-  const sortTaskAscending = () => {
-    const sortedTasks = [...tasks].sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-    setSortedTasksList(sortedTasks);
-  };
-  
-  const sortTaskDescending = () => {
-    const sortedTasks = [...tasks].sort((a, b) => (b.title || "").localeCompare(a.title || ""));
-    setSortedTasksList(sortedTasks);
-  };
-
-const sortDueDateAscending = () => {
-  const sortedTasks = [...tasks].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  setSortedTasksList(sortedTasks);
-};
-
-const sortDueDateDescending = () => {
-  const sortedTasks = [...tasks].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  setSortedTasksList(sortedTasks);
-};
 
 const sortedTasks =
   tasks &&

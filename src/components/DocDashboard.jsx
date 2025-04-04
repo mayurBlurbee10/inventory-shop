@@ -41,7 +41,7 @@ export const data = {
 export default function DocDashboard() {
   // return <Dashboard fileType={'my'}/>;
   // const [config, setConfig] = useState(null);
-  const [content, setContent] = useState(null);
+  // const [content, setContent] = useState(null);
   const params = useParams();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +58,7 @@ export default function DocDashboard() {
   
   const {data : user } = useSelector((state)=>state.user);
   const {data : pages } = useSelector((state)=>state.pages);
+  const { data: content } = useSelector((state) => state.content);
 
   const dispatch = useDispatch();
 
@@ -167,7 +168,7 @@ export default function DocDashboard() {
 
   useEffect(() => {
     fetchPage();
-    fetchContent();
+    // fetchContent();
   }, []);
 
   const filterValue = (title) => {
@@ -188,22 +189,19 @@ export default function DocDashboard() {
     return value;
   };
 
-  useEffect(() => {
-    fetchContent();
-  }, []);
 
-  const fetchContent = async () => {
-    const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid}`,
-      { method: "GET" },
-      "fetchContentManagement"
-    );
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to fetch Content Management");
-    }
-    setContent(data);
-  };
+  // const fetchContent = async () => {
+  //   const response = await fetchWrapper(
+  //     `/api/contentManagement?portalId=${params.portalid}`,
+  //     { method: "GET" },
+  //     "fetchContentManagement"
+  //   );
+  //   const data = await response.json();
+  //   if (!response.ok) {
+  //     throw new Error(data.error || "Failed to fetch Content Management");
+  //   }
+  //   setContent(data);
+  // };
 
   const handleLogout = async () => {
     clearUserData();
@@ -244,16 +242,17 @@ export default function DocDashboard() {
     const formattedDate = `${weekday}, ${month} ${day}${getOrdinalSuffix(day)}`;
     setDayAndDate(formattedDate);
   }, []);
+
   const LoadingSpinner = () => (
-    <div className="min-h-[84vh] flex justify-center items-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   const userIsAdmin = isAdmin();
 
   if(isPageLoading){
-    return <LoadingSpinner/>
+  return <LoadingSpinner/>
   }
 
   return (
@@ -432,7 +431,7 @@ export default function DocDashboard() {
           </div>
           <div className="col-span-2">
           {filterVisibility("My Task Section") && (
-            <TasksSection fileType="my" />
+            <TasksSection />
           )}
           {filterVisibility("Collaborator Section") && (
             <CollaboratorSection />

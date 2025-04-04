@@ -110,7 +110,7 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
               <Button
                 disabled={isLoading || !checkListName?.trim()}
                 onClick={handleCreateCheckList}
-                label={checklist ? "Edit" : "Add"}
+                label={checklist ? "Save" : "Add"}
                 type="Primary"
                 isLoading={isLoading}
               />

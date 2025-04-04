@@ -57,7 +57,6 @@ export default function OnBoardingPage() {
   const [contentLength, setContentLength] = useState(0);
   const [errors, setErrors] = useState({});
   // const [config, setConfig] = useState([]);
-  const [content, setContent] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAddRequired, setIsAddRequired] = useState(true);
@@ -77,6 +76,8 @@ export default function OnBoardingPage() {
   const [isContentAdded, setIsContentAdded] = useState(false)
   const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
   const { data: config } = useSelector((state) => state.portal);
+  const { data: contentData } = useSelector((state) => state.content);
+  const [content, setContent] = useState(contentData);
   const [colors, setColors] = useState({
     primaryColor: config?.primaryColor,
     secondaryColor: config?.secondaryColor,
@@ -126,7 +127,7 @@ export default function OnBoardingPage() {
       );
       if (!response.ok) throw new Error("Failed to fetch Content Management");
       const data = await response.json();
-      setContent(data?.portalContent);
+      setContent(data);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -280,7 +281,7 @@ export default function OnBoardingPage() {
   // };
 
   const filterContent = (title) => {
-    const contentItem = content?.find((item) => item.title === title);
+    const contentItem = content && content?.portalContent?.find((item) => item.title === title);
     let value = contentItem ? contentItem.value : title;
     if(title === 'Logo'){
       if(contentItem && contentItem.type === 'Image'){
@@ -294,7 +295,7 @@ export default function OnBoardingPage() {
   };
 
   const handleModalOpenForEdit = (contentTitle) => {
-    const contentToEdit = content?.find((item) => item.title === contentTitle);
+    const contentToEdit = content && content?.portalContent?.find((item) => item.title === contentTitle);
     let fontSize = fontSizes.find((item) => item.key === contentTitle)
     if (!contentToEdit) {
       const content = contentTypes.find((item) => item.title === contentTitle);
@@ -339,35 +340,36 @@ export default function OnBoardingPage() {
 
   if (!config || !content) return <LoadingSpinner />;
 
-  const LogoImage = () => {
-    const baseSize = 100; // Set a reasonable base size (in pixels)
-
-    const logoSize =
-      (content?.find((item) => item.title === "Logo")?.fontSize &&
+   const LogoImage = () => {
+      const baseSize = 100; // Set a base height
+    
+      const logoSize =
+      (content?.portalContent?.find((item) => item.title === "Logo")?.fontSize &&
         logoSizeRatio[
-          content.find((item) => item.title === "Logo")?.fontSize
+          content?.portalContent?.find((item) => item.title === "Logo")?.fontSize
         ]) ||
       logoSizeRatio.medium;
-    return (
-      <div className="block min-w-16" >
-        <img
-          src={filterContent("Logo") || config?.logo}
-          alt={params.portalid || "Default"}
-          className="mr-2"
-          style={{
-            height: `${baseSize * logoSize}px`,
-            width: `${baseSize * logoSize}px`,
-          }}
-        />
-      </div>
-    );
-  };
+    
+      return (
+        <div className="block min-w-16">
+          <img
+            src={filterContent("Logo") || config?.logo}
+            alt={params.portalid || "Default"}
+            className="object-contain"
+            style={{
+              height: `${baseSize * logoSize}px`, 
+              width: "auto",                      
+              maxWidth: "100%",                   
+            }}
+          />
+        </div>
+      );
+    };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">
-      <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-gray-50 bg-opacity-80 flex justify-center min-h-[50vh] md:min-h-screen">
+      {/* <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-gray-50 bg-opacity-80 flex justify-center min-h-[50vh] md:min-h-screen">
         <div className="bg-white w-full h-screen flex flex-col relative border-r border-[#dee2e6]">
-          {/* Loading Overlay */}
           {isSubmitting && (
             <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
               <div className="text-center space-y-3">
@@ -381,21 +383,6 @@ export default function OnBoardingPage() {
               </div>
             </div>
           )}
-          {/* Header */}
-          {/* <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center space-x-8">
-              {[0, 1].map((step) => (
-                <div key={step} className="flex items-center">
-                  <WizardStep step={step} currentStep={currentStep} />
-                  {step < 1 && (
-                    <ChevronRight size={16} className="mx-2 text-gray-300" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div> */}
-
-          {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
             <CurrentStepComponent
               isAddRequired={isAddRequired}
@@ -417,38 +404,7 @@ export default function OnBoardingPage() {
             </div>
           )}
 
-          {/* Footer */}
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
-            {/* {currentStep === 0 ? (
-              <div></div>
-            ) : (
-              // <button
-              //   onClick={currentStep === 0 ? onClose : handleBack}
-              //   className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md border border-gray-300"
-              //   disabled={isSubmitting}
-              //  >
-              //   {currentStep === 0 ? "Cancel" : "Back"}
-              // </button>
-              <Button
-                onClick={currentStep === 0 ? onClose : handleBack}
-                disabled={isSubmitting}
-                label={currentStep === 0 ? "Cancel" : "Back"}
-                type="Secondary"
-              />
-            )} */}
-
-            {/* <button
-              onClick={handleSave}
-              disabled={isSubmitting}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md ${isSubmitting
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gray-900 hover:bg-gray-800"
-              }`}
-            >
-              {currentStep === steps.length - 1
-                ? "Save & Continue"
-                : "Continue"}
-            </button> */}
             <Button
               onClick={handleSave}
               disabled={isSubmitting}
@@ -458,12 +414,12 @@ export default function OnBoardingPage() {
             />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Preview Page */}
-      <div className="col-span-1 md:col-span-1 lg:col-span-8 h-full relative overflow-hidden bg-background  flex flex-col justify-between">
+      <div className="col-span-1 md:col-span-1 lg:col-span-12 h-full relative overflow-hidden bg-background flex flex-col justify-between">
         <div>
-          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border" style={{ backgroundColor: config?.accentColor}}>
+          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.accentColor}}>
           {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
               // src="/default_logo_purple.png"
@@ -475,7 +431,8 @@ export default function OnBoardingPage() {
               {filterValue("Header Text")}
             </span>
           </a> */}
-          <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+          <div className="max-w-[1140px] w-full mx-auto ">
+            <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
                 <div
                   className="absolute top-0 right-0 p-1 cursor-pointer"
@@ -508,7 +465,7 @@ export default function OnBoardingPage() {
                 className="text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative" 
                 style={{
                   fontSize:
-                    content?.find((item) => item.title === "Header Text")?.fontSize || '30px',
+                    content?.portalContent?.find((item) => item.title === "Header Text")?.fontSize || '30px',
                 }}
               >
                 <div
@@ -522,6 +479,7 @@ export default function OnBoardingPage() {
                 </span>
               </span>
             </a>
+          </div> 
 
           {/* <div className="hidden md:flex items-center gap-x-6">
             <div className="flex items-center transition-transform transform hover:scale-105 ">
@@ -564,7 +522,7 @@ export default function OnBoardingPage() {
                   className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
                   style={{
                     fontSize:
-                      content?.find((item) => item.title === "Title")?.fontSize || '56px',
+                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '56px',
                   }}>
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
@@ -589,7 +547,7 @@ export default function OnBoardingPage() {
                     className="font-light leading-7 font-lato mb-3 mt-5 line-clamp-3"  
                     style={{
                           fontSize:
-                            content?.find((item) => item.title === "Paragraph")?.fontSize || '20px',
+                            content?.portalContent?.find((item) => item.title === "Paragraph")?.fontSize || '20px',
                         }}>
                     {filterContent("Paragraph")}
                   </p>
@@ -688,7 +646,7 @@ export default function OnBoardingPage() {
                     <div
                       className="line-clamp-2 leading-6"
                       style={{
-                        fontSize: content?.find((item) => item.title === "Card 1 Title")?.fontSize || '20px',
+                        fontSize: content?.portalContent?.find((item) => item.title === "Card 1 Title")?.fontSize || '20px',
                       }}
                     >
                       {filterContent("Card 1 Title")}
@@ -705,7 +663,7 @@ export default function OnBoardingPage() {
                   <div className="line-clamp-2"  
                     style={{
                         fontSize:
-                          content?.find((item) => item.title === "Card 1 Content")?.fontSize || '14px',
+                          content?.portalContent?.find((item) => item.title === "Card 1 Content")?.fontSize || '14px',
                       }}>{filterContent("Card 1 Content")}</div>
                 </span>
               </div>
@@ -745,7 +703,7 @@ export default function OnBoardingPage() {
                     <div
                       className="line-clamp-2 leading-6"
                       style={{
-                        fontSize: content?.find((item) => item.title === "Card 2 Title")?.fontSize || '20px',
+                        fontSize: content?.portalContent?.find((item) => item.title === "Card 2 Title")?.fontSize || '20px',
                       }}
                     >
                       {filterContent("Card 2 Title")}
@@ -762,7 +720,7 @@ export default function OnBoardingPage() {
                   <div className="line-clamp-2" 
                     style={{
                         fontSize:
-                          content?.find((item) => item.title === "Card 2 Content")?.fontSize || '14px',
+                          content?.portalContent?.find((item) => item.title === "Card 2 Content")?.fontSize || '14px',
                       }}>{filterContent("Card 2 Content")}</div>
                 </span>
               </div>
@@ -802,7 +760,7 @@ export default function OnBoardingPage() {
                     <div
                       className="line-clamp-2 leading-6"
                       style={{
-                        fontSize: content?.find((item) => item.title === "Card 3 Title")?.fontSize || '20px',
+                        fontSize: content?.portalContent?.find((item) => item.title === "Card 3 Title")?.fontSize || '20px',
                       }}
                     >
                       {filterContent("Card 3 Title")}
@@ -819,7 +777,7 @@ export default function OnBoardingPage() {
                   <div className="line-clamp-2" 
                     style={{
                         fontSize:
-                          content?.find((item) => item.title === "Card 3 Content")?.fontSize || '14px',
+                          content?.portalContent?.find((item) => item.title === "Card 3 Content")?.fontSize || '14px',
                       }}>{filterContent("Card 3 Content")}</div>
                 </span>
               </div>
@@ -827,6 +785,13 @@ export default function OnBoardingPage() {
           </div>
         </div>
         </div>
+        <Button
+          onClick={() => router.back()}
+          disabled={isSubmitting}
+          label={"Continue"}
+          type="Primary"
+          className="ml-auto mt-10 mx-10"
+        />
         <div className="w-full ">
           <Footer
             config={config}
@@ -835,6 +800,7 @@ export default function OnBoardingPage() {
             handleModalOpenForEdit={handleModalOpenForEdit}
           />
         </div>
+        
         {isDialogOpen && (
           <AddContentModal
             contentTypes={contentTypes}

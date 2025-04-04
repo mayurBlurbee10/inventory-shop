@@ -17,9 +17,10 @@ function Container({ children }) {
   const router = useRouter();
   // const [user, setUser] = useState(null);
   // const [config, setConfig] = useState(null);
-  const [content, setContent] = useState(null);
+  // const [content, setContent] = useState(null);
 
   const { data: config } = useSelector((state) => state.portal);
+  const { data: content } = useSelector((state) => state.content);
   const dispatch = useDispatch()
 
   const fetchConfig = async () => {
@@ -58,18 +59,18 @@ function Container({ children }) {
   //   }
   // };
 
-  const fetchContent = async () => {
-    const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid}`,
-      { method: "GET" },
-      "fetchContentManagement"
-    );
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to fetch Content Management");
-    }
-    setContent(data);
-  };
+  // const fetchContent = async () => {
+  //   const response = await fetchWrapper(
+  //     `/api/contentManagement?portalId=${params.portalid}`,
+  //     { method: "GET" },
+  //     "fetchContentManagement"
+  //   );
+  //   const data = await response.json();
+  //   if (!response.ok) {
+  //     throw new Error(data.error || "Failed to fetch Content Management");
+  //   }
+  //   setContent(data);
+  // };
 
   const filterValue = (title) => {
     if (!content) return null;
@@ -125,7 +126,7 @@ function Container({ children }) {
 
       // setUser(userData);
       fetchConfig();
-      fetchContent();
+      // fetchContent();
       // getFiles()
     });
   }, [router]);
