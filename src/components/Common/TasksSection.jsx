@@ -538,8 +538,12 @@ const TasksSection = ({ client = null }) => {
         setCreateTask(false);
     }
   const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString("en-US");
+    if(timestamp){
+      const date = new Date(timestamp);
+      return date.toLocaleDateString("en-US");
+    }else {
+      return "No Due"
+    }
   };
 
 const sortedTasks =

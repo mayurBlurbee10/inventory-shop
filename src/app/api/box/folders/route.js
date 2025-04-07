@@ -182,6 +182,22 @@ async function fetchFileCollaborators(itemId) {
   }
 }
 
+export const deleteFolderContents = async (folderId) => {
+  const items = await client.folders.getItems(folderId, { fields: "id,type" });
+
+  for (const item of items.entries) {
+    if (item.type === "file") {
+      await client.files.delete(item.id);
+    } else if (item.type === "folder") {
+      await client.folders.delete(item.id, { recursive: true });
+    }
+  }
+};
+
+export const deleteFolder = async (folderId, recursive = false) => {
+  await client.folders.delete(folderId, { recursive: recursive });
+};
+
 export async function DELETE(req) {
   try {
     await logApiCall(req, () => {});
@@ -192,7 +208,7 @@ export async function DELETE(req) {
       return Response.json({ error: "No folderId provided" }, { status: 400 });
     }
 
-    await client.folders.delete(folderId);
+    await deleteFolder(folderId, false);
 
     return Response.json({
       message: "Folder deleted successfully",

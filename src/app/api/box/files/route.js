@@ -5,6 +5,8 @@ import BoxSDK from "box-node-sdk";
 import { Readable } from "stream";
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import { addCollaborator } from "./share/route";
+import fs from "fs";
+import path from "path";
 
 const sdk = new BoxSDK({
   clientID: process.env.BOX_CLIENT_ID,
@@ -20,6 +22,55 @@ const client = sdk.getAppAuthClient(
   "enterprise",
   process.env.BOX_ENTERPRISE_ID
 );
+
+export const getLocalFilesFromPublic = () => {
+  const folderPath = path.join(process.cwd(), "public/files");
+  return fs.readdirSync(folderPath).map((fileName) => ({
+    name: fileName,
+    path: path.join(folderPath, fileName),
+  }));
+};
+
+export const uploadSampleFiles = async (email, userId, parentFolder) => {
+  const accessToken = await client._session.getAccessToken();
+  const newClient = sdk.getBasicClient(accessToken);
+
+  const localFiles = getLocalFilesFromPublic();
+
+  const uploadedFiles = [];
+
+  for (const file of localFiles) {
+    const buffer = fs.readFileSync(file.path);
+
+    const fileStream = new Readable();
+    fileStream.push(buffer);
+    fileStream.push(null);
+
+    const uploadedFileRes = await newClient.files.uploadFile(
+      parentFolder,
+      file.name,
+      fileStream,
+      { description: email }
+    );
+
+    const uploadedFile = uploadedFileRes.entries[0];
+    // Add collaborator if not already added
+    const collaborations = await newClient.files.getCollaborations(
+      uploadedFile.id
+    );
+    const isAlreadyCollaborator = collaborations.entries.some(
+      (collab) => collab.accessible_by && collab.accessible_by.id === userId
+    );
+
+    if (!isAlreadyCollaborator) {
+      await addCollaborator(uploadedFile.id, userId, "editor", "file");
+    }
+
+    uploadedFiles.push(uploadedFile);
+  }
+
+  return uploadedFiles;
+}
 
 export async function GET(request) {
   try {

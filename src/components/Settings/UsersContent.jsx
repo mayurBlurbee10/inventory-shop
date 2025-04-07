@@ -52,8 +52,9 @@ const UsersContent = () => {
     }
   }, [onDeleteUser]);
 
-  const handleAddUser = (newUser) => {
+  const handleAddUser = async (newUser) => {
     setUsers((prev) => [...prev, newUser]);
+    await fetchUsers()
   };
 
   const handleViewFiles = (user) => {

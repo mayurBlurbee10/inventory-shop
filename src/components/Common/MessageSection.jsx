@@ -26,8 +26,13 @@ import AllTaskModal from "./AllTaskModal";
 import { toast } from "react-toastify";
 
 const formatDate = (timestamp) => {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString("en-US");
+  if(timestamp){
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US");
+  }else {
+    const date = new Date(Date.now());
+    return date.toLocaleDateString("en-US");
+  }
 };
 
 const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {

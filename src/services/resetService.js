@@ -6,7 +6,14 @@ import { Pages } from "@/entities/Pages";
 import { In } from "typeorm";
 import { Users } from "@/entities/Users";
 import { Plugins } from "@/entities/Plugins";
-import { PluginType } from "@/config/constants";
+import { PluginType, TaskType } from "@/config/constants";
+import portalService from "./portalService";
+import { deleteFolderContents } from "@/app/api/box/folders/route";
+import { uploadSampleFiles } from "@/app/api/box/files/route";
+import userService from "./userService";
+import checkListService from "./checkListService";
+import messageService from "./messageService";
+import taskService from "./taskService";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -29,6 +36,8 @@ const resetPortal = async (portalId) => {
       deleteChecklists(checkListRepository, portalId),
       deleteMessages(messageRepository, portalId),
       updateUsersTNCStatus(userRepository, portalId),
+      deleteFilesAndFolder(portalId),
+      createSampleMessage(portalId)
     ]);
 
     return;
@@ -60,10 +69,45 @@ const deleteChecklists = async (checkListRepository, portalId) => {
   const checklists = await checkListRepository.find({
     where: { portalId },
   });
+  await checkListRepository.remove(checklists);
 
-  const filteredChecklists = checklists.filter(c => c.title !== "general");
+  const generalCheckList = await checkListService.createGeneralCheckList({ name : "General", portalId : portalId, isActive : true });
 
-  await checkListRepository.remove(filteredChecklists);
+  await createSampleTasks(generalCheckList?.id, portalId)
+};
+
+const createSampleTasks = async (checklistId, portalId) => {
+  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(portalId);
+  const endUser = await userService.getUserByEmail(`user_${portalCreatedAdmin?.email}`);
+
+  const tasks = [
+    {
+      title : "Review Documents",
+      description: "Please review documents",
+      dueDate: new Date(Date.now()),
+      type: TaskType.GENERAL,
+      user: endUser ? endUser?.id : portalCreatedAdmin?.id,
+      createdBy: portalCreatedAdmin?.id,
+      uploads: [],
+      portalId: portalId,
+      checklist : checklistId
+    },
+    {
+      title : "Upload Docs",
+      description: "documents",
+      dueDate: new Date(Date.now()),
+      type: TaskType.GENERAL,
+      user: endUser ? endUser?.id : portalCreatedAdmin?.id,
+      createdBy: portalCreatedAdmin?.id,
+      uploads: [],
+      portalId: portalId,
+      checklist : checklistId
+    }
+  ]
+
+  for(let task of tasks){
+    await taskService.createTask(task);
+  }
 };
 
 const deleteMessages = async (messageRepository, portalId) => {
@@ -80,6 +124,41 @@ const updateUsersTNCStatus = async (userRepository, portalId) => {
   );
 
   await Promise.all(userUpdates);
+};
+
+const deleteFilesAndFolder = async (portalId) => {
+  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(portalId);
+  const folderId = portalCreatedAdmin?.folderId;
+  if(folderId){
+    await deleteFolderContents(folderId);
+  }
+  await uploadSampleFiles(portalCreatedAdmin?.email, portalCreatedAdmin?.boxUserId, folderId);
+}
+
+const createSampleMessage = async (portalId) => {
+  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(portalId);
+  const endUser = await userService.getUserByEmail(`user_${portalCreatedAdmin?.email}`);
+  
+  const messages = [
+    {
+      sender: portalCreatedAdmin?.id,
+      receiver: endUser?.id,
+      portalId: portalId,
+      subject: "Availablity for Quick Call",
+      text: "Are you available for the quick call?",
+    },
+    {
+      sender: portalCreatedAdmin?.id,
+      receiver: endUser?.id,
+      portalId: portalId,
+      subject: "Document Upload Required",
+      text: "Hello, We noticed that some required documents are still pending. Please upload the necessary files at your earliest convenience.",
+    }
+  ];
+
+  for(let message of messages){
+    await messageService.createMessage(message);
+  }
 };
 
 export default {
