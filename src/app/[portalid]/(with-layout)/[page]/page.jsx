@@ -183,7 +183,7 @@ function Page() {
   return (
     <div className="px-4 pt-4 bg-white text-gray-800 font-lato">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
-        <div className={`col-span-5 ${isAnySideSectionVisible() ? "lg:col-span-3" : "lg:col-span-5"}`}>
+        <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
           <div>
             <div className="w-full flex justify-center">
               <div className="w-[96%] md:w-[80%]">
@@ -192,10 +192,10 @@ function Page() {
                 )}
               </div>
             </div>
-            <div className="flex-1 flex justify-center mt-5">
+            <div className="flex-1 flex justify-center mt-5 ">
               {page && page?.description ? (
                 <div
-                  className="bg-white py-3 px-3 page w-[96%] md:w-[80%] max-h-[500px] overflow-y-auto"
+                  className="bg-white p-3 page w-[96%] md:w-[80%] max-h-[500px] overflow-y-auto border min-h-[250px]"
                   dangerouslySetInnerHTML={{
                     __html: page.description,
                   }}
@@ -215,7 +215,7 @@ function Page() {
           </div>
 
         </div>
-        <div className="col-span-2">
+        <div className="col-span-5 md:col-span-2">
           {filterVisibility("My Task Section") && (
             <TasksSection />
           )}
