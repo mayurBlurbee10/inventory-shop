@@ -142,14 +142,14 @@ const createSampleMessage = async (portalId) => {
   const messages = [
     {
       sender: portalCreatedAdmin?.id,
-      receiver: endUser?.id,
+      receiver: endUser ? endUser?.id : portalCreatedAdmin?.id,
       portalId: portalId,
       subject: "Availablity for Quick Call",
       text: "Are you available for the quick call?",
     },
     {
       sender: portalCreatedAdmin?.id,
-      receiver: endUser?.id,
+      receiver: endUser ? endUser?.id : portalCreatedAdmin?.id,
       portalId: portalId,
       subject: "Document Upload Required",
       text: "Hello, We noticed that some required documents are still pending. Please upload the necessary files at your earliest convenience.",
