@@ -16,6 +16,8 @@ import { setCurrentUser } from "@/store/services/userService";
 import TasksSection from "@/components/Common/TasksSection";
 import MessageSection from "@/components/Common/MessageSection";
 import AdvisorSection from "@/components/Common/AdvisorSection";
+import TickerTape from "@/components/Common/charts/TickerTape";
+import TopStories from "@/components/Common/charts/TopStories";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -179,22 +181,39 @@ function Page() {
   }
   const userIsAdmin = isAdmin();
   return (
-    <div className="p-4 bg-white text-gray-800 font-lato">
+    <div className="px-4 pt-4 bg-white text-gray-800 font-lato">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
         <div className={`col-span-5 ${isAnySideSectionVisible() ? "lg:col-span-3" : "lg:col-span-5"}`}>
-          <div className="bg-gray-50 flex-1">
-            {page && page?.description ? (
-              <div
-                className="bg-white pt-5 pb-3 px-5 page"
-                dangerouslySetInnerHTML={{
-                  __html: page.description,
-                }}
-                suppressHydrationWarning={true}
-              />
-            ) : (
-              <div>No Content Available</div>
-            )}
+          <div>
+            <div className="w-full flex justify-center">
+              <div className="w-[96%] md:w-[80%]">
+                {filterVisibility("Ticker Tape") && (
+                  <TickerTape />
+                )}
+              </div>
+            </div>
+            <div className="flex-1 flex justify-center mt-5">
+              {page && page?.description ? (
+                <div
+                  className="bg-white py-3 px-3 page w-[96%] md:w-[80%] max-h-[500px] overflow-y-auto"
+                  dangerouslySetInnerHTML={{
+                    __html: page.description,
+                  }}
+                  suppressHydrationWarning={true}
+                />
+              ) : (
+                <div>No Content Available</div>
+              )}
+            </div>
+            <div className="flex justify-center mt-5">
+              {filterVisibility("Top Stories") && (
+                  <div className="w-[96%] md:w-[80%]">
+                    <TopStories />
+                  </div>
+                )}
+            </div>
           </div>
+
         </div>
         <div className="col-span-2">
           {filterVisibility("My Task Section") && (

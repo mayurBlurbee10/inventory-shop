@@ -78,13 +78,13 @@ export async function POST(req) {
     const token = user?.resetPasswordToken
       ? user.resetPasswordToken
       : await generateNanoToken();
-    sendSuccessPortalEmail(
-      user.email,
-      user.name,
-      token,
-      sanitizeName(portal.legalName),
-      user?.resetPasswordToken !== null
-    );
+    // sendSuccessPortalEmail(
+    //   user.email,
+    //   user.name,
+    //   token,
+    //   sanitizeName(portal.legalName),
+    //   user?.resetPasswordToken !== null
+    // );
     return NextResponse.json({
       message: `portal created successfully.`,
       data: portal,

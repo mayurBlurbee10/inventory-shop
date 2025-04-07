@@ -133,7 +133,7 @@ function Container({ children }) {
 
   return (
     <div
-      className="bg-white min-h-screen overflow-y-auto"
+      className="bg-white min-h-screen overflow-y-auto flex flex-col justify-between"
       suppressHydrationWarning={true}
     >
       {/* Header */}
@@ -142,7 +142,7 @@ function Container({ children }) {
         config={config}
         filterValue={filterValue}
       />
-       <div className="min-h-[84vh]">{children}</div>
+       <div className="min-h-[86vh]" >{children}</div>
       <Footer config={config} filterValue={filterValue} />
     </div>
   );

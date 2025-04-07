@@ -23,6 +23,9 @@ import TasksSection from "./Common/TasksSection";
 import AdvisorSection from "./Common/CollaboratorSection";
 import CollaboratorSection from "./Common/CollaboratorSection";
 import MessageSection from "./Common/MessageSection";
+import TickerTape from "./Common/charts/TickerTape";
+import Chart from "./Common/charts/Chart";
+import TopStories from "./Common/charts/TopStories";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -244,7 +247,7 @@ export default function DocDashboard() {
   }, []);
 
   const LoadingSpinner = () => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="h-[86vh] flex items-center justify-center bg-white">
       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
@@ -257,176 +260,48 @@ export default function DocDashboard() {
 
   return (
     // <Container>
-    <div className="max-w-[1820px] mx-auto px-4 pb-[70px]">
-      <div className="mt-14">
+    <div className="max-w-[1820px] mx-auto px-4">
+      <div className="pt-14">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
           <div className="col-span-3">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-10 pb-4 border-b">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-10 pb-4 border-b justify-between">
               {filterVisibility("Header Section") && (
-                <div>
+                <div className={filterVisibility("Ticker Tape") ? "flex-1" : "w-full"}>
                   <h2 className="text-xl font-light text-black font-lato">
-                    {/* Hello, David West! Today is Wednesday, January 15th. */}
                     {`Hello, ${user?.name}! Today is ${dayAndDate}`}
                   </h2>
                 </div>
               )}
-              {filterVisibility("Statistics Header") && (
-                <div>
-                  <p className="text-sm font-normal text-black font-lato">
-                    Dow Jones{" "}
-                    <span className="text-red-500">-34.71 (-0.16%)</span> S&P
-                    500 <span className="text-red-500">-0.79 (-0.03%)</span>{" "}
-                    Nasdaq{" "}
-                    <span className="text-green-500"> +0.04 (0.00%)</span>
-                  </p>
+
+              {filterVisibility("Ticker Tape") && (
+                <div className={filterVisibility("Header Section") ? "flex-1" : "w-full"}>
+                  <TickerTape />
                 </div>
               )}
             </div>
+
             {/* Chart */}
-            <div className="mt-5">
+            <div className="mt-5 flex flex-col items-center">
               {filterVisibility("Chart Section") && (
                 <>
                   <h3 className="text-xl font-light font-lato text-center text-black mb-4">
                     Your Investments At a Glance
                   </h3>
 
-                  <div className="max-w-[400px] mx-auto">
-                    <Pie data={data} />
+                  <div className="flex justify-center w-full">
+                    <div className="w-[96%] md:w-[80%]">
+                      <Chart />
+                    </div>
                   </div>
                 </>
               )}
-
-              {/* Chart data table */}
-              {filterVisibility("Statistics Section") && (
-                <div className="border border-[#0000001a] mt-[70px] max-w-2xl mx-auto">
-                  <table className="min-w-full divide-y-2 divide-[#0000001a]">
-                    <thead>
-                      <tr>
-                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                          Asset class
-                        </th>
-                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                          Investment
-                        </th>
-                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                          Amount
-                        </th>
-                        <th className="font-bold font-lato text-sm text-black text-start px-2 py-1.5">
-                          Return
-                        </th>
-                      </tr>
-                    </thead>
-
-                    <tbody className="divide-y divide-[#0000001a]">
-                      <tr>
-                        <td className="px-2 py-1.5">
-                          <p className="font-bold font-lato text-sm text-black">
-                            US Stocks
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            Vanguard VTI ETF
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            $46,000
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-green-500">
-                            +11.7%
-                          </p>
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td className="px-2 py-1.5">
-                          <p className="font-bold font-lato text-sm text-black">
-                            Foreign Stocks
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            Vanguard VEA ETF
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            $12,000
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-green-500">
-                            +1.4%
-                          </p>
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td className="px-2 py-1.5">
-                          <p className="font-bold font-lato text-sm text-black">
-                            Emerging Markets
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            Vanguard VWO ETF
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            $23,000
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-red-500">
-                            -1.1%
-                          </p>
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td className="px-2 py-1.5">
-                          <p className="font-bold font-lato text-sm text-black">
-                            Bonds
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            iShares MUB ETF
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-black">
-                            $3,000
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-normal font-lato text-sm text-red-500">
-                            -2.0%
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-2 py-1.5 col-span-2">
-                          <p className="font-bold font-lato text-sm text-black">
-                            Total
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5 table-column-group"></td>
-                        <td className="px-2 py-1.5">
-                          <p className="font-semibold font-lato text-sm text-black">
-                            $84,000
-                          </p>
-                        </td>
-                        <td className="px-2 py-1.5 table-column-group"></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
+            </div>
+            <div className="flex justify-center mt-5">
+              {filterVisibility("Top Stories") && (
+                  <div className="w-[96%] md:w-[80%]">
+                    <TopStories />
+                  </div>
+                )}
             </div>
           </div>
           <div className="col-span-2">
@@ -436,7 +311,7 @@ export default function DocDashboard() {
           {filterVisibility("Collaborator Section") && (
             <CollaboratorSection />
           )}
-          {filterVisibility("Links Section") && (
+          {/* {filterVisibility("Links Section") && (
             <div className="mt-7">
               {filterLinksVisibility("shared-docs") && (
                  <Link href="shared-docs">
@@ -475,7 +350,7 @@ export default function DocDashboard() {
                  </Link>
                )}
             </div>
-          )}
+          )} */}
             {filterVisibility("Messaging") && (
               // <Messaging />
               <MessageSection />

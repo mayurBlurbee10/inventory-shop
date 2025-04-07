@@ -43,7 +43,7 @@ export const sendSetPasswordEmail = async (
         to: [{ address: userEmail }],
       }, // Recipient email address
       content: {
-        subject: `You got invited to ${portal}'s portal!`,
+        subject: `You're invited to the NuWealth Portal Demo!`,
         html: `
         <div><br /></div>
           <table
@@ -70,7 +70,7 @@ export const sendSetPasswordEmail = async (
                   >
                     <div style="padding: 40px 50px; line-height: 1.6">
                       <h1 style="font-family: Lato, Helvetica" class="align-left">
-                        Welcome to ${portal}'s Portal<br />
+                        Welcome to NuWealth Portal Demo<br />
                       </h1>
                       <p
                         style="margin: 0px 0px 20px; text-align: left"
@@ -92,7 +92,7 @@ export const sendSetPasswordEmail = async (
                           ><span
                             class="size"
                             style="font-size: 16px; margin: 0px 0px 20px"
-                            >You just got invited to see and share files on ${portal}'s Portal. We're excited to have you on board. Get started by clicking the link below to finish setting up your account.</span
+                            >Thanks for registering for the NuWealth Portal demo from M Strategy. Please click the link below to create a password to get access to the portal. Once completed you will be directed to the NuWealth Portal Log In page. </span
                           ></span
                         ><br />
                       </p>
@@ -104,17 +104,6 @@ export const sendSetPasswordEmail = async (
                           margin: 30px 0;
                         "
                       >
-                        <h2
-                          style="
-                            color: rgb(16, 42, 67);
-                            font-size: 18px;
-                            margin: 0px 0px 15px;
-                            text-align: left;
-                          "
-                          class="align-left"
-                        >
-                          Getting Started Guide<br />
-                        </h2>
                         <div style="margin-bottom: 20px">
                           <p
                             style="margin: 0px 0px 10px; text-align: left"
@@ -125,7 +114,7 @@ export const sendSetPasswordEmail = async (
                                 >  ${
                                   userExist
                                     ? "You can get started using this link"
-                                    : "Reset your password using this link"
+                                    : "Create password using this link"
                                 } :<br /><a
                                   href="${userExist ? redirectLink : resetLink}"
                                   target="_blank"
@@ -158,7 +147,7 @@ export const sendSetPasswordEmail = async (
                               font-size: 14px;
                               margin: 0px 0px 10px;
                             "
-                            >© 2024 ${portal} portal</span
+                            >M Strategy Group 2025.</span
                           ><span
                             class="size"
                             style="

@@ -5,9 +5,9 @@ export const existingPages = [
     sections: [
       { label: "Chart Section", visible: true },
       { label: "Header Section", visible: true },
-      { label: "Statistics Section", visible: true },
-      { label: "Statistics Header", visible: true },
-      { label: "Links Section", visible: false },
+      { label: "Top Stories", visible: true },
+      { label: "Ticker Tape", visible: true },
+      // { label: "Links Section", visible: false },
       { label: "My Task Section", visible: true },
       { label: "Collaborator Section", visible: true },
       { label: "Messaging", visible: true },
@@ -59,6 +59,8 @@ export const customPageSectionTemplate = {
   title: "",
   description: "",
   sections: [
+    { label: "Top Stories", visible: true },
+    { label: "Ticker Tape", visible: true },
     { label: "My Task Section", visible: true },
     { label: "Advisor Section", visible: true },
     { label: "Messaging", visible: true },
