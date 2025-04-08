@@ -4,6 +4,10 @@ export const fontSizes = [
     size: "medium",
   },
   {
+    key: "CoverPhoto",
+    size: "medium",
+  },
+  {
     key: "Header Text",
     size: "30px",
   },
