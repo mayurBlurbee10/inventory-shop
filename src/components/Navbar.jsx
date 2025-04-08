@@ -235,7 +235,7 @@ function Navbar({ content, config, filterValue }) {
             )}
 
             <span
-              className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
+              className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
               style={{
                 fontSize:
                   content?.portalContent?.find((item) => item.title === "Header Text")

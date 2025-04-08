@@ -142,7 +142,7 @@ function Container({ children }) {
         config={config}
         filterValue={filterValue}
       />
-       <div className="min-h-[86vh]" >{children}</div>
+       <div className="min-h-[80vh]" >{children}</div>
       <Footer config={config} filterValue={filterValue} />
     </div>
   );

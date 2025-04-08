@@ -41,6 +41,7 @@ export default function MasterLoginPage() {
           throw new Error(data.error || "Login failed");
         }
         // setUserData(data.user);
+        const userData = data.user;
         dispatch(setCurrentUser(userData))
         localStorage.setItem("portal", "master");
         localStorage.setItem("accessToken", data.accessToken);

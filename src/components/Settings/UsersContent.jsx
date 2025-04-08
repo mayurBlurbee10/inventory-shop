@@ -210,8 +210,8 @@ const UsersContent = () => {
       )}
 
       {loading ? (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="flex justify-center py-8 min-h-[50vh] items-center">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <div className="bg-white shadow rounded-lg overflow-x-scroll custom-scrollbar mt-5">

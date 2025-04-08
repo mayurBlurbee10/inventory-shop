@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import MasterUsersContent from "./MasterUsersContent";
+import { useSelector } from "react-redux";
 
 const SidePanel = ({ setCurrentPage }) => {
   const handelItemClick = (item) => {

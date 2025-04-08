@@ -23,7 +23,6 @@ const CustomizationContent = () => {
   const params = useParams();
   const { data: user } = useSelector((state) => state.user);
   const { data: config } = useSelector((state) => state.portal);
-  const [isQueryFetched, setIsQueryFetched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
@@ -79,7 +78,7 @@ const CustomizationContent = () => {
     }
   };
 
-  const MemoizedMyPageContent = useMemo(() => <MyPageContent setIsQueryFetched={setIsQueryFetched}/>, []);
+  const MemoizedMyPageContent = useMemo(() => <MyPageContent />, []);
 
   return (
     <div className="flex flex-col gap-5">
@@ -93,7 +92,7 @@ const CustomizationContent = () => {
       </div>
       <div>{MemoizedMyPageContent}</div>
       <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
-        <ProductsContent isQueryFetched={isQueryFetched} setIsQueryFetched={setIsQueryFetched}/>
+        <ProductsContent />
       </div>
       <CheckListContent />
       <div className="flex items-center justify-end">

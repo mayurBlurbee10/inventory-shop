@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ContentManagementContent from "./ContentManagementContent";
 import ProductsContent from "./ProductsContent";
 
-const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
+const MyPageContent = () => {
   const params = useParams();
   const [isOpenAddPageModal, setIsOpenAddPageModal] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -160,7 +160,6 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
         );
 
         const data = await response.json();
-        setIsQueryFetched(true);
         await fetchPlugin();
       } catch (error) {
         toast.error(error.message);
@@ -307,7 +306,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
         {loading ? (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>

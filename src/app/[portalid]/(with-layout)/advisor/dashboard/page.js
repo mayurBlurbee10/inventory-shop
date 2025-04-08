@@ -20,12 +20,12 @@ import {
     ResponsiveContainer,
   } from "recharts";
 import { useSelector } from "react-redux";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
 
 const LoadingSpinner = () => (
     <div className="min-h-full flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <Loader2 className="text-blue-500 animate-spin" />
     </div>
 );
 

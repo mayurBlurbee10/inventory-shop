@@ -256,7 +256,7 @@ function AddPageModal({
                           if (e.key === "Enter") e.preventDefault();
                         }}
                       />
-                    )}s
+                    )}
                   />
                 {errors.description && (
                   <p className="text-sm text-red-600 mt-1">
