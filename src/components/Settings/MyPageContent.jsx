@@ -29,6 +29,7 @@ const MyPageContent = () => {
   });
   const [existingPages, setExistingPages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUserPageSubmitting, setIsUserPageSubmitting] = useState(false);
   const [plugin, setPlugin] = useState(null);
   const hasFetched = useRef(false);
 
@@ -80,9 +81,13 @@ const MyPageContent = () => {
     }
   };
 
-  const handleDone = async () => {
+  const handleDone = async (state) => {
       try {
+        if (state === "Advisor") {
         setIsSubmitting(true);
+        } else{
+          setIsUserPageSubmitting(true);
+        }
         const pageIds = pages.map((item)=>item.id)
         const pluginPayload = {
           type: PluginType.PAGES,
@@ -113,6 +118,7 @@ const MyPageContent = () => {
         console.error("Error fetching plugins:", error);
       } finally {
         setIsSubmitting(false);
+        setIsUserPageSubmitting(false);
       }
     };
 
@@ -330,18 +336,18 @@ const MyPageContent = () => {
                   "sections"
                 )}
               </div>
-              {/* {!loading && (
+              {!loading && (
                 <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
                   <Button
                     onClick={handleDone}
                     type="Primary"
                     label="Save"
-                    isLoading={isSubmitting}
-                    disabled={isSubmitting}
+                    isLoading={isUserPageSubmitting}
+                    disabled={isUserPageSubmitting}
                     className="ml-auto"
                   />
                 </div>
-              )} */}
+              )}
               <hr className="my-5" />
             </div>
             <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
@@ -367,7 +373,7 @@ const MyPageContent = () => {
               {!loading && (
                 <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
                   <Button
-                    onClick={handleDone}
+                    onClick={() => handleDone("Advisor")}
                     type="Primary"
                     label="Save"
                     isLoading={isSubmitting}

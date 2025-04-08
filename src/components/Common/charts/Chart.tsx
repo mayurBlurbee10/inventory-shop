@@ -2,54 +2,80 @@
 
 import { useEffect, useRef } from "react";
 
-const Chart = () => {
+const TradingViewMarketQuotes = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const isWidgetLoaded = useRef(false);
+  const isLoaded = useRef(false);
 
   useEffect(() => {
     const originalConsoleError = console.error;
-
-    // Suppress specific iframe error
-    console.error = function (...args) {
+    console.error = (...args) => {
       if (
         typeof args[0] === "string" &&
         args[0].includes("contentWindow is not available")
-      ) {
+      )
         return;
-      }
-      originalConsoleError.apply(console, args);
+      originalConsoleError(...args);
     };
 
-    if (isWidgetLoaded.current || !containerRef.current) return;
-    isWidgetLoaded.current = true;
+    if (isLoaded.current || !containerRef.current) return;
+    isLoaded.current = true;
 
     containerRef.current.innerHTML = "";
 
     const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-hotlists.js";
-    script.async = true;
     script.type = "text/javascript";
+    script.async = true;
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js";
     script.innerHTML = JSON.stringify({
+      width: "100%",
+      height: 550,
       colorTheme: "light",
-      dateRange: "12M",
-      exchange: "US",
-      showChart: true,
-      locale: "en",
-      largeChartUrl: "",
       isTransparent: false,
-      showSymbolLogo: false,
-      showFloatingTooltip: false,
-      width: "100%", // responsive width
-      height: "550",
-      plotLineColorGrowing: "rgba(41, 98, 255, 1)",
-      plotLineColorFalling: "rgba(41, 98, 255, 1)",
-      gridLineColor: "rgba(46, 46, 46, 0)",
-      scaleFontColor: "rgba(15, 15, 15, 1)",
-      belowLineFillColorGrowing: "rgba(41, 98, 255, 0.12)",
-      belowLineFillColorFalling: "rgba(41, 98, 255, 0.12)",
-      belowLineFillColorGrowingBottom: "rgba(41, 98, 255, 0)",
-      belowLineFillColorFallingBottom: "rgba(41, 98, 255, 0)",
-      symbolActiveColor: "rgba(41, 98, 255, 0.12)",
+      showSymbolLogo: true,
+      locale: "en",
+      backgroundColor: "#ffffff",
+      symbolsGroups: [
+        {
+          name: "Indices",
+          symbols: [
+            { name: "FOREXCOM:SPXUSD", displayName: "S&P 500 Index" },
+            { name: "FOREXCOM:NSXUSD", displayName: "US 100 Cash CFD" },
+            { name: "FOREXCOM:DJI", displayName: "Dow Jones Industrial Avg" },
+            { name: "INDEX:NKY", displayName: "Japan 225" },
+            { name: "INDEX:DEU40", displayName: "DAX Index" },
+            { name: "FOREXCOM:UKXGBP", displayName: "FTSE 100 Index" }
+          ],
+        },
+        {
+          name: "Forex",
+          symbols: [
+            { name: "FX:EURUSD", displayName: "EUR to USD" },
+            { name: "FX:GBPUSD", displayName: "GBP to USD" },
+            { name: "FX:USDJPY", displayName: "USD to JPY" },
+            { name: "FX:USDCHF", displayName: "USD to CHF" },
+            { name: "FX:AUDUSD", displayName: "AUD to USD" },
+            { name: "FX:USDCAD", displayName: "USD to CAD" }
+          ],
+        },
+        {
+          name: "Futures",
+          symbols: [
+            { name: "BMFBOVESPA:ISP1!", displayName: "S&P 500 Futures" },
+            { name: "BMFBOVESPA:EUR1!", displayName: "Euro Futures" },
+            { name: "PYTH:WTI3!", displayName: "WTI CRUDE OIL" },
+            { name: "BMFBOVESPA:ETH1!", displayName: "Hydrous ethanol" },
+            { name: "BMFBOVESPA:CCM1!", displayName: "Corn" }
+          ],
+        },
+        {
+          name: "Bonds",
+          symbols: [
+            { name: "EUREX:FGBL1!", displayName: "Euro Bund" },
+            { name: "EUREX:FBTP1!", displayName: "Euro BTP" },
+            { name: "EUREX:FGBM1!", displayName: "Euro BOBL" }
+          ],
+        }
+      ]
     });
 
     containerRef.current.appendChild(script);
@@ -62,16 +88,11 @@ const Chart = () => {
   return (
     <div className="w-full max-w-full overflow-hidden tradingview-widget-container">
       <div className="tradingview-widget-container__widget" ref={containerRef} />
-      <div className="tradingview-widget-copyright text-sm mt-2 text-center">
-        <a
-          href="https://www.tradingview.com/"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-        </a>
+      <div className="tradingview-widget-copyright text-center text-sm mt-2">
+        <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer"></a>
       </div>
     </div>
   );
 };
 
-export default Chart;
+export default TradingViewMarketQuotes;
