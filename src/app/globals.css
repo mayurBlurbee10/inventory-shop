@@ -58,6 +58,10 @@ body {
   scrollbar-color: #b4b4b4 transparent;
 }
 
+.editor a {
+  color: #3b82f6; 
+}
+
 .editor h1,
 .editor h2,
 .editor h3 {

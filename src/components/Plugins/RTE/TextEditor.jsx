@@ -25,6 +25,7 @@ import {
   Heading2,
   Heading3,
   Italic,
+  Link2,
   List,
   Strikethrough,
   Table as TableIcon,
@@ -32,6 +33,7 @@ import {
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import { useEffect, useState } from "react";
+import AddLinkModal from "./AddLinkModal";
 
 const fontSizeOptions = [
   { label: '8', value: '8px' },
@@ -46,14 +48,13 @@ const fontSizeOptions = [
   { label: '32', value: '32px' },
 ];
 
-const Toolbar = ({ editor }) => {
+const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLinkUrl, savedRange, setSavedRange, text, setText }) => {
   if (!editor) return null;
   const [color, setColor] = useState("#000")
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const [currentFontSize, setCurrentFontSize] = useState(
     editor.getAttributes("textStyle").fontSize || null
   );
-
 
   // const handleFontSizeChange = (fontSize) => {
   //   if (!editor.isActive("textStyle")) {
@@ -87,6 +88,7 @@ const Toolbar = ({ editor }) => {
   return (
     <div className="flex items-center justify-start w-full gap-2 rounded border border-[#ccc] shadow mb-4 py-1 lg:flex-wrap overflow-x-auto custom-scrollbar">
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 ml-1 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("bold") ? "bg-indigo-200" : ""
@@ -105,22 +107,25 @@ const Toolbar = ({ editor }) => {
         ))}
       </select>  */}
       <button
+        type="button"
         onClick={() => setColorPickerVisible((prev) => !prev)}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 -mx-2 text-2xl border-none rounded cursor-pointer hover:bg-indigo-200 relative ${
           editor.isActive("textStyle", { color: "red" }) ? "bg-indigo-200" : ""
         }`}
       >
-        A<div className={`absolute h-[6px] w-5 left-1/2 -translate-x-1/2 top-[80%] bg-[${color || "000"}]`} style={{ backgroundColor: color || "#000" }}></div>
+        A
+        <div className="absolute h-[6px] w-5 left-1/2 -translate-x-1/2 top-[80%]" style={{ backgroundColor: color }}></div>
       </button>
       {colorPickerVisible && (
-        <div className="absolute top-10 left-0">
+        <div className="absolute z-50 mt-2">
           <CompactPicker
-            color={editor.getAttributes("textStyle").color || "#000"} // Get current color
+            color={editor.getAttributes("textStyle").color || "#000"}
             onChange={(color) => applyTextColor(color.hex)}
           />
         </div>
       )}
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("italic") ? "bg-indigo-200" : ""
@@ -129,6 +134,7 @@ const Toolbar = ({ editor }) => {
         <Italic />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("strikeThrough") ? "bg-indigo-200" : ""
@@ -137,6 +143,7 @@ const Toolbar = ({ editor }) => {
         <Strikethrough />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHighlight().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("highlight") ? "bg-indigo-200" : ""
@@ -145,6 +152,7 @@ const Toolbar = ({ editor }) => {
         Highlight
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().setParagraph().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("paragraph") ? "bg-indigo-200" : ""
@@ -153,6 +161,7 @@ const Toolbar = ({ editor }) => {
         p
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("heading", { level: 1 }) ? "bg-indigo-200" : ""
@@ -161,6 +170,7 @@ const Toolbar = ({ editor }) => {
         <Heading1 />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("heading", { level: 2 }) ? "bg-indigo-200" : ""
@@ -169,6 +179,7 @@ const Toolbar = ({ editor }) => {
         <Heading2 />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("heading", { level: 3 }) ? "bg-indigo-200" : ""
@@ -177,6 +188,7 @@ const Toolbar = ({ editor }) => {
         <Heading3 />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().setTextAlign("left").run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("alignLeft") ? "bg-indigo-200" : ""
@@ -185,6 +197,7 @@ const Toolbar = ({ editor }) => {
         <AlignLeft />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().setTextAlign("center").run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("alignCenter") ? "bg-indigo-200" : ""
@@ -193,6 +206,7 @@ const Toolbar = ({ editor }) => {
         <AlignCenter />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().setTextAlign("right").run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("alignRight") ? "bg-indigo-200" : ""
@@ -201,6 +215,28 @@ const Toolbar = ({ editor }) => {
         <AlignRight />
       </button>
       <button
+        type="button"
+        onClick={() => {
+          const previousUrl = editor.getAttributes("link").href;
+          const selection = editor.state.selection;
+      
+          // Get selected text
+          const { from, to } = selection;
+          const selectedText = editor.state.doc.textBetween(from, to, " ");
+      
+          setSavedRange(selection);
+          setLinkUrl(previousUrl || "");
+          setText(selectedText); // 👈 set selected text
+          setLinkModalVisible(true);
+        }}
+        className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
+          editor.isActive("link") ? "bg-indigo-200" : ""
+        }`}
+      >
+        <Link2 className="-rotate-45" />
+      </button>
+      <button
+        type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("bulletList") ? "bg-indigo-200" : ""
@@ -209,6 +245,7 @@ const Toolbar = ({ editor }) => {
         <List />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("orderedList") ? "bg-indigo-200" : ""
@@ -218,6 +255,7 @@ const Toolbar = ({ editor }) => {
       </button>
       {/* <button onClick={addImage}>Add Image</button> */}
       <button
+        type="button"
         onClick={() =>
           editor.chain().focus().insertTable({ rows: 3, cols: 3 }).run()
         }
@@ -228,6 +266,7 @@ const Toolbar = ({ editor }) => {
         <TableIcon className="rotate-90" />
       </button>
       <button
+        type="button"
         onClick={() => editor.chain().focus().deleteTable().run()}
         className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
           editor.isActive("deleteTable") ? "bg-indigo-200" : ""
@@ -235,6 +274,15 @@ const Toolbar = ({ editor }) => {
       >
         Delete Table
       </button>
+      <AddLinkModal
+        isOpen={linkModalVisible}
+        onClose={() => {setLinkModalVisible(false); setLinkUrl(""); setText("")}}
+        text={text}
+        initialLink={linkUrl}
+        setLink={setLinkUrl}
+        editor={editor}
+        savedRange={savedRange}
+      />
     </div>
   );
 };
@@ -244,40 +292,31 @@ const TabKeyExtension = Extension.create({
 
   addKeyboardShortcuts() {
     return {
-      Tab: ({ editor }) => {
-        const { state, dispatch } = editor.view;
-        const { $from } = state.selection;
-
-        if ($from.parent.type.name === "codeBlock") {
-          dispatch(state.tr.insertText("    ")); // Insert 4 spaces
-          return true;
-        }
-
-        return false;
+      Tab: () => {
+        const { state, dispatch } = this.editor.view;
+        const { tr, selection } = state;
+        dispatch(tr.insertText("    ", selection.from, selection.to));
+        return true;
       },
-      "Shift-Tab": ({ editor }) => {
-        const { state, dispatch } = editor.view;
-        const { $from, $to } = state.selection;
-
-        if ($from.parent.type.name === "codeBlock") {
-          const { tr } = state;
-          // Remove 4 spaces at the start of the current line(s)
-          const start = Math.min($from.start(), $to.start());
-          const end = Math.max($from.end(), $to.end());
-          const text = tr.doc.textBetween(start, end);
-          const updatedText = text.replace(/^ {1,4}/gm, ""); // Remove up to 4 spaces
-          tr.replaceWith(start, end, tr.doc.type.schema.text(updatedText));
-          dispatch(tr);
-          return true;
-        }
-
-        return false;
+      "Shift-Tab": () => {
+        const { state, dispatch } = this.editor.view;
+        const { from, to } = state.selection;
+        const text = state.doc.textBetween(from, to, "\n", "\0");
+        const updated = text.replace(/^ {1,4}/gm, "");
+        const tr = state.tr.replaceWith(from, to, state.schema.text(updated));
+        dispatch(tr);
+        return true;
       },
     };
   },
 });
 
 const TextEditor = ({ content, onChange }) => {
+  const [linkModalVisible, setLinkModalVisible] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+  const [savedRange, setSavedRange] = useState(null);
+  const [text, setText] = useState("")
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -305,6 +344,26 @@ const TextEditor = ({ content, onChange }) => {
     content: content,
     editorProps: {
       immediatelyRender: false,
+      handleClickOn(view, pos, node, nodePos, event) {
+        const target = event.target;
+      
+        if (target.tagName === "A") {
+          event.preventDefault();
+          event.stopPropagation();
+      
+          const href = target.getAttribute("href");
+          const linkText = target.innerText;
+      
+          setSavedRange(view.state.selection);
+          setText(linkText);
+          setLinkUrl(href);
+          setLinkModalVisible(true);
+      
+          return true; // ⚠️ Must return true to block default ProseMirror behavior
+        }
+      
+        return false;
+      }
     },
     onUpdate({ editor }) {
       onChange(editor.getHTML());
@@ -312,10 +371,69 @@ const TextEditor = ({ content, onChange }) => {
     },
   });
 
+  useEffect(() => {
+    if (!editor || !editor.view) return;
+
+    const editorEl = document.querySelector('[contenteditable="true"]');
+
+    const handleClick = (e) => {
+      const target = e.target;
+      if (target.tagName === "A") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const href = target.getAttribute("href");
+        const linkText = target.innerText;
+
+        const selection = editor.view.state.selection;
+
+        setSavedRange(selection);
+        setText(linkText);
+        setLinkUrl(href);
+        setLinkModalVisible(true);
+      }
+    };
+
+    editorEl?.addEventListener("click", handleClick);
+
+    return () => {
+      editorEl?.removeEventListener("click", handleClick);
+    };
+  }, [editor]);
+
+  // useEffect(() => {
+  //   if (!editor) return;
+  
+  //   const tooltip = document.getElementById("link-tooltip");
+  
+  //   const handleMouseMove = (event) => {
+  //     const target = event.target;
+  //     if (target.tagName === "A" && target.href) {
+  //       tooltip.textContent = target.href;
+  //       tooltip.classList.remove("hidden");
+  //     } else {
+  //       tooltip.classList.add("hidden");
+  //     }
+  //   };
+    
+  //   const editorDOM = editor.view.dom;
+  //   editorDOM.addEventListener("mousemove", handleMouseMove);
+  
+  //   return () => {
+  //     editorDOM.removeEventListener("mousemove", handleMouseMove);
+  //   };
+  // }, [editor]);
+
   return (
-    <div className="editor-container">
-      <Toolbar editor={editor} />
-      <EditorContent editor={editor} className={`editor`} />
+    <div className="relative">
+      <div className="editor-container">
+        <Toolbar editor={editor} linkModalVisible={linkModalVisible} setLinkModalVisible={setLinkModalVisible} linkUrl={linkUrl} setLinkUrl={setLinkUrl} savedRange={savedRange}     setSavedRange={setSavedRange} text={text} setText={setText}/>
+        <EditorContent editor={editor} className={`editor`} />
+        {/* <div
+          id="link-tooltip"
+          className="hidden absolute -bottom-8 left-4 px-2 py-1 text-xs rounded bg-black text-white z-50 pointer-events-none"
+        ></div> */}
+      </div>
     </div>
   );
 };

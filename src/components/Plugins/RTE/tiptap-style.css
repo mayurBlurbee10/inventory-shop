@@ -102,6 +102,10 @@
     text-align: left;
 }
 
+.editor a {
+    color: #3b82f6; 
+}
+
 .editor .selectedCell:after {
     background: var(--gray-2);
     content: "";
@@ -134,6 +138,9 @@
     cursor: col-resize;
 }
 
+.page a {
+    color: #3b82f6; 
+}
 
 .page h1,
 .page h2,

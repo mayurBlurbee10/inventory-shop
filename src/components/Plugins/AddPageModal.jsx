@@ -241,7 +241,7 @@ function AddPageModal({
                 )}
               </div>
 
-              <div className="flex flex-col w-full max-h-[500px] overflow-y-auto custom-scrollbar">
+              <div className="flex flex-col w-full max-h-[500px]">
                 <label className="text-xl font-semibold mb-1">
                   Description
                 </label>
