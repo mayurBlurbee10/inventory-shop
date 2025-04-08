@@ -65,6 +65,38 @@ const PreviewLoginPage = () => {
               return <Icon className="w-7 h-7 text-gray-700" />;
             }
 
+        const CoverPhoto = () => {
+          const baseSize = 20; // Base unit for scaling
+
+          const fontSizeKey = content?.portalContent?.find(
+            (item) => item.title === "CoverPhoto"
+          )?.fontSize;
+          const logoSize = logoSizeRatio[fontSizeKey] || logoSizeRatio.medium;
+          const imageUrl = filterValue("CoverPhoto") || null;
+
+          return (
+            <div
+              className="mb-2"
+              style={{
+                height: `${baseSize * logoSize}rem`,
+              }}
+            >
+              <img
+                src={imageUrl}
+                alt={params.portalid || "Default"}
+                className="max-h-full max-w-full object-contain"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "fill",
+                }}
+              />
+            </div>
+          );
+        };
+            
+            
+
     return (
         <div className="min-h-screen bg-background flex flex-col justify-between">
             <div>
@@ -78,7 +110,7 @@ const PreviewLoginPage = () => {
                             )}
 
                             <span
-                                className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
+                                className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
                                 style={{
                                     fontSize:
                                         content?.portalContent?.find((item) => item.title === "Header Text")
@@ -108,7 +140,7 @@ const PreviewLoginPage = () => {
                                     <h2
                                         className="font-light leading-tight text-text font-lato mb-2" style={{
                                             fontSize:
-                                                content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '56px',
+                                                content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '36px',
                                         }}>
                                         {filterValue("Title")}
                                     </h2>
@@ -125,9 +157,9 @@ const PreviewLoginPage = () => {
                                         }}>
                                         {filterValue("Paragraph")}
                                     </p>
-                                    <div className="border h-[200px]">
-
-                                    </div>
+                                    {filterValue("CoverPhoto") && (
+                                        <CoverPhoto />
+                                    )}
                                 </div>
                             </div>
                         </div>

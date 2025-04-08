@@ -14,6 +14,7 @@ import userService from "./userService";
 import checkListService from "./checkListService";
 import messageService from "./messageService";
 import taskService from "./taskService";
+import { ContentManagement } from "@/entities/ContentManagement";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -27,6 +28,7 @@ const resetPortal = async (portalId) => {
   const pageRepository = await getRepository(Pages);
   const pluginRepository = await getRepository(Plugins);
   const messageRepository = await getRepository(Messages);
+  const contentManagementRepository = await getRepository(ContentManagement);
 
   try {
     const plugin = await getPluginByPortalId(pluginRepository, portalId);
@@ -35,6 +37,7 @@ const resetPortal = async (portalId) => {
       deleteCustomPages(pageRepository, plugin?.id),
       deleteChecklists(checkListRepository, portalId),
       deleteMessages(messageRepository, portalId),
+      deleteContent(contentManagementRepository, portalId),
       updateUsersTNCStatus(userRepository, portalId),
       deleteFilesAndFolder(portalId),
       createSampleMessage(portalId)
@@ -112,6 +115,10 @@ const createSampleTasks = async (checklistId, portalId) => {
 
 const deleteMessages = async (messageRepository, portalId) => {
   await messageRepository.delete({ portalId: portalId });
+};
+
+const deleteContent = async (contentManagementRepository, portalId) => {
+  await contentManagementRepository.delete({ portalId: portalId });
 };
 
 const updateUsersTNCStatus = async (userRepository, portalId) => {

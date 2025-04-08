@@ -89,7 +89,7 @@ const AddContentModal = ({
         ? {
           ...newContent,
           value: imageUrl,
-          fontSize: newContent.fontSize, // Add fontSize here
+          fontSize: newContent.fontSize || "medium", // Add fontSize here
           portalId: params.portalid ?? "default",
         }
         : newContent.type === "Links"
@@ -129,7 +129,7 @@ const AddContentModal = ({
         throw new Error(data.error || "Content length is too long");
       }
 
-      if(imageUrl){
+      if(imageUrl && newContent?.title === "Logo"){
         const portalData = {
           ...config,
           logo: imageUrl,

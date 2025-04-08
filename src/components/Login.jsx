@@ -357,6 +357,31 @@ function Login() {
     );
   };
 
+  const CoverPhoto = () => {
+    const baseSize = 20; // Base unit for scaling
+    
+    const fontSizeKey = content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize;
+    const logoSize = logoSizeRatio[fontSizeKey] || logoSizeRatio.medium;
+    const imageUrl = filterValue("CoverPhoto") || null;
+
+    return (
+      <div className="mb-2" style={{
+        height: `${baseSize * logoSize}rem`, 
+      }}>
+          <img
+            src={imageUrl}
+            alt={params.portalid || "Default"}
+            className="max-h-full max-w-full object-contain"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "fill"
+            }}
+          />
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
       <div>
@@ -450,7 +475,7 @@ function Login() {
                 <h2 
                   className="font-light leading-tight text-text font-lato mb-2" style={{
                       fontSize:
-                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '56px',
+                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '36px',
                     }}>
                   {/* Ethree - Deep energy expertise */}
                   {filterValue("Title")}
@@ -476,9 +501,9 @@ function Login() {
                   business, let us help you reach your financial goals. */}
                   {filterValue("Paragraph")}
                 </p>
-                <div className="border h-[200px]">
-
-                </div>
+                {filterValue("CoverPhoto") && (
+                  <CoverPhoto />
+                )}
               </div>
 
               {/* Feature Cards */}

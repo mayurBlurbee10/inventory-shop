@@ -290,6 +290,13 @@ export default function OnBoardingPage() {
         value = null
       }
     }
+    if(title === 'CoverPhoto'){
+      if(contentItem && contentItem.type === 'Image'){
+        value = value.replace("/api/upload", "/uploads")
+      }else {
+        value = null
+      }
+    }
     console.log("value", value)
     return value;
   };
@@ -365,6 +372,32 @@ export default function OnBoardingPage() {
         </div>
       );
     };
+  
+    const CoverPhoto = () => {
+      const baseSize = 20; // Base unit for scaling
+    
+      const fontSizeKey = content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize;
+      const logoSize = logoSizeRatio[fontSizeKey] || logoSizeRatio.medium;
+      const imageUrl = filterContent("CoverPhoto") || "/no_image.jpg";
+    
+      return (
+        <div className="mb-2" style={{
+          height: `${baseSize * logoSize}rem`, 
+        }}>
+            <img
+              src={imageUrl}
+              alt={params.portalid || "Default"}
+              className="max-h-full max-w-full object-contain"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "fill"
+              }}
+            />
+        </div>
+      );
+    };
+    
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">
@@ -474,7 +507,7 @@ export default function OnBoardingPage() {
                 >
                   <Pen className="size-4" />
                 </div>
-                <span className="max-w-[250px] block overflow-hidden text-ellipsis whitespace-nowrap">
+                <span className="max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px] block overflow-hidden text-ellipsis whitespace-nowrap">
                   {filterContent("Header Text")}
                 </span>
               </span>
@@ -522,7 +555,7 @@ export default function OnBoardingPage() {
                   className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
                   style={{
                     fontSize:
-                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '56px',
+                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '36px',
                   }}>
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
@@ -551,6 +584,18 @@ export default function OnBoardingPage() {
                         }}>
                     {filterContent("Paragraph")}
                   </p>
+                </div>
+                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative">
+                  <div
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("CoverPhoto")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
+
+                  <div className="font-light leading-7 font-lato mb-3 mt-5">
+                    <CoverPhoto />
+                  </div>
                 </div>
               </div>
             </div>
