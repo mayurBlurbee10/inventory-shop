@@ -61,6 +61,8 @@ export const fontSizeOptions = {
     Header: ["32px", "34px", "36px", "42px", "44px", "46px", "48px", "50px", "52px"],
 };
 
+export const fontWeightOptions = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+
 export const logoSizeMap = {
   small: "26px",
   medium: "52px",

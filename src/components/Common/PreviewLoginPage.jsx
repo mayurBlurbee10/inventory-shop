@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { IdCard, LockKeyhole } from 'lucide-react';
 import * as LucideIcons from "lucide-react";
 import Button from './Elements/Button';
-import { logoSizeRatio } from '@/app/lib/data/font_size';
+import { fontSizes, logoSizeRatio } from '@/app/lib/data/font_size';
 import { useParams, useRouter } from 'next/navigation';
 
 const PreviewLoginPage = () => {
@@ -35,10 +35,10 @@ const PreviewLoginPage = () => {
           const baseSize = 100; // Set a reasonable base size (in pixels)
       
           const logoSize =
-            (content?.portalContent?.find((item) => item.title === "Logo")?.fontSize &&
-              logoSizeRatio[
-                content?.portalContent?.find((item) => item.title === "Logo")?.fontSize
-              ]) ||
+            (filterTheme("Logo")?.fontSize &&
+                logoSizeRatio[
+                filterTheme("Logo")?.fontSize
+                ]) ||
             logoSizeRatio.medium;
           return (
             <div className="block min-w-16">
@@ -95,7 +95,19 @@ const PreviewLoginPage = () => {
           );
         };
             
-            
+    const filterTheme = (title) => {
+      const contentItem =
+        content && content?.portalContent?.find((item) => item.title === title);
+      let fontSize = fontSizes.find((item) => item.key === title);
+      let theme = contentItem
+        ? contentItem.theme
+        : {
+            fontSize: fontSize?.size,
+            color: "#000000e6",
+            fontWeight: title === 'Paragraph' ? 300 : 400,
+          };
+      return theme;
+    };        
 
     return (
         <div className="min-h-screen bg-background flex flex-col justify-between">
@@ -112,9 +124,8 @@ const PreviewLoginPage = () => {
                             <span
                                 className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
                                 style={{
-                                    fontSize:
-                                        content?.portalContent?.find((item) => item.title === "Header Text")
-                                            ?.fontSize || "30px",
+                                    fontSize: filterTheme("Header Text").fontSize,
+                                    fontWeight: filterTheme("Header Text").fontWeight,
                                     lineHeight: "1.2",
                                     paddingBottom: "2px",
                                     paddingInline: "2px"
@@ -139,9 +150,9 @@ const PreviewLoginPage = () => {
                                 <div className="px-[15px]">
                                     <h2
                                         className="font-light leading-tight text-text font-lato mb-2" style={{
-                                            fontSize:
-                                                content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '36px',
-                                        }}>
+                                            fontSize: filterTheme("Title").fontSize,
+                                            fontWeight: filterTheme("Title").fontWeight
+                                          }}>
                                         {filterValue("Title")}
                                     </h2>
                                     <div
@@ -152,9 +163,9 @@ const PreviewLoginPage = () => {
                                     <p
                                         className="font-light text-black leading-7 font-lato mb-3 mt-5"
                                         style={{
-                                            fontSize:
-                                                content?.portalContent?.find((item) => item.title === "Paragraph")?.fontSize || '20px',
-                                        }}>
+                                            fontSize: filterTheme("Paragraph").fontSize,
+                                            fontWeight: filterTheme("Paragraph").fontWeight
+                                          }}>
                                         {filterValue("Paragraph")}
                                     </p>
                                     {filterValue("CoverPhoto") && (
@@ -226,15 +237,15 @@ const PreviewLoginPage = () => {
                                             )}
                                         </div>
                                         <div
-                                            style={{
-                                                fontSize:
-                                                    content?.portalContent?.find((item) => item.title === "Card 1 Title")?.fontSize || '20px',
-                                            }}>{filterValue("Card 1 Title")}</div>
+                                             style={{
+                                                fontSize: filterTheme("Card 1 Title").fontSize,
+                                                fontWeight: filterTheme("Card 1 Title").fontWeight
+                                              }}>{filterValue("Card 1 Title")}</div>
                                     </h5>
-                                    <p className="text-[#6c757d] font-normal leading-6" style={{
-                                        fontSize:
-                                            content?.portalContent?.find((item) => item.title === "Card 1 Content")?.fontSize || '14px',
-                                    }}>
+                                    <p className="text-[#6c757d] font-normal leading-6"  style={{
+                                                    fontSize: filterTheme("Card 1 Content").fontSize,
+                                                    fontWeight: filterTheme("Card 1 Content").fontWeight
+                                                    }}>
                                         {filterValue("Card 1 Content")}
                                     </p>
                                 </div>
@@ -257,14 +268,14 @@ const PreviewLoginPage = () => {
                                         </div>
                                         <div
                                             style={{
-                                                fontSize:
-                                                    content?.portalContent?.find((item) => item.title === "Card 2 Title")?.fontSize || '20px',
-                                            }}>{filterValue("Card 2 Title")}</div>
+                                                fontSize: filterTheme("Card 2 Title").fontSize,
+                                                fontWeight: filterTheme("Card 2 Title").fontWeight
+                                              }}>{filterValue("Card 2 Title")}</div>
                                     </h5>
                                     <p className="text-[#6c757d] font-normal leading-6" style={{
-                                        fontSize:
-                                            content?.portalContent?.find((item) => item.title === "Card 2 Content")?.fontSize || '14px',
-                                    }}>
+                                                    fontSize: filterTheme("Card 2 Content").fontSize,
+                                                    fontWeight: filterTheme("Card 2 Content").fontWeight
+                                                    }}>
                                         {filterValue("Card 2 Content")}
                                     </p>
                                 </div>
@@ -287,14 +298,14 @@ const PreviewLoginPage = () => {
                                         </div>
                                         <div
                                             style={{
-                                                fontSize:
-                                                    content?.portalContent?.find((item) => item.title === "Card 3 Title")?.fontSize || '20px',
-                                            }}>{filterValue("Card 3 Title")}</div>
+                                                fontSize: filterTheme("Card 3 Title").fontSize,
+                                                fontWeight: filterTheme("Card 3 Title").fontWeight
+                                              }}>{filterValue("Card 3 Title")}</div>
                                     </h5>
                                     <p className="text-[#6c757d] font-normal leading-6 font-lato" style={{
-                                        fontSize:
-                                            content?.portalContent?.find((item) => item.title === "Card 3 Content")?.fontSize || '14px',
-                                    }}>
+                                                            fontSize: filterTheme("Card 3 Content").fontSize,
+                                                            fontWeight: filterTheme("Card 3 Content").fontWeight
+                                                            }}>
                                         {filterValue("Card 3 Content")}
                                     </p>
                                 </div>

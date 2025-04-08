@@ -31,7 +31,7 @@ import { setPortal } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
 import { UserRole } from "@/config/constants";
 import { setPages as setReduxPages } from "@/store/services/pageService";
-import { logoSizeRatio } from "@/app/lib/data/font_size";
+import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -193,13 +193,24 @@ function Navbar({ content, config, filterValue }) {
     fetchPages();
   }, []);
 
+  const filterTheme = (title) => {
+        const contentItem = content && content?.portalContent?.find((item) => item.title === title);
+        let fontSize = fontSizes.find((item) => item.key === title)
+        let theme = contentItem ? contentItem.theme : {
+          fontSize: fontSize?.size,
+          color: "#000000e6",
+          fontWeight: title === 'Paragraph' ? 300 : 400,
+        };
+        return theme;
+      };
+
   const LogoImage = () => {
       const baseSize = 100; // Set a reasonable base size (in pixels)
   
       const logoSize =
-        (content?.portalContent?.find((item) => item.title === "Logo")?.fontSize &&
+        (filterTheme("Logo")?.fontSize &&
           logoSizeRatio[
-            content?.portalContent?.find((item) => item.title === "Logo")?.fontSize
+            filterTheme("Logo")?.fontSize
           ]) ||
         logoSizeRatio.medium;
       return (

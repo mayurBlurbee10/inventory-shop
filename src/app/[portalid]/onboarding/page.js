@@ -301,6 +301,17 @@ export default function OnBoardingPage() {
     return value;
   };
 
+  const filterTheme = (title) => {
+    const contentItem = content && content?.portalContent?.find((item) => item.title === title);
+    let fontSize = fontSizes.find((item) => item.key === title)
+    let theme = contentItem ? contentItem.theme : {
+      fontSize: fontSize?.size,
+      color: "#000000e6",
+      fontWeight: title === 'Paragraph' ? 300 : 400,
+    };
+    return theme;
+  };
+
   const handleModalOpenForEdit = (contentTitle) => {
     const contentToEdit = content && content?.portalContent?.find((item) => item.title === contentTitle);
     let fontSize = fontSizes.find((item) => item.key === contentTitle)
@@ -310,7 +321,12 @@ export default function OnBoardingPage() {
         type: content.type,
         title: contentTitle,
         fontSize: fontSize?.size,
-        value: ""
+        value: "",
+        theme: {
+          fontSize: fontSize?.size,
+          color: "#000000e6",
+          fontWeight: contentTitle==='Paragraph' ? 300 : 400,
+        },
       });
       setIsDialogOpen(true);
     } else {
@@ -351,9 +367,9 @@ export default function OnBoardingPage() {
       const baseSize = 100; // Set a base height
     
       const logoSize =
-      (content?.portalContent?.find((item) => item.title === "Logo")?.fontSize &&
+      (filterTheme("Logo")?.fontSize &&
         logoSizeRatio[
-          content?.portalContent?.find((item) => item.title === "Logo")?.fontSize
+          filterTheme("Logo")?.fontSize
         ]) ||
       logoSizeRatio.medium;
     
@@ -473,19 +489,7 @@ export default function OnBoardingPage() {
                 >
                   <Pen className="size-4" />
                 </div>
-                {/* <div className="block min-w-16"><img
-                  src={filterContent("Logo") || config?.logo}
-                  alt={params.portalid || "Default"}
-                  className="h-[52px] mr-2"
-                  style={{
-                    height:
-                    logoSizeMap[
-                      content?.find((item) => item.title === "Logo")?.fontSize || "medium"
-                    ]
-                  }}
-                /></div> */}
                 <LogoImage />
-                {/* {filterContent("Logo")} */}
               </span>
               {/* <img
                 // src="/default_logo_purple.png"
@@ -497,8 +501,8 @@ export default function OnBoardingPage() {
               <span 
                 className="text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative" 
                 style={{
-                  fontSize:
-                    content?.portalContent?.find((item) => item.title === "Header Text")?.fontSize || '30px',
+                  fontSize: filterTheme("Header Text").fontSize,
+                  fontWeight: filterTheme("Header Text").fontWeight
                 }}
               >
                 <div
@@ -554,8 +558,8 @@ export default function OnBoardingPage() {
                 <h2 
                   className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
                   style={{
-                    fontSize:
-                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '36px',
+                    fontSize: filterTheme("Title").fontSize,
+                    fontWeight: filterTheme("Title").fontWeight
                   }}>
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
@@ -579,9 +583,9 @@ export default function OnBoardingPage() {
                   <p 
                     className="font-light leading-7 font-lato mb-3 mt-5 line-clamp-3"  
                     style={{
-                          fontSize:
-                            content?.portalContent?.find((item) => item.title === "Paragraph")?.fontSize || '20px',
-                        }}>
+                      fontSize: filterTheme("Paragraph").fontSize,
+                      fontWeight: filterTheme("Paragraph").fontWeight
+                    }}>
                     {filterContent("Paragraph")}
                   </p>
                 </div>
@@ -691,9 +695,9 @@ export default function OnBoardingPage() {
                     <div
                       className="line-clamp-2 leading-6"
                       style={{
-                        fontSize: content?.portalContent?.find((item) => item.title === "Card 1 Title")?.fontSize || '20px',
-                      }}
-                    >
+                        fontSize: filterTheme("Card 1 Title").fontSize,
+                        fontWeight: filterTheme("Card 1 Title").fontWeight
+                      }}>
                       {filterContent("Card 1 Title")}
                     </div>
                   </span>
@@ -707,9 +711,9 @@ export default function OnBoardingPage() {
                   </div>
                   <div className="line-clamp-2"  
                     style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 1 Content")?.fontSize || '14px',
-                      }}>{filterContent("Card 1 Content")}</div>
+                      fontSize: filterTheme("Card 1 Content").fontSize,
+                      fontWeight: filterTheme("Card 1 Content").fontWeight
+                    }}>{filterContent("Card 1 Content")}</div>
                 </span>
               </div>
             </div>
@@ -748,9 +752,9 @@ export default function OnBoardingPage() {
                     <div
                       className="line-clamp-2 leading-6"
                       style={{
-                        fontSize: content?.portalContent?.find((item) => item.title === "Card 2 Title")?.fontSize || '20px',
-                      }}
-                    >
+                        fontSize: filterTheme("Card 2 Title").fontSize,
+                        fontWeight: filterTheme("Card 2 Title").fontWeight
+                      }}>
                       {filterContent("Card 2 Title")}
                     </div>
                   </span>
@@ -764,9 +768,9 @@ export default function OnBoardingPage() {
                   </div>
                   <div className="line-clamp-2" 
                     style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 2 Content")?.fontSize || '14px',
-                      }}>{filterContent("Card 2 Content")}</div>
+                      fontSize: filterTheme("Card 2 Content").fontSize,
+                      fontWeight: filterTheme("Card 2 Content").fontWeight
+                    }}>{filterContent("Card 2 Content")}</div>
                 </span>
               </div>
             </div>
@@ -805,9 +809,9 @@ export default function OnBoardingPage() {
                     <div
                       className="line-clamp-2 leading-6"
                       style={{
-                        fontSize: content?.portalContent?.find((item) => item.title === "Card 3 Title")?.fontSize || '20px',
-                      }}
-                    >
+                        fontSize: filterTheme("Card 3 Title").fontSize,
+                        fontWeight: filterTheme("Card 3 Title").fontWeight
+                      }}>
                       {filterContent("Card 3 Title")}
                     </div>
                   </span>
@@ -821,9 +825,9 @@ export default function OnBoardingPage() {
                   </div>
                   <div className="line-clamp-2" 
                     style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 3 Content")?.fontSize || '14px',
-                      }}>{filterContent("Card 3 Content")}</div>
+                      fontSize: filterTheme("Card 3 Content").fontSize,
+                      fontWeight: filterTheme("Card 3 Content").fontWeight
+                    }}>{filterContent("Card 3 Content")}</div>
                 </span>
               </div>
             </div>
