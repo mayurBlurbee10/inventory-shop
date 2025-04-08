@@ -68,5 +68,10 @@
     "id": "1735630441880",
     "title": "Logo",
     "type": "Image"
+  },
+  {
+    "id": "1735630441881",
+    "title": "CoverPhoto",
+    "type": "Image"
   }
 ]

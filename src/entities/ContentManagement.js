@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { Column, Entity, ManyToOne } from "typeorm";
 import BaseTable from "./BaseTable";
-import { Portals } from "./Portals";
 
 export @Entity("content_management")
  class ContentManagement extends BaseTable {
@@ -19,4 +18,7 @@ export @Entity("content_management")
 
   @Column({ type: "nvarchar", length: 255, nullable: true })
   fontSize;
+
+  @Column({ type: "simple-json", nullable: true, default: "{}" })
+  theme;
 }

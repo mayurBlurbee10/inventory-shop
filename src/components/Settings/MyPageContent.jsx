@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ContentManagementContent from "./ContentManagementContent";
 import ProductsContent from "./ProductsContent";
 
-const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
+const MyPageContent = () => {
   const params = useParams();
   const [isOpenAddPageModal, setIsOpenAddPageModal] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -29,6 +29,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
   });
   const [existingPages, setExistingPages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUserPageSubmitting, setIsUserPageSubmitting] = useState(false);
   const [plugin, setPlugin] = useState(null);
   const hasFetched = useRef(false);
 
@@ -80,9 +81,13 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
     }
   };
 
-  const handleDone = async () => {
+  const handleDone = async (state) => {
       try {
+        if (state === "Advisor") {
         setIsSubmitting(true);
+        } else{
+          setIsUserPageSubmitting(true);
+        }
         const pageIds = pages.map((item)=>item.id)
         const pluginPayload = {
           type: PluginType.PAGES,
@@ -113,6 +118,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
         console.error("Error fetching plugins:", error);
       } finally {
         setIsSubmitting(false);
+        setIsUserPageSubmitting(false);
       }
     };
 
@@ -160,7 +166,6 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
         );
 
         const data = await response.json();
-        setIsQueryFetched(true);
         await fetchPlugin();
       } catch (error) {
         toast.error(error.message);
@@ -307,7 +312,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
         {loading ? (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <>
@@ -331,18 +336,18 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
                   "sections"
                 )}
               </div>
-              {/* {!loading && (
+              {!loading && (
                 <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
                   <Button
                     onClick={handleDone}
                     type="Primary"
                     label="Save"
-                    isLoading={isSubmitting}
-                    disabled={isSubmitting}
+                    isLoading={isUserPageSubmitting}
+                    disabled={isUserPageSubmitting}
                     className="ml-auto"
                   />
                 </div>
-              )} */}
+              )}
               <hr className="my-5" />
             </div>
             <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
@@ -368,7 +373,7 @@ const MyPageContent = ({ setIsQueryFetched=()=>{} }) => {
               {!loading && (
                 <div className="flex sm:justify-between justify-center items-center w-full space-x-4 flex-wrap gap-2">
                   <Button
-                    onClick={handleDone}
+                    onClick={() => handleDone("Advisor")}
                     type="Primary"
                     label="Save"
                     isLoading={isSubmitting}

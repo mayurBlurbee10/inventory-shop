@@ -34,13 +34,7 @@ const createContentManagement = async (data) => {
     }
 
     // Create ContentManagement entry
-    const content = contentRepository.create({
-      portalId: data.portalId,
-      title: data.title,
-      type: data.type,
-      value: data.value,
-      fontSize : data.fontSize
-    });
+    const content = contentRepository.create(data);
 
     return await contentRepository.save(content);
   } catch (error) {
@@ -75,10 +69,7 @@ const updateContentManagement = async (data) => {
     if (!content) {
       throw new Error("Content not found.");
     }
-
-    content.value = data.value;
-    content.fontSize = data.fontSize;
-
+    Object.assign(content, data);
     return await contentRepository.save(content);
   } catch (error) {
     throw new Error(`Failed to update content: ${error.message}`);

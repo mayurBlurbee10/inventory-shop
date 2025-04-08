@@ -27,12 +27,13 @@ export const sendSetPasswordEmail = async (
   userName,
   resetToken,
   portalName,
-  userExist = false
+  userExist = false,
+  from = ''
 ) => {
   try {
     const portal = portalName !== '' ? reverseSanitizeName(portalName) : 'Mstrategy';
     const resetLink = portalName !== '' 
-      ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}`
+      ? from === 'reset' ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}` : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}?isNew=true`
       : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/setpassword/${resetToken}`;
 
       const redirectLink = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/login`;
@@ -43,7 +44,7 @@ export const sendSetPasswordEmail = async (
         to: [{ address: userEmail }],
       }, // Recipient email address
       content: {
-        subject: `You're invited to the NuWealth Portal Demo!`,
+        subject: `You're invited to the Universal Portal Wealth Demo!`,
         html: `
         <div><br /></div>
           <table
@@ -69,8 +70,17 @@ export const sendSetPasswordEmail = async (
                     "
                   >
                     <div style="padding: 40px 50px; line-height: 1.6">
+                      <img
+                        src="https://i.ibb.co/Z607kzZz/MStrategy-Group.png"
+                        alt="MStrategyGroup"
+                        style="
+                          width: 150px;
+                          height: 100px;
+                          display: inline-block;
+                        "
+                      />
                       <h1 style="font-family: Lato, Helvetica" class="align-left">
-                        Welcome to NuWealth Portal Demo<br />
+                        Welcome to Universal Portal Wealth Demo<br />
                       </h1>
                       <p
                         style="margin: 0px 0px 20px; text-align: left"
@@ -92,7 +102,7 @@ export const sendSetPasswordEmail = async (
                           ><span
                             class="size"
                             style="font-size: 16px; margin: 0px 0px 20px"
-                            >Thanks for registering for the NuWealth Portal demo from M Strategy. Please click the link below to create a password to get access to the portal. Once completed you will be directed to the NuWealth Portal Log In page. </span
+                            >Thanks for registering for the Universal Portal Wealth demo from M Strategy. Please click the link below to create a password to get access to the portal. Once completed you will be directed to the Universal Portal Wealth Log In page. </span
                           ></span
                         ><br />
                       </p>
@@ -121,7 +131,7 @@ export const sendSetPasswordEmail = async (
                                   >${userExist ? redirectLink : resetLink}</a
                                 ><br
                               /></span>
-                            </font>
+                            </font> 
                           </p>
                         </div>
                       </div>

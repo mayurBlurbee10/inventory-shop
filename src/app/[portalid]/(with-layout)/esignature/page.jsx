@@ -267,8 +267,8 @@ function ESignature() {
   // }, [isSignModalOpen]);
 
   const LoadingSpinner = () => (
-    <div className="min-h-[84vh] flex justify-center items-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    <div className="h-[80vh] flex items-center justify-center bg-white">
+      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 

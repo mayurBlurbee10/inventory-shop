@@ -241,7 +241,7 @@ function AddPageModal({
                 )}
               </div>
 
-              <div className="flex flex-col w-full max-h-[500px] overflow-y-auto custom-scrollbar">
+              <div className="flex flex-col w-full max-h-[500px]">
                 <label className="text-xl font-semibold mb-1">
                   Description
                 </label>
@@ -256,7 +256,7 @@ function AddPageModal({
                           if (e.key === "Enter") e.preventDefault();
                         }}
                       />
-                    )}s
+                    )}
                   />
                 {errors.description && (
                   <p className="text-sm text-red-600 mt-1">

@@ -76,8 +76,8 @@ function sanitizeName(name) {
 }
 
 const LoadingSpinner = () => (
-  <div className="flex justify-center py-8">
-    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  <div className="flex justify-center items-center py-8 min-h-[50vh]">
+    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
 

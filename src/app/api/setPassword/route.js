@@ -26,7 +26,7 @@ export async function GET(request) {
       );
     }
 
-    return NextResponse.json({ message: "Valid link." }, { status: 200 });
+    return NextResponse.json({ data : selectedUser , message: "Valid link." }, { status: 200 });
   } catch (error) {
     console.error("Error in GET /api/setPassword:", error);
     return NextResponse.json(

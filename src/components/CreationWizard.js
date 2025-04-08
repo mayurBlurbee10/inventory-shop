@@ -778,7 +778,7 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
     theme: "minimal",
     primaryColor: "#000000",
     secondaryColor: "#4F46E5",
-    accentColor: "#000000",
+    accentColor: "#ffffff",
     logo: null,
     faviconUrl: "",
     firstName: "",

@@ -30,7 +30,7 @@ const TopStories = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-full overflow-y-auto border border-gray-200 rounded-md">
+    <div className="w-full max-w-full overflow-y-auto border-b border-gray-200">
       <div
         className="tradingview-widget-container__widget"
         ref={containerRef}

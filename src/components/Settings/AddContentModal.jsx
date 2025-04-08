@@ -18,7 +18,7 @@ import {
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
-import { fontSizeOptions, fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
+import { fontSizeOptions, fontSizes, fontWeightOptions, logoSizeRatio } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 
 const AddContentModal = ({
@@ -89,7 +89,7 @@ const AddContentModal = ({
         ? {
           ...newContent,
           value: imageUrl,
-          fontSize: newContent.fontSize, // Add fontSize here
+          fontSize: newContent.fontSize || "medium", // Add fontSize here
           portalId: params.portalid ?? "default",
         }
         : newContent.type === "Links"
@@ -129,7 +129,7 @@ const AddContentModal = ({
         throw new Error(data.error || "Content length is too long");
       }
 
-      if(imageUrl){
+      if(imageUrl && newContent?.title === "Logo"){
         const portalData = {
           ...config,
           logo: imageUrl,
@@ -254,6 +254,8 @@ const AddContentModal = ({
     setContentTypes(originalContentTypes);
   };
 
+  console.log("newContent", newContent)
+
   const iconOptions = [
     { name: "Home", component: Home },
     { name: "User", component: User },
@@ -358,65 +360,76 @@ const AddContentModal = ({
           />
         </div> */}
           {newContent?.type !== "Links" && newContent?.type !== "Icons" && (
-            <>
-              {newContent.title !== "Title" && !newContent?.title.includes("Card") && fontSizeOptions[newContent?.type] && (
-                <div className="mb-4">
-                  <label
-                    htmlFor="fontSize"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Font Size
-                  </label>
-                  <select
-                    id="fontSize"
-                    name="fontSize"
-                    className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                    value={newContent?.fontSize} // Default value
-                    onChange={(e) =>
-                      setNewContent((prev) => ({
-                        ...prev,
-                        fontSize: e.target.value, // Add font size only for Logo
-                      }))
-                    }
-                    required
-                  >
-                    {(fontSizeOptions[newContent?.type] || []).map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {newContent?.title.includes("Card") && fontSizeOptions["Card"] !== null && (
-                <div className="mb-4">
-                  <label
-                    htmlFor="fontSize"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Font Size
-                  </label>
-                  <select
-                    id="fontSize"
-                    name="fontSize"
-                    className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                    value={newContent?.fontSize} // Default value
-                    onChange={(e) =>
-                      setNewContent((prev) => ({
-                        ...prev,
-                        fontSize: e.target.value, // Add font size only for Logo
-                      }))
-                    }
-                    required
-                  >
-                    {fontSizeOptions["Card"].map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+            <div className="flex items-center gap-5">
+              {newContent.title !== "Title" &&
+                !newContent?.title.includes("Card") &&
+                fontSizeOptions[newContent?.type] && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="fontSize"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Font Size
+                    </label>
+                    <select
+                      id="fontSize"
+                      name="fontSize"
+                      className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                      value={newContent?.theme?.fontSize} // Default value
+                      onChange={(e) =>
+                        setNewContent((prev) => ({
+                          ...prev,
+                          fontSize: e.target.value, // Add font size only for Logo
+                          theme: {
+                            ...prev.theme,
+                            fontSize: e.target.value,
+                          },
+                        }))
+                      }
+                      required
+                    >
+                      {(fontSizeOptions[newContent?.type] || []).map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              {newContent?.title.includes("Card") &&
+                fontSizeOptions["Card"] !== null && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="fontSize"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Font Size
+                    </label>
+                    <select
+                      id="fontSize"
+                      name="fontSize"
+                      className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                      value={newContent?.theme?.fontSize} // Default value
+                      onChange={(e) =>
+                        setNewContent((prev) => ({
+                          ...prev,
+                          fontSize: e.target.value,
+                          theme: {
+                            ...prev.theme,
+                            fontSize: e.target.value,
+                          },
+                        }))
+                      }
+                      required
+                    >
+                      {fontSizeOptions["Card"].map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               {newContent.title === "Title" && (
                 <div className="mb-4">
                   <label
@@ -429,11 +442,15 @@ const AddContentModal = ({
                     id="fontSize"
                     name="fontSize"
                     className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                    value={newContent?.fontSize} // Default value
+                    value={newContent?.theme?.fontSize} // Default value
                     onChange={(e) =>
                       setNewContent((prev) => ({
                         ...prev,
-                        fontSize: e.target.value, // Add font size only for Logo
+                        fontSize: e.target.value,
+                        theme: {
+                          ...prev.theme,
+                          fontSize: e.target.value,
+                        },
                       }))
                     }
                     required
@@ -446,9 +463,41 @@ const AddContentModal = ({
                   </select>
                 </div>
               )}
-            </>
+              {newContent?.type === "Text" && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="fontWeight"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Font Weight
+                  </label>
+                  <select
+                    id="fontWeight"
+                    name="fontWeight"
+                    className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                    value={newContent?.theme?.fontWeight} // Default value
+                    onChange={(e) =>
+                      setNewContent((prev) => ({
+                        ...prev,
+                        theme: {
+                          ...prev.theme,
+                          fontWeight: e.target.value,
+                        },
+                      }))
+                    }
+                    required
+                  >
+                    {fontWeightOptions.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
           )}
-         
+
           {/* Icons */}
           {newContent.type === "Icons" && (
             <div className="mb-4">
@@ -530,9 +579,7 @@ const AddContentModal = ({
               />
             </div>
           )}
-          {previewUrl && (
-            <LogoImage />
-          )}
+          {previewUrl && <LogoImage />}
 
           {/* Links */}
           {newContent.type === "Links" && (
@@ -571,7 +618,7 @@ const AddContentModal = ({
                   onClick={handleAddLinkField}
                   icon={PlusCircle}
                   label="Add More"
-            />
+                />
               )}
             </div>
           )}
@@ -587,10 +634,15 @@ const AddContentModal = ({
             <Button
               buttonType="submit"
               type="Primary"
-              disabled={isSubmitting || 
-                ((newContent?.type !== "Image" && newContent?.type !== "Links") && !newContent?.value?.trim()) || (newContent?.type === "Links" && (linkFields.length > 0 &&
-                  linkFields[linkFields.length - 1].label === "" ||
-                  linkFields[linkFields.length - 1].link === ""))
+              disabled={
+                isSubmitting ||
+                (newContent?.type !== "Image" &&
+                  newContent?.type !== "Links" &&
+                  !newContent?.value?.trim()) ||
+                (newContent?.type === "Links" &&
+                  ((linkFields.length > 0 &&
+                    linkFields[linkFields.length - 1].label === "") ||
+                    linkFields[linkFields.length - 1].link === ""))
               }
               // label={isEditMode ? "Save" : "Add"}
               label={"Save"}

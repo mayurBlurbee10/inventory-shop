@@ -4,12 +4,16 @@ export const fontSizes = [
     size: "medium",
   },
   {
+    key: "CoverPhoto",
+    size: "medium",
+  },
+  {
     key: "Header Text",
     size: "30px",
   },
   {
     key: "Title",
-    size: "28px",
+    size: "36px",
   },
   {
     key: "Paragraph",
@@ -58,8 +62,10 @@ export const fontSizeOptions = {
     Icons  : ["small", "medium", "large"],
     Text  : ["12px", "14px", "16px", "18px", "20px", "24px", "26px", "28px", "30px", "32px", "34px", "36px"],
     Card  : ["12px", "14px", "16px", "18px", "20px", "24px"],
-    Header: ["42px", "44px", "46px", "48px", "50px", "52px", "56px", "58px", "60px"],
+    Header: ["32px", "34px", "36px", "42px", "44px", "46px", "48px", "50px", "52px"],
 };
+
+export const fontWeightOptions = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 
 export const logoSizeMap = {
   small: "26px",

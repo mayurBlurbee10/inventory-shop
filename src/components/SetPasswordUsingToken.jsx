@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import Button from "./Common/Elements/Button";
+import { useDispatch, useSelector } from "react-redux";
+import { setCurrentUser } from "@/store/services/userService";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -21,10 +23,13 @@ export default function SetPasswordUsingToken() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  const [userID, setUserID] = useState(null);
+  const dispatch = useDispatch();
   const router = useRouter();
   const params = useParams();
   const token = params?.token;
+  const{data:user} = useSelector((state) => state.user);
+  const searchParams = useSearchParams();
 
   const handleSetPassword = async (e, isFrom) => {
     e.preventDefault();
@@ -50,7 +55,21 @@ export default function SetPasswordUsingToken() {
       const data = await response.json();
       if (response.ok) {
         setSuccess(true);
-        setTimeout(() => router.push(`/${params.portalid ?? 'admin'}/login`), 3000);
+        const updatedUserData = {
+          ...user,
+          credential: {
+            userID: userID,
+            password: password,
+          },
+        };
+        console.log("updatedUserData:", updatedUserData);
+        dispatch(setCurrentUser(updatedUserData));
+        const isNew = searchParams.get('isNew');
+        if (isNew === 'true') {
+          router.push(`/${params.portalid}/credential?isNew=true`);
+        }else{
+          router.push(`/${params.portalid}/credential`);
+        }
       } else {
         setError(data.error || "Failed to set password.");
         throw new Error(data.error || "Failed to set password.")
@@ -74,6 +93,8 @@ export default function SetPasswordUsingToken() {
             { method: "GET" }
           );
           const data = await response.json();
+          console.log("data:", data);
+          setUserID(data?.data?.email)
           if (!response.ok) {
             throw new Error(data.error || "Failed to validate Link");
           }
@@ -100,26 +121,25 @@ export default function SetPasswordUsingToken() {
     );
   }
 
+  console.log("userID:",userID);
+
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
-        <h2 className="text-xl font-bold text-center text-gray-800">
-         Please create a password to sign into the "{params.portalid} Portal"
-        </h2>
+          <h2 className="text-xl font-bold text-center text-gray-800">
+            Please create a password to sign into the "{params.portalid} Portal"
+          </h2>
         <hr className="my-3 border-gray-200" />
-        <div className=" text-center mb-4">
-          {/* Welcome to the {params.portalid} Portal! Please create a password to sign in. Once completed, you will be redirected  to the {params.portalid} Portal home page. Use your email address and password to login! */}
-          <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p>
-          <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the {params.portalid} Portal homepage. Use your email address and newly created password to log in.</p>
-
-        </div>
         <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
-          {success ? (
-            <p className="text-green-500 text-center mb-4">
-              Password set successfully! Redirecting to login...
-            </p>
-          ) : (
+        {/* <form className="text-gray-700"> */}
             <>
+                <div className=" text-center mb-4">
+                  {/* Welcome to the {params.portalid} Portal! Please create a password to sign in. Once completed, you will be redirected  to the {params.portalid} Portal home page. Use your email address and password to login! */}
+                  <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p>
+                  <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the {params.portalid} Portal homepage. Use your email address and newly created password to log in.</p>
+
+                </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-600">
                   Password
@@ -175,7 +195,6 @@ export default function SetPasswordUsingToken() {
                   />
                 </div>
             </>
-          )}
         </form>
       </div>
     </div>

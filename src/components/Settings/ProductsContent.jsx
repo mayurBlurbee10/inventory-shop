@@ -37,7 +37,7 @@ const options = [
   },
 ]
 
-const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) => {
+const ProductsContent = () => {
   const params = useParams();
   const [isOpenCreatePlugin, setIsOpenCreatePlugin] = useState(false);
   const [isOpenUpdatePlugin, setIsOpenUpdatePlugin] = useState(false);
@@ -204,11 +204,8 @@ const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) =
   };
 
   useEffect(() => {
-    if(isQueryFetched){
-      fetchPlugins();
-      setIsQueryFetched(false);
-    }
-  }, [isQueryFetched]);
+    fetchPlugins();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -231,9 +228,9 @@ const ProductsContent = ({ isQueryFetched = false, setIsQueryFetched=()=>{} }) =
           />
         )}
       </div>
-      {loading ? (
+      {loading || !pagesData?.length ? (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <>

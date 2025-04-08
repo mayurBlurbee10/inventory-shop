@@ -18,7 +18,7 @@ import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
 import { setPages } from "@/store/services/pageService";
 import * as LucideIcons from "lucide-react";
-import { logoSizeRatio } from "@/app/lib/data/font_size";
+import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 
 const NavBarItem = ({ title }) => (
@@ -336,9 +336,9 @@ function Login() {
     const baseSize = 100; // Set a reasonable base size (in pixels)
 
     const logoSize =
-      (content?.portalContent?.find((item) => item.title === "Logo")?.fontSize &&
+      (filterTheme("Logo")?.fontSize &&
         logoSizeRatio[
-          content?.portalContent?.find((item) => item.title === "Logo")?.fontSize
+          filterTheme("Logo")?.fontSize
         ]) ||
       logoSizeRatio.medium;
     return (
@@ -356,6 +356,41 @@ function Login() {
       </div>
     );
   };
+
+  const CoverPhoto = () => {
+    const baseSize = 20; // Base unit for scaling
+    
+    const fontSizeKey = content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize;
+    const logoSize = logoSizeRatio[fontSizeKey] || logoSizeRatio.medium;
+    const imageUrl = filterValue("CoverPhoto") || null;
+
+    return (
+      <div className="mb-2" style={{
+        height: `${baseSize * logoSize}rem`, 
+      }}>
+          <img
+            src={imageUrl}
+            alt={params.portalid || "Default"}
+            className="max-h-full max-w-full object-contain"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "fill"
+            }}
+          />
+      </div>
+    );
+  };
+   const filterTheme = (title) => {
+      const contentItem = content && content?.portalContent?.find((item) => item.title === title);
+      let fontSize = fontSizes.find((item) => item.key === title)
+      let theme = contentItem ? contentItem.theme : {
+        fontSize: fontSize?.size,
+        color: "#000000e6",
+        fontWeight: title === 'Paragraph' ? 300 : 400,
+      };
+      return theme;
+    };
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between">
@@ -387,11 +422,10 @@ function Login() {
               )}
 
             <span
-              className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[250px] lg:max-w-[350px]"
+              className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
               style={{
-                fontSize:
-                  content?.portalContent?.find((item) => item.title === "Header Text")
-                    ?.fontSize || "30px",
+                fontSize: filterTheme("Header Text").fontSize,
+                fontWeight: filterTheme("Header Text").fontWeight,
                 lineHeight: "1.2",
                 paddingBottom: "2px",
                 paddingInline: "2px"
@@ -443,15 +477,15 @@ function Login() {
           </div> */}
         </nav>
       <div className="max-w-[1140px] w-full mx-auto mt-10">
-        <div className="flex-1 flex flex-col md:flex-row pt-12">
+        <div className="flex-1 flex flex-col md:flex-row">
           <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
               <div className="px-[15px]">
                 <h2 
                   className="font-light leading-tight text-text font-lato mb-2" style={{
-                      fontSize:
-                      content?.portalContent?.find((item) => item.title === "Title")?.fontSize || '56px',
-                    }}>
+                    fontSize: filterTheme("Title").fontSize,
+                    fontWeight: filterTheme("Title").fontWeight
+                  }}>
                   {/* Ethree - Deep energy expertise */}
                   {filterValue("Title")}
                   {/* Wealth Management */}
@@ -468,14 +502,17 @@ function Login() {
                 <p 
                   className="font-light text-black leading-7 font-lato mb-3 mt-5"
                   style={{
-                        fontSize:
-                        content?.portalContent?.find((item) => item.title === "Paragraph")?.fontSize || '20px',
-                      }}>
+                    fontSize: filterTheme("Paragraph").fontSize,
+                    fontWeight: filterTheme("Paragraph").fontWeight
+                  }}>
                   {/* Financial decisions are complicated. But they don't have to
                   be. Whether you're planning for retirement or growing your
                   business, let us help you reach your financial goals. */}
                   {filterValue("Paragraph")}
                 </p>
+                {filterValue("CoverPhoto") && (
+                  <CoverPhoto />
+                )}
               </div>
 
               {/* Feature Cards */}
@@ -556,7 +593,7 @@ function Login() {
           </div>
 
           {/* Right Panel - Login Form */}
-          <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
+          <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
             <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
               {/* <div className="text-center mb-8">
                 <img
@@ -662,8 +699,8 @@ function Login() {
 
         {/* cards */}
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 py-12">
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+          <div className="grid grid-cols-1 md:grid-cols-3 py-5">
+            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
@@ -681,19 +718,19 @@ function Login() {
                   </div>
                   <div 
                     style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 1 Title")?.fontSize || '20px',
-                      }}>{filterValue("Card 1 Title")}</div>
+                      fontSize: filterTheme("Card 1 Title").fontSize,
+                      fontWeight: filterTheme("Card 1 Title").fontWeight
+                    }}>{filterValue("Card 1 Title")}</div>
                 </h5>
                 <p className="text-[#6c757d] font-normal leading-6" style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 1 Content")?.fontSize || '14px',
-                      }}>
+                      fontSize: filterTheme("Card 1 Content").fontSize,
+                      fontWeight: filterTheme("Card 1 Content").fontWeight
+                    }}>
                   {filterValue("Card 1 Content")}
                 </p>
               </div>
             </div>
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
@@ -711,19 +748,19 @@ function Login() {
                   </div>
                   <div 
                     style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 2 Title")?.fontSize || '20px',
-                      }}>{filterValue("Card 2 Title")}</div>
+                      fontSize: filterTheme("Card 2 Title").fontSize,
+                      fontWeight: filterTheme("Card 2 Title").fontWeight
+                    }}>{filterValue("Card 2 Title")}</div>
                 </h5>
                 <p className="text-[#6c757d] font-normal leading-6" style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 2 Content")?.fontSize || '14px',
-                      }}>
+                      fontSize: filterTheme("Card 2 Content").fontSize,
+                      fontWeight: filterTheme("Card 2 Content").fontWeight
+                    }}>
                   {filterValue("Card 2 Content")}
                 </p>
               </div>
             </div>
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
@@ -741,14 +778,14 @@ function Login() {
                   </div>
                   <div 
                     style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 3 Title")?.fontSize || '20px',
-                      }}>{filterValue("Card 3 Title")}</div>
+                      fontSize: filterTheme("Card 3 Title").fontSize,
+                      fontWeight: filterTheme("Card 3 Title").fontWeight
+                    }}>{filterValue("Card 3 Title")}</div>
                 </h5>
-                <p className="text-[#6c757d] font-normal leading-6 font-lato" style={{
-                        fontSize:
-                          content?.portalContent?.find((item) => item.title === "Card 3 Content")?.fontSize || '14px',
-                      }}>
+                <p className="text-[#6c757d] font-normal leading-6 font-lato"   style={{
+                      fontSize: filterTheme("Card 3 Content").fontSize,
+                      fontWeight: filterTheme("Card 3 Content").fontWeight
+                    }}>
                   {filterValue("Card 3 Content")}
                 </p>
               </div>
