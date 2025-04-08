@@ -443,7 +443,7 @@ function Login() {
           </div> */}
         </nav>
       <div className="max-w-[1140px] w-full mx-auto mt-10">
-        <div className="flex-1 flex flex-col md:flex-row pt-12">
+        <div className="flex-1 flex flex-col md:flex-row">
           <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
               <div className="px-[15px]">
@@ -476,6 +476,9 @@ function Login() {
                   business, let us help you reach your financial goals. */}
                   {filterValue("Paragraph")}
                 </p>
+                <div className="border h-[200px]">
+
+                </div>
               </div>
 
               {/* Feature Cards */}
@@ -556,7 +559,7 @@ function Login() {
           </div>
 
           {/* Right Panel - Login Form */}
-          <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
+          <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
             <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
               {/* <div className="text-center mb-8">
                 <img
@@ -662,8 +665,8 @@ function Login() {
 
         {/* cards */}
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 py-12">
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+          <div className="grid grid-cols-1 md:grid-cols-3 py-5">
+            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
@@ -693,7 +696,7 @@ function Login() {
                 </p>
               </div>
             </div>
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>
@@ -723,7 +726,7 @@ function Login() {
                 </p>
               </div>
             </div>
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
               <div className="px-5 py-4">
                 <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
                   <div>

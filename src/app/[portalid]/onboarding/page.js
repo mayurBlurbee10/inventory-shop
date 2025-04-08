@@ -514,7 +514,7 @@ export default function OnBoardingPage() {
             </button>
           </div> */}
         </nav>
-        <div className="max-w-[1140px] w-full mx-auto mt-10">
+        <div className="max-w-[1140px] w-full mx-auto">
           <div className="flex-1 flex flex-col xl:flex-row pt-12">
             <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
               <div className="px-[15px]">
@@ -783,13 +783,20 @@ export default function OnBoardingPage() {
               </div>
             </div>
           </div>
-            <Button
-              onClick={() => router.back()}
-              disabled={isSubmitting}
-              label={"Continue"}
-              type="Primary"
-              className="ml-auto mt-10 mr-5"
-            />
+            <div className="w-full flex gap-5 justify-end px-3">
+              <Button
+                onClick={() => router.push("login-preview")}
+                // disabled={isSubmitting}
+                label={"Preview"}
+                type="Primary"
+              />
+              <Button
+                onClick={() => router.back()}
+                disabled={isSubmitting}
+                label={"Continue"}
+                type="Primary"
+              />
+            </div>
         </div>
         </div>
         <div className="w-full ">

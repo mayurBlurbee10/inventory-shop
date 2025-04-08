@@ -21,6 +21,7 @@ export default function SetPasswordUsingToken() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [userID, setUserID] = useState(null);
 
   const router = useRouter();
   const params = useParams();
@@ -50,7 +51,7 @@ export default function SetPasswordUsingToken() {
       const data = await response.json();
       if (response.ok) {
         setSuccess(true);
-        setTimeout(() => router.push(`/${params.portalid ?? 'admin'}/login`), 3000);
+        // setTimeout(() => router.push(`/${params.portalid ?? 'admin'}/login`), 3000); 
       } else {
         setError(data.error || "Failed to set password.");
         throw new Error(data.error || "Failed to set password.")
@@ -74,6 +75,8 @@ export default function SetPasswordUsingToken() {
             { method: "GET" }
           );
           const data = await response.json();
+          console.log("data:", data);
+          setUserID(data?.data?.email)
           if (!response.ok) {
             throw new Error(data.error || "Failed to validate Link");
           }
@@ -100,26 +103,61 @@ export default function SetPasswordUsingToken() {
     );
   }
 
+  console.log("userID:",userID);
+  const handleGoToLogin = () => {
+    router.push(`/${params.portalid ?? 'admin'}/login`)
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
-        <h2 className="text-xl font-bold text-center text-gray-800">
-         Please create a password to sign into the "{params.portalid} Portal"
-        </h2>
+        {success ? (
+          <h2 className="text-xl font-bold text-center text-gray-800">
+            Save Your Login Credentials
+          </h2>
+        ) : (
+          <h2 className="text-xl font-bold text-center text-gray-800">
+            Please create a password to sign into the "{params.portalid} Portal"
+          </h2>
+        )}
         <hr className="my-3 border-gray-200" />
-        <div className=" text-center mb-4">
-          {/* Welcome to the {params.portalid} Portal! Please create a password to sign in. Once completed, you will be redirected  to the {params.portalid} Portal home page. Use your email address and password to login! */}
-          <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p>
-          <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the {params.portalid} Portal homepage. Use your email address and newly created password to log in.</p>
-
-        </div>
         <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
           {success ? (
-            <p className="text-green-500 text-center mb-4">
-              Password set successfully! Redirecting to login...
+            <div className="flex flex-col items-center justify-center">
+            <h2 className="font-semibold text-gray-600 mb-2 text-center">
+              Your login credentials have been generated
+            </h2>
+            <p className="text-sm text-gray-600 text-center mb-4">
+              Please take a screenshot or securely store the details below.
             </p>
+          
+          
+            <div className="text-center mb-6">
+              <p className="text-gray-600 font-semibold mb-2">Your Credentials:</p>
+              <p className="text-gray-600">
+                <span className="font-semibold text-gray-600">User ID:</span> {userID}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold text-gray-600">Password:</span> {password}
+              </p>
+            </div>
+          
+            <Button
+              label="Go to Login"
+              type="Primary"
+              className="w-48"
+              onClick={handleGoToLogin}
+            />
+          </div>
+          
           ) : (
             <>
+                <div className=" text-center mb-4">
+                  {/* Welcome to the {params.portalid} Portal! Please create a password to sign in. Once completed, you will be redirected  to the {params.portalid} Portal home page. Use your email address and password to login! */}
+                  <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p>
+                  <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the {params.portalid} Portal homepage. Use your email address and newly created password to log in.</p>
+
+                </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-600">
                   Password

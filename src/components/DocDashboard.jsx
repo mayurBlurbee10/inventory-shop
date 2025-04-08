@@ -264,20 +264,22 @@ export default function DocDashboard() {
       <div className="pt-14">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
           <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-10 pb-4 border-b justify-between">
-              {filterVisibility("Header Section") && (
-                <div className={filterVisibility("Ticker Tape") ? "flex-1" : "w-full"}>
-                  <h2 className="text-xl font-light text-black font-lato">
-                    {`Hello, ${user?.name}! Today is ${dayAndDate}`}
-                  </h2>
-                </div>
-              )}
+            <div className="flex justify-center">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-10 pb-4 border-b justify-between w-[96%] md:w-[80%] ">
+                {filterVisibility("Header Section") && (
+                  <div className={filterVisibility("Ticker Tape") ? "flex-1" : "w-full"}>
+                    <h2 className="text-xl font-light text-black font-lato">
+                      {`Hello, ${user?.name}! Today is ${dayAndDate}`}
+                    </h2>
+                  </div>
+                )}
 
-              {filterVisibility("Ticker Tape") && (
-                <div className={filterVisibility("Header Section") ? "flex-1" : "w-full"}>
-                  <TickerTape />
-                </div>
-              )}
+                {filterVisibility("Ticker Tape") && (
+                  <div className={filterVisibility("Header Section") ? "flex-1" : "w-full"}>
+                    <TickerTape />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Chart */}
@@ -285,7 +287,7 @@ export default function DocDashboard() {
               {filterVisibility("Chart Section") && (
                 <>
                   <h3 className="text-xl font-light font-lato text-center text-black mb-4">
-                    Your Investments At a Glance
+                    Market Reports
                   </h3>
 
                   <div className="flex justify-center w-full">
