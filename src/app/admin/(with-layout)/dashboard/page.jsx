@@ -31,7 +31,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
     legalName: "",
     domain: "",
   });
-  
+
   const { data : user } = useSelector((state)=> state.user)
 
   // const fetchUsers = async () => {
@@ -228,17 +228,17 @@ const SubsidiaryGrid = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <CreateSubsidiaryButton onClick={onCreateNew} />
             {Array.isArray(subsidiaries) && subsidiaries?.slice(0, visibleSubsidiaries).map((subsidiary) => {
-              return (
-                <React.Fragment key={subsidiary.id}>
-                  <SubsidiaryCard
-                    key={subsidiary.id}
-                    subsidiary={subsidiary}
-                    onSelect={onSelectSubsidiary}
-                    refreshPortals={refreshPortals}
-                  />
-                </React.Fragment>
-              );
-            })}
+                return (
+                  <React.Fragment key={subsidiary.id}>
+                    <SubsidiaryCard
+                      key={subsidiary.id}
+                      subsidiary={subsidiary}
+                      onSelect={onSelectSubsidiary}
+                      refreshPortals={refreshPortals}
+                    />
+                  </React.Fragment>
+                );
+              })}
           </div>
           {visibleSubsidiaries < subsidiaries?.length && (
             <div className="flex justify-center mt-6">
@@ -301,7 +301,7 @@ const AdminDashboardPage = () => {
       setIsPortalLoading(false);
     }
   };
-  
+
   const sanitizeName = (name) => {
     let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
     return sanitizeName.endsWith(".")
@@ -450,7 +450,8 @@ const AdminDashboardPage = () => {
           portalId: sanitizeName(formData.legalName),
           role: UserRole.ADMIN,
         },
-        phone: formData.phoneNumber
+        phone: formData.phoneNumber,
+        from: "portaCreatedAdmin",
       };
 
       const UserResponse = await fetchWrapper(
@@ -482,7 +483,7 @@ const AdminDashboardPage = () => {
         },
         "create-user-box"
       );
-      
+
       const boxEndUserData = await boxEndUserResponse.json();
 
       if (!boxEndUserResponse.ok) {
@@ -583,14 +584,14 @@ const AdminDashboardPage = () => {
 
   useEffect(() => {
     const filtered = Array.isArray(subsidiaries) && subsidiaries?.filter((subsidiary) => {
-      const matchesSearch = subsidiary.legalName
-        .toLowerCase()
-        .includes(searchTerm);
-      const matchesFilter =
-        filter === "all" || subsidiary.createdBy.id === user.id;
+        const matchesSearch = subsidiary.legalName
+          .toLowerCase()
+          .includes(searchTerm);
+        const matchesFilter =
+          filter === "all" || subsidiary.createdBy.id === user.id;
 
-      return matchesSearch && matchesFilter;
-    });
+        return matchesSearch && matchesFilter;
+      });
 
     setFilteredSubsidiaries(filtered);
   }, [subsidiaries, searchTerm, filter, user]);

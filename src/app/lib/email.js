@@ -36,7 +36,8 @@ export const sendSetPasswordEmail = async (
       ? from === 'reset' ? `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}` : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/setpassword/${resetToken}?isNew=true`
       : `${process.env.NEXT_PUBLIC_APP_BASE_URL}/setpassword/${resetToken}`;
 
-      const redirectLink = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/login`;
+    const redirectLink = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalName}/login`;
+    const logoURL = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/MStrategy_Group.png`;
 
     const emailContent = {
       senderAddress: process.env.AZURE_COMMUNICATION_SENDER_EMAIL, // Sender email
@@ -70,15 +71,15 @@ export const sendSetPasswordEmail = async (
                     "
                   >
                     <div style="padding: 40px 50px; line-height: 1.6">
-                      <img
-                        src="https://i.ibb.co/Z607kzZz/MStrategy-Group.png"
-                        alt="MStrategyGroup"
-                        style="
-                          width: 150px;
-                          height: 100px;
-                          display: inline-block;
-                        "
-                      />
+                      <div style="
+                        width: 150px;
+                        height: 100px;
+                        background-image: url(${logoURL});
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                        background-position: center;
+                      ">
+                      </div>
                       <h1 style="font-family: Lato, Helvetica" class="align-left">
                         Welcome to Universal Portal Wealth Demo<br />
                       </h1>

@@ -83,7 +83,8 @@ export async function POST(request) {
   console.log("POST request received for users");
   try {
     await logApiCall(request);
-    const userData = await request.json();
+    const data = await request.json();
+    const { from=null , ...userData } = data;
     console.log("Received user data:", userData);
 
     // if (!userData.email || !userData.boxUserId || !userData.folderId) {
@@ -164,7 +165,8 @@ export async function POST(request) {
           newUser.name,
           token,
           userPortal,
-          true
+          true,
+          from ? "" : "reset"
         );
       }
       if (mainUserRole === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
@@ -262,7 +264,7 @@ export async function POST(request) {
       // because super_admin will be created from admin so it should go to admin for set password
       const userPortal =
         userData.role === UserRole.SUPER_ADMIN ? "admin" : userData.portal;
-        sendSetPasswordEmail(newUser.email, newUser.name, token, userPortal);
+        sendSetPasswordEmail(newUser.email, newUser.name, token, userPortal, false, from ? "" : "reset");
     }
 
     if (mainUserRole === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {
