@@ -30,7 +30,7 @@ export default function SetPasswordUsingToken() {
   const token = params?.token;
   const{data:user} = useSelector((state) => state.user);
   const searchParams = useSearchParams();
-
+  const logoURL = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/MStrategy_Group.png`;
   const handleSetPassword = async (e, isFrom) => {
     e.preventDefault();
     setError("");
@@ -126,19 +126,31 @@ export default function SetPasswordUsingToken() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white shadow-md rounded-lg">
-          <h2 className="text-xl font-bold text-center text-gray-800">
-            Please create a password to sign into the "{params.portalid} Portal"
+      <div className="w-full max-w-md bg-white shadow-md rounded-lg">
+        <div className="w-full flex justify-center">
+          <div
+            style={{
+              width: "100px",
+              height: "80px",
+              backgroundImage: `url(${logoURL})`,
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
+            }}
+          />
+        </div>
+          <h2 className="text-xl font-bold text-center text-gray-800 px-6">
+            Please create a password to log into Universal Portal Wealth Demo
           </h2>
-        <hr className="my-3 border-gray-200" />
+        <hr className="mt-3 border-gray-200" />
+        <div className="w-full p-6">
         <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
-        {/* <form className="text-gray-700"> */}
+         {/* <form className="text-gray-700"> */}
             <>
                 <div className=" text-center mb-4">
                   {/* Welcome to the {params.portalid} Portal! Please create a password to sign in. Once completed, you will be redirected  to the {params.portalid} Portal home page. Use your email address and password to login! */}
-                  <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p>
-                  <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the {params.portalid} Portal homepage. Use your email address and newly created password to log in.</p>
-
+                  {/* <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p> */}
+                  <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the Universal Portal Wealth Demo homepage.</p>
                 </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-600">
@@ -196,6 +208,10 @@ export default function SetPasswordUsingToken() {
                 </div>
             </>
         </form>
+        </div>
+        <div className="w-full border-t bg-gray-50 rounded-b-md flex justify-center items-center h-[50px]">
+          <p className="text-sm text-gray-600">M Strategy Group 2025. All rights reserved.</p>
+        </div>
       </div>
     </div>
   );

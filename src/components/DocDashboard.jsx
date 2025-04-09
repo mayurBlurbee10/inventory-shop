@@ -24,8 +24,8 @@ import AdvisorSection from "./Common/CollaboratorSection";
 import CollaboratorSection from "./Common/CollaboratorSection";
 import MessageSection from "./Common/MessageSection";
 import TickerTape from "./Common/charts/TickerTape";
-import Chart from "./Common/charts/Chart";
 import TopStories from "./Common/charts/TopStories";
+import { MarketOverviewChart, StockMarketChart } from "./Common/charts/Chart";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -287,12 +287,13 @@ export default function DocDashboard() {
               {filterVisibility("Chart Section") && (
                 <>
                   <h3 className="text-xl font-light font-lato text-center text-black mb-4">
-                    Market Reports
+                    Summary
                   </h3>
 
                   <div className="flex justify-center w-full">
                     <div className="w-[96%] md:w-[80%]">
-                      <Chart />
+                      <StockMarketChart/>
+                      {/* <MarketOverviewChart /> */}
                     </div>
                   </div>
                 </>

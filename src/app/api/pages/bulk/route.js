@@ -21,7 +21,7 @@ export async function POST(req) {
         const obj = {
           title : item.title,
           description : item.description,
-          isCustomPage : false,
+          isCustomPage : item.isCustomPage,
           visibility : item.sections,
           plugin : pluginId
         }

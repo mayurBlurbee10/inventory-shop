@@ -18,6 +18,7 @@ import MessageSection from "@/components/Common/MessageSection";
 import AdvisorSection from "@/components/Common/AdvisorSection";
 import TickerTape from "@/components/Common/charts/TickerTape";
 import TopStories from "@/components/Common/charts/TopStories";
+import { StockMarketChart } from "@/components/Common/charts/Chart";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -203,6 +204,14 @@ function Page() {
                 />
               ) : (
                 <div>No Content Available</div>
+              )}
+            </div>
+            <div className="flex justify-center w-full mt-5">
+              {filterVisibility("Chart Section") && (
+                <div className="w-[96%] md:w-[80%]">
+                  <StockMarketChart />
+                  {/* <MarketOverviewChart /> */}
+                </div>
               )}
             </div>
             <div className="flex justify-center mt-5">
