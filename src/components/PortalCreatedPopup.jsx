@@ -39,11 +39,13 @@ function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
               Your portal <span className="font-semibold">{portalName}</span> has
               been created successfully. Please visit to explore more.
             </p>
-            <Button 
-              onClick={handleVisitPortal}
-              label="Visit your portal"
-              type="Primary"
-            />
+            <div className="w-full flex justify-center">
+              <Button
+                onClick={handleVisitPortal}
+                label="Visit your portal"
+                type="Primary"
+              />
+            </div>
           </div>
         </DialogPanel>
       </div>
