@@ -176,7 +176,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center z-20"
+          className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center z-10"
           style={{ marginTop: 0 }}
         >
           <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
