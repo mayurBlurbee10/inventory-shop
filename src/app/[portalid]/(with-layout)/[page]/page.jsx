@@ -186,12 +186,12 @@ function Page() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
         <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
           <div>
-            <div className="w-full flex justify-center">
-              <div className="w-[96%] md:w-[80%]">
-                {filterVisibility("Ticker Tape") && (
+            <div className="flex justify-center">
+              {filterVisibility("Ticker Tape") && (
+                <div className="w-[96%] md:w-[80%]">
                   <TickerTape />
-                )}
-              </div>
+                </div>
+              )}
             </div>
             <div className="flex-1 flex justify-center mt-5 ">
               {page && page?.description ? (
@@ -215,13 +215,11 @@ function Page() {
               )}
             </div>
             <div className="flex justify-center mt-5">
-              <div className="w-[96%] md:w-[80%] ">
-              {filterVisibility("Top Stories") && (
-                  <div className="w-[99.95%]">
+                {filterVisibility("Top Stories") && (
+                  <div className="w-[96%] md:w-[80%]">
                     <TopStories />
                   </div>
                 )}
-                </div>
             </div>
           </div>
 

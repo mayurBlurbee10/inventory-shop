@@ -294,24 +294,20 @@ export default function DocDashboard() {
                   </h3>
 
                   <div className="flex justify-center w-full">
-                    <div className="w-[96%] md:w-[80%]">
-                      <div className="w-[99.95%]">
+                      <div className="w-[96%] md:w-[80%]">
                         <StockMarketChart />
                         {/* <MarketOverviewChart /> */}
                       </div>
-                    </div>
                   </div>
                 </>
               )}
             </div>
             <div className="flex justify-center mt-5">
-              <div className="w-[96%] md:w-[80%]">
                 {filterVisibility("Top Stories") && (
-                  <div className="w-[99.95%]">
+                  <div className="w-[96%] md:w-[80%]">
                     <TopStories />
                   </div>
                 )}
-              </div>
             </div>
           </div>
           <div className="col-span-5 md:col-span-2">

@@ -640,12 +640,13 @@ export default function AdvisorViewSharedDocsPage() {
     },[]);
 
       const LoadingSpinner = () => (
-        <div className="h-screen flex justify-center items-center bg-white">
+        <div className="h-[83vh] flex justify-center items-center bg-white">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       );
       
     if(boxUserId && !user) return <LoadingSpinner />;
+console.log("User:", user);
 
     return (
         <div className="max-w-[1820px] mx-auto px-4">
@@ -706,11 +707,11 @@ export default function AdvisorViewSharedDocsPage() {
                 </div>
             </div> */}
 
-            <div className="grid gap-7 grid-cols-5  pt-12">
-                <div className="col-span-3 ">
+            <div className="grid gap-7 grid-cols-5 pt-12">
+                <div className="col-span-5 lg:col-span-3 ">
                     <Documents fileType={"advisor"} clientFolderId={user ? user?.folderId : loggedInUser?.folderId} key={user ? user.id : loggedInUser.id}/>
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-5 lg:col-span-2">
                     {filterVisibility("My Task Section") && (
                         <div>
                             <TasksSection client={user ? user : loggedInUser} key={user ? user.id : loggedInUser.id} />

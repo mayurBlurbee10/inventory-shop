@@ -114,8 +114,37 @@ export default function SetPasswordUsingToken() {
   if (isTokenExpired) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-lg font-medium text-red-600">
-          Link is invalid or expired.
+        <div className="w-full max-w-md bg-white shadow-md rounded-lg">
+
+          <div className="w-full flex justify-center">
+            <div
+              style={{
+                width: "100px",
+                height: "80px",
+                backgroundImage: `url(${logoURL})`,
+                backgroundSize: "contain",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+              }}
+            />
+          </div>
+          <h2 className="text-xl font-bold text-center text-red-600">
+            Link is invalid or expired
+          </h2>
+          <hr className="mt-3 border-gray-200" />
+          <div className='w-full p-6'>
+            <div className="flex flex-col items-center justify-center">
+              <h2 className="font-semibold text-gray-600 mb-2 text-center">
+                This link may have expired or already been used.
+              </h2>
+              <p className="text-sm text-gray-600 text-center mb-4">
+                Please contact us at <a href="mailto:info@mstrategygroup.com" className="text-blue-600">info@mstrategygroup.com</a> to request a new link.
+              </p>
+            </div>
+          </div>
+          <div className="w-full border-t bg-gray-50 rounded-b-md flex justify-center items-center h-[50px]">
+            <p className="text-sm text-gray-600">M Strategy Group 2025. All rights reserved.</p>
+          </div>
         </div>
       </div>
     );

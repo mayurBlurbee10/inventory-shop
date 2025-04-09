@@ -137,12 +137,12 @@ const CollaboratorSection = () => {
                               <tr className="hover:bg-gray-300">
                                 <td className="p-3">
                                   <p className="font-semibold font-lato text-sm text-black">
-                                    Erica Smith
+                                    Briana Walsh
                                   </p>
                                 </td>
                                 <td className="p-3">
                                   <p className="font-normal font-lato text-sm text-black">
-                                    advisor@wealthportal.com
+                                    advisor@universalportalwealth.com
                                   </p>
                                 </td>
                                 <td className="p-3">

@@ -2,7 +2,7 @@ import React from "react";
 
 const AdvisorSection = ({
   title = "My Advisor",
-  userName = "Eva Character",
+  userName = "Briana Walsh",
   role = "Senior Financial Advisor",
 }) => {
   return (
@@ -15,10 +15,15 @@ const AdvisorSection = ({
 
       <div className="border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
         <div className="flex items-start gap-6 p-4 ">
-          <div className="max-w-[150px] w-full">
-            <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
+          <div className="max-w-[150px] w-full h-[100px] p-1 border border-[#dee2e6] ">
+            {/* <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
               <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
-            </a>
+            </a> */}
+            <div
+              className={`size-20 w-full h-full p-1 text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 bg-gray-700`}
+            >
+              {userName?.charAt(0)?.toUpperCase() || "U"}
+            </div>
           </div>
 
           <div>
