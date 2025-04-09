@@ -49,7 +49,7 @@ const CollaboratorSection = () => {
             setCollaborators(newList);
           };
     return (
-        <div className='reletive mt-1'>
+        <div className='reletive mt-1 mb-5'>
             {filterVisibility("Collaborator Section") && (
                     <div>
                       <div>

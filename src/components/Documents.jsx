@@ -58,6 +58,8 @@ import Messaging from "./Common/Messaging";
 import TasksSection from "./Common/TasksSection";
 import MessageSection from "./Common/MessageSection";
 import AdvisorSection from "./Common/AdvisorSection";
+import TickerTape from "./Common/charts/TickerTape";
+import TopStories from "./Common/charts/TopStories";
 
 function Documents({
   fileType,
@@ -1138,7 +1140,7 @@ function Documents({
       className={`max-w-[1820px] ${
         fileType === "loan" || fileType === "advisor"
           ? ""
-          : "mx-auto sm:pt-14 pt-14"
+          : `${filterVisibility("Ticker Tape") ? "mx-auto pt-5" : "mx-auto pt-14"}`
       }`}
     >
       <div>
@@ -1156,16 +1158,27 @@ function Documents({
           >
             {fileType !== "loan" && (
               <>
-                <div className="flex items-center gap-10">
-                  <p className="text-sm font-lato">
-                    <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
-                      Shared Documents
-                    </span>
-                    <span className="text-sm font-normal text-black font-lato block md:inline">
-                      Securely share content with your advisor and trusted
-                      collaborators
-                    </span>
-                  </p>
+                <div className={`flex flex-col justify-center ${filterVisibility("Ticker Tape") ? "gap-4" : ""}`}>
+                  {fileType !== "loan" && fileType !== "advisor" && (
+                    <div className="flex justify-center">
+                      {filterVisibility("Ticker Tape") && (
+                        <div className="w-full">
+                          <TickerTape />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-10">
+                    <p className="text-sm font-lato">
+                      <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
+                        Shared Documents
+                      </span>
+                      <span className="text-sm font-normal text-black font-lato block md:inline">
+                        Securely share content with your advisor and trusted
+                        collaborators
+                      </span>
+                    </p>
+                  </div>
                 </div>
                 <hr className="my-5" />
               </>
@@ -1717,6 +1730,15 @@ function Documents({
 
               {/* Create folder */}
             </div>
+            {fileType !== "loan" && fileType !== "advisor" && (
+            <div className="flex justify-center mt-5">
+              {filterVisibility("Top Stories") && (
+                  <div className="w-[99.99%]">
+                    <TopStories />
+                  </div>
+                )}
+            </div>
+            )}
           </div>
 
           {/* right panel */}
@@ -1945,7 +1967,7 @@ function Documents({
 
                 {/* Collaborators */}
                 {filterVisibility("Collaborator Section") && (
-                    <div>
+                    <div className="mb-5">
                       <div>
                         <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
                           My Collaborators

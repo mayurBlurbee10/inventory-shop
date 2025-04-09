@@ -261,24 +261,27 @@ export default function DocDashboard() {
   return (
     // <Container>
     <div className="max-w-[1820px] mx-auto px-4">
-      <div className="pt-14">
+      <div className={`${filterVisibility("Ticker Tape") ? "pt-5" : "pt-14"}`}>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
           <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
-            <div className="flex justify-center">
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-10 pb-4 border-b justify-between w-[96%] md:w-[80%] ">
-                {filterVisibility("Header Section") && (
-                  <div className={filterVisibility("Ticker Tape") ? "flex-1" : "w-full"}>
-                    <h2 className="text-xl font-light text-black font-lato">
-                      {`Hello, ${user?.name}! Today is ${dayAndDate}`}
-                    </h2>
-                  </div>
-                )}
-
+            <div className="flex flex-col justify-center gap-4">
+              <div className="flex justify-center">
                 {filterVisibility("Ticker Tape") && (
-                  <div className={filterVisibility("Header Section") ? "flex-1" : "w-full"}>
+                  <div className="w-[96%] md:w-[80%]">
                     <TickerTape />
                   </div>
                 )}
+              </div>
+              <div className="w-full flex justify-center">
+                <div className="pb-4 border-b w-[96%] md:w-[80%] ">
+                  {filterVisibility("Header Section") && (
+                    <div className="w-full">
+                      <h2 className="text-xl font-light text-black font-lato">
+                        {`Hello, ${user?.name}! Today is ${dayAndDate}`}
+                      </h2>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -292,19 +295,23 @@ export default function DocDashboard() {
 
                   <div className="flex justify-center w-full">
                     <div className="w-[96%] md:w-[80%]">
-                      <StockMarketChart/>
-                      {/* <MarketOverviewChart /> */}
+                      <div className="w-[99.95%]">
+                        <StockMarketChart />
+                        {/* <MarketOverviewChart /> */}
+                      </div>
                     </div>
                   </div>
                 </>
               )}
             </div>
             <div className="flex justify-center mt-5">
-              {filterVisibility("Top Stories") && (
-                  <div className="w-[96%] md:w-[80%]">
+              <div className="w-[96%] md:w-[80%]">
+                {filterVisibility("Top Stories") && (
+                  <div className="w-[99.95%]">
                     <TopStories />
                   </div>
                 )}
+              </div>
             </div>
           </div>
           <div className="col-span-5 md:col-span-2">
@@ -353,7 +360,7 @@ export default function DocDashboard() {
                  </Link>
                )}
             </div>
-          )} */}
+           )} */}
             {filterVisibility("Messaging") && (
               // <Messaging />
               <MessageSection />

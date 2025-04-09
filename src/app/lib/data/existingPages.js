@@ -18,6 +18,8 @@ export const existingPages = [
     title: "shared-docs",
     description: "Store and collaborate on documents.",
     sections: [
+      { label: "Top Stories", visible: false },
+      { label: "Ticker Tape", visible: false },
       { label: "My Task Section", visible: false },
       { label: "Advisor Section", visible: false },
       { label: "Collaborator Section", visible: false },

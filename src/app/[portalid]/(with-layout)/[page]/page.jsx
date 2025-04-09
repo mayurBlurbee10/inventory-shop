@@ -182,7 +182,7 @@ function Page() {
   }
   const userIsAdmin = isAdmin();
   return (
-    <div className="px-4 pt-4 bg-white text-gray-800 font-lato">
+    <div className="max-w-[1820px] mx-auto px-4 pt-4 bg-white text-gray-800 font-lato">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
         <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
           <div>
@@ -215,11 +215,13 @@ function Page() {
               )}
             </div>
             <div className="flex justify-center mt-5">
+              <div className="w-[96%] md:w-[80%] ">
               {filterVisibility("Top Stories") && (
-                  <div className="w-[96%] md:w-[80%]">
+                  <div className="w-[99.95%]">
                     <TopStories />
                   </div>
                 )}
+                </div>
             </div>
           </div>
 

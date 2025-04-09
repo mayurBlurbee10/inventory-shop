@@ -897,7 +897,7 @@ useEffect(() => {
 }, [router])
 
   return (
-    <div className="mt-7 relative text-gray-700">
+    <div className="relative text-gray-700">
       {/* Header */}
       <div className="grid grid-cols-3">
         <div></div>
