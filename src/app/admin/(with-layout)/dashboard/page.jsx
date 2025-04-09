@@ -366,7 +366,7 @@ const AdminDashboardPage = () => {
         storageUsed: "0 GB",
         theme: formData.theme || "minimal",
         primaryColor: formData.primaryColor || "#000000",
-        secondaryColor: formData.secondaryColor || "#4F46E5",
+        secondaryColor: formData.secondaryColor || "#2563eb",
         accentColor: formData.accentColor || "#ffffff",
         faviconUrl: formData.faviconUrl || "",
         security: {
@@ -389,24 +389,24 @@ const AdminDashboardPage = () => {
       };
 
       // Create Box user
-      const boxResponse = await fetchWrapper(
-        "/api/box/create-user",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userName: formData.adminEmail,
-            externalId: `user_${Date.now()}`,
-          }),
-        },
-        "create-user-box"
-      );
+      // const boxResponse = await fetchWrapper(
+      //   "/api/box/create-user",
+      //   {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({
+      //       userName: formData.adminEmail,
+      //       externalId: `user_${Date.now()}`,
+      //     }),
+      //   },
+      //   "create-user-box"
+      // );
 
-      const boxData = await boxResponse.json();
+      // const boxData = await boxResponse.json();
 
-      if (!boxResponse.ok) {
-        throw new Error(boxData.error || "Failed to create Box user");
-      }
+      // if (!boxResponse.ok) {
+      //   throw new Error(boxData.error || "Failed to create Box user");
+      // }
 
       let logoUrl = "";
 
@@ -441,8 +441,6 @@ const AdminDashboardPage = () => {
         role: UserRole.ADMIN,
         password: "000",
         logo: null,
-        boxUserId: boxData.user.userId,
-        folderId: boxData.user.folderId,
         portal: sanitizeName(formData.legalName) || "",
         isOnboardingRequired: true,
         createdBy: user.id,
@@ -450,12 +448,13 @@ const AdminDashboardPage = () => {
           portalId: sanitizeName(formData.legalName),
           role: UserRole.ADMIN,
         },
-        phone: formData.phoneNumber,
+        phoneNo: formData.phoneNumber,
         from: "portaCreatedAdmin",
       };
 
       const UserResponse = await fetchWrapper(
-        "/api/users",
+        // "/api/users",
+        "/api/users/bulk",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -468,61 +467,61 @@ const AdminDashboardPage = () => {
         throw new Error(data.error || "Failed to create user data");
       }
 
-      newSubsidiary.portalCreatedAdmin = data?.id
+      newSubsidiary.portalCreatedAdmin = data?.data?.id
 
       // Create end user for portal.
-      const boxEndUserResponse = await fetchWrapper(
-        "/api/box/create-user",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userName: `user_${formData.adminEmail}`,
-            externalId: `user_${Date.now()}`,
-          }),
-        },
-        "create-user-box"
-      );
+      // const boxEndUserResponse = await fetchWrapper(
+      //   "/api/box/create-user",
+      //   {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({
+      //       userName: `user_${formData.adminEmail}`,
+      //       externalId: `user_${Date.now()}`,
+      //     }),
+      //   },
+      //   "create-user-box"
+      // );
 
-      const boxEndUserData = await boxEndUserResponse.json();
+      // const boxEndUserData = await boxEndUserResponse.json();
 
-      if (!boxEndUserResponse.ok) {
-        throw new Error(boxEndUserData.error || "Failed to create Box end user");
-      }
+      // if (!boxEndUserResponse.ok) {
+      //   throw new Error(boxEndUserData.error || "Failed to create Box end user");
+      // }
 
-      const endUser = {
-        email: `user_${formData.adminEmail}`,
-        name: `${sanitizeName(formData.legalName)} user`,
-        title: formData.jobTitle,
-        companyName: formData.legalName,
-        role: UserRole.USER,
-        password: "000",
-        logo: null,
-        boxUserId: boxEndUserData.user.userId,
-        folderId: boxEndUserData.user.folderId,
-        portal: sanitizeName(formData.legalName) || "",
-        isOnboardingRequired: false,
-        createdBy: user.id,
-        permissions: {
-          portalId: sanitizeName(formData.legalName),
-          role: UserRole.USER,
-        },
-        phone: formData.phoneNumber
-      }
+      // const endUser = {
+      //   email: `user_${formData.adminEmail}`,
+      //   name: `${sanitizeName(formData.legalName)} user`,
+      //   title: formData.jobTitle,
+      //   companyName: formData.legalName,
+      //   role: UserRole.USER,
+      //   password: "000",
+      //   logo: null,
+      //   boxUserId: boxEndUserData.user.userId,
+      //   folderId: boxEndUserData.user.folderId,
+      //   portal: sanitizeName(formData.legalName) || "",
+      //   isOnboardingRequired: false,
+      //   createdBy: user.id,
+      //   permissions: {
+      //     portalId: sanitizeName(formData.legalName),
+      //     role: UserRole.USER,
+      //   },
+      //   phone: formData.phoneNumber
+      // }
 
-      const endUserResponse = await fetchWrapper(
-        "/api/users",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(endUser),
-        },
-        "save-user"
-      );
-      const endUserData = await endUserResponse.json();
-      if (!endUserResponse.ok) {
-        throw new Error(endUserData.error || "Failed to create end user data");
-      }
+      // const endUserResponse = await fetchWrapper(
+      //   "/api/users",
+      //   {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(endUser),
+      //   },
+      //   "save-user"
+      // );
+      // const endUserData = await endUserResponse.json();
+      // if (!endUserResponse.ok) {
+      //   throw new Error(endUserData.error || "Failed to create end user data");
+      // }
 
       // Create portal
       const saveResponse = await fetchWrapper(

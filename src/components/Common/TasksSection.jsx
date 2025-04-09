@@ -109,7 +109,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                     )}
                     {task?.status !== TaskStatus?.COMPLETED && (
                       isTaskUpdateLoading ? (
-                        <Loader2 className='size-4 mx-auto animate-spin text-blue-500'/>
+                        <Loader2 className='size-4 mx-auto px-4 py-2 animate-spin text-blue-500'/>
                       ) : (
                         <button
                           onClick={() => updateTaskStatus(task)}

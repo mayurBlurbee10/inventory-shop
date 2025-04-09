@@ -2,38 +2,44 @@ import { existingPages } from "@/app/lib/data/existingPages";
 import pageService from "@/services/pageService";
 import { NextResponse } from "next/server";
 
+export const bulkPages = async (items, errors, results, portalId, pluginId) => {
+  for (const item of items) {
+    try {
+      const pageExist = await pageService.checkIfPageWithTitleExist(
+        portalId,
+        item.title
+      );
+      if (pageExist) {
+        results.push(pageExist);
+        continue;
+      }
+      const obj = {
+        title : item.title,
+        description : item.description,
+        isCustomPage : item.isCustomPage,
+        visibility : item.sections,
+        plugin : pluginId
+      }
+      const page = await pageService.createPage(obj);
+      if (!page) {
+        throw new Error(`Page can't created with ${item}`);
+      }
+      results.push(page);
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+}
+
 export async function POST(req) {
   try {
     const { portalId, pluginId } = await req.json();
     const items = existingPages;
     const results = [];
     const errors = [];
-    for (const item of items) {
-      try {
-        const pageExist = await pageService.checkIfPageWithTitleExist(
-          portalId,
-          item.title
-        );
-        if (pageExist) {
-          results.push(pageExist);
-          continue;
-        }
-        const obj = {
-          title : item.title,
-          description : item.description,
-          isCustomPage : item.isCustomPage,
-          visibility : item.sections,
-          plugin : pluginId
-        }
-        const page = await pageService.createPage(obj);
-        if (!page) {
-          throw new Error(`Page can't created with ${item}`);
-        }
-        results.push(page);
-      } catch (error) {
-        errors.push(error.message);
-      }
-    }
+
+    await bulkPages(items, errors, results, portalId, pluginId)
+   
     return NextResponse.json({
       message: "Pages Created",
       data: results,

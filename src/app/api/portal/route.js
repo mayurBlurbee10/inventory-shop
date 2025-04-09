@@ -8,6 +8,9 @@ import { UserRole } from "@/config/constants";
 import permissionService from "@/services/permissionService";
 import { sendSuccessPortalEmail } from "@/app/lib/email";
 import { generateNanoToken } from "@/app/lib/jwt";
+import resetService from "@/services/resetService";
+import pluginService from "@/services/pluginService";
+import { uploadSampleFiles } from "../box/files/route";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -74,10 +77,20 @@ export async function POST(req) {
         { status: 404 }
       );
     }
+    const portalId = sanitizeName(legalName);
+    await resetService.createSampleMessage(portalId);
+    await resetService.createSampleTasks(portalId);
+    await pluginService.createTncPlugin(portalId, portal?.portalCreatedAdmin);
     const user = await userService.getUserById(portal?.portalCreatedAdmin);
-    const token = user?.resetPasswordToken
-      ? user.resetPasswordToken
-      : await generateNanoToken();
+    await uploadSampleFiles(
+      user?.email,
+      user?.boxUserId,
+      user?.folderId
+    );
+
+    // const token = user?.resetPasswordToken
+    //   ? user.resetPasswordToken
+    //   : await generateNanoToken();
     // sendSuccessPortalEmail(
     //   user.email,
     //   user.name,

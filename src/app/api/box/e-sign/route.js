@@ -20,6 +20,40 @@ const client = sdk.getAppAuthClient(
   process.env.BOX_ENTERPRISE_ID
 );
 
+export const createESign = async (
+  fileId,
+  signer,
+  userBoxUserId,
+  portal
+) => {
+  const collaborations = await client.files.getCollaborations(fileId);
+
+  const collabExistForUser = collaborations.entries?.some(
+    (collab) => collab.accessible_by?.id === userBoxUserId
+  );
+
+  if (!collabExistForUser) {
+    await addCollaborator(fileId, userBoxUserId, "editor", "file");
+  }
+
+  const signRequest = await client.signRequests.create({
+    source_files: [{ id: fileId, type: "file" }],
+    signers: [
+      {
+        email: signer.email,
+        role: "signer",
+        embed_url_external_user_id: signer.id,
+        suppress_notifications: true,
+        redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+      },
+    ],
+    is_document_prepared: false,
+    external_id: userBoxUserId,
+  });
+  await userService.saveSignRequest(signer.id, signRequest);
+  return signRequest;
+};
+
 export async function POST(req) {
   try {
     await logApiCall(req);

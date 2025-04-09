@@ -4,6 +4,8 @@ import { Plugins } from "@/entities/Plugins";
 import pageService from "./pageService";
 import { Pages } from "@/entities/Pages";
 import { In } from "typeorm";
+import { PluginType } from "@/config/constants";
+import { tncPage } from "@/app/lib/data/existingPages";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -168,6 +170,30 @@ const deletePlugin = async (pluginId) => {
   }
 };
 
+const createTncPlugin = async(portalId, createdBy) => {
+  const pluginRepository = await getRepository(Plugins);
+  const pageRepository = await getRepository(Pages);
+  try {
+    const plugin = pluginRepository.create({
+      type: PluginType.TNC,
+      portalId: portalId,
+      createdBy: createdBy,
+    });
+    await pluginRepository.save(plugin);
+
+    const page = pageRepository.create({
+      title: tncPage.title,
+      description: tncPage.description,
+      visibility: [],
+      isCustomPage: false,
+    });
+    await pageRepository.save(page);
+    return;
+  } catch (error) {
+    throw new Error("Failed to delete plugin.");
+  }
+}
+
 export default {
   createPlugin,
   updatePlugin,
@@ -176,4 +202,5 @@ export default {
   getAllPlugins,
   deletePlugin,
   getPluginById,
+  createTncPlugin
 };

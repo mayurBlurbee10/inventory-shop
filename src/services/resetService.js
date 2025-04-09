@@ -9,12 +9,15 @@ import { Plugins } from "@/entities/Plugins";
 import { PluginType, TaskType } from "@/config/constants";
 import portalService from "./portalService";
 import { deleteFolderContents } from "@/app/api/box/folders/route";
-import { uploadSampleFiles } from "@/app/api/box/files/route";
+import { uploadFile, uploadSampleFiles } from "@/app/api/box/files/route";
 import userService from "./userService";
 import checkListService from "./checkListService";
 import messageService from "./messageService";
 import taskService from "./taskService";
 import { ContentManagement } from "@/entities/ContentManagement";
+import { createESign } from "@/app/api/box/e-sign/route";
+import { bulkPages } from "@/app/api/pages/bulk/route";
+import { existingPages } from "@/app/lib/data/existingPages";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -31,16 +34,14 @@ const resetPortal = async (portalId) => {
   const contentManagementRepository = await getRepository(ContentManagement);
 
   try {
-    const plugin = await getPluginByPortalId(pluginRepository, portalId);
-
     await Promise.all([
-      deleteCustomPages(pageRepository, plugin?.id),
+      deleteCustomPages(pageRepository, pluginRepository, portalId),
+      deleteFilesAndFolder(portalId),
       deleteChecklists(checkListRepository, portalId),
       deleteMessages(messageRepository, portalId),
       deleteContent(contentManagementRepository, portalId),
       updateUsersTNCStatus(userRepository, portalId),
-      deleteFilesAndFolder(portalId),
-      createSampleMessage(portalId)
+      resetPortalTheme(portalId),
     ]);
 
     return;
@@ -51,6 +52,7 @@ const resetPortal = async (portalId) => {
 };
 
 const getPluginByPortalId = async (pluginRepository, portalId) => {
+  console.log("reset plugin");
   return await pluginRepository.findOne({
     where: {
       portalId: portalId,
@@ -59,13 +61,29 @@ const getPluginByPortalId = async (pluginRepository, portalId) => {
   });
 };
 
-const deleteCustomPages = async (pageRepository, pluginId) => {
-  if (pluginId) {
+const deleteCustomPages = async (pageRepository, pluginRepository, portalId) => {
+  const plugin = await getPluginByPortalId(pluginRepository, portalId);
+  // if (plugin && plugin.pages) {
+  //   const pages = await pageRepository.find({
+  //     where: {
+  //       plugin: plugin?.id,
+  //       isCustomPage: true,
+  //     },
+  //   });
+  //   console.log("reset pages", pages);
+  //   const filteredPages = pages ? pages.filter((page) => page.title.toLowercase() !== "trading") : [];
+
+  //   for (const page of filteredPages) {
+  //     await pageRepository.remove(page);
+  //   }
+  // }
+  if (plugin) {
     await pageRepository.delete({
-      plugin: pluginId,
+      plugin: plugin?.id,
       isCustomPage: true,
     });
   }
+  await bulkPages(existingPages, [], [], portalId, plugin?.id)
 };
 
 const deleteChecklists = async (checkListRepository, portalId) => {
@@ -73,48 +91,79 @@ const deleteChecklists = async (checkListRepository, portalId) => {
     where: { portalId },
   });
   await checkListRepository.remove(checklists);
-
-  const generalCheckList = await checkListService.createGeneralCheckList({ name : "General", portalId : portalId, isActive : true });
-
-  await createSampleTasks(generalCheckList?.id, portalId)
+  await createSampleTasks(portalId);
 };
 
-const createSampleTasks = async (checklistId, portalId) => {
-  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(portalId);
-  const endUser = await userService.getUserByEmail(`user_${portalCreatedAdmin?.email}`);
+const createSampleTasks = async (portalId) => {
+
+  const generalCheckList = await checkListService.createGeneralCheckList({
+    name: "General",
+    portalId: portalId,
+    isActive: true,
+  });
+
+  const checklistId = generalCheckList?.id;
+  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(
+    portalId
+  );
+  const endUserEmail = "mike.conti@user.com";
+  const endUserData = await userService.getUserByEmail(endUserEmail);
+  const endUser = endUserData ? endUserData : portalCreatedAdmin;
+  const endUserId = endUserData ? endUserData?.folderId : null;
+  if (endUserId) {
+    await deleteFolderContents(endUserId);
+  }
+  const file = await uploadFile(endUser?.folderId, endUser?.boxUserId);
+  const signRequest = await createESign(
+    file?.id,
+    {
+      email: endUser?.email,
+      id: endUser?.id,
+    },
+    endUser?.boxUserId,
+    portalId
+  );
 
   const tasks = [
     {
-      title : "Review Documents",
-      description: "Please review documents",
+      title: "Reports",
+      description: "Please submit performance reports.",
       dueDate: new Date(Date.now()),
       type: TaskType.GENERAL,
-      user: endUser ? endUser?.id : portalCreatedAdmin?.id,
+      user: endUser?.id,
       createdBy: portalCreatedAdmin?.id,
       uploads: [],
       portalId: portalId,
-      checklist : checklistId
+      checklist: checklistId,
     },
     {
-      title : "Upload Docs",
-      description: "documents",
+      title: "Agreement",
+      description: "Please sign this agreement.",
       dueDate: new Date(Date.now()),
-      type: TaskType.GENERAL,
-      user: endUser ? endUser?.id : portalCreatedAdmin?.id,
+      type: TaskType.SIGN,
+      user: endUser?.id,
       createdBy: portalCreatedAdmin?.id,
-      uploads: [],
+      uploads: [signRequest],
       portalId: portalId,
-      checklist : checklistId
-    }
-  ]
+      checklist: checklistId,
+      file : {
+        id: file?.id,
+        name: file?.name,
+        description: file?.description,
+        size: file?.size,
+      }
+    },
+  ];
 
-  for(let task of tasks){
+  for (let task of tasks) {
     await taskService.createTask(task);
   }
 };
 
 const deleteMessages = async (messageRepository, portalId) => {
   await messageRepository.delete({ portalId: portalId });
+  await createSampleMessage(portalId);
+  return;
 };
 
 const deleteContent = async (contentManagementRepository, portalId) => {
@@ -134,40 +183,61 @@ const updateUsersTNCStatus = async (userRepository, portalId) => {
 };
 
 const deleteFilesAndFolder = async (portalId) => {
-  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(portalId);
+  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(
+    portalId
+  );
   const folderId = portalCreatedAdmin?.folderId;
-  if(folderId){
+  if (folderId) {
     await deleteFolderContents(folderId);
   }
-  await uploadSampleFiles(portalCreatedAdmin?.email, portalCreatedAdmin?.boxUserId, folderId);
-}
+  await uploadSampleFiles(
+    portalCreatedAdmin?.email,
+    portalCreatedAdmin?.boxUserId,
+    folderId
+  );
+};
 
 const createSampleMessage = async (portalId) => {
-  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(portalId);
-  const endUser = await userService.getUserByEmail(`user_${portalCreatedAdmin?.email}`);
-  
+  const portalCreatedAdmin = await portalService.getPortalCreatedAdmin(
+    portalId
+  );
+  const endUserEmail = "mike.conti@user.com";
+  const endUserData = await userService.getUserByEmail(endUserEmail);
+  const endUser = endUserData ? endUserData : portalCreatedAdmin;
+
   const messages = [
     {
       sender: portalCreatedAdmin?.id,
-      receiver: endUser ? endUser?.id : portalCreatedAdmin?.id,
+      receiver: endUser?.id,
       portalId: portalId,
-      subject: "Availablity for Quick Call",
-      text: "Are you available for the quick call?",
+      subject: "Meeting",
+      text: "Can review Q3 Plans?",
     },
     {
-      sender: portalCreatedAdmin?.id,
-      receiver: endUser ? endUser?.id : portalCreatedAdmin?.id,
+      sender: endUser?.id,
+      receiver: portalCreatedAdmin?.id,
       portalId: portalId,
-      subject: "Document Upload Required",
-      text: "Hello, We noticed that some required documents are still pending. Please upload the necessary files at your earliest convenience.",
-    }
+      subject: "Lunch",
+      text: "Available?",
+    },
   ];
 
-  for(let message of messages){
-    await messageService.createMessage(message);
+  for (let message of messages) {
+    const msg = await messageService.createMessage(message);
+    console.log("reset msg", msg)
   }
+};
+
+const resetPortalTheme = async (portalId) => {
+  await portalService.updatePortal(portalId, {
+    primaryColor: "#000000",
+    secondaryColor: "#2563eb",
+    accentColor: "#ffffff",
+  });
 };
 
 export default {
   resetPortal,
+  createSampleMessage, 
+  createSampleTasks
 };

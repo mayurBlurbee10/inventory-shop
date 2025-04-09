@@ -86,7 +86,7 @@ function SettingsPage() {
               key={id}
               onClick={() => setActiveTab(id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${activeTab === id
-                ? 'bg-[#5a7dff]/95 text-white'
+                ? 'bg-[#2563eb]/95 text-white'
                 : 'text-gray-700/90 hover:bg-blue-600/10'
                 }`}
             >

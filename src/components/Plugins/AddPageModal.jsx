@@ -79,7 +79,7 @@ function AddPageModal({
         title: values.title,
         description: values.description,
         visibility: customPageSectionTemplate?.sections,
-        isCustomPage: false 
+        isCustomPage: true 
       };
 
       const response = await fetchWrapper(

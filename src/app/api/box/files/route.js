@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getBoxAppUserContent } from "@/lib/box"; // Updated import name
 import BoxSDK from "box-node-sdk";
 import { Readable } from "stream";
+import stream from "stream";
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import { addCollaborator } from "./share/route";
 import fs from "fs";
@@ -31,46 +32,111 @@ export const getLocalFilesFromPublic = () => {
   }));
 };
 
-export const uploadSampleFiles = async (email, userId, parentFolder) => {
+export const uploadSampleFiles = async (email, userId, parentFolderId) => {
   const accessToken = await client._session.getAccessToken();
   const newClient = sdk.getBasicClient(accessToken);
 
-  const localFiles = getLocalFilesFromPublic();
+  const demoPath = path.join(process.cwd(), 'public', 'demo');
+  const foldersInDemo = fs.readdirSync(demoPath).filter((folder) =>
+    fs.statSync(path.join(demoPath, folder)).isDirectory()
+  );
 
-  const uploadedFiles = [];
+  const uploadedFolders = [];
 
-  for (const file of localFiles) {
-    const buffer = fs.readFileSync(file.path);
+  for (const folderName of foldersInDemo) {
+    const localFolderPath = path.join(demoPath, folderName);
 
-    const fileStream = new Readable();
-    fileStream.push(buffer);
-    fileStream.push(null);
+    // Create folder in Box
+    const createdFolder = await newClient.folders.create(parentFolderId, folderName);
+    const createdFolderId = createdFolder.id;
+
+    uploadedFolders.push({ name: folderName, id: createdFolderId });
+
+    // Read files if the folder has files
+    const files = fs
+      .readdirSync(localFolderPath)
+      .filter((file) => fs.statSync(path.join(localFolderPath, file)).isFile());
+
+    for (const fileName of files) {
+      const filePath = path.join(localFolderPath, fileName);
+      const buffer = fs.readFileSync(filePath);
+
+      const fileStream = new Readable();
+      fileStream.push(buffer);
+      fileStream.push(null);
+
+      const uploadedFileRes = await newClient.files.uploadFile(
+        createdFolderId,
+        fileName,
+        fileStream,
+        { description: email }
+      );
+
+      const uploadedFile = uploadedFileRes.entries[0];
+
+      // Add collaborator if not already added
+      const collaborations = await newClient.files.getCollaborations(uploadedFile.id);
+      const isAlreadyCollaborator = collaborations.entries.some(
+        (collab) => collab.accessible_by && collab.accessible_by.id === userId
+      );
+
+      if (!isAlreadyCollaborator) {
+        await addCollaborator(uploadedFile.id, userId, 'editor', 'file');
+      }
+    }
+  }
+
+  return uploadedFolders;
+};
+
+export const uploadFile = async (parentFolderId, userBoxUserId, file = null) => {
+  const accessToken = await client._session.getAccessToken();
+  const newClient = sdk.getBasicClient(accessToken);
+
+  const fileName = file || "demo.pdf";
+  const filePath = path.join(process.cwd(), "public", "files", fileName);
+
+  // ✅ Fix: use fs.promises
+  const fileBuffer = await fs.promises.readFile(filePath);
+
+  const existingItems = await newClient.folders.getItems(parentFolderId, {
+    fields: "id,name",
+  });
+
+  const existingFile = existingItems.entries.find(
+    (item) => item.name === fileName
+  );
+
+  if (existingFile) {
+    // ✅ If file already exists, copy it to same folder
+    const copiedFile = await newClient.files.copy(existingFile.id, parentFolderId);
+    return copiedFile;
+  } else {
+    // ✅ Create stream and upload
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(fileBuffer);
 
     const uploadedFileRes = await newClient.files.uploadFile(
-      parentFolder,
-      file.name,
-      fileStream,
-      { description: email }
+      parentFolderId,
+      fileName,
+      bufferStream
     );
 
-    const uploadedFile = uploadedFileRes.entries[0];
-    // Add collaborator if not already added
-    const collaborations = await newClient.files.getCollaborations(
-      uploadedFile.id
-    );
+    const uploadedFile = uploadedFileRes?.entries[0];
+
+    const collaborations = await newClient.files.getCollaborations(uploadedFile.id);
     const isAlreadyCollaborator = collaborations.entries.some(
-      (collab) => collab.accessible_by && collab.accessible_by.id === userId
+      (collab) =>
+        collab.accessible_by && collab.accessible_by.id === userBoxUserId
     );
 
     if (!isAlreadyCollaborator) {
-      await addCollaborator(uploadedFile.id, userId, "editor", "file");
+      await addCollaborator(uploadedFile.id, userBoxUserId, "editor", "file");
     }
 
-    uploadedFiles.push(uploadedFile);
+    return uploadedFile;
   }
-
-  return uploadedFiles;
-}
+};
 
 export async function GET(request) {
   try {

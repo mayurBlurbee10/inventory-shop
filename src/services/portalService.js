@@ -184,6 +184,26 @@ const getPortalCreatedAdmin = async (portalId) => {
   }
 }
 
+const updatePortal = async (portalId, updatedData) => {
+  const portalRepository = await getRepository(Portals);
+  try {
+    const portalLegalName = reverseSanitizeName(portalId);
+    const portalExist = await portalRepository.findOneBy({
+      legalName: portalLegalName,
+    });
+    if (!portalExist) {
+      throw new Error("portal doesn't exist");
+    }
+
+    Object.assign(portalExist, updatedData);
+
+    await portalRepository.save(portalExist);
+    return portalExist;
+  } catch (error) {
+    throw new Error("Failed to update portal.");
+  }
+};
+
 export default {
   createPortal,
   getPortalsByUser,
@@ -193,5 +213,6 @@ export default {
   getPortalById,
   deletePortal,
   updatePortalStatus,
-  getPortalCreatedAdmin
+  getPortalCreatedAdmin,
+  updatePortal
 };
