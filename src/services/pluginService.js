@@ -185,7 +185,8 @@ const createTncPlugin = async(portalId, createdBy) => {
       title: tncPage.title,
       description: tncPage.description,
       visibility: [],
-      isCustomPage: false,
+      isCustomPage: true,
+      plugin: plugin?.id
     });
     await pageRepository.save(page);
     return;
@@ -193,6 +194,26 @@ const createTncPlugin = async(portalId, createdBy) => {
     throw new Error("Failed to delete plugin.");
   }
 }
+
+const updateTncPage = async (portalId, createdBy) => {
+  try {
+    const plugins = await getPluginByTypeAndPortal(PluginType.TNC, portalId);
+    const plugin = plugins.length > 0 ? plugins[0] : null;
+
+    if (plugin && Array.isArray(plugin.pages) && plugin.pages.length > 0) {
+      await pageService.updatePage(plugin.pages[0].id, {
+        description: tncPage.description,
+      });
+    } else {
+      await createTncPlugin(portalId, createdBy);
+    }
+
+    return;
+  } catch (error) {
+    console.error("Error updating TnC page:", error);
+    throw new Error("Failed to update plugin.");
+  }
+};
 
 export default {
   createPlugin,
@@ -202,5 +223,6 @@ export default {
   getAllPlugins,
   deletePlugin,
   getPluginById,
-  createTncPlugin
+  createTncPlugin,
+  updateTncPage
 };

@@ -100,6 +100,7 @@ export async function POST(req) {
         logo: null,
         isOnboardingRequired: false,
         permissions: { portalId: user.portal, role: UserRole.USER },
+        portalId: user.portal
       },
       {
         email: "briana.walsh@moderator.com",
@@ -110,6 +111,7 @@ export async function POST(req) {
         logo: null,
         isOnboardingRequired: false,
         permissions: { portalId: user.portal, role: UserRole.MODERATOR },
+        portalId: user.portal
       },
       {
         email: "mike.conti@user.com",
@@ -120,6 +122,7 @@ export async function POST(req) {
         logo: null,
         isOnboardingRequired: false,
         permissions: { portalId: user.portal, role: UserRole.USER },
+        portalId: user.portal
       },
     ];
 

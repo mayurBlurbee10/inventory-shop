@@ -71,16 +71,16 @@ function TNCModal({ onClose, user, email, password, page }) {
 
       // console.log("Redirecting to home");
 
-      if (user.isOnboardingRequired) {
-        router.push(`onboarding`);
-      } else {
-        const targetRoute =
-          user?.role === UserRole.MODERATOR
-            ? "advisor/dashboard"
-            : "dashboard";
-        router.push(targetRoute);
-        toast.success("Redirecting to dashboard");
-      }
+      // if (user.isOnboardingRequired) {
+      //   router.push(`onboarding`);
+      // } else {
+      const targetRoute =
+        user?.role === UserRole.MODERATOR
+          ? "advisor/dashboard"
+          : "dashboard";
+      router.push(targetRoute);
+      toast.success("Redirecting to dashboard");
+      // }
     } catch (error) {
       console.error("Error fetching plugins:", error);
     } finally {

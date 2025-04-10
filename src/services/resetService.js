@@ -18,6 +18,7 @@ import { ContentManagement } from "@/entities/ContentManagement";
 import { createESign } from "@/app/api/box/e-sign/route";
 import { bulkPages } from "@/app/api/pages/bulk/route";
 import { existingPages } from "@/app/lib/data/existingPages";
+import pluginService from "./pluginService";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -171,15 +172,23 @@ const deleteContent = async (contentManagementRepository, portalId) => {
 };
 
 const updateUsersTNCStatus = async (userRepository, portalId) => {
-  const users = await userRepository.find({
-    where: { portalId: portalId, isTNCAccepted: true },
-  });
+  try {
+    const users = await userRepository.find({
+      where: { portalId: portalId },
+    });
 
-  const userUpdates = users.map((user) =>
-    userRepository.update(user.id, { isTNCAccepted: false })
-  );
+    if (users.length === 0) return;
 
-  await Promise.all(userUpdates);
+    const userUpdates = users.map((user) =>
+      userRepository.update(user.id, { isTNCAccepted: false })
+    );
+
+    await Promise.all(userUpdates);
+
+  } catch (error) {
+    console.error("Failed to update users' T&C status:", error);
+    throw new Error("Failed to update users' T&C status.");
+  }
 };
 
 const deleteFilesAndFolder = async (portalId) => {
@@ -195,6 +204,8 @@ const deleteFilesAndFolder = async (portalId) => {
     portalCreatedAdmin?.boxUserId,
     folderId
   );
+  await pluginService.updateTncPage(portalId, portalCreatedAdmin?.id);
+  return;
 };
 
 const createSampleMessage = async (portalId) => {
@@ -224,7 +235,6 @@ const createSampleMessage = async (portalId) => {
 
   for (let message of messages) {
     const msg = await messageService.createMessage(message);
-    console.log("reset msg", msg)
   }
 };
 
