@@ -78,176 +78,177 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
     };
   
     return (
-      <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-6">
-          <Dialog.Panel className="mx-auto max-w-2xl w-full rounded-lg bg-white shadow-lg border border-gray-300 max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-5 border-b p-5 border-gray-200">
-              <Dialog.Title className="text-2xl text-gray-700 font-semibold font-lato ">
-                📝 Task Details
-              </Dialog.Title>
-              <div className="relative" ref={menuRef}>
-                {user && (user?.id === task?.createdBy?.id || (user?.id === task?.user?.id && task?.status !== TaskStatus?.COMPLETED)) && (
-                  <button
-                    onClick={() => setShowMenu(!showMenu)}
-                    className="text-gray-500 hover:text-gray-700 transition"
-                  >
-                    <MoreVertical className="size-5" />
-                  </button>
-                )}
-                {showMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg border border-gray-200 z-10">
-                    {user && user?.id === task?.createdBy?.id && (
+      <>
+        {isOpen && (
+            <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-6 z-20">
+              <div className="mx-auto max-w-2xl w-full rounded-lg bg-white shadow-lg border border-gray-300 max-h-[90vh] overflow-y-auto">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-5 border-b p-5 border-gray-200">
+                  <h1 className="text-2xl text-gray-700 font-semibold font-lato ">
+                    📝 Task Details
+                  </h1>
+                  <div className="relative" ref={menuRef}>
+                    {user && (user?.id === task?.createdBy?.id || (user?.id === task?.user?.id && task?.status !== TaskStatus?.COMPLETED)) && (
                       <button
-                        onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                        onClick={() => setShowMenu(!showMenu)}
+                        className="text-gray-500 hover:text-gray-700 transition"
                       >
-                        <Edit className="size-4 text-blue-500" />
-                        <span>Edit</span>
+                        <MoreVertical className="size-5" />
                       </button>
                     )}
-                    {task?.status !== TaskStatus?.COMPLETED && (
-                      isTaskUpdateLoading ? (
-                        <div className='px-4 py-2'>
-                          <Loader2 className='size-4 mx-auto animate-spin text-blue-500'/>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => updateTaskStatus(task)}
-                          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-green-100 flex items-center space-x-2"
-                        >
-                          <Check className="size-4 text-green-500" />
-                          <span>Mark Complete</span>
-                        </button>
-                      )
+                    {showMenu && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg border border-gray-200 z-10">
+                        {user && user?.id === task?.createdBy?.id && (
+                          <button
+                            onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}
+                            className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                          >
+                            <Edit className="size-4 text-blue-500" />
+                            <span>Edit</span>
+                          </button>
+                        )}
+                        {task?.status !== TaskStatus?.COMPLETED && (
+                          isTaskUpdateLoading ? (
+                            <div className='px-4 py-2'>
+                              <Loader2 className='size-4 mx-auto animate-spin text-blue-500'/>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => updateTaskStatus(task)}
+                              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-green-100 flex items-center space-x-2"
+                            >
+                              <Check className="size-4 text-green-500" />
+                              <span>Mark Complete</span>
+                            </button>
+                          )
+                        )}
+                        {user && user?.id === task?.createdBy?.id && (
+                          <button
+                            onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}
+                            className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
+                          >
+                            <Trash2 className="size-4 text-red-500" />
+                            <span>Delete</span>
+                          </button>
+                        )}
+                      </div>
                     )}
-                    {user && user?.id === task?.createdBy?.id && (
-                      <button
-                        onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
-                      >
-                        <Trash2 className="size-4 text-red-500" />
-                        <span>Delete</span>
-                      </button>
-                    )}
                   </div>
-                )}
-              </div>
-            </div>
-            <div className='px-8 max-h-[80vh]'>
-              <div>
-                <h3 className='text-gray-800 text-sm font-semibold'>Receiver :</h3>
-                <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
-                    {task?.user?.name
-                      ?.split(" ")
-                      .map((word) => word.charAt(0).toUpperCase())
-                      .slice(0, 2)
-                      .join("")}
-                  </div>
-
-                  {/* User Info */}
+                </div>
+                <div className='px-8 max-h-[80vh]'>
                   <div>
-                    <p className="text-lg font-semibold text-gray-800">{task?.user?.name || "Unknown User"}</p>
-                    <p className="text-gray-500 text-sm">{task?.user?.email || "No Email Provided"}</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h3 className='text-gray-800 text-sm font-semibold'>Sender :</h3>
-                <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
-                    {task?.createdBy?.name
-                      ?.split(" ")
-                      .map((word) => word.charAt(0).toUpperCase())
-                      .slice(0, 2)
-                      .join("")}
-                  </div>
+                    <h3 className='text-gray-800 text-sm font-semibold'>Receiver :</h3>
+                    <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+                      {/* Avatar */}
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
+                        {task?.user?.name
+                          ?.split(" ")
+                          .map((word) => word.charAt(0).toUpperCase())
+                          .slice(0, 2)
+                          .join("")}
+                      </div>
 
-                  {/* User Info */}
+                      {/* User Info */}
+                      <div>
+                        <p className="text-lg font-semibold text-gray-800">{task?.user?.name || "Unknown User"}</p>
+                        <p className="text-gray-500 text-sm">{task?.user?.email || "No Email Provided"}</p>
+                      </div>
+                    </div>
+                  </div>
                   <div>
-                    <p className="text-lg font-semibold text-gray-800">{task?.createdBy?.name || "Unknown User"}</p>
-                    <p className="text-gray-500 text-sm">{task?.createdBy?.email || "No Email Provided"}</p>
+                    <h3 className='text-gray-800 text-sm font-semibold'>Sender :</h3>
+                    <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+                      {/* Avatar */}
+                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
+                        {task?.createdBy?.name
+                          ?.split(" ")
+                          .map((word) => word.charAt(0).toUpperCase())
+                          .slice(0, 2)
+                          .join("")}
+                      </div>
+
+                      {/* User Info */}
+                      <div>
+                        <p className="text-lg font-semibold text-gray-800">{task?.createdBy?.name || "Unknown User"}</p>
+                        <p className="text-gray-500 text-sm">{task?.createdBy?.email || "No Email Provided"}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            {/* Task Content */}
-            <div className="space-y-5 font-lato text-gray-800 px-8">
-              {/* Title */}
-              <h3 className="text-xl font-semibold">{task?.title || "Untitled Task"}</h3>
-  
-              {/* Description */}
-              <div className="p-4 bg-gray-100 border border-gray-200 rounded-md text-gray-700">
-                <p className="text-md">{task?.description || "No description provided."}</p>
-              </div>
-  
-              {/* Task Details */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Status */}
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span className="font-medium text-gray-600">Status:</span>
-                  <span  className={`px-2 py-1 text-sm font-semibold rounded-md ${
-                        task?.status === TaskStatus.PENDING
-                        ? "text-yellow-600 bg-yellow-100" // Better contrast for Pending
-                        : "text-teal-700 bg-teal-100" // Improved greenish-teal for Completed
-                    }`}>
-                    {task?.status?.charAt(0).toUpperCase() + task?.status?.slice(1) || "Pending"}
-                  </span>
+                {/* Task Content */}
+                <div className="space-y-5 font-lato text-gray-800 px-8">
+                  {/* Title */}
+                  <h3 className="text-xl font-semibold">{task?.title || "Untitled Task"}</h3>
+      
+                  {/* Description */}
+                  <div className="p-4 bg-gray-100 border border-gray-200 rounded-md text-gray-700">
+                    <p className="text-md">{task?.description || "No description provided."}</p>
+                  </div>
+      
+                  {/* Task Details */}
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Status */}
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span className="font-medium text-gray-600">Status:</span>
+                      <span  className={`px-2 py-1 text-sm font-semibold rounded-md ${
+                            task?.status === TaskStatus.PENDING
+                            ? "text-yellow-600 bg-yellow-100" // Better contrast for Pending
+                            : "text-teal-700 bg-teal-100" // Improved greenish-teal for Completed
+                        }`}>
+                        {task?.status?.charAt(0).toUpperCase() + task?.status?.slice(1) || "Pending"}
+                      </span>
+                    </div>
+      
+                    {/* Due Date */}
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="w-5 h-5 text-blue-500" />
+                      <span className="font-medium text-gray-600">Due Date:</span>
+                      <span>{formatDate(task?.dueDate) || "N/A"}</span>
+                    </div>
+      
+                    {/* File */}
+                    <div className="flex items-center space-x-2 col-span-2">
+                      <FileText className="w-5 h-5 text-gray-500" />
+                      <span className="font-medium text-gray-600">File:</span>
+                      <span className="truncate">{task?.file?.name || "No file attached"}</span>
+                    </div>
+                  </div>
                 </div>
-  
-                {/* Due Date */}
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5 text-blue-500" />
-                  <span className="font-medium text-gray-600">Due Date:</span>
-                  <span>{formatDate(task?.dueDate) || "N/A"}</span>
-                </div>
-  
-                {/* File */}
-                <div className="flex items-center space-x-2 col-span-2">
-                  <FileText className="w-5 h-5 text-gray-500" />
-                  <span className="font-medium text-gray-600">File:</span>
-                  <span className="truncate">{task?.file?.name || "No file attached"}</span>
+      
+                {/* Actions */}
+                <div className="mt-6 flex justify-end space-x-4 px-8 pb-4">
+                  <Button onClick={handleClose} type="Secondary" label="Close" />
+      
+                  {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && task?.user?.id === user?.id && (
+                    <Button
+                      onClick={() => router.push("esignature")}
+                      type="Primary"
+                      label="Sign Now"
+                    />
+                  )}
                 </div>
               </div>
-            </div>
-  
-            {/* Actions */}
-            <div className="mt-6 flex justify-end space-x-4 px-8 pb-4">
-              <Button onClick={handleClose} type="Secondary" label="Close" />
-  
-              {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && task?.user?.id === user?.id && (
-                <Button
-                  onClick={() => router.push("esignature")}
-                  type="Primary"
-                  label="Sign Now"
+              {isTaskUpdateModalOpen && (
+                <CreateTaskPopUp
+                  onClose={() => setIsTaskUpdateModalOpen(false)}
+                  user={task?.user}
+                  onTaskCreated={fetchTasks}
+                  task={task}
+                  onTaskUpdated = {handleClose}
                 />
               )}
+              <DeleteConfirmDialog
+                isModalOpen={isTaskDeleteModalOpen}
+                setIsModalOpen={setIsTaskDeleteModalOpen}
+                title="Delete Task"
+                content="Deleting this task cannot be undone. Do you want to continue?"
+                handleDelete={handleDeleteTask}
+                isLoading={isDeleteTaskLoading}
+              />
             </div>
-          </Dialog.Panel>
-        </div>
-        {isTaskUpdateModalOpen && (
-          <CreateTaskPopUp
-            onClose={() => setIsTaskUpdateModalOpen(false)}
-            user={task?.user}
-            onTaskCreated={fetchTasks}
-            task={task}
-            onTaskUpdated = {handleClose}
-          />
         )}
-        <DeleteConfirmDialog
-          isModalOpen={isTaskDeleteModalOpen}
-          setIsModalOpen={setIsTaskDeleteModalOpen}
-          title="Delete Task"
-          content="Deleting this task cannot be undone. Do you want to continue?"
-          handleDelete={handleDeleteTask}
-          isLoading={isDeleteTaskLoading}
-        />
-      </Dialog>
+      </>
     );
   };
 

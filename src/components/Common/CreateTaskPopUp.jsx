@@ -385,7 +385,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
   
   
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-30">
             <div className="bg-white rounded-lg w-full max-w-[800px] ">
                 <div className="flex justify-between items-center mb-4 border-b py-4 px-6">
                     <h2 className="text-xl text-gray-800 font-semibold">{task ? "Edit" : "Create"} Task</h2>

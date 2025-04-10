@@ -85,6 +85,13 @@ export const uploadSampleFiles = async (email, userId, parentFolderId) => {
       }
     }
   }
+  const folders = ["Demo", "Loan", "Statements"]
+  for(const folder of folders){
+    const createdFolder = await newClient.folders.create(parentFolderId, folder);
+    const createdFolderId = createdFolder.id;
+
+    uploadedFolders.push({ name: folder, id: createdFolderId });
+  }
 
   return uploadedFolders;
 };
