@@ -34,6 +34,7 @@ import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import { useEffect, useState } from "react";
 import AddLinkModal from "./AddLinkModal";
+import FontSize, { FontSizeControl } from "./FontSize";
 
 const fontSizeOptions = [
   { label: '8', value: '8px' },
@@ -48,7 +49,7 @@ const fontSizeOptions = [
   { label: '32', value: '32px' },
 ];
 
-const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLinkUrl, savedRange, setSavedRange, text, setText }) => {
+const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLinkUrl, savedRange, setSavedRange, text, setText, from }) => {
   if (!editor) return null;
   const [color, setColor] = useState("#000")
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
@@ -106,6 +107,7 @@ const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLi
           <option key={option.value} value={option.value}>{option.label}</option>
         ))}
       </select>  */}
+      <FontSizeControl editor={editor} />
       <button
         type="button"
         onClick={() => setColorPickerVisible((prev) => !prev)}
@@ -187,103 +189,101 @@ const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLi
       >
         <Heading3 />
       </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setTextAlign("left").run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("alignLeft") ? "bg-indigo-200" : ""
-        }`}
-      >
-        <AlignLeft />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setTextAlign("center").run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("alignCenter") ? "bg-indigo-200" : ""
-        }`}
-      >
-        <AlignCenter />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setTextAlign("right").run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("alignRight") ? "bg-indigo-200" : ""
-        }`}
-      >
-        <AlignRight />
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          const previousUrl = editor.getAttributes("link").href;
-          const selection = editor.state.selection;
+      {!from && (
+        <>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
+            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("alignLeft") ? "bg-indigo-200" : ""
+              }`}
+          >
+            <AlignLeft />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
+            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("alignCenter") ? "bg-indigo-200" : ""
+              }`}
+          >
+            <AlignCenter />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
+            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("alignRight") ? "bg-indigo-200" : ""
+              }`}
+          >
+            <AlignRight />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const previousUrl = editor.getAttributes("link").href;
+              const selection = editor.state.selection;
+
+              // Get selected text
+              const { from, to } = selection;
+              const selectedText = editor.state.doc.textBetween(from, to, " ");
+
+              setSavedRange(selection);
+              setLinkUrl(previousUrl || "");
+              setText(selectedText); // 👈 set selected text
+              setLinkModalVisible(true);
+            }}
+            className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("link") ? "bg-indigo-200" : ""
+              }`}
+          >
+            <Link2 className="-rotate-45" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("bulletList") ? "bg-indigo-200" : ""
+              }`}
+          >
+            <List />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("orderedList") ? "bg-indigo-200" : ""
+              }`}
+          >
+            Ordered List
+          </button>
+          {/* <button onClick={addImage}>Add Image</button> */}
+          <button
+            type="button"
+            onClick={() =>
+              editor.chain().focus().insertTable({ rows: 3, cols: 3 }).run()
+            }
+            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("table") ? "bg-indigo-200" : ""
+              }`}
+          >
+            <TableIcon className="rotate-90" />
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().deleteTable().run()}
+            className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("deleteTable") ? "bg-indigo-200" : ""
+              }`}
+          >
+            Delete Table
+          </button>
+          <AddLinkModal
+            isOpen={linkModalVisible}
+            onClose={() => { setLinkModalVisible(false); setLinkUrl(""); setText("") }}
+            text={text}
+            initialLink={linkUrl}
+            setLink={setLinkUrl}
+            editor={editor}
+            savedRange={savedRange}
+          />
+        </>
+      )}
       
-          // Get selected text
-          const { from, to } = selection;
-          const selectedText = editor.state.doc.textBetween(from, to, " ");
-      
-          setSavedRange(selection);
-          setLinkUrl(previousUrl || "");
-          setText(selectedText); // 👈 set selected text
-          setLinkModalVisible(true);
-        }}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("link") ? "bg-indigo-200" : ""
-        }`}
-      >
-        <Link2 className="-rotate-45" />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("bulletList") ? "bg-indigo-200" : ""
-        }`}
-      >
-        <List />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("orderedList") ? "bg-indigo-200" : ""
-        }`}
-      >
-        Ordered List
-      </button>
-      {/* <button onClick={addImage}>Add Image</button> */}
-      <button
-        type="button"
-        onClick={() =>
-          editor.chain().focus().insertTable({ rows: 3, cols: 3 }).run()
-        }
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("table") ? "bg-indigo-200" : ""
-        }`}
-      >
-        <TableIcon className="rotate-90" />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().deleteTable().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("deleteTable") ? "bg-indigo-200" : ""
-        }`}
-      >
-        Delete Table
-      </button>
-      <AddLinkModal
-        isOpen={linkModalVisible}
-        onClose={() => {setLinkModalVisible(false); setLinkUrl(""); setText("")}}
-        text={text}
-        initialLink={linkUrl}
-        setLink={setLinkUrl}
-        editor={editor}
-        savedRange={savedRange}
-      />
     </div>
+    
   );
 };
 
@@ -311,12 +311,12 @@ const TabKeyExtension = Extension.create({
   },
 });
 
-const TextEditor = ({ content, onChange }) => {
+const TextEditor = ({ content, onChange,from }) => {
   const [linkModalVisible, setLinkModalVisible] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [savedRange, setSavedRange] = useState(null);
   const [text, setText] = useState("")
-
+  const MAX_CHARACTERS = 40;
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -340,6 +340,7 @@ const TextEditor = ({ content, onChange }) => {
       OrderedList,
       Color.configure({ types: [TextStyle.name, "textStyle"] }),
       TextStyle.configure({ types: [ListItem.name] }),
+      FontSize
     ],
     content: content,
     editorProps: {
@@ -366,10 +367,20 @@ const TextEditor = ({ content, onChange }) => {
       }
     },
     onUpdate({ editor }) {
-      onChange(editor.getHTML());
-      console.log(editor.getHTML());
+      const plainText = editor.getText().replace(/\s/g, ''); // remove all spaces
+      if (plainText.length <= MAX_CHARACTERS) {
+        onChange(editor.getHTML());
+      } else {
+        editor.commands.undo(); // revert the last input
+      }
     },
   });
+
+  useEffect(() => {
+    if (editor && content) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
 
   useEffect(() => {
     if (!editor || !editor.view) return;
@@ -427,7 +438,7 @@ const TextEditor = ({ content, onChange }) => {
   return (
     <div className="relative">
       <div className="editor-container">
-        <Toolbar editor={editor} linkModalVisible={linkModalVisible} setLinkModalVisible={setLinkModalVisible} linkUrl={linkUrl} setLinkUrl={setLinkUrl} savedRange={savedRange}     setSavedRange={setSavedRange} text={text} setText={setText}/>
+        <Toolbar from={from} editor={editor} linkModalVisible={linkModalVisible} setLinkModalVisible={setLinkModalVisible} linkUrl={linkUrl} setLinkUrl={setLinkUrl} savedRange={savedRange}     setSavedRange={setSavedRange} text={text} setText={setText}/>
         <EditorContent editor={editor} className={`editor`} />
         {/* <div
           id="link-tooltip"

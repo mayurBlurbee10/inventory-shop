@@ -1,5 +1,5 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { PlusCircle, X, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, X, Pencil, Trash2, Edit } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useParams, useRouter , usePathname } from "next/navigation";
@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
 import { getUserData } from "@/lib/auth";
 import { fontSizes } from "@/app/lib/data/font_size";
+import EditHeadingModal from "../Common/EditHeadingModal";
 
 const ContentManagementContent = ({
   isAddRequired,
@@ -47,6 +48,7 @@ const ContentManagementContent = ({
   const pathname= usePathname();
   const onBoarding = pathname.includes("/onboarding");
   const { data: config } = useSelector((state) => state.portal);
+  const [isEditModalOpen,setIsEditModalOpen] = useState(false)
   // const [colors, setColors] = useState({
   //   primaryColor : config.primaryColor,
   //   secondaryColor : config.secondaryColor,
@@ -421,8 +423,12 @@ const ContentManagementContent = ({
   const manageContentNavigate = () => {
     router.push("onboarding");
   }
-
+const handleSubmitData = () => {
+  console.log("Handle Sumbit Data");
+  
+}
   return (
+    <>
     <div className="space-y-6">
       <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
         <div className=" text-center sm:text-left">
@@ -557,6 +563,26 @@ const ContentManagementContent = ({
           </div>
         )}
       </div>
+      <div className="py-2 text-gray-900">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
+          <div className="border flex justify-center items-center px-3 py-4 rounded-md">
+            <h3 className="font-lato font-semibold text-lg">
+              Dashboard Heading
+            </h3>
+            <div className="flex items-center ml-auto gap-2 ">
+              <button
+                type="button"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  setIsEditModalOpen(true);
+                }}
+              >
+                <Edit className="size-5 text-blue-700" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Dialog Box */}
       {isDialogOpen && (
         <AddContentModal
@@ -651,6 +677,16 @@ const ContentManagementContent = ({
         </div>
       )}
     </div>
+      {
+        isEditModalOpen && (
+          <EditHeadingModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            from='Dashboard Heading'
+          />
+        )
+      }
+    </>
   );
 };
 
