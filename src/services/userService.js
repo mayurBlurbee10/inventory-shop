@@ -5,6 +5,7 @@ import * as bcrypt from "bcrypt";
 import { validateOrReject } from "class-validator";
 import { In } from "typeorm";
 import { UserRole } from "@/config/constants";
+import portalService from "./portalService";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -283,6 +284,24 @@ const saveSignRequest = async (userId, signRequest) => {
   }
 };
 
+const getPortalCreateAdminByEmail = async (email) => {
+  try {
+    const user = await getUserByEmail(email);
+    if(user) {
+      const portal = await portalService.getPortalByPortalAdmin(user?.id)
+      if(portal){
+        throw new Error(`This user can't be the admin in this portal as it is already an admin in portal ${portal.legalName}`)
+      }
+      return user;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting portalCreatedAdmin:", error.message);
+    throw new Error(error.message);
+  }
+}
+
 export default {
   createUser,
   getUsers,
@@ -299,5 +318,6 @@ export default {
   setResetPasswordToken,
   getUserById,
   updateUser,
-  saveSignRequest
+  saveSignRequest,
+  getPortalCreateAdminByEmail
 };

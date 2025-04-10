@@ -215,6 +215,16 @@ const updateTncPage = async (portalId, createdBy) => {
   }
 };
 
+const deleteAllPlugins = async (portalId) => {
+  const pluginRepository = await getRepository(Plugins);
+  try {
+    await pluginRepository.delete({ portalId: portalId });
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   createPlugin,
   updatePlugin,
@@ -224,5 +234,6 @@ export default {
   deletePlugin,
   getPluginById,
   createTncPlugin,
-  updateTncPage
+  updateTncPage,
+  deleteAllPlugins
 };

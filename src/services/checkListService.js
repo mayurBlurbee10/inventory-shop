@@ -132,6 +132,15 @@ const createGeneralCheckList = async (checklist) => {
   }
 };
 
+const deleteAllChecklists = async (portalId) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    await checkListRepository.delete({ portalId: portalId });
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export default {
   getCheckListByPortalIdSorted,
@@ -141,5 +150,6 @@ export default {
   updateCheckList,
   deleteCheckList,
   getCheckListByName,
-  createGeneralCheckList
+  createGeneralCheckList,
+  deleteAllChecklists
 };

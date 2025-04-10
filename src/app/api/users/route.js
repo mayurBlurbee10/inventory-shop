@@ -60,13 +60,17 @@ export async function GET(request) {
   const role = searchParams.get("role");
   const userId = searchParams.get("userId");
   const boxUserId = searchParams.get("boxUserId");
+  const check = searchParams.get("check");
 
-  let users = {};
+  try {
+    let users = {};
   if (portalid) {
     users = await userService.getUsersByPortal(portalid);
+  } else if (email && check) {
+    users = await userService.getPortalCreateAdminByEmail(email);
   } else if (email) {
     users = await userService.getUserByEmail(email);
-  } else if (role) {
+  }  else if (role) {
     users = await userService.getUserByRole(role, userId);
   } else if(boxUserId){
     users = await userService.getUserByBoxUserId(boxUserId)
@@ -77,6 +81,13 @@ export async function GET(request) {
   }
 
   return NextResponse.json(users);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
+  
 }
 
 export async function POST(request) {

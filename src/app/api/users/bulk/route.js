@@ -94,7 +94,7 @@ export async function POST(req) {
       {
         email: `user_${user.email}`,
         name: "Demo User",
-        title: user.title,
+        title: "User",
         role: UserRole.USER,
         password: "000",
         logo: null,

@@ -87,9 +87,22 @@ const removeOldEntry = async(entity) => {
   }
 };
 
+const deleteAllContent = async (portalId) => {
+  await connectDatabase();
+  const connection = getConnection();
+  const contentRepository = connection.getRepository(ContentManagement);
+  try {
+    await contentRepository.delete({ portalId: portalId });
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   createContentManagement,
   getContentManagement,
   updateContentManagement,
-  removeOldEntry
+  removeOldEntry,
+  deleteAllContent
 };

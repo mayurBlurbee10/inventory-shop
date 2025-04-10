@@ -83,10 +83,21 @@ const deleteMessage = async (messageId) => {
   }
 };
 
+const deleteAllMessage = async (portalId) => {
+  const messageRepository = await getRepository(Messages);
+  try {
+    await messageRepository.delete({ portalId: portalId });
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   getMessages,
   createMessage,
   updateMessage,
   deleteMessage,
-  getUserMessages
+  getUserMessages,
+  deleteAllMessage
 };

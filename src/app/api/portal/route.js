@@ -11,6 +11,9 @@ import { generateNanoToken } from "@/app/lib/jwt";
 import resetService from "@/services/resetService";
 import pluginService from "@/services/pluginService";
 import { uploadSampleFiles } from "../box/files/route";
+import messageService from "@/services/messageService";
+import contentManagementService from "@/services/contentManagementService";
+import checkListService from "@/services/checkListService";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -238,10 +241,15 @@ export async function DELETE(req) {
 
     await Promise.all(deletionPromises);
 
+    const portalId = sanitizeName(portal.legalName)
+
     // Fetch users after deletion for validation/debugging
-    const portalUsersAfterDelete = await userService.getUsersByPortal(
-      sanitizeName(portal.legalName)
-    );
+    const portalUsersAfterDelete = await userService.getUsersByPortal(portalId);
+
+    await messageService.deleteAllMessage(portalId);
+    await contentManagementService.deleteAllContent(portalId);
+    await checkListService.deleteAllChecklists(portalId);
+    await pluginService.deleteAllPlugins(portalId);
 
     // Delete the portal
     await portalService.deletePortal(portal.id);

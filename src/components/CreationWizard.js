@@ -475,12 +475,12 @@ const AdministratorStep = ({ formData, setFormData }) => {
     try {
       const encodedEmail = encodeURIComponent(formData?.adminEmail);
       const response = await fetchWrapper(
-        `/api/users?email=${encodedEmail}`,
+        `/api/users?email=${encodedEmail}&check=portalCreatedAdmin`,
         {},
         "fetch-user"
       );
-      if (!response.ok) throw new Error("Failed to fetch user data");
       const userData = await response.json();
+      if (!response.ok) throw new Error(userData.error);
       if (userData) {
         // Populate the formData with fetched user details
         setFormData({
@@ -488,14 +488,13 @@ const AdministratorStep = ({ formData, setFormData }) => {
           firstName: userData.name.split(" ")[0] || "",
           lastName: userData.name.split(" ")[1] || "",
           jobTitle: userData.title || "",
+          phoneNumber: userData.phoneNo || ""
           // permissions: userData?.permissions || {}, // Pre-populate permissions if available
         });
-      } else {
-        setError("No user found with this email.");
-      }
+      } 
     } catch (err) {
       console.error("Error fetching user data:", err);
-      setError("Failed to fetch user data. Please try again.");
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -514,9 +513,9 @@ const AdministratorStep = ({ formData, setFormData }) => {
         label="Work Email"
         type="email"
         value={formData.adminEmail}
-        onChange={(e) =>
-          setFormData({ ...formData, adminEmail: e.target.value })
-        }
+        onChange={(e) =>{
+          setFormData({ ...formData, adminEmail: e.target.value, firstName: "", lastName: "", jobTitle: "", phoneNumber: "" })
+        }}
         onBlur={handleEmailBlur}
         placeholder="john.doe@company.com"
         isLoading={isLoading}
@@ -524,6 +523,7 @@ const AdministratorStep = ({ formData, setFormData }) => {
       {isLoading && (
         <p className="text-sm text-gray-500">Loading user data...</p>
       )}
+      {error && <p className="text-red-600 text-sm">{error}</p>}
       <div className="grid grid-cols-2 gap-6">
         <InputField
           label="First Name"
