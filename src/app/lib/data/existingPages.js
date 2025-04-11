@@ -81,11 +81,12 @@ export const customPageSectionTemplate = {
   title: "",
   description: "",
   sections: [
-    { label: "Top Stories", visible: true },
-    { label: "Ticker Tape", visible: true },
     { label: "Chart Section", visible: false },
+    { label: "Top Stories", visible: true },
+    { label: "Ticker Tape", visible: false },
     { label: "My Task Section", visible: true },
-    { label: "Advisor Section", visible: true },
+    { label: "Advisor Section", visible: false },
+    { label: "Collaborator Section", visible: false },
     { label: "Messaging", visible: true },
   ],
 };

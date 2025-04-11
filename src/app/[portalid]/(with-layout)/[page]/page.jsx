@@ -19,6 +19,7 @@ import AdvisorSection from "@/components/Common/AdvisorSection";
 import TickerTape from "@/components/Common/charts/TickerTape";
 import TopStories from "@/components/Common/charts/TopStories";
 import { StockMarketChart } from "@/components/Common/charts/Chart";
+import CollaboratorSection from "@/components/Common/CollaboratorSection";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -230,6 +231,9 @@ function Page() {
           )}
           {filterVisibility("Advisor Section") && (
             <AdvisorSection />
+          )}
+          {filterVisibility("Collaborator Section") && (
+            <CollaboratorSection />
           )}
           {filterVisibility("Messaging") && (
             <MessageSection />

@@ -19,6 +19,7 @@ import { createESign } from "@/app/api/box/e-sign/route";
 import { bulkPages } from "@/app/api/pages/bulk/route";
 import { existingPages } from "@/app/lib/data/existingPages";
 import pluginService from "./pluginService";
+import { uploadLocalFileToAzure } from "@/app/api/upload/route";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -223,10 +224,12 @@ const createSampleMessage = async (portalId) => {
 };
 
 const resetPortalTheme = async (portalId) => {
+  const url = await uploadLocalFileToAzure();
   await portalService.updatePortal(portalId, {
     primaryColor: "#000000",
     secondaryColor: "#2563eb",
-    accentColor: "#ffffff",
+    accentColor: "#ffffff", 
+    logo: url
   });
 };
 
