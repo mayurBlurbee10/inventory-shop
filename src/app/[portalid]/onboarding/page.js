@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as LucideIcons from "lucide-react";
-import { fontSizes, logoSizeMap, logoSizeRatio } from "@/app/lib/data/font_size";
+import { coverPhotoRatio, fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -282,20 +282,24 @@ export default function OnBoardingPage() {
 
   const filterContent = (title) => {
     const contentItem = content && content?.portalContent?.find((item) => item.title === title);
-    let value = contentItem ? contentItem.value : title;
+    let value = contentItem ? contentItem.value : null;
     if(title === 'Logo'){
       if(contentItem && contentItem.type === 'Image'){
-        value = value.replace("/api/upload", "/uploads")
+        return value.replace("/api/upload", "/uploads")
       }else {
-        value = null
+        return null
       }
     }
     if(title === 'CoverPhoto'){
       if(contentItem && contentItem.type === 'Image'){
-        value = value.replace("/api/upload", "/uploads")
+        return value.replace("/api/upload", "/uploads")
       }else {
-        value = null
+        return null
       }
+    }
+    if (!value) {
+      const defaultItem = content.defaultContent.find(item => item.title === title);
+      return defaultItem ? defaultItem.value : '';
     }
     console.log("value", value)
     return value;
@@ -312,16 +316,35 @@ export default function OnBoardingPage() {
     return theme;
   };
 
+  const filterValue = (title) => {
+    if (!content) return '';
+    const contentItem = content.portalContent.find(item => item.title === title);
+    const value = contentItem ? contentItem.value : null;
+
+    if (!value) {
+      const defaultItem = content.defaultContent.find(item => item.title === title);
+      return defaultItem ? defaultItem.value : '';
+    }
+
+    return value;
+  };
+
   const handleModalOpenForEdit = (contentTitle) => {
     const contentToEdit = content && content?.portalContent?.find((item) => item.title === contentTitle);
+    let value = contentToEdit ? contentToEdit.value : null;
+    if (!value) {
+      const defaultItem = content.defaultContent.find(item => item.title === contentTitle);
+      value = defaultItem ? defaultItem.value : ''
+    }
     let fontSize = fontSizes.find((item) => item.key === contentTitle)
     if (!contentToEdit) {
       const content = contentTypes.find((item) => item.title === contentTitle);
+      const logoValue = contentTitle === 'Logo' && !value ? config?.logo : value
       setNewContent({
         type: content.type,
         title: contentTitle,
         fontSize: fontSize?.size,
-        value: "",
+        value: logoValue,
         theme: {
           fontSize: fontSize?.size,
           color: "#000000e6",
@@ -388,32 +411,36 @@ export default function OnBoardingPage() {
         </div>
       );
     };
-  
+
     const CoverPhoto = () => {
-      const baseSize = 20; // Base unit for scaling
-    
-      const fontSizeKey = content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize;
-      const logoSize = logoSizeRatio[fontSizeKey] || logoSizeRatio.medium;
+      const fontSizeKey =
+        content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize || "medium";
+
+      const sizeInfo = coverPhotoRatio[fontSizeKey];
+      const { width, height } = sizeInfo;
+
       const imageUrl = filterContent("CoverPhoto") || "/no_image.jpg";
-    
       return (
-        <div className="mb-2" style={{
-          height: `${baseSize * logoSize}rem`, 
-        }}>
-            <img
-              src={imageUrl}
-              alt={params.portalid || "Default"}
-              className="max-h-full max-w-full object-contain"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "fill"
-              }}
-            />
+        <div
+          className="mb-2 mx-auto"
+          style={{
+            width: `${width/16}rem`,
+            height: `${height/16}rem`,
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt={params.portalid || "Default"}
+            className="w-full h-full"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+          }}
+          />
         </div>
       );
     };
-    
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">

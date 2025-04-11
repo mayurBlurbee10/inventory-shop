@@ -46,7 +46,11 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
   // Handle form submission
   const onSubmit = async (data) => {
     try {
-      console.log('Submitted Data:', data);
+
+      if (!data.title || !data.value || data.value === "<p></p>") {
+        toast.error("description is required field.");
+        return;
+      }
       setIsLoading(true);
       const response = await fetchWrapper(
         "/api/contentManagement",
@@ -74,7 +78,6 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
     }
   };
   
-
   return (
     <>
       {isOpen && (
@@ -118,7 +121,7 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
               </div>
               <div className="w-full flex items-center justify-end mr-12 gap-2">
                 <Button type="Secondary" label="Cancel" disabled={isLoading} onClick={onClose}/>
-                <Button buttonType="submit" type="Primary" label="Update" isLoading={isLoading} disabled={isLoading}/>
+                <Button buttonType="submit" type="Primary" label={data.value ? "Save" : "Add"} isLoading={isLoading} disabled={isLoading}/>
               </div>
             </form>
           </div>

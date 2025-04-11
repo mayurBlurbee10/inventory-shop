@@ -1,7 +1,7 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { PlusCircle, X } from "lucide-react";
 import { useParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { toast } from "react-toastify";
 import {
   Home,
@@ -18,7 +18,7 @@ import {
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
-import { fontSizeOptions, fontSizes, fontWeightOptions, logoSizeRatio } from "@/app/lib/data/font_size";
+import { coverPhotoRatio, fontSizeOptions, fontSizes, fontWeightOptions, logoSizeRatio } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 
 const AddContentModal = ({
@@ -41,7 +41,7 @@ const AddContentModal = ({
   from=""
 }) => {
   const params = useParams();
-
+  const fileInputRef = useRef(null);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: config } = useSelector((state) => state.portal);
@@ -63,7 +63,7 @@ const AddContentModal = ({
       let imageUrl = "";
 
       // Handle file upload if it exists
-      if (file) {
+      if (file && previewUrl) {
         const uploadData = new FormData();
         uploadData.append("file", file);
 
@@ -87,11 +87,11 @@ const AddContentModal = ({
       // Construct payload with specific cases for fontSize and links
       const obj = imageUrl
         ? {
-          ...newContent,
-          value: imageUrl,
-          fontSize: newContent.fontSize || "medium", // Add fontSize here
-          portalId: params.portalid ?? "default",
-        }
+            ...newContent,
+            value: imageUrl,
+            fontSize: newContent.fontSize || "medium", // Add fontSize here
+            portalId: params.portalid ?? "default",
+          }
         : newContent.type === "Links"
         ? {
             ...newContent,
@@ -272,22 +272,45 @@ const AddContentModal = ({
   const LogoImage = () => {
     const baseSize = 99; // Set a base height
   
-    const logoSize =
-      (newContent?.fontSize && logoSizeRatio[newContent?.fontSize]) ||
-      logoSizeRatio.medium;
+    const fontSizeKey = newContent?.fontSize || "medium"
+
+    const sizeInfo = coverPhotoRatio[fontSizeKey];
+    const { scale, width, height } = sizeInfo;
   
     return (
-      <div className="">
-        <img
-          src={previewUrl}
-          alt="Logo preview"
-          className="object-contain rounded border"
-          style={{
-            height: `${baseSize * logoSize}px`, 
-            width: "auto",                      
-            maxWidth: "100%",                   
-          }}
-        />
+      <div className="flex items-center gap-5">
+        <div className="relative inline-block text-black">
+          {newContent.title === 'CoverPhoto' && (
+            <div
+              className="absolute top-0 right-0 p-1 bg-white/10 rounded-full cursor-pointer shadow-md hover:bg-gray-100 z-10"
+              onClick={() => {
+                setPreviewUrl("");
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = null;
+                }
+                setNewContent((prev) => ({
+                  ...prev,
+                  value: ""
+                }))
+              }}
+            >
+              <X size={16} />
+            </div>
+          )}
+          <img
+            src={previewUrl ? previewUrl : config?.logo}
+            alt="Logo preview"
+            className="object-contain rounded border"
+            style={{
+              height: `${baseSize * scale}px`,
+              width: "auto",
+              maxWidth: "100%",
+            }}
+          />
+        </div>
+        <p className="text-xs text-center text-gray-500 mt-1">
+          {fontSizeKey.charAt(0).toUpperCase() + fontSizeKey.slice(1)} – {width}x{height}px
+        </p>
       </div>
     );
   };
@@ -570,6 +593,7 @@ const AddContentModal = ({
                 Upload Logo
               </label>
               <input
+                ref={fileInputRef}
                 type="file"
                 id="value"
                 name="value"
@@ -579,7 +603,7 @@ const AddContentModal = ({
               />
             </div>
           )}
-          {previewUrl && <LogoImage />}
+          {(previewUrl || (!previewUrl && newContent?.title === 'Logo'))  && <LogoImage />}
 
           {/* Links */}
           {newContent.type === "Links" && (
@@ -642,7 +666,9 @@ const AddContentModal = ({
                 (newContent?.type === "Links" &&
                   ((linkFields.length > 0 &&
                     linkFields[linkFields.length - 1].label === "") ||
-                    linkFields[linkFields.length - 1].link === ""))
+                    linkFields[linkFields.length - 1].link === "")) ||
+                (newContent?.title === "CoverPhoto" && (!isEditMode && !file)) ||
+                (newContent?.title === "Logo" && (!newContent.value))
               }
               // label={isEditMode ? "Save" : "Add"}
               label={"Save"}

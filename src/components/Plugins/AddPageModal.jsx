@@ -114,7 +114,7 @@ function AddPageModal({
       const title = getValues("title");
       const description = getValues("description");
 
-      if (!title || !description) {
+      if (!title || !description || description==='<p></p>') {
         toast.error("Both title and description are required.");
         return;
       }
@@ -183,15 +183,15 @@ function AddPageModal({
         setValue("title", "");
         setValue("description", "");
       }
+      setOnPageCreated(true);
+      setEditData(null);
+      onClose();
     } catch (error) {
       setValue("title", "")
       setValue("description", "");
       toast.error(error.message);
       console.error("Error in handleClose:", error);
     } finally {
-      setOnPageCreated(true);
-      setEditData(null);
-      onClose();
       setLoading(false);
     }
   };
@@ -346,7 +346,7 @@ function AddPageModal({
                   isLoading={loading}
                   type="Primary"
                   label={editData
-                    ? "Update"
+                    ? "Save"
                     : "Add"}
                 />
               </div>

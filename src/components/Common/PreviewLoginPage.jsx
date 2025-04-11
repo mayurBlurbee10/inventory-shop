@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { IdCard, LockKeyhole } from 'lucide-react';
 import * as LucideIcons from "lucide-react";
 import Button from './Elements/Button';
-import { fontSizes, logoSizeRatio } from '@/app/lib/data/font_size';
+import { coverPhotoRatio, fontSizes, logoSizeRatio } from '@/app/lib/data/font_size';
 import { useParams, useRouter } from 'next/navigation';
 
 const PreviewLoginPage = () => {
@@ -66,35 +66,37 @@ const PreviewLoginPage = () => {
             }
 
         const CoverPhoto = () => {
-          const baseSize = 20; // Base unit for scaling
+          const fontSizeKey =
+            content?.portalContent?.find((item) => item.title === "CoverPhoto")
+              ?.fontSize || "medium";
 
-          const fontSizeKey = content?.portalContent?.find(
-            (item) => item.title === "CoverPhoto"
-          )?.fontSize;
-          const logoSize = logoSizeRatio[fontSizeKey] || logoSizeRatio.medium;
+          const sizeInfo = coverPhotoRatio[fontSizeKey];
+          const { width, height } = sizeInfo;
+
           const imageUrl = filterValue("CoverPhoto") || null;
 
           return (
             <div
-              className="mb-2"
+              className="mb-2 mx-auto"
               style={{
-                height: `${baseSize * logoSize}rem`,
+                width: `${width}px`,
+                height: `${height}px`,
               }}
             >
               <img
                 src={imageUrl}
                 alt={params.portalid || "Default"}
-                className="max-h-full max-w-full object-contain"
+                className="w-full h-full"
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "fill",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
                 }}
               />
             </div>
           );
         };
-            
+              
     const filterTheme = (title) => {
       const contentItem =
         content && content?.portalContent?.find((item) => item.title === title);

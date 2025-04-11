@@ -56,6 +56,20 @@ const getContentManagement = async (portalId) => {
   }
 };
 
+const getContentByTitle = async (title, portalId) => {
+  await connectDatabase();
+  const connection = getConnection();
+  const contentRepository = connection.getRepository(ContentManagement);
+  try {
+    const content = await contentRepository.findOne({
+      where: { portalId: portalId, title: title },
+    });
+    return content;
+  } catch (error) {
+    throw new Error("Failed to get content.");
+  }
+};
+
 const updateContentManagement = async (data) => {
   await connectDatabase();
   const connection = getConnection();
@@ -102,6 +116,7 @@ const deleteAllContent = async (portalId) => {
 export default {
   createContentManagement,
   getContentManagement,
+  getContentByTitle,
   updateContentManagement,
   removeOldEntry,
   deleteAllContent

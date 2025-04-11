@@ -155,67 +155,37 @@ export async function PUT(request) {
   try {
     await logApiCall(request);
     const contentData = await request.json();
-    console.log("contentFromPUTApi:", contentData);
     if (
       !contentData.id ||
       !contentData.title ||
       !contentData.type ||
-      !contentData.value ||
       !contentData.portalId ||
-      !contentData.fontSize
+      !contentData.fontSize || (contentData.title !== 'CoverPhoto' && !contentData.value)
     ) {
       return NextResponse.json(
         { error: "Missing required fields: id, title, type, value, fontSize" },
         { status: 400 }
       );
     }
-    // await ensureDirectory(dir);
-    // const contentItems = await readJsonFile(filePath);
-    const contentItems = await contentManagementService.getContentManagement(
-      contentData.portalId
-    );
-    // const portalexist = contentItems.findIndex(
-    //   (item) => item.key === contentData.portal
-    // );
-    // if (portalexist === -1) {
-    //   return NextResponse.json({ error: "Portal not found" }, { status: 404 });
-    // }
-    // const existingIndex = contentItems[portalexist]["value"].findIndex(
-    //   (item) => item.title === contentData.title
-    // );
-    // if (existingIndex === -1) {
-    //   return NextResponse.json(
-    //     { error: "Content item not found" },
-    //     { status: 404 }
-    //   );
-    // }
+   
+    const contentItem = await contentManagementService.getContentByTitle(contentData?.title, contentData.portalId);
 
-    const existingIndex = contentItems.findIndex(
-      (item) => item.title === contentData.title
-    );
-    if (existingIndex === -1) {
+    if (!contentItem) {
       return NextResponse.json(
         { error: "Content item not found" },
         { status: 404 }
       );
     }
-
-    // contentItems[portalexist]["value"][existingIndex] = {
-    //   ...contentItems[portalexist]["value"][existingIndex],
-    //   lastUpdated: formatDate(),
-    //   title: contentData.title,
-    //   type: contentData.type,
-    //   value: contentData.value,
-    // };
-
-    // await writeJsonFile(dir, filePath, contentItems);
-
-    // const data = { ...contentItems[portalexist]["value"][existingIndex] };
-    const contentUpdated = await contentManagementService.updateContentManagement({
-      ...contentData,
-      fontSize: contentData.fontSize, // Include fontSize
-    });
-    return NextResponse.json(contentUpdated, { status: 200 });
+    if(contentData.title === 'CoverPhoto' && !contentData.value){
+      await contentManagementService.removeOldEntry(contentItem);
+      return NextResponse.json({message : "Content updated successfully."}, { status: 200 });
+    }else {
+      const contentUpdated = await contentManagementService.updateContentManagement({
+        ...contentData,
+        fontSize: contentData.fontSize, // Include fontSize
+      });
+      return NextResponse.json(contentUpdated, { status: 200 });
+    }
   } catch (error) {
     console.error("Error in PUT /api/content:", error);
     return NextResponse.json(

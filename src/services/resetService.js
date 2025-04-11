@@ -64,27 +64,13 @@ const getPluginByPortalId = async (pluginRepository, portalId) => {
 
 const deleteCustomPages = async (pageRepository, pluginRepository, portalId) => {
   const plugin = await getPluginByPortalId(pluginRepository, portalId);
-  // if (plugin && plugin.pages) {
-  //   const pages = await pageRepository.find({
-  //     where: {
-  //       plugin: plugin?.id,
-  //       isCustomPage: true,
-  //     },
-  //   });
-  //   console.log("reset pages", pages);
-  //   const filteredPages = pages ? pages.filter((page) => page.title.toLowercase() !== "trading") : [];
-
-  //   for (const page of filteredPages) {
-  //     await pageRepository.remove(page);
-  //   }
-  // }
   if (plugin) {
     await pageRepository.delete({
       plugin: plugin?.id,
       isCustomPage: true,
     });
   }
-  await bulkPages(existingPages, [], [], portalId, plugin?.id)
+  await bulkPages(existingPages, [], [], portalId, plugin?.id, true);
 };
 
 const deleteChecklists = async (checkListRepository, portalId) => {
@@ -173,10 +159,8 @@ const deleteContent = async (contentManagementRepository, portalId) => {
 
 const updateUsersTNCStatus = async (userRepository, portalId) => {
   try {
-    const users = await userRepository.find({
-      where: { portalId: portalId },
-    });
-
+    const users = await userService.getUsersByPortal(portalId)
+    
     if (users.length === 0) return;
 
     const userUpdates = users.map((user) =>

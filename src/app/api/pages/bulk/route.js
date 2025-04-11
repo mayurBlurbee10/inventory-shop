@@ -2,7 +2,7 @@ import { existingPages } from "@/app/lib/data/existingPages";
 import pageService from "@/services/pageService";
 import { NextResponse } from "next/server";
 
-export const bulkPages = async (items, errors, results, portalId, pluginId) => {
+export const bulkPages = async (items, errors, results, portalId, pluginId, updateVisibility=false) => {
   for (const item of items) {
     try {
       const pageExist = await pageService.checkIfPageWithTitleExist(
@@ -10,6 +10,13 @@ export const bulkPages = async (items, errors, results, portalId, pluginId) => {
         item.title
       );
       if (pageExist) {
+        if(updateVisibility){
+          const result = await pageService.updatePage(pageExist.id, {
+            visibility: item.sections
+          })
+          results.push(result);
+          continue;
+        }
         results.push(pageExist);
         continue;
       }
@@ -38,7 +45,7 @@ export async function POST(req) {
     const results = [];
     const errors = [];
 
-    await bulkPages(items, errors, results, portalId, pluginId)
+    await bulkPages(items, errors, results, portalId, pluginId, false)
    
     return NextResponse.json({
       message: "Pages Created",

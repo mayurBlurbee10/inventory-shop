@@ -91,7 +91,7 @@ export const sendSetPasswordEmail = async (
                           ><span
                             class="size"
                             style="font-size: 16px; margin: 0px 0px 20px"
-                            ><b>Hi ${userName}</b>,</span
+                            ><b>Hi ${userName.split(" ")[0]}</b>,</span
                           ></span
                         ><br />
                       </p>
@@ -103,7 +103,7 @@ export const sendSetPasswordEmail = async (
                           ><span
                             class="size"
                             style="font-size: 16px; margin: 0px 0px 20px"
-                            >Thanks for registering for the Universal Portal Wealth demo from M Strategy. Please click the link below to create a password to get access to the portal. Once completed you will be directed to the Universal Portal Wealth Log In page. </span
+                            >Thanks for registering for the Universal Portal Wealth demo from M Strategy. Please click the link below to create a password. Once completed you will be directed to the Universal Portal Wealth Log In page. </span
                           ></span
                         ><br />
                       </p>

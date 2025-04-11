@@ -170,9 +170,24 @@ const deletePlugin = async (pluginId) => {
   }
 };
 
+const createTncPage = async(pluginId) => {
+  try {
+    const pagePayload = {
+      title: tncPage.title,
+      description: tncPage.description,
+      visibility: [],
+      isCustomPage: true,
+      plugin: pluginId
+    }
+    await pageService.createPage(pagePayload)
+    return;
+  } catch (error) {
+    throw new Error("Failed to create  page.");
+  }
+}
+
 const createTncPlugin = async(portalId, createdBy) => {
   const pluginRepository = await getRepository(Plugins);
-  const pageRepository = await getRepository(Pages);
   try {
     const plugin = pluginRepository.create({
       type: PluginType.TNC,
@@ -180,18 +195,10 @@ const createTncPlugin = async(portalId, createdBy) => {
       createdBy: createdBy,
     });
     await pluginRepository.save(plugin);
-
-    const page = pageRepository.create({
-      title: tncPage.title,
-      description: tncPage.description,
-      visibility: [],
-      isCustomPage: true,
-      plugin: plugin?.id
-    });
-    await pageRepository.save(page);
+    await createTncPage(plugin?.id);
     return;
   } catch (error) {
-    throw new Error("Failed to delete plugin.");
+    throw new Error("Failed to create plugin.");
   }
 }
 
@@ -204,6 +211,8 @@ const updateTncPage = async (portalId, createdBy) => {
       await pageService.updatePage(plugin.pages[0].id, {
         description: tncPage.description,
       });
+    } else if (plugin){ 
+      await createTncPage(plugin?.id);
     } else {
       await createTncPlugin(portalId, createdBy);
     }

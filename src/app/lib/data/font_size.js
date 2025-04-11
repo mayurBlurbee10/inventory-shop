@@ -79,6 +79,12 @@ export const logoSizeRatio = {
   large: 1,     // 100% of base size (default)
 };
 
+export const coverPhotoRatio = {
+  small: { scale: 0.5, width: 360, height: 160 },
+  medium: { scale: 0.75, width: 540, height: 240 },
+  large: { scale: 1, width: 720, height: 320 },
+};
+
 export const iconSizeMap = {
   small: "12px",
   medium: "24px",

@@ -18,7 +18,7 @@ import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
 import { setPages } from "@/store/services/pageService";
 import * as LucideIcons from "lucide-react";
-import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
+import { coverPhotoRatio, fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 
 const NavBarItem = ({ title }) => (
@@ -358,29 +358,37 @@ function Login() {
   };
 
   const CoverPhoto = () => {
-    const baseSize = 20; // Base unit for scaling
-    
-    const fontSizeKey = content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize;
-    const logoSize = logoSizeRatio[fontSizeKey] || logoSizeRatio.medium;
+    const fontSizeKey =
+      content?.portalContent?.find((item) => item.title === "CoverPhoto")
+        ?.fontSize || "medium";
+
+    const sizeInfo = coverPhotoRatio[fontSizeKey];
+    const { width, height } = sizeInfo;
+
     const imageUrl = filterValue("CoverPhoto") || null;
 
     return (
-      <div className="mb-2" style={{
-        height: `${baseSize * logoSize}rem`, 
-      }}>
-          <img
-            src={imageUrl}
-            alt={params.portalid || "Default"}
-            className="max-h-full max-w-full object-contain"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "fill"
-            }}
-          />
+      <div
+        className="mb-2 mx-auto"
+        style={{
+          width: `${width}px`,
+          height: `${height}px`,
+        }}
+      >
+        <img
+          src={imageUrl}
+          alt={params.portalid || "Default"}
+          className="w-full h-full"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
       </div>
     );
   };
+
    const filterTheme = (title) => {
       const contentItem = content && content?.portalContent?.find((item) => item.title === title);
       let fontSize = fontSizes.find((item) => item.key === title)
