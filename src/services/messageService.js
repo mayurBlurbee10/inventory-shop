@@ -72,12 +72,20 @@ const updateMessage = async (messageId, updatedData) => {
 const deleteMessage = async (messageId) => {
   const messageRepository = await getRepository(Messages);
   try {
-    const message = await messageRepository.findOneBy({ id: messageId });
-    if (!message) {
-      return;
+    const message = await messageRepository.findOne({
+      where: { id: messageId },
+      relations: ["replies"],
+    });
+
+    if (!message) return;
+
+    if (Array.isArray(message.replies) && message.replies.length > 0) {
+      for (const reply of message.replies) {
+        await deleteMessage(reply.id); // recursively delete replies
+      }
     }
+
     await messageRepository.remove(message);
-    return;
   } catch (error) {
     throw error;
   }

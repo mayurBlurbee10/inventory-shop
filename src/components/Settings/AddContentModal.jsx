@@ -308,9 +308,11 @@ const AddContentModal = ({
             }}
           />
         </div>
-        <p className="text-xs text-center text-gray-500 mt-1">
-          {fontSizeKey.charAt(0).toUpperCase() + fontSizeKey.slice(1)} – {width}x{height}px
-        </p>
+        {newContent.title === 'CoverPhoto' && (
+          <p className="text-xs text-center text-gray-500 mt-1">
+            {fontSizeKey.charAt(0).toUpperCase() + fontSizeKey.slice(1)} – {width}x{height}px
+          </p>
+        )}
       </div>
     );
   };
