@@ -10,6 +10,8 @@ import { setPortal } from "@/store/services/portalService";
 import { getUserData } from "@/lib/auth";
 import { fontSizes } from "@/app/lib/data/font_size";
 import EditHeadingModal from "../Common/EditHeadingModal";
+import DeleteConfirmDialog from "../DeleteConfirmDialog";
+import { setContent as setReduxContent} from "@/store/services/contentService";
 
 const ContentManagementContent = ({
   isAddRequired,
@@ -49,6 +51,9 @@ const ContentManagementContent = ({
   const onBoarding = pathname.includes("/onboarding");
   const { data: config } = useSelector((state) => state.portal);
   const [isEditModalOpen,setIsEditModalOpen] = useState(false)
+  const [isDeletePopUpOpen,setIsDeletePopUpOpen] = useState(false)
+  const [isLoadingRemoveContent , setIsLoadingRemoveContent] = useState(false);
+  const { data: contentData } = useSelector((state) => state.content);
   // const [colors, setColors] = useState({
   //   primaryColor : config.primaryColor,
   //   secondaryColor : config.secondaryColor,
@@ -427,6 +432,59 @@ const handleSubmitData = () => {
   console.log("Handle Sumbit Data");
   
 }
+
+const filterValue = (title) => {
+  if (!content) return "";
+  const contentItem = contentData.portalContent.find(
+    (item) => item.title === title
+  );
+  const value = contentItem ? contentItem.value : null;
+  if (!value) {
+    const defaultItem = contentData.defaultContent.find(
+      (item) => item.title === title
+    );
+    return defaultItem ? defaultItem : null;
+  }
+  // setRemoveContent(true)
+  return {
+    ...contentItem,
+    from:"portalContent"
+  };
+};
+
+const handleRemoveHeading = async () => {
+  try {
+    setIsLoadingRemoveContent(true)
+    const contentToRemove = filterValue("Dashboard Heading");
+    if (!contentToRemove) {
+      toast.error("Content not found to delete");
+      return;
+    }
+    const response = await fetchWrapper("/api/contentManagement", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: contentToRemove.title,
+        portalId: params.portalid,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result?.error || "Failed to delete content");
+    }
+    toast.success("Heading removed successfully");
+    dispatch(setReduxContent(params.portalid));
+  } catch (error) {
+    console.error("Delete Error:", error);
+    toast.error("Something went wrong while deleting");
+  } finally{
+    setIsLoadingRemoveContent(false)
+    setIsDeletePopUpOpen(false);
+  }
+};
+
   return (
     <>
     <div className="space-y-6">
@@ -563,25 +621,47 @@ const handleSubmitData = () => {
           </div>
         )}
       </div>
+      <hr/>
       <div className="py-2 text-gray-900">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5">
-          <div className="border flex justify-center items-center px-3 py-4 rounded-md">
-            <h3 className="font-lato font-semibold text-lg">
-              Dashboard Heading
-            </h3>
-            <div className="flex items-center ml-auto gap-2 ">
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => {
-                  setIsEditModalOpen(true);
-                }}
-              >
-                <Edit className="size-5 text-blue-700" />
-              </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 pt-3 ">
+            <div className="pl-3">
+              <div className="border flex justify-center items-center p-4 rounded-md">
+                <h3 className="font-lato font-semibold text-lg">
+                  Dashboard Wealcome Note
+                </h3>
+                <div className="flex items-center ml-auto ">
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => {
+                      setIsEditModalOpen(true);
+                    }}
+                  >
+                    <Edit className="size-5 text-blue-700" />
+                  </button>
+                  {filterValue("Dashboard Heading").from && (
+                    <button
+                      type="button"
+                      className="inline-flex items-center px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => {
+                        setIsDeletePopUpOpen(true);
+                      }}
+                    >
+                      <Trash2 className="size-5 text-red-700" />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
         </div>
+              <DeleteConfirmDialog
+                isModalOpen={isDeletePopUpOpen}
+                setIsModalOpen={setIsDeletePopUpOpen}
+                handleDelete={handleRemoveHeading}
+                title="Remove Welcome Note"
+                content="Confirm to remove the dashboard welcome note."
+                isLoading={isLoadingRemoveContent}
+              />
       </div>
       {/* Dialog Box */}
       {isDialogOpen && (
@@ -682,7 +762,7 @@ const handleSubmitData = () => {
           <EditHeadingModal
             isOpen={isEditModalOpen}
             onClose={() => setIsEditModalOpen(false)}
-            from='Dashboard Heading'
+           data ={filterValue("Dashboard Heading")}
           />
         )
       }

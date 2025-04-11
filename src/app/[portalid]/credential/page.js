@@ -13,6 +13,7 @@ const CredentialPage = () => {
   const searchParams = useSearchParams();
   const isNew = searchParams.get('isNew') === 'true';
   const logoURL = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/MStrategy_Group.png`;
+  const portalURL = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}`;
 
   const handleGoToLogin = () => {
     const { credential, ...userWithoutCredential } = user;
@@ -45,10 +46,13 @@ const CredentialPage = () => {
               Your login credentials have been generated
             </h2>
             <p className="text-sm text-gray-600 text-center mb-4">
-              Please take a screenshot or securely store the details below.
+              Please take a screen shot to keep a record of your credentials.
+            </p>
+            <p className="text-sm text-gray-600 text-center mb-4">
+              Universal Portal Link : <span className='text-blue-600'>{portalURL}</span>
             </p>
             <div className="text-center mb-6">
-              <p className="text-gray-600 font-semibold mb-2">Your Credentials:</p>
+              <p className="text-gray-600 font-semibold mb-2">Credentials:</p>
               <p className="text-gray-600">
                 <span className="font-semibold text-gray-600">User ID:</span> {user?.credential?.userID}
               </p>
@@ -72,7 +76,7 @@ const CredentialPage = () => {
           }
           
             <Button
-              label="Go to Login"
+              label="Let's Go!"
               type="Primary"
               className="w-48"
               onClick={handleGoToLogin}

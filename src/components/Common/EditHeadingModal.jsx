@@ -9,10 +9,8 @@ import { fetchWrapper } from '@/app/lib/fetchWrapper';
 import { setContent } from '@/store/services/contentService';
 import { toast } from 'react-toastify';
 
-const EditHeadingModal = ({ isOpen, onClose, from }) => {
-  const { data: content } = useSelector((state) => state.content);
+const EditHeadingModal = ({ isOpen, onClose, data }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [description, setDescription] = useState(false);
   const params = useParams();
     const dispatch = useDispatch();
   const {
@@ -24,42 +22,26 @@ const EditHeadingModal = ({ isOpen, onClose, from }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      title: from || '',
-      value: '',
-      type: 'text',
+      title: data?.title || '',
+      value: data?.value || '',
+      type: 'Text',
       portalId: params.portalid,
       fontSize: '20px',
     },
   });
 
-  // Filter description from state based on title
-  const filterValue = (title) => {
-    if (!content) return '';
-    const contentItem = content.portalContent.find(item => item.title === title);
-    const value = contentItem ? contentItem.value : null;
-
-    if (!value) {
-      const defaultItem = content.defaultContent.find(item => item.title === title);
-      return defaultItem ? defaultItem.value : '';
-    }
-
-    return value;
-  };
-
   // Populate form values when modal opens or data changes
   useEffect(() => {
-    if (from) {
-      const desc = filterValue(from);
-      setDescription(desc);
+    if (data) {
       reset({
-        title: from,
-        value: desc,
-        type: 'text',
+        title: data?.title || '',
+        value: data?.value || '',
+        type: 'Text',
         portalId: params.portalid,
         fontSize: '20px',
       });
     }
-  }, [from, content, reset]);
+  }, [data, reset]);
 
   // Handle form submission
   const onSubmit = async (data) => {
@@ -127,10 +109,9 @@ const EditHeadingModal = ({ isOpen, onClose, from }) => {
                   control={control}
                   render={({ field }) => (
                     <TextEditor
-                      description={description}
-                      from={from}
-                      content={description ? description : field.value}
-                      onChange={field.onChange}
+                      from={"Dashboard Heading"}
+                      content={field.value || ""}
+                      onChange={(value) => setValue("value", value)}
                     />
                   )}
                 />

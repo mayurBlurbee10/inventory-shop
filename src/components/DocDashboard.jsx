@@ -191,7 +191,6 @@ export default function DocDashboard() {
     }
     return value;
   };
-  const htmlString = filterValue();
 
   // const fetchContent = async () => {
   //   const response = await fetchWrapper(
@@ -277,8 +276,13 @@ export default function DocDashboard() {
                   {filterVisibility("Header Section") && (
                     <div className="w-full">
                       <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
-                        <div className="pr-2 flex items-center">{`Hello, ${user?.name}!`}</div>
-                        <div className="page flex items-center font lato" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true}/>
+                        {
+                          filterValue("Dashboard Heading").length > 0 ? (
+                            <div className="page flex items-center font lato" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true}/>
+                          ) : (
+                            <div className="pr-2 flex items-center">{`Hello, ${user?.name}!`}</div>
+                          )
+                        }
                       </div>
                     </div>
                   )}

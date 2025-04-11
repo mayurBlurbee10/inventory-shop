@@ -6,7 +6,7 @@ export const existingPages = [
       { label: "Chart Section", visible: true },
       { label: "Header Section", visible: true },
       { label: "Top Stories", visible: true },
-      { label: "Ticker Tape", visible: true },
+      { label: "Ticker Tape", visible: false },
       // { label: "Links Section", visible: false },
       { label: "My Task Section", visible: true },
       { label: "Collaborator Section", visible: true },

@@ -380,12 +380,6 @@ const TextEditor = ({ content, onChange,from }) => {
   });
 
   useEffect(() => {
-    if (editor && content) {
-      editor.commands.setContent(content);
-    }
-  }, [content, editor]);
-
-  useEffect(() => {
     if (!editor || !editor.view) return;
 
     const editorEl = document.querySelector('[contenteditable="true"]');

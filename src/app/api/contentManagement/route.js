@@ -224,3 +224,32 @@ export async function PUT(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    await logApiCall(request);
+
+    const contentData = await request.json();
+
+    const contentItems = await contentManagementService.getContentManagement(
+      contentData.portalId
+    );
+    const existingIndex = contentItems.findIndex(
+      (item) => item.title === contentData.title
+    );
+    if (existingIndex > -1) {
+      await contentManagementService.removeOldEntry(contentItems[existingIndex])
+    }
+
+    return NextResponse.json(
+      { message: "Content removed successfully", data:contentItems },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error in DELETE /api/contentManagement:", error);
+    return NextResponse.json(
+      { error: "Failed to delete content item", details: error.message },
+      { status: 500 }
+    );
+  }
+}

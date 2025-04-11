@@ -149,7 +149,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
             </p>
             <div className="w-full flex flex-wrap items-center gap-3 sm:gap-4">
               {/* User Image */}
-              <div className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] border flex-shrink-0 bg-gray-200">
+              <div className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] border flex-shrink-0">
                 {user?.company?.logo || config?.logo ? (
                   <img
                   src={
@@ -161,7 +161,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                   }
                   
                     alt={params.portalid}
-                    className="h-full mr-2"
+                    className="h-full object-contain"
                   />
                 ) : (
                   // Skeleton for logo
