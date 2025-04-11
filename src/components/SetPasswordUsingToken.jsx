@@ -66,9 +66,9 @@ export default function SetPasswordUsingToken() {
         dispatch(setCurrentUser(updatedUserData));
         const isNew = searchParams.get('isNew');
         if (isNew === 'true') {
-          router.push(`/${params.portalid}/credential?isNew=true`);
+          router.push(`/${params.portalid ?? 'admin'}/credential?isNew=true`);
         }else{
-          router.push(`/${params.portalid}/credential`);
+          router.push(`/${params.portalid ?? 'admin'}/credential`);
         }
       } else {
         setError(data.error || "Failed to set password.");

@@ -13,7 +13,7 @@ const CredentialPage = () => {
   const searchParams = useSearchParams();
   const isNew = searchParams.get('isNew') === 'true';
   const logoURL = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/MStrategy_Group.png`;
-  const portalURL = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}`;
+  const portalURL = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid ?? 'admin'}/login`;
 
   const handleGoToLogin = () => {
     const { credential, ...userWithoutCredential } = user;
