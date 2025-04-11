@@ -369,22 +369,21 @@ function Login() {
 
     return (
       <div
-        className="mb-2 mx-auto"
+        className="w-full h-auto sm:mx-auto mb-2"
         style={{
-          width: `${width}px`,
-          height: `${height}px`,
+          '--cover-width': `${width / 16}rem`,
+          '--cover-height': `${height / 16}rem`,
         }}
       >
-        <img
-          src={imageUrl}
-          alt={params.portalid || "Default"}
-          className="w-full h-full"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
+        <div
+          className="w-full h-auto sm:w-[var(--cover-width)] sm:h-[var(--cover-height)]"
+        >
+          <img
+            src={imageUrl}
+            alt={params.portalid || "Default"}
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
     );
   };
@@ -485,8 +484,8 @@ function Login() {
           </div> */}
         </nav>
       <div className="max-w-[1140px] w-full mx-auto mt-10">
-        <div className="flex-1 flex flex-col md:flex-row">
-          <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
+        <div className="flex-1 flex flex-col xl:flex-row">
+          <div className="w-full md:w-full lg:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
               <div className="px-[15px]">
                 <h2 
@@ -518,9 +517,13 @@ function Login() {
                   business, let us help you reach your financial goals. */}
                   {filterValue("Paragraph")}
                 </p>
-                {filterValue("CoverPhoto") && (
-                  <CoverPhoto />
-                )}
+                  <div className='w-full flex justify-center'>
+                    {filterValue("CoverPhoto") && (
+                      <div className="pl-3 pr-3 py-3 mb-2 relative flex justify-center">
+                        <CoverPhoto />
+                      </div>
+                    )}
+                  </div>
               </div>
 
               {/* Feature Cards */}
@@ -601,7 +604,7 @@ function Login() {
           </div>
 
           {/* Right Panel - Login Form */}
-          <div className="w-full md:w-2/5 lg:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
+          <div className="w-full md:w-full lg:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
             <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
               {/* <div className="text-center mb-8">
                 <img

@@ -415,32 +415,33 @@ export default function OnBoardingPage() {
     const CoverPhoto = () => {
       const fontSizeKey =
         content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize || "medium";
-
+    
       const sizeInfo = coverPhotoRatio[fontSizeKey];
       const { width, height } = sizeInfo;
-
+    
       const imageUrl = filterContent("CoverPhoto") || "/no_image.jpg";
+    
       return (
         <div
-          className="mb-2 mx-auto"
+          className="w-full h-auto sm:mx-auto mb-2"
           style={{
-            width: `${width/16}rem`,
-            height: `${height/16}rem`,
+            '--cover-width': `${width / 16}rem`,
+            '--cover-height': `${height / 16}rem`,
           }}
         >
-          <img
-            src={imageUrl}
-            alt={params.portalid || "Default"}
-            className="w-full h-full"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-          }}
-          />
+          <div
+            className="w-full h-auto sm:w-[var(--cover-width)] sm:h-[var(--cover-height)]"
+          >
+            <img
+              src={imageUrl}
+              alt={params.portalid || "Default"}
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
       );
     };
+    
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">
@@ -580,7 +581,7 @@ export default function OnBoardingPage() {
         </nav>
         <div className="max-w-[1140px] w-full mx-auto">
           <div className="flex-1 flex flex-col xl:flex-row pt-12">
-            <div className="w-full md:w-3/5 lg:w-4/5 flex flex-col justify-between bg-secondary">
+            <div className="w-full md:w-full lg:w-4/5 flex flex-col lg:justify-between bg-secondary">
               <div className="px-[15px]">
                 <h2 
                   className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
@@ -616,7 +617,7 @@ export default function OnBoardingPage() {
                     {filterContent("Paragraph")}
                   </p>
                 </div>
-                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative">
+                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative flex justify-center">
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
                     onClick={() => handleModalOpenForEdit("CoverPhoto")}
