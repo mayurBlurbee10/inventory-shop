@@ -627,7 +627,7 @@ const handleRemoveHeading = async () => {
             <div className="pl-3">
               <div className="border flex justify-center items-center p-4 rounded-md">
                 <h3 className="font-lato font-semibold text-lg">
-                  Dashboard Wealcome Note
+                  Dashboard Welcome Note
                 </h3>
                 <div className="flex items-center ml-auto ">
                   <button
