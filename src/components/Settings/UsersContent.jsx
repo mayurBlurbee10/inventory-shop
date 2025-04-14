@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronDown, ChevronUp, Import, Plus, PlusCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, Import, Mail, Plus, PlusCircle, Search, User } from "lucide-react";
 import AddUserModal from "./AddUserModal";
 import FileViewerModal from "./FileViewerModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -272,27 +272,32 @@ const UsersContent = () => {
                     {user.email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-3 text-right text-sm font-medium">
-                    <button
-                      className="text-[#1A4C8A] hover:text-[#15407A]"
-                      onClick={() => handleViewFiles(user)}
-                    >
-                      View Files
-                    </button>
-                    <button
-                      className="text-[#1A4C8A] hover:text-[#15407A]"
-                      onClick={() => {
-                        setIsViewProfileModal((prev) => !prev);
-                        setSelectedUser(user);
-                      }}
-                    >
-                      View Profile
-                    </button>
-                    <button
-                      className="text-[#1A4C8A] hover:text-[#15407A]"
-                      onClick={() => handleReInviteUser(user)}
-                    >
-                      Re-invite
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        title="View Files"
+                        className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
+                        onClick={() => handleViewFiles(user)}
+                      >
+                        <Search className="w-[18px] h-[18px]" />
+                      </button>
+                      <button
+                        title="View Profile"
+                        className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
+                        onClick={() => {
+                          setIsViewProfileModal((prev) => !prev);
+                          setSelectedUser(user);
+                        }}
+                      >
+                        <User className="w-5 h-5" />
+                      </button>
+                      <button
+                        title="Re-invite"
+                        className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
+                        onClick={() => handleReInviteUser(user)}
+                      >
+                        <Mail className="w-5 h-5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
