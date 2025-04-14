@@ -1,7 +1,7 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { PlusCircle, X } from "lucide-react";
 import { useParams } from "next/navigation";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import {
   Home,
@@ -254,6 +254,23 @@ const AddContentModal = ({
     setContentTypes(originalContentTypes);
   };
 
+  const isValidJSON = (str) => {
+    try {
+      JSON.parse(str);
+      return true; // It's valid JSON
+    } catch (error) {
+      return false; // It's not valid JSON
+    }
+  };
+
+  useEffect(() => {
+    const filteredValue = newContent.value;
+      if (isValidJSON(filteredValue)) {
+        const parsedLinks = filteredValue ? JSON.parse(filteredValue) : null;
+        setLinkFields(Array.isArray(parsedLinks) ? parsedLinks : filteredValue);
+      }
+  }, [])
+
   console.log("newContent", newContent)
 
   const iconOptions = [
@@ -270,7 +287,7 @@ const AddContentModal = ({
   ];
 
   const LogoImage = () => {
-    const baseSize = 99; // Set a base height
+    const baseSize = 100; // Set a base height
   
     const fontSizeKey = newContent?.fontSize || "medium"
 
@@ -587,22 +604,51 @@ const AddContentModal = ({
           )}
           {/* Image */}
           {newContent.type === "Image" && (
-            <div className="mb-4">
-              <label
-                htmlFor="value"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Upload Logo
-              </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                id="value"
-                name="value"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
+            <div className="">
+              {newContent.title === 'CoverPhoto' && (
+                <div className="p-4 bg-gray-50 border rounded-xl text-gray-700 text-sm mb-4">
+                  <div className="text-center text-xs text-gray-500 mb-2">
+                    <span className="block">
+                      <strong>Minimum Size:</strong> {`${coverPhotoRatio.small.width}x${coverPhotoRatio.small.height}px`}
+                    </span>
+                    <span className="block">
+                      <strong>Aspect Ratio:</strong> 9:4
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs">
+                    <div className="bg-white rounded-lg shadow-sm py-2 px-3">
+                      <p className="font-medium">Small</p>
+                      <p>{`${coverPhotoRatio.small.width} x ${coverPhotoRatio.small.height}px`}</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm py-2 px-3">
+                      <p className="font-medium">Medium</p>
+                      <p>{`${coverPhotoRatio.medium.width} x ${coverPhotoRatio.medium.height}px`}</p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm py-2 px-3">
+                      <p className="font-medium">Large</p>
+                      <p>{`${coverPhotoRatio.large.width} x ${coverPhotoRatio.large.height}px`}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+               <div className="mb-4">
+                <label
+                  htmlFor="value"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Upload Logo
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  id="value"
+                  name="value"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+              </div>
             </div>
           )}
           {(previewUrl || (!previewUrl && newContent?.title === 'Logo'))  && <LogoImage />}
@@ -638,7 +684,7 @@ const AddContentModal = ({
                   </button>
                 </div>
               ))}
-              {linkFields.length < 10 && (
+              {linkFields.length < 8 && (
                 <Button
                   type="Secondary"
                   onClick={handleAddLinkField}
@@ -649,7 +695,7 @@ const AddContentModal = ({
             </div>
           )}
 
-          <div className="flex justify-end space-x-3">
+          <div className="flex justify-end space-x-3 mt-2">
             <Button
               type="Secondary"
               onClick={handleModalClose}

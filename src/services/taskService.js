@@ -2,7 +2,8 @@ import "reflect-metadata";
 import { connectDatabase, getConnection } from "@/config/db";
 import { Tasks } from "@/entities/Tasks";
 import { getSignRequest } from "@/app/api/box/e-sign/route";
-import { TaskStatus } from "@/config/constants";
+import { TaskStatus, TaskType } from "@/config/constants";
+import userService from "./userService";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -72,7 +73,10 @@ const getTasksByPortalId = async (portalId) => {
 const getTaskById = async (taskId) => {
   const taskRepository = await getRepository(Tasks);
   try {
-    return await taskRepository.findOneBy({ id: taskId });
+    return await taskRepository.findOne({
+      where: { id: taskId },
+      relations: ["user"],
+    });
   } catch (error) {
     console.error("Error geting task:", error.message);
     throw error;
@@ -105,9 +109,26 @@ const updateTask = async (taskId, updatedData) => {
 
 const deleteTask = async (taskId) => {
   const taskRepository = await getRepository(Tasks);
+
   try {
-    await taskRepository.delete(taskId);
-    return;
+    const task = await taskRepository.findOne({
+      where: { id: taskId },
+      relations: ['user'],
+    });
+
+    if (!task) {
+      throw new Error("Task not found.");
+    }
+
+    const uploadId = Array.isArray(task.uploads) && task.uploads.length > 0
+      ? task.uploads
+      : [];
+
+    if (task.type === TaskType.SIGN && task.user) {
+      await userService.removeSignRequest(task.user, uploadId);
+    }
+
+    await taskRepository.remove(task);
   } catch (error) {
     throw new Error("Failed to delete task.");
   }

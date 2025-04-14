@@ -77,12 +77,24 @@ const deleteCustomPages = async (pageRepository, pluginRepository, portalId) => 
 const deleteChecklists = async (checkListRepository, portalId) => {
   const checklists = await checkListRepository.find({
     where: { portalId },
+    relations: ['tasks'], // make sure to include 'uploads' as a relation
   });
+  
+  const uploadIdsFromSignTasks = checklists
+    .flatMap(checklist => checklist.tasks)
+    .filter(
+      task =>
+        task.type === TaskType.SIGN &&
+        Array.isArray(task.uploads) &&
+        task.uploads.length > 0
+    )
+    .map(task => task.uploads[0]);
+
   await checkListRepository.remove(checklists);
-  await createSampleTasks(portalId);
+  await createSampleTasks(portalId, uploadIdsFromSignTasks);
 };
 
-const createSampleTasks = async (portalId) => {
+const createSampleTasks = async (portalId, uploadIdsFromSignTasks) => {
 
   const generalCheckList = await checkListService.createGeneralCheckList({
     name: "General",
@@ -98,6 +110,9 @@ const createSampleTasks = async (portalId) => {
   const endUserData = await userService.getUserByEmail(endUserEmail);
   const endUser = endUserData ? endUserData : portalCreatedAdmin;
   const endUserId = endUserData ? endUserData?.folderId : null;
+
+  await userService.removeSignRequest(endUser, uploadIdsFromSignTasks);
+
   if (endUserId) {
     await deleteFolderContents(endUserId);
   }
@@ -131,7 +146,7 @@ const createSampleTasks = async (portalId) => {
       type: TaskType.SIGN,
       user: endUser?.id,
       createdBy: portalCreatedAdmin?.id,
-      uploads: [signRequest],
+      uploads: [signRequest.id],
       portalId: portalId,
       checklist: checklistId,
       file : {

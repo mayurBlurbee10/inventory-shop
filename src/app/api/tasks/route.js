@@ -146,7 +146,7 @@ export async function DELETE(req) {
         { status: 404 }
       );
     }
-    if(taskExist?.file){
+    if(taskExist?.file && taskExist?.title !== "Agreement"){
       await deleteFile(taskExist?.file?.id)
     }
     await taskService.deleteTask(taskId);

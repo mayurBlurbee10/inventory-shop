@@ -157,7 +157,7 @@ const Footer = ({
                       </div>
                       {links &&
                         links.length > 0 &&
-                        links.slice(0, 5).map((item, index) => (
+                        links.map((item, index) => (
                           <span key={index}>
                             {isFromAvailable ? (
                               <span className="px-[5px] text-gray-400 cursor-not-allowed text-xs">
@@ -180,7 +180,7 @@ const Footer = ({
                     <div>
                       {links &&
                         links.length > 0 &&
-                        links.slice(0, 5).map((item, index) => (
+                        links.map((item, index) => (
                           <span key={index}>
                             {isFromAvailable ? (
                               <span className="px-[5px] text-gray-400 cursor-not-allowed text-xs">

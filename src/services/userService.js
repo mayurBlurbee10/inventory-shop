@@ -284,6 +284,21 @@ const saveSignRequest = async (userId, signRequest) => {
   }
 };
 
+const removeSignRequest = async (user, uploadIdsFromSignTasks) => {
+  if (!user?.id || !Array.isArray(user.signRequestsId)) {
+    return;
+  }
+
+  const updatedSignIds = user.signRequestsId.filter(
+    id => !uploadIdsFromSignTasks.includes(id)
+  );
+
+  await updateUser(user.id, {
+    signRequestsId: updatedSignIds,
+  });
+  return;
+};
+
 const getPortalCreateAdminByEmail = async (email) => {
   try {
     const user = await getUserByEmail(email);
@@ -319,5 +334,6 @@ export default {
   getUserById,
   updateUser,
   saveSignRequest,
-  getPortalCreateAdminByEmail
+  getPortalCreateAdminByEmail,
+  removeSignRequest
 };
