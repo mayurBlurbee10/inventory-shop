@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronDown, ChevronUp, Import, Mail, Plus, PlusCircle, Search, User } from "lucide-react";
+import { ChevronDown, ChevronUp, FileSearch, Import, Mail, Plus, PlusCircle, Search, User } from "lucide-react";
 import AddUserModal from "./AddUserModal";
 import FileViewerModal from "./FileViewerModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -278,7 +278,7 @@ const UsersContent = () => {
                         className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
                         onClick={() => handleViewFiles(user)}
                       >
-                        <Search className="w-[18px] h-[18px]" />
+                        <FileSearch className="w-5 h-5" />
                       </button>
                       <button
                         title="View Profile"
