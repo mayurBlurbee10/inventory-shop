@@ -185,7 +185,7 @@ console.log("sendTo:", message?.receiver?.id);
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="max-w-2xl mx-auto p-6 bg-white shadow-xl rounded-lg border border-gray-300 w-full max-h-[800px] overflow-auto">
+        <Dialog.Panel className="max-w-2xl mx-auto p-6 bg-white shadow-xl rounded-lg border border-gray-300 w-full h-[90vh] max-h-[710px] overflow-auto">
           {/* Header */}
           <div className="flex justify-between items-center border-b pb-3">
             <h2 className="text-2xl font-semibold text-gray-800">
