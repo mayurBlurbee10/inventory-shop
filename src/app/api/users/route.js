@@ -9,6 +9,7 @@ import userService from "@/services/userService";
 import { UserRole } from "@/config/constants";
 import permissionService from "@/services/permissionService";
 import portalService from "@/services/portalService";
+import taskService from "@/services/taskService";
 
 const dataFilePath = path.join(process.cwd(), "data", "users.json");
 
@@ -376,6 +377,7 @@ export async function DELETE(request) {
     if (!id || !portalId) {
       throw new Error("Invalid !! portalId is required field");
     }
+    await taskService.deleteUserTasks(id, portalId);
     const res = await permissionService.removePermission(id, portalId);
     return NextResponse.json(res);
   } catch (error) {

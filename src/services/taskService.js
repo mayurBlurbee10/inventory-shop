@@ -129,10 +129,34 @@ const deleteTask = async (taskId) => {
     }
 
     await taskRepository.remove(task);
+    return task;
   } catch (error) {
     throw new Error("Failed to delete task.");
   }
 };
+
+const deleteUserTasks = async (userId, portalId) => {
+  const taskRepository = await getRepository(Tasks);
+
+  try {
+    const tasks = await taskRepository.find({
+      where: { user: { id: userId }, portalId },
+      relations: ['user'],
+    });
+
+    if (!tasks.length) {
+      return;
+    }
+
+    const tasksDeleted = tasks.map((task) => deleteTask(task.id));
+    await Promise.all(tasksDeleted);
+    return;
+  } catch (error) {
+    console.error("Error deleting tasks:", error);
+    throw new Error("Failed to delete tasks.");
+  }
+};
+
 
 export default {
   getTasks,
@@ -140,5 +164,6 @@ export default {
   createTask,
   updateTask,
   getTasksByPortalId,
-  deleteTask
+  deleteTask,
+  deleteUserTasks
 };

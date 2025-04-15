@@ -285,7 +285,7 @@ const saveSignRequest = async (userId, signRequest) => {
 };
 
 const removeSignRequest = async (user, uploadIdsFromSignTasks) => {
-  if (!user?.id || !Array.isArray(user.signRequestsId)) {
+  if (!user?.id || !Array.isArray(user.signRequestsId) || !Array.isArray(uploadIdsFromSignTasks)) {
     return;
   }
 

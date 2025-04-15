@@ -46,13 +46,22 @@ export const uploadSampleFiles = async (email, userId, parentFolderId) => {
   for (const folderName of foldersInDemo) {
     const localFolderPath = path.join(demoPath, folderName);
 
-    // Create folder in Box
-    const createdFolder = await newClient.folders.create(parentFolderId, folderName);
-    const createdFolderId = createdFolder.id;
+    const folderSearch = await client.search.query(folderName, {
+      type: "folder",
+      fields: "id",
+      ancestor_folder_ids: parentFolderId
+    });
+    console.log(`folder ${folderName}`, folderSearch)
+    let folderId;
+    if (!folderSearch.entries.length) {
+      const createdFolder = await newClient.folders.create(parentFolderId, folderName);
+      folderId = createdFolder.id;
+      uploadedFolders.push({ name: folderName, id: folderId });
+    } else {
+      folderId = folderSearch.entries[0].id;
+      uploadedFolders.push({ name: folderName, id: folderId });
+    }
 
-    uploadedFolders.push({ name: folderName, id: createdFolderId });
-
-    // Read files if the folder has files
     const files = fs
       .readdirSync(localFolderPath)
       .filter((file) => fs.statSync(path.join(localFolderPath, file)).isFile());
@@ -61,40 +70,61 @@ export const uploadSampleFiles = async (email, userId, parentFolderId) => {
       const filePath = path.join(localFolderPath, fileName);
       const buffer = fs.readFileSync(filePath);
 
-      const fileStream = new Readable();
-      fileStream.push(buffer);
-      fileStream.push(null);
+      const fileSearch = await client.search.query(fileName, {
+        type: "file",
+        fields: "id",
+        ancestor_folder_ids: folderId
+      });
+      console.log(`file ${fileName}`, fileSearch)
+      let fileId;
+      if (!fileSearch.entries.length) {
+        const fileStream = new Readable();
+        fileStream.push(buffer);
+        fileStream.push(null);
 
-      const uploadedFileRes = await newClient.files.uploadFile(
-        createdFolderId,
-        fileName,
-        fileStream,
-        { description: email }
-      );
+        const uploadedFileRes = await newClient.files.uploadFile(
+          folderId,
+          fileName,
+          fileStream,
+          { description: email }
+        );
 
-      const uploadedFile = uploadedFileRes.entries[0];
+        fileId = uploadedFileRes.entries[0].id;
+      } else {
+        fileId = fileSearch.entries[0].id;
+      }
 
-      // Add collaborator if not already added
-      const collaborations = await newClient.files.getCollaborations(uploadedFile.id);
+      const collaborations = await newClient.files.getCollaborations(fileId);
       const isAlreadyCollaborator = collaborations.entries.some(
         (collab) => collab.accessible_by && collab.accessible_by.id === userId
       );
 
       if (!isAlreadyCollaborator) {
-        await addCollaborator(uploadedFile.id, userId, 'editor', 'file');
+        await addCollaborator(fileId, userId, 'editor', 'file');
       }
     }
   }
-  const folders = ["Demo", "Loan", "Statements"]
-  for(const folder of folders){
-    const createdFolder = await newClient.folders.create(parentFolderId, folder);
-    const createdFolderId = createdFolder.id;
 
-    uploadedFolders.push({ name: folder, id: createdFolderId });
+  // Create folders manually if not already present
+  const defaultFolders = ["Demo", "Loan", "Statements"];
+  for (const folderName of defaultFolders) {
+    const folderSearch = await client.search.query(folderName, {
+      type: "folder",
+      fields: "id",
+      ancestor_folder_ids: parentFolderId
+    });
+
+    if (!folderSearch.entries.length) {
+      const createdFolder = await newClient.folders.create(parentFolderId, folderName);
+      uploadedFolders.push({ name: folderName, id: createdFolder.id });
+    } else {
+      uploadedFolders.push({ name: folderName, id: folderSearch.entries[0].id });
+    }
   }
 
   return uploadedFolders;
 };
+
 
 export const uploadFile = async (parentFolderId, userBoxUserId, file = null) => {
   const accessToken = await client._session.getAccessToken();

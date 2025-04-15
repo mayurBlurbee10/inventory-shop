@@ -80,7 +80,7 @@ const deleteChecklists = async (checkListRepository, portalId) => {
     relations: ['tasks'], // make sure to include 'uploads' as a relation
   });
   
-  const uploadIdsFromSignTasks = checklists
+  const uploadIdsFromSignTasks = checklists.length > 0 && checklists
     .flatMap(checklist => checklist.tasks)
     .filter(
       task =>
@@ -88,7 +88,7 @@ const deleteChecklists = async (checkListRepository, portalId) => {
         Array.isArray(task.uploads) &&
         task.uploads.length > 0
     )
-    .map(task => task.uploads[0]);
+    .map(task => task.uploads[0]) || [];
 
   await checkListRepository.remove(checklists);
   await createSampleTasks(portalId, uploadIdsFromSignTasks);

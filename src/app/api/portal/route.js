@@ -14,6 +14,7 @@ import { uploadSampleFiles } from "../box/files/route";
 import messageService from "@/services/messageService";
 import contentManagementService from "@/services/contentManagementService";
 import checkListService from "@/services/checkListService";
+import taskService from "@/services/taskService";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -220,25 +221,23 @@ export async function DELETE(req) {
 
     // Validate portal users and delete non-SUPER_ADMIN users
     const deletionPromises = portalUsers
-      .filter((user) => user?.role !== UserRole.SUPER_ADMIN && user?.id)
-      .map((user) => {
-        if (!user.id) {
-          console.warn(
-            `Skipping user with invalid ID: ${JSON.stringify(user)}`
-          );
-          return Promise.resolve();
-        }
-        return permissionService
-          .removePermission(user.id, sanitizeName(portal.legalName))
-          .catch((error) => {
-            console.error(
-              `Failed to delete user with ID ${user.id}:`,
-              error.message
-            );
-            throw new Error(`Failed to delete user: ${user.id}`);
-          });
-      });
-
+    .filter((user) => user?.role !== UserRole.SUPER_ADMIN && user?.id)
+    .map((user) => {
+      if (!user.id) {
+        console.warn(`Skipping user with invalid ID: ${JSON.stringify(user)}`);
+        return Promise.resolve();
+      }
+  
+      return Promise.all([
+        permissionService.removePermission(user.id, sanitizeName(portal.legalName)),
+        taskService.deleteUserTasks(user.id, sanitizeName(portal.legalName))
+      ])
+        .catch((error) => {
+          console.error(`Failed to clean up user with ID ${user.id}:`, error.message);
+          throw new Error(`Failed to clean up user: ${user.id}`);
+        });
+    });
+  
     await Promise.all(deletionPromises);
 
     const portalId = sanitizeName(portal.legalName)
