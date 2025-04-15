@@ -485,7 +485,7 @@ function Login() {
         </nav>
       <div className="max-w-[1140px] w-full mx-auto mt-10">
         <div className="flex-1 flex flex-col xl:flex-row">
-          <div className="w-full md:w-full lg:w-4/5 flex flex-col justify-between bg-secondary">
+          <div className="w-full md:w-full lg:w-full xl:w-4/5 flex flex-col justify-between bg-secondary">
             <div>
               <div className="px-[15px]">
                 <h2 
@@ -604,8 +604,8 @@ function Login() {
           </div>
 
           {/* Right Panel - Login Form */}
-          <div className="w-full md:w-full lg:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
-            <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
+          <div className="w-full md:w-full lg:w-full xl:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
+            <div className="w-full max-w-xl bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
               {/* <div className="text-center mb-8">
                 <img
                   src="/logo2.png"

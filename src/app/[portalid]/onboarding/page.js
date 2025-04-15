@@ -581,7 +581,7 @@ export default function OnBoardingPage() {
         </nav>
         <div className="max-w-[1140px] w-full mx-auto">
           <div className="flex-1 flex flex-col xl:flex-row pt-12">
-            <div className="w-full md:w-full lg:w-4/5 flex flex-col lg:justify-between bg-secondary">
+            <div className="w-full md:w-full lg:w-full xl:w-4/5 flex flex-col lg:justify-between bg-secondary">
               <div className="px-[15px]">
                 <h2 
                   className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
@@ -633,8 +633,8 @@ export default function OnBoardingPage() {
             </div>
 
             {/* Right Panel - Login Form */}
-            <div className="w-full md:w-full lg:w-2/5 flex items-center justify-center px-[15px] mb-12">
-              <div className="w-full bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
+            <div className="w-full md:w-full lg:w-full xl:w-2/5 flex items-center justify-center px-[15px] mb-12">
+              <div className="w-full max-w-xl bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
                 <form>
                   <div className="">
                     <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
@@ -688,7 +688,7 @@ export default function OnBoardingPage() {
 
           {/* cards */}
 
-          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-3">
             <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
               <div className="px-5 py-4">
               <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">

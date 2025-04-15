@@ -329,7 +329,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
       {/* Modal Content */}
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-[90vw] min-h-[80vh] bg-white rounded-lg shadow-lg">
+      <DialogPanel className="w-full max-w-[90vw] min-h-[80vh] max-h-[90vh] overflow-auto bg-white rounded-lg shadow-lg">
           {/* Header */}
           <div className="flex justify-between items-center border-b px-6 py-4 text-black">
             <h2 className="text-lg font-semibold">Edit “{item?.name}”</h2>
@@ -347,10 +347,10 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
           </div>
 
           {/* Body */}
-          <div className="flex w-full pb-4">
+          <div className="flex flex-col md:flex-row w-full h-[80vh] sm:h-[70vh]">
             {/* Editor Section */}
-            <div className="w-[65vw] h-[73vh] flex-1">
-              <div className="h-full">
+            <div className="flex-1 overflow-auto min-h-[400px]">
+              <div className="h-[100%]">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
@@ -364,57 +364,10 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                   ></div>
                 )}
               </div>
-
-              {/* Footer Buttons */}
-              <div className="flex justify-end border-t mt-4 px-4 py-3 space-x-2">
-                {/* <button
-                  onClick={() => {
-                    if (editorRef.current?.destroyEditor) {
-                      editorRef.current.destroyEditor();
-                    }
-                    setIsModalOpen(false);
-                  }}
-                  disabled={isSaveLoading}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-                >
-                  Cancel
-                </button> */}
-                <Button
-                  type="Secondary"
-                  onClick={() => {
-                    if (editorRef.current?.destroyEditor) {
-                      editorRef.current.destroyEditor();
-                    }
-                    setIsModalOpen(false);
-                  }}
-                  disabled={isSaveLoading}
-                  label="Cancel"
-                />
-
-                <Button
-                  type="Primary"
-                  disabled={isSaveLoading}
-                  onClick={handleSaveFile}
-                  label={"Save"}
-                  isLoading={isSaveLoading}
-                />
-                {/* <button
-                  onClick={handleSaveFile}
-                  disabled={isSaveLoading}
-                  className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {isSaveLoading ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-2" />
-                  )}
-                  Save
-                </button> */}
-              </div>
             </div>
 
             {/* Comment Section */}
-            <div className="w-[25vw] border-l p-3 bg-gray-50 text-sm text-[#000000e8] flex flex-col font-lato h-[80vh]">
+            <div className="w-full md:w-[30%] md:border-l p-3 bg-gray-50 text-sm text-[#000000e8] flex flex-col font-lato pb-4">
               {comments &&
                 comments.length > 0 &&
                 comments?.map((comment) => (
@@ -444,7 +397,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                   </div>
                 ))}
               {comments && comments.length === 0 && (
-                <div className="flex flex-col items-center my-auto text-gray-500">
+                <div className="flex flex-col items-center my-auto text-gray-500 py-5">
                   <MessageSquareDiff className="w-10 h-10 text-blue-500" />
                   <p className="text-lg font-semibold mt-2 text-[#000000bd]">
                     No comments to show
@@ -527,6 +480,52 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                 </div>
               )}
             </div>
+          </div>
+          {/* Footer Buttons */}
+          <div className="flex justify-end border-t px-4 py-3 space-x-2">
+            {/* <button
+                  onClick={() => {
+                    if (editorRef.current?.destroyEditor) {
+                      editorRef.current.destroyEditor();
+                    }
+                    setIsModalOpen(false);
+                  }}
+                  disabled={isSaveLoading}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+                >
+                  Cancel
+                </button> */}
+            <Button
+              type="Secondary"
+              onClick={() => {
+                if (editorRef.current?.destroyEditor) {
+                  editorRef.current.destroyEditor();
+                }
+                setIsModalOpen(false);
+              }}
+              disabled={isSaveLoading}
+              label="Cancel"
+            />
+
+            <Button
+              type="Primary"
+              disabled={isSaveLoading}
+              onClick={handleSaveFile}
+              label={"Save"}
+              isLoading={isSaveLoading}
+            />
+            {/* <button
+                  onClick={handleSaveFile}
+                  disabled={isSaveLoading}
+                  className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isSaveLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  Save
+                </button> */}
           </div>
         </DialogPanel>
       </div>
