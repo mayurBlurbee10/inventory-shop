@@ -74,7 +74,7 @@ function LoansPage() {
 console.log("loanData", loanData);
 
   return (
-    <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
+    <div className="bg-white rounded-lg flex flex-col relative w-full lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div className="m-1 mx-4">
         <div className="border-b border-[#dee2e6] pt-12 pb-5 flex justify-between sm:items-center flex-col md:flex-row gap-3">
           <div className="text-sm font-lato">

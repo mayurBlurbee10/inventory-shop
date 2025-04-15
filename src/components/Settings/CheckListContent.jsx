@@ -297,7 +297,7 @@ const CheckListContent = () => {
               {!checkLists?.length ? (
                 <p>No check list found.</p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
                   {checkLists?.map((checklist) => {
                     const isExpanded = expandedChecklist === checklist?.id;
 

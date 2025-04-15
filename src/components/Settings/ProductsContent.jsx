@@ -303,7 +303,7 @@ const ProductsContent = () => {
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
-                      <File className="w-6 h-6 text-blue-600" />
+                      <div><File className="w-6 h-6 text-blue-600" /></div>
                       <div>
                         <h4 className="text-lg font-medium text-gray-900">
                           {plugin?.type === PluginType.TNC ? plugin?.type.toUpperCase() : plugin?.type.charAt(0).toUpperCase() +
@@ -360,7 +360,7 @@ const ProductsContent = () => {
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
-                      <File className="w-6 h-6 text-blue-600" />
+                      <div><File className="w-6 h-6 text-blue-600" /></div>
                       <div>
                         <h4 className="text-lg font-medium text-gray-900">
                           Tasks
@@ -416,9 +416,9 @@ const ProductsContent = () => {
                     <div className="flex justify-between items-start">
                       <div className="flex items-start gap-3">
                         {page?.title === "esignature" ? (
-                          <Fingerprint className="w-6 h-6 text-blue-600" />
+                          <div><Fingerprint className="w-6 h-6 text-blue-600" /></div>
                         ) : (
-                          <File className="w-6 h-6 text-blue-600" />
+                          <div><File className="w-6 h-6 text-blue-600" /></div>
                         )}
                         <div>
                           <h4 className="text-lg font-medium text-gray-900">

@@ -72,7 +72,7 @@ function MoveDialog({
           </div>
 
           {/* Content */}
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4 overflow-auto max-h-[600px] h-[60vh]">
             {/* Current Location */}
             <div>
               <p className="text-gray-500 font-medium">Current location:</p>
@@ -92,7 +92,7 @@ function MoveDialog({
             {/* Folder List */}
             <div>
               <p className="text-gray-500">Select a new location:</p>
-              <div className="mt-2 space-y-2 h-[350px] sm:h-[400px] overflow-auto custom-scrollbar">
+              <div className="mt-2 space-y-2 overflow-auto custom-scrollbar">
                 <FileExplorer
                   data={fileList}
                   selectedItem={selectedFolder}

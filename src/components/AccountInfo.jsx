@@ -94,7 +94,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
         </div>
 
         {/* User Details Section */}
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-4 sm:space-y-6 h-[60vh] max-h-[520px] overflow-auto" >
           {/* User Info Card */}
           <div className="border p-3 sm:p-4">
             <p className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
