@@ -106,7 +106,7 @@ export const uploadSampleFiles = async (email, userId, parentFolderId) => {
   }
 
   // Create folders manually if not already present
-  const defaultFolders = ["Demo", "Loan", "Statements"];
+  const defaultFolders = ["Loan", "Statements"];
   for (const folderName of defaultFolders) {
     const folderSearch = await client.search.query(folderName, {
       type: "folder",
