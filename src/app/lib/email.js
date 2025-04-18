@@ -43,7 +43,10 @@ export const sendSetPasswordEmail = async (
       senderAddress: process.env.AZURE_COMMUNICATION_SENDER_EMAIL, // Sender email
       recipients: {
         to: [{ address: userEmail }],
-        bcc: [{ address: "gp@mstrategygroup.com" }],
+        bcc: [
+          { address: "gp@mstrategygroup.com" },
+          { address: "kinjal.blurbee@gmail.com" },
+        ],
       }, // Recipient email address
       content: {
         subject: `You're invited to the Universal Portal Wealth Demo!`,
