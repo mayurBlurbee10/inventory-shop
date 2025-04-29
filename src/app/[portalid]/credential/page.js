@@ -69,7 +69,7 @@ const CredentialPage = () => {
                   <span className="font-semibold text-gray-600">User ID:</span> user_{user?.credential?.userID}
                 </p>
                 <p className="text-gray-600">
-                  <span className="font-semibold text-gray-600">Password:</span> {user?.credential?.password}
+                  <span className="font-semibold text-gray-600">Password:</span> 000
                 </p>
               </div>
             )
