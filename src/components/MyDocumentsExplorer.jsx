@@ -905,21 +905,28 @@ function SharedFolderExplorer({
   //   );
   // }
 
-useEffect(() => {
-    if (currentFilesList && currentFilesList.length > 0) {
-      setSortedFilesList([...currentFilesList]); // Set sorted files when data is available
-    }
-}, [currentFilesList]);
-const sortAscending = () => {
-    const sortedList = [...currentFilesList].sort((a, b) => a.name.localeCompare(b.name));
-    setSortedFilesList(sortedList);
-};
+  useEffect(() => {
+      if (currentFilesList && currentFilesList.length > 0) {
+        sortAscending()
+      }
+  }, [currentFilesList]);
 
-const sortDescending = () => {
-    const sortedList = [...currentFilesList].sort((a, b) => b.name.localeCompare(a.name));
-    setSortedFilesList(sortedList);
-};
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
+  const sortAscending = () => {
+    const sortedList = [...currentFilesList].sort((a, b) =>
+      collator.compare(a.name, b.name)
+    );
+    setSortedFilesList(sortedList);
+  };
+
+  const sortDescending = () => {
+    const sortedList = [...currentFilesList].sort((a, b) =>
+      collator.compare(b.name, a.name)
+    );
+    setSortedFilesList(sortedList);
+  };
+  
   return (
     <div>
       {view === "list" && (
