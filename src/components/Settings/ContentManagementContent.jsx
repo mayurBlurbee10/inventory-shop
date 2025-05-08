@@ -186,8 +186,8 @@ const ContentManagementContent = ({
       };
 
       const apiType = isEditMode
-        ? "updateContentManagement"
-        : "addContentManagement";
+        ? "edit-content"
+        : "add-content";
 
       const response = await fetchWrapper(
         `/api/contentManagement`,
@@ -205,7 +205,7 @@ const ContentManagementContent = ({
       handleModalClose();
 
       toast.success(
-        `${apiType === "updateContentManagement"
+        `${apiType === "edit-content"
             ? "Content updated successfully"
             : "Content added successfully"
         }`

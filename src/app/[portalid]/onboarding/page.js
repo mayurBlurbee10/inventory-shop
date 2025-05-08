@@ -301,7 +301,6 @@ export default function OnBoardingPage() {
       const defaultItem = content.defaultContent.find(item => item.title === title);
       return defaultItem ? defaultItem.value : '';
     }
-    console.log("value", value)
     return value;
   };
 
@@ -347,7 +346,7 @@ export default function OnBoardingPage() {
         value: logoValue,
         theme: {
           fontSize: fontSize?.size,
-          color: "#000000e6",
+          color: "#000000",
           fontWeight: contentTitle==='Paragraph' ? 300 : 400,
         },
       });
@@ -444,7 +443,7 @@ export default function OnBoardingPage() {
     
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 w-screen min-h-screen">
+    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 min-h-screen">
       {/* <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-gray-50 bg-opacity-80 flex justify-center min-h-[50vh] md:min-h-screen">
         <div className="bg-white w-full h-screen flex flex-col relative border-r border-[#dee2e6]">
           {isSubmitting && (
@@ -530,7 +529,8 @@ export default function OnBoardingPage() {
                 className="text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative" 
                 style={{
                   fontSize: filterTheme("Header Text").fontSize,
-                  fontWeight: filterTheme("Header Text").fontWeight
+                  fontWeight: filterTheme("Header Text").fontWeight,
+                  color: filterTheme("Header Text").color
                 }}
               >
                 <div
@@ -587,7 +587,8 @@ export default function OnBoardingPage() {
                   className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
                   style={{
                     fontSize: filterTheme("Title").fontSize,
-                    fontWeight: filterTheme("Title").fontWeight
+                    fontWeight: filterTheme("Title").fontWeight,
+                    color: filterTheme("Title").color
                   }}>
                   <div
                     className="absolute top-0 right-0 p-1 cursor-pointer"
@@ -612,7 +613,8 @@ export default function OnBoardingPage() {
                     className="font-light leading-7 font-lato mb-3 mt-5 line-clamp-3"  
                     style={{
                       fontSize: filterTheme("Paragraph").fontSize,
-                      fontWeight: filterTheme("Paragraph").fontWeight
+                      fontWeight: filterTheme("Paragraph").fontWeight,
+                      color: filterTheme("Paragraph").color
                     }}>
                     {filterContent("Paragraph")}
                   </p>
@@ -724,7 +726,8 @@ export default function OnBoardingPage() {
                       className="line-clamp-2 leading-6"
                       style={{
                         fontSize: filterTheme("Card 1 Title").fontSize,
-                        fontWeight: filterTheme("Card 1 Title").fontWeight
+                        fontWeight: filterTheme("Card 1 Title").fontWeight,
+                        color: filterTheme("Card 1 Title").color
                       }}>
                       {filterContent("Card 1 Title")}
                     </div>
@@ -740,7 +743,8 @@ export default function OnBoardingPage() {
                   <div className="line-clamp-2"  
                     style={{
                       fontSize: filterTheme("Card 1 Content").fontSize,
-                      fontWeight: filterTheme("Card 1 Content").fontWeight
+                      fontWeight: filterTheme("Card 1 Content").fontWeight,
+                      color: filterTheme("Card 1 Content").color
                     }}>{filterContent("Card 1 Content")}</div>
                 </span>
               </div>
@@ -781,7 +785,8 @@ export default function OnBoardingPage() {
                       className="line-clamp-2 leading-6"
                       style={{
                         fontSize: filterTheme("Card 2 Title").fontSize,
-                        fontWeight: filterTheme("Card 2 Title").fontWeight
+                        fontWeight: filterTheme("Card 2 Title").fontWeight,
+                        color: filterTheme("Card 2 Title").color
                       }}>
                       {filterContent("Card 2 Title")}
                     </div>
@@ -797,7 +802,8 @@ export default function OnBoardingPage() {
                   <div className="line-clamp-2" 
                     style={{
                       fontSize: filterTheme("Card 2 Content").fontSize,
-                      fontWeight: filterTheme("Card 2 Content").fontWeight
+                      fontWeight: filterTheme("Card 2 Content").fontWeight,
+                      color: filterTheme("Card 2 Content").color
                     }}>{filterContent("Card 2 Content")}</div>
                 </span>
               </div>
@@ -838,7 +844,8 @@ export default function OnBoardingPage() {
                       className="line-clamp-2 leading-6"
                       style={{
                         fontSize: filterTheme("Card 3 Title").fontSize,
-                        fontWeight: filterTheme("Card 3 Title").fontWeight
+                        fontWeight: filterTheme("Card 3 Title").fontWeight,
+                        color: filterTheme("Card 3 Title").color
                       }}>
                       {filterContent("Card 3 Title")}
                     </div>
@@ -854,7 +861,8 @@ export default function OnBoardingPage() {
                   <div className="line-clamp-2" 
                     style={{
                       fontSize: filterTheme("Card 3 Content").fontSize,
-                      fontWeight: filterTheme("Card 3 Content").fontWeight
+                      fontWeight: filterTheme("Card 3 Content").fontWeight,
+                      color: filterTheme("Card 3 Content").color
                     }}>{filterContent("Card 3 Content")}</div>
                 </span>
               </div>

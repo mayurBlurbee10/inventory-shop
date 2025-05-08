@@ -115,8 +115,8 @@ const AddContentModal = ({
       };
 
       const apiType = isEditMode
-        ? "updateContentManagement"
-        : "addContentManagement";
+        ? "edit-content"
+        : "add-content";
 
       const response = await fetchWrapper(
         `/api/contentManagement`,
@@ -163,7 +163,7 @@ const AddContentModal = ({
         handleModalClose();
         setIsSubmitting(false);
         toast.success(
-          `${apiType === "updateContentManagement"
+          `${apiType === "edit-content"
             ? "Content updated successfully"
             : "Content added successfully"
           }`
@@ -506,36 +506,63 @@ const AddContentModal = ({
                 </div>
               )}
               {newContent?.type === "Text" && (
-                <div className="mb-4">
-                  <label
-                    htmlFor="fontWeight"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Font Weight
-                  </label>
-                  <select
-                    id="fontWeight"
-                    name="fontWeight"
-                    className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                    value={newContent?.theme?.fontWeight} // Default value
-                    onChange={(e) =>
-                      setNewContent((prev) => ({
-                        ...prev,
-                        theme: {
-                          ...prev.theme,
-                          fontWeight: e.target.value,
-                        },
-                      }))
-                    }
-                    required
-                  >
-                    {fontWeightOptions.map((size) => (
-                      <option key={size} value={size}>
-                        {size}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="fontWeight"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Font Weight
+                    </label>
+                    <select
+                      id="fontWeight"
+                      name="fontWeight"
+                      className="mt-1 block w-[100px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                      value={newContent?.theme?.fontWeight} // Default value
+                      onChange={(e) =>
+                        setNewContent((prev) => ({
+                          ...prev,
+                          theme: {
+                            ...prev.theme,
+                            fontWeight: e.target.value,
+                          },
+                        }))
+                      }
+                      required
+                    >
+                      {fontWeightOptions.map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="fontColor"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Font Color
+                    </label>
+                    <input
+                      type="color"
+                      id="fontColor"
+                      name="fontColor"
+                      className="mt-1 block w-[150px] h-[40px] border border-gray-300 bg-transparent rounded-md shadow-sm px-1"
+                      value={newContent?.theme?.color || '#000000'} // Default to black if undefined
+                      onChange={(e) =>
+                        setNewContent((prev) => ({
+                          ...prev,
+                          theme: {
+                            ...prev.theme,
+                            color: e.target.value,
+                          },
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                </>
               )}
             </div>
           )}

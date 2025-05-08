@@ -415,7 +415,7 @@ function Login() {
             </span>
           </a> */}
           <div className="max-w-[1140px] w-full mx-auto">
-            <a className=" flex items-center py-1 gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+            <a className=" flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               {user?.company?.logo || config?.logo ? (
                 // <img
                 //   src={config?.logo || "/logo.png"}
@@ -433,8 +433,8 @@ function Login() {
               style={{
                 fontSize: filterTheme("Header Text").fontSize,
                 fontWeight: filterTheme("Header Text").fontWeight,
+                color: filterTheme("Header Text").color,
                 lineHeight: "1.2",
-                paddingBottom: "2px",
                 paddingInline: "2px"
               }}
             >
@@ -491,7 +491,8 @@ function Login() {
                 <h2 
                   className="font-light leading-tight text-text font-lato mb-2" style={{
                     fontSize: filterTheme("Title").fontSize,
-                    fontWeight: filterTheme("Title").fontWeight
+                    fontWeight: filterTheme("Title").fontWeight,
+                    color: filterTheme("Title").color
                   }}>
                   {/* Ethree - Deep energy expertise */}
                   {filterValue("Title")}
@@ -510,7 +511,8 @@ function Login() {
                   className="font-light text-black leading-7 font-lato mb-3 mt-5"
                   style={{
                     fontSize: filterTheme("Paragraph").fontSize,
-                    fontWeight: filterTheme("Paragraph").fontWeight
+                    fontWeight: filterTheme("Paragraph").fontWeight,
+                    color: filterTheme("Paragraph").color
                   }}>
                   {/* Financial decisions are complicated. But they don't have to
                   be. Whether you're planning for retirement or growing your
@@ -730,12 +732,14 @@ function Login() {
                   <div 
                     style={{
                       fontSize: filterTheme("Card 1 Title").fontSize,
-                      fontWeight: filterTheme("Card 1 Title").fontWeight
+                      fontWeight: filterTheme("Card 1 Title").fontWeight,
+                      color: filterTheme("Card 1 Title").color
                     }}>{filterValue("Card 1 Title")}</div>
                 </h5>
                 <p className="text-[#6c757d] font-normal leading-6" style={{
                       fontSize: filterTheme("Card 1 Content").fontSize,
-                      fontWeight: filterTheme("Card 1 Content").fontWeight
+                      fontWeight: filterTheme("Card 1 Content").fontWeight,
+                      color: filterTheme("Card 1 Content").color
                     }}>
                   {filterValue("Card 1 Content")}
                 </p>
@@ -760,12 +764,14 @@ function Login() {
                   <div 
                     style={{
                       fontSize: filterTheme("Card 2 Title").fontSize,
-                      fontWeight: filterTheme("Card 2 Title").fontWeight
+                      fontWeight: filterTheme("Card 2 Title").fontWeight,
+                      color: filterTheme("Card 2 Title").color
                     }}>{filterValue("Card 2 Title")}</div>
                 </h5>
                 <p className="text-[#6c757d] font-normal leading-6" style={{
                       fontSize: filterTheme("Card 2 Content").fontSize,
-                      fontWeight: filterTheme("Card 2 Content").fontWeight
+                      fontWeight: filterTheme("Card 2 Content").fontWeight,
+                      color: filterTheme("Card 2 Content").color
                     }}>
                   {filterValue("Card 2 Content")}
                 </p>
@@ -790,12 +796,14 @@ function Login() {
                   <div 
                     style={{
                       fontSize: filterTheme("Card 3 Title").fontSize,
-                      fontWeight: filterTheme("Card 3 Title").fontWeight
+                      fontWeight: filterTheme("Card 3 Title").fontWeight,
+                      color: filterTheme("Card 3 Title").color
                     }}>{filterValue("Card 3 Title")}</div>
                 </h5>
                 <p className="text-[#6c757d] font-normal leading-6 font-lato"   style={{
                       fontSize: filterTheme("Card 3 Content").fontSize,
-                      fontWeight: filterTheme("Card 3 Content").fontWeight
+                      fontWeight: filterTheme("Card 3 Content").fontWeight,
+                      color: filterTheme("Card 3 Content").color
                     }}>
                   {filterValue("Card 3 Content")}
                 </p>
