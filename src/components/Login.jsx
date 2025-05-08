@@ -393,7 +393,7 @@ function Login() {
       let fontSize = fontSizes.find((item) => item.key === title)
       let theme = contentItem ? contentItem.theme : {
         fontSize: fontSize?.size,
-        color: "#000000e6",
+        color: "#000000",
         fontWeight: title === 'Paragraph' ? 300 : 400,
       };
       return theme;
