@@ -52,7 +52,7 @@ const AddContentModal = ({
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
-    if (((newContent?.type !== "Image" && newContent?.type !== "Links") && !newContent?.value?.trim()) || (newContent?.type === "Links" && (linkFields.length > 0 &&
+    if (((newContent?.type !== "Image" && newContent?.type !== "Links" && newContent?.title !== "Header Text") && !newContent?.value?.trim()) || (newContent?.type === "Links" && (linkFields.length > 0 &&
       linkFields[linkFields.length - 1].label === "" ||
       linkFields[linkFields.length - 1].link === ""))) {
       handleModalClose();
@@ -101,7 +101,7 @@ const AddContentModal = ({
           }
         : {
             ...newContent,
-            value: newContent.value,
+            value: newContent.value || " ",
             fontSize: newContent.fontSize, // Add fontSize here
             portalId: params.portalid ?? "default",
           };
@@ -624,7 +624,7 @@ const AddContentModal = ({
                 name="value"
                 value={newContent.value}
                 onChange={handleValueChange}
-                required
+                required={newContent.title !== "Header Text"}
                 className="mt-1 block w-full min-h-[150px] border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
               />
             </div>
@@ -737,6 +737,7 @@ const AddContentModal = ({
                 isSubmitting ||
                 (newContent?.type !== "Image" &&
                   newContent?.type !== "Links" &&
+                  newContent?.title !== "Header Text" &&
                   !newContent?.value?.trim()) ||
                 (newContent?.type === "Links" &&
                   ((linkFields.length > 0 &&
