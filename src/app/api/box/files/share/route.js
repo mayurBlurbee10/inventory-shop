@@ -166,7 +166,10 @@ export async function addCollaborator(itemId, userID, role, type) {
     { id: userID, type: "user" },
     itemId,
     role,
-    {type}
+    {
+      type,        
+      notify: false 
+    }
   );
   return collaboration;
 }
