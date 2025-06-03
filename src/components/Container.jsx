@@ -137,12 +137,14 @@ function Container({ children }) {
       suppressHydrationWarning={true}
     >
       {/* Header */}
-      <Navbar
-        content={content}
-        config={config}
-        filterValue={filterValue}
-      />
-       <div className="min-h-[80vh]" >{children}</div>
+      <div>
+        <Navbar
+          content={content}
+          config={config}
+          filterValue={filterValue}
+        />
+        <div className="min-h-[80vh]" >{children}</div>
+      </div>
       <Footer config={config} filterValue={filterValue} />
     </div>
   );
