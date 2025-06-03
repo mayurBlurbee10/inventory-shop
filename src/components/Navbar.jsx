@@ -101,6 +101,7 @@ function Navbar({ content, config, filterValue }) {
             borderBottomColor: pathname.includes(href) ? config?.primaryColor : "transparent",
             borderBottomWidth: pathname.includes(href) ? "3px" : "",
           }}
+          onClick={() => setIsOpenNavbar(false)}
         >
           <button
             className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
@@ -711,9 +712,10 @@ function Navbar({ content, config, filterValue }) {
                           <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
                             <button
                               className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                              onClick={() =>
-                                setIsAccountInfoModalOpen((prev) => !prev)
-                              }
+                              onClick={() =>{
+                                setIsAccountInfoModalOpen((prev) => !prev);
+                                setIsOpenNavbar(false);
+                              }}
                             >
                               <CircleUserRound className="h-5 w-5" /> Account
                               Info

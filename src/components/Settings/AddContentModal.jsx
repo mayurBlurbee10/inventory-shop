@@ -339,14 +339,14 @@ const AddContentModal = ({
       className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
       style={{ margin: 0 }}
     >
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl text-gray-800 font-semibold">
             {`${isEditMode ? "Edit" : "Add"} Content`}{" "}
           </h2>
           <button
             onClick={handleModalClose}
-            className="text-gray-400 hover:text-gray-500"
+            className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
           >
             <X className="h-6 w-6" />
           </button>
@@ -356,7 +356,7 @@ const AddContentModal = ({
             {error}
           </div>
         )}
-        <form onSubmit={handleAddEditContent}>
+        <form onSubmit={handleAddEditContent} className="p-6">
           <div className="mb-4">
             <label
               htmlFor="title"

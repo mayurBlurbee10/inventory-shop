@@ -260,7 +260,7 @@ export default function DocDashboard() {
   return (
     // <Container>
     <div className="max-w-[1820px] mx-auto px-4">
-      <div className={`${filterVisibility("Ticker Tape") ? "pt-5" : "pt-14"}`}>
+      <div className={`${filterVisibility("Ticker Tape") ? "pt-5" : "pt-5 sm:pt-14"}`}>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
           <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
             <div className="flex flex-col justify-center gap-4">

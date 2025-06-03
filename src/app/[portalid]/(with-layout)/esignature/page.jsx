@@ -293,7 +293,7 @@ function ESignature() {
           setAccountDropdown(false);
         }}
       >
-        <div className="border-b border-[#dee2e6] pt-8 pb-5">
+        <div className="border-b border-[#dee2e6] sm:pt-8 pb-5">
           <p className="text-sm font-lato mt-1 text-black">
             <span className="block md:inline text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
               E-signature

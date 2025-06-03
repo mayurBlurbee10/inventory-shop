@@ -83,7 +83,8 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
             <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-6 z-20">
               <div className="mx-auto max-w-2xl w-full rounded-lg bg-white shadow-lg border border-gray-300 max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-5 border-b p-5 border-gray-200">
+              <div className="sticky top-0 z-10 bg-white rounded-t-lg border-b border-gray-200 mb-4">
+                <div className="flex justify-between items-center p-5">
                   <h1 className="text-2xl text-gray-700 font-semibold font-lato ">
                     📝 Task Details
                   </h1>
@@ -110,7 +111,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                         {task?.status !== TaskStatus?.COMPLETED && (
                           isTaskUpdateLoading ? (
                             <div className='px-4 py-2'>
-                              <Loader2 className='size-4 mx-auto animate-spin text-blue-500'/>
+                              <Loader2 className='size-4 mx-auto animate-spin text-blue-500' />
                             </div>
                           ) : (
                             <button
@@ -135,6 +136,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                     )}
                   </div>
                 </div>
+              </div>
                 <div className='px-8 max-h-[80vh]'>
                   <div>
                     <h3 className='text-gray-800 text-sm font-semibold'>Receiver :</h3>

@@ -81,11 +81,11 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/10 bg-opacity-80 flex items-center justify-center z-10">
+        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/30 flex items-center justify-center z-10">
           <div className="bg-white rounded-lg w-[90%] max-w-[1000px] flex flex-col relative max-h-[80vh] overflow-y-auto">
             <button
               onClick={onClose}
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-500"
+              className="absolute top-3 right-3 text-gray-600 hover:bg-gray-100 p-1 rounded-full"
             >
               <X className="h-6 w-6" />
             </button>

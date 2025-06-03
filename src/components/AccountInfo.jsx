@@ -76,25 +76,25 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg p-3 sm:p-6 w-[90%] max-w-2xl">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg w-[90%] max-w-2xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-4 sm:mb-6 relative">
-          <div className="border-b w-full pb-1 sm:pb-2">
+        <div className="flex justify-between items-center p-4 relative border-b">
+          <div className="w-full">
             <h2 className="text-lg sm:text-2xl text-gray-800 font-bold">
               Account Info
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 transition-colors absolute top-0 right-0"
+            className="text-gray-600 hover:bg-gray-100 transition-colors p-1 rounded-full"
           >
             <X className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
         </div>
 
         {/* User Details Section */}
-        <div className="space-y-4 sm:space-y-6 h-[60vh] max-h-[520px] overflow-auto" >
+        <div className="space-y-4 sm:space-y-6 p-3 sm:p-6 max-h-[80vh] overflow-auto" >
           {/* User Info Card */}
           <div className="border p-3 sm:p-4">
             <p className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
@@ -102,7 +102,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
             </p>
             <div className="w-full flex flex-wrap items-center gap-3 sm:gap-4">
               {/* User Image */}
-              <div className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] flex-shrink-0 flex items-center justify-center">
+              <div className="w-[100px] h-[100px] md:w-[150px] md:h-[150px] flex-shrink-0 flex items-center justify-center">
                 <div
                   className={`size-20 rounded-full w-[70px] h-[70px] text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
                     }`}
@@ -149,7 +149,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
             </p>
             <div className="w-full flex flex-wrap items-center gap-3 sm:gap-4">
               {/* User Image */}
-              <div className="w-[100px] h-[100px] sm:w-[150px] sm:h-[150px] border flex-shrink-0">
+              <div className="w-[100px] h-[100px] md:w-[150px] md:h-[150px] border flex-shrink-0">
                 {user?.company?.logo || config?.logo ? (
                   <img
                   src={
@@ -208,18 +208,18 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
         </div>
       </div>
       {isChangePassModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-3 sm:p-6  w-[350px] max-w-2xl">
-            <div className="flex justify-between items-center mb-2 pb-2 border-b text-gray-900">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg  w-[350px] max-w-2xl">
+            <div className="flex justify-between items-center p-4 border-b text-gray-900">
               <h2 className="text-lg font-semibold">Change Password</h2>
               <button
                 onClick={() => setIsChangePassModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <form className="text-gray-700" onSubmit={handleSetPassword}>
+            <form className="text-gray-700 p-3 sm:p-6" onSubmit={handleSetPassword}>
               {success ? (
                 <p className="text-green-500 text-center mb-4">
                   Password set successfully! Redirecting to login...

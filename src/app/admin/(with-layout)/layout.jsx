@@ -181,7 +181,7 @@ export default function AdminDashboardLayout({ children }) {
         }`}
         onClick={() => setSidePanelOpen((prev) => !prev)}
       >
-        {sidePanelOpen ? "" : <MenuIcon className="" />}
+        {sidePanelOpen ? "" : <MenuIcon className="text-gray-800" />}
       </div>
 
       {sidePanelOpen && (

@@ -323,12 +323,23 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
           const uploadResult = await uploadResponse.json();
           logoUrl = uploadResult.url;
         }
+
+        const requestData = {
+          ...formData,
+          company:{
+            name: formData.companyName,
+            logo: logoUrl,
+          }
+        }
+        delete requestData.companyName;
+        delete requestData.logo;
+
         const requestOptions = {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(requestData),
         };
         const response = await fetchWrapper(
           "/api/users", 
@@ -999,7 +1010,7 @@ const handleModalClose = () => {
 };
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg  w-full max-w-2xl">
           <div className="flex justify-between items-center border-b px-4 pt-4 pb-3">
             <h2 className="text-xl text-gray-800 font-semibold">

@@ -76,7 +76,7 @@ console.log("loanData", loanData);
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div className="m-1 mx-4">
-        <div className="border-b border-[#dee2e6] pt-12 pb-5 flex justify-between sm:items-center flex-col md:flex-row gap-3">
+        <div className="border-b border-[#dee2e6] pt-4 sm:pt-12 pb-5 flex justify-between sm:items-center flex-col md:flex-row gap-3">
           <div className="text-sm font-lato">
             <span className="block md:inline text-black text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
               Loan Origination

@@ -1140,7 +1140,7 @@ function Documents({
       className={`max-w-[1820px] ${
         fileType === "loan" || fileType === "advisor"
           ? ""
-          : `${filterVisibility("Ticker Tape") ? "mx-auto pt-5" : "mx-auto pt-14"}`
+          : `${filterVisibility("Ticker Tape") ? "mx-auto pt-5" : "mx-auto pt-5 sm:pt-14"}`
       }`}
     >
       <div>

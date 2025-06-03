@@ -584,7 +584,7 @@ export default function AdminDashboard() {
       setIsPortalLoading(true);
       const userData = getUserData();
       const response = await fetchWrapper(
-        `/api/portal?userId=${userData?.id}?_limit=5`, // ⬅ Add limit parameter
+        `/api/portal?userId=${userData?.id}`, // ⬅ Add limit parameter
         { method: "GET" },
         "get-portal"
       );

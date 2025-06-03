@@ -895,7 +895,7 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="fixed inset-0 z-[70] bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-[70] bg-black/30 flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
         {/* Success Message */}
 

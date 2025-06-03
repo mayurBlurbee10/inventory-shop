@@ -707,7 +707,7 @@ console.log("User:", user);
                 </div>
             </div> */}
 
-            <div className="grid gap-7 grid-cols-5 pt-12">
+            <div className="grid gap-7 grid-cols-5 pt-4 sm:pt-12">
                 <div className="col-span-5 lg:col-span-3 ">
                     <Documents fileType={"advisor"} clientFolderId={user ? user?.folderId : loggedInUser?.folderId} key={user ? user.id : loggedInUser.id}/>
                 </div>

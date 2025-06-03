@@ -144,12 +144,12 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-lg w-full max-w-md">
+        <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl text-gray-800 font-semibold">Add New User</h2>
           <button
             onClick={handleModalClose}
-            className="text-gray-400 hover:text-gray-500"
+            className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
           >
             <X className="h-6 w-6" />
           </button>
@@ -161,7 +161,7 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Full Name

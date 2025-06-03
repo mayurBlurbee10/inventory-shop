@@ -179,20 +179,20 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
           className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center z-10"
           style={{ marginTop: 0 }}
         >
-          <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
-            <div className="flex -items-center justify-between border-b border-solid">
-              <label className="text-xl font-semibold text-gray-700 mb-3">
+          <div className="bg-white rounded-lg flex flex-col relative max-w-[500px] w-full">
+            <div className="flex -items-center justify-between border-b border-solid p-4">
+              <label className="text-xl font-semibold text-gray-700">
                 {plugin?.type === PluginType.TNC ? plugin?.type.toUpperCase() : plugin?.type.charAt(0).toUpperCase() + plugin?.type.slice(1)}
               </label>
               <button
                 onClick={handleModalClose}
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
               >
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            <div className="py-2 text-gray-900 max-h-[40vh] overflow-y-auto">
+            <div className="p-4 text-gray-900 max-h-[40vh] overflow-y-auto">
               {loading ? (
                 <LoadingSpinner />
               ) : !pages.length ? (
@@ -202,7 +202,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
               )}
             </div>
 
-            <div className="flex justify-between items-center w-full space-x-4 mt-12">
+            <div className="flex justify-between items-center w-full space-x-4 p-4">
               {(plugin?.type === PluginType.TNC &&
                 plugin.pages &&
                 plugin.pages?.length < 1) ||

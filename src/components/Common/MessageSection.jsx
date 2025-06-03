@@ -183,52 +183,54 @@ console.log("sendTo:", message?.receiver?.id);
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="max-w-2xl mx-auto p-6 bg-white shadow-xl rounded-lg border border-gray-300 w-full h-[90vh] max-h-[710px] overflow-auto">
+      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+      <div className="fixed inset-0 flex items-center justify-center">
+        <Dialog.Panel className="max-w-2xl mx-auto bg-white shadow-xl rounded-lg border border-gray-300 w-full max-h-[90vh] overflow-auto">
           {/* Header */}
-          <div className="flex justify-between items-center border-b pb-3">
-            <h2 className="text-2xl font-semibold text-gray-800">
-              📩 Message Details
-            </h2>
-            <div className="relative" ref={menuRef}>
-              {message?.receiver?.id !== user?.id && (
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="text-gray-500 hover:text-gray-700 transition"
-                >
-                  <MoreVertical className="size-5" />
-                </button>
-              )}
-              {showMenu && (
-                <div className="absolute right-0 mt-2 w-32 bg-white shadow-md rounded-lg border border-gray-200 z-10">
+          <div className="sticky top-0 z-10 bg-white rounded-t-lg border-b border-gray-200 mb-4">
+            <div className="flex justify-between items-center border-b p-4">
+              <h2 className="text-2xl font-semibold text-gray-800">
+                📩 Message Details
+              </h2>
+              <div className="relative" ref={menuRef}>
+                {message?.receiver?.id !== user?.id && (
                   <button
-                    onClick={() => {
-                      setIsEditing(true);
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="text-gray-500 hover:text-gray-700 transition"
                   >
-                    <Edit className="size-4 text-blue-500" />
-                    <span>Edit</span>
+                    <MoreVertical className="size-5" />
                   </button>
-                  <button
-                    onClick={() => {
-                      setIsMessageDeleteModalOpen((prev) => !prev);
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
-                  >
-                    <Trash2 className="size-4 text-red-500" />
-                    <span>Delete</span>
-                  </button>
-                </div>
-              )}
+                )}
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white shadow-md rounded-lg border border-gray-200 z-10">
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                    >
+                      <Edit className="size-4 text-blue-500" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsMessageDeleteModalOpen((prev) => !prev);
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
+                    >
+                      <Trash2 className="size-4 text-red-500" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Message Content */}
-          <div className="space-y-5 mt-4 text-gray-700">
+          <div className="space-y-5 mt-4 text-gray-700 px-6">
             <div className="flex items-center space-x-2">
               <span className="font-medium">Date:</span>
               <span className="text-gray-600">
@@ -289,14 +291,14 @@ console.log("sendTo:", message?.receiver?.id);
                         }
                     />
                     ) : (
-                    <div className="p-3 bg-gray-100 border border-gray-300 rounded-md text-gray-700">
+                    <div className="p-3 max-h-[200px] overflow-y-auto bg-gray-100 border border-gray-300 rounded-md text-gray-700">
                         {message?.text || "No message content."}
                     </div>
                     )}
                 </div>
             </div>
           </div>
-          <div className="max-h-[200px] sm:max-h-[250px] overflow-auto">
+          <div className={`${isReplying ? "max-h-[100px]":"max-h-[200px]"} overflow-auto px-6`}>
             {message?.replies?.length > 0 ? (
               message.replies.map((reply) => (
                 <div key={reply.id} className="flex mt-3">
@@ -320,7 +322,7 @@ console.log("sendTo:", message?.receiver?.id);
             )}
           </div>
           {isReplying && (
-            <div className="space-y-4 mt-5">
+            <div className="space-y-4 mt-5 px-6">
               {/* {message && message?.sender?.id && (
                 <div className="w-full">
                   <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
@@ -357,7 +359,7 @@ console.log("sendTo:", message?.receiver?.id);
           )}
 
           {/* Footer Buttons */}
-          <div className=" flex justify-end space-x-3">
+          <div className=" flex justify-end space-x-3 px-6 pb-4">
             <Button
               onClick={() => {
                 if (isEditing) {
@@ -522,19 +524,19 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
     <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto w-full max-w-2xl rounded-lg bg-white pt-6 px-6 pb-4 shadow-md">
-          <div className="flex justify-between items-center mb-4">
+        <Dialog.Panel className="mx-auto w-full max-w-2xl rounded-lg bg-white shadow-md">
+          <div className="flex justify-between items-center border-b p-4">
             <Dialog.Title className="text-xl text-gray-600 font-medium">
               Add New Message
             </Dialog.Title>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-600 hover:bg-gray-100 rounded-full p-1"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="">
+          <div className="p-6">
             <div className="space-y-4">
               {
                 sendTo ?
@@ -696,7 +698,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
             </Dialog.Title>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
             >
               <X className="w-5 h-5" />
             </button>

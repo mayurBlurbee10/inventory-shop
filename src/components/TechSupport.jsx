@@ -42,21 +42,23 @@ function TechSupport({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-2xl">
-        <div className="flex justify-between items-center mb-6 relative border-b py-4 px-5">
-          <div>
-            <h2 className="text-2xl text-gray-800 font-bold">Tech Support</h2>
-            <p className="text-gray-600 mt-2">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-2xl m-2">
+        <div className="flex justify-between items-center relative border-b p-4">
+          <div className="w-full">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl text-gray-800 font-bold">Tech Support</h2>
+              <button
+                onClick={handleModalClose}
+                className="text-gray-600 hover:bg-gray-100 transition-colors p-1 rounded-full"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div> 
+            <p className="text-gray-600 mt-2 text-sm">
               We're here to help! Our team typically responds within 24 hours.
             </p>
           </div>
-          <button
-            onClick={handleModalClose}
-            className="text-gray-400 hover:text-gray-500 transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
         </div>
 
         {error && (
@@ -64,7 +66,7 @@ function TechSupport({ isOpen, onClose }) {
             {error}
           </div>
         )}
-        <div className="px-8 pb-3 h-[60vh] max-h-[500px] overflow-auto">
+        <div className="p-4 sm:p-6 h-[60vh] max-h-[500px] overflow-auto">
           <form onSubmit={handleSubmit} className="space-y-6 mb-8">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">

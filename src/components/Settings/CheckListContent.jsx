@@ -70,9 +70,9 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-[400px] w-full rounded-lg bg-white p-6 shadow-xl">
-          <div className="flex justify-between items-center mb-4">
+      <div className="fixed inset-0 flex items-center justify-center">
+        <Dialog.Panel className="mx-auto max-w-[400px] w-full rounded-lg bg-white shadow-xl">
+          <div className="flex justify-between items-center p-4 border-b">
             <Dialog.Title className="text-lg text-gray-600 font-medium">
               {checklist ? "Edit" : "Add"} Check List
             </Dialog.Title>
@@ -81,13 +81,13 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
                 onClose();
                 setCheckListName("");
               }}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="bg-white rounded-sm w-full mx-auto">
+          <div className="bg-white rounded-lg w-full mx-auto p-6">
             <label className="text-sm text-black font-medium block mb-1">
               Enter checklist name
             </label>

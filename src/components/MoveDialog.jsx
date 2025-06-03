@@ -55,7 +55,7 @@ function MoveDialog({
       className="relative z-50 text-gray-600"
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/10" aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
       {/* Dialog Panel */}
       <div className="fixed inset-0 flex items-center justify-center p-4">

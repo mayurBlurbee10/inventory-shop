@@ -16,20 +16,20 @@ console.log('dialog:', config)
       className="relative z-50"
     >
       <DialogBackdrop className="fixed inset-0 bg-black/30" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
-          <div className="flex justify-between items-center mb-4">
+      <div className="fixed inset-0 flex items-center justify-center">
+        <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white shadow-xl">
+          <div className="flex justify-between items-center p-4">
             <Dialog.Title className="text-xl text-gray-600 font-medium">
               {title}
             </Dialog.Title>
             <button
               onClick={() => setIsModalOpen(false)}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="text-center py-4">
+          <div className="text-center p-4">
             <div className="text-lg text-green-600 mb-4">{message}</div>
             {fileLocation && (
               <div

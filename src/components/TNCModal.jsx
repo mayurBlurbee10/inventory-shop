@@ -94,7 +94,7 @@ function TNCModal({ onClose, user, email, password, page }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
       <div className="bg-gray-50 text-gray-800 w-full max-w-7xl py-5 flex relative">
         <button
           onClick={onClose}

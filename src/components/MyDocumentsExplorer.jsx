@@ -295,20 +295,21 @@ const ShareModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 w-full max-w-xl relative">
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X size={20} />
-        </button>
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl w-full max-w-xl relative">
+        <div className="flex sticky items-center justify-between p-4 border-b">
+          <h3 className="text-xl font-semibold text-gray-900">
+            {item?.name}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:bg-gray-100 transition-colors p-1 rounded-full"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">
-          {item?.name}
-        </h3>
-
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
           {item?.type === "file" && (
             <div className="space-y-2">
               <div className="flex gap-4">
