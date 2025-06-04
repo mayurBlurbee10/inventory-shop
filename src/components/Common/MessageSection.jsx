@@ -24,6 +24,7 @@ import { Dialog } from "@headlessui/react";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import AllTaskModal from "./AllTaskModal";
 import { toast } from "react-toastify";
+import { decryptMessage, encryptMessage } from "@/app/lib/crypto";
 
 const formatDate = (timestamp) => {
   if(timestamp){
@@ -63,7 +64,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
     const messageData = {
       messageId: message?.id,
       subject: editedMessage.subject,
-      text: editedMessage.text,
+      text: encryptMessage(editedMessage.text),
     };
     setIsMessageUpdateLoading(true);
     try {
@@ -140,7 +141,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
       receiver: message?.sender?.id === user?.id ? message?.receiver?.id : message?.sender?.id,
       portalId: params.portalid,
       subject: message.subject,
-      text: replyMessage.text,
+      text: encryptMessage(replyMessage.text),
       parentMessage: message?.id
     };
     setIsMessageReplyLoading(true);
@@ -176,7 +177,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
   useEffect(() => {
     setEditedMessage({
       subject: message?.subject ? message?.subject : "",
-      text: message?.text,
+      text: decryptMessage(message?.text),
     });
   }, [message]);
 console.log("sendTo:", message?.receiver?.id);
@@ -207,6 +208,7 @@ console.log("sendTo:", message?.receiver?.id);
                       onClick={() => {
                         setIsEditing(true);
                         setShowMenu(false);
+                        setIsReplying(false);
                       }}
                       className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
                     >
@@ -292,7 +294,7 @@ console.log("sendTo:", message?.receiver?.id);
                     />
                     ) : (
                     <div className="p-3 max-h-[200px] overflow-y-auto bg-gray-100 border border-gray-300 rounded-md text-gray-700">
-                        {message?.text || "No message content."}
+                        {decryptMessage(message?.text) || "No message content."}
                     </div>
                     )}
                 </div>
@@ -313,7 +315,7 @@ console.log("sendTo:", message?.receiver?.id);
                   <span className="text-gray-200 mx-3">|</span>
                   <div className="border-gray-300 rounded-md text-gray-700">
                     <div className="text-gray-500 text-sm font-lato ">{reply.sender?.name}</div>
-                    <div><p>{reply.text}</p></div>
+                    <div><p>{decryptMessage(reply.text)}</p></div>
                   </div>
                 </div>
               ))
@@ -374,7 +376,7 @@ console.log("sendTo:", message?.receiver?.id);
               type="Secondary"
               disabled={isMessageUpdateLoading || isMessageReplyLoading}
             />
-             {!isReplying && (
+             {!isReplying && !isEditing && (
               <Button
                 onClick={() => setIsReplying(true)}
                 icon={Reply}
@@ -390,8 +392,8 @@ console.log("sendTo:", message?.receiver?.id);
                 icon={Save}
                 label="Save"
                 type="Primary"
-                isLoading={isMessageReplyLoading}
-                disabled={isMessageReplyLoading}
+                isLoading={isMessageReplyLoading || isMessageUpdateLoading}
+                disabled={isMessageReplyLoading || isMessageUpdateLoading}
               />
             )}
             {/* <NewMessageModal
@@ -471,7 +473,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
       receiver: id,
       portalId: params.portalid,
       subject: message.subject,
-      text: message.text,
+      text: encryptMessage(message.text),
     };
     setIsSendMessageLoading(true);
     try {
@@ -489,7 +491,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
 
       setMessage({
         subject: "",
-        body: "",
+        text: "",
       });
       setUserID("");
       onClose();
@@ -578,7 +580,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
                 placeholder="Write a message..."
                 rows={"10"}
                 className="border w-full cursor-pointer h-24 rounded-md px-4 py-2 text-sm outline-none text-gray-700 resize-none placeholder-gray-400"
-                value={message.body}
+                value={message.text}
                 onChange={(e) =>
                   setMessage((prev) => ({ ...prev, text: e.target.value }))
                 }

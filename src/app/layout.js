@@ -4,6 +4,7 @@ import "./globals.css";
 import ReduxProvider from "@/components/ReduxProvider";
 import StoreProvider from "@/components/ReduxProvider";
 import { SocketProvider } from "@/context/SocketProvider";
+import Script from "next/script";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -24,13 +25,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <script type="text/javascript" src="https://mstrategy-onlyoffice.azurewebsites.net/web-apps/apps/api/documents/api.js" strategy="lazyOnload"></script>
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       > 
+      <Script
+        src="https://mstrategy-onlyoffice.azurewebsites.net/web-apps/apps/api/documents/api.js"
+        strategy="lazyOnload"
+      />
       {/* <SocketProvider> */}
           <StoreProvider>
             {children}
