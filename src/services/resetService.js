@@ -20,6 +20,7 @@ import { bulkPages } from "@/app/api/pages/bulk/route";
 import { existingPages } from "@/app/lib/data/existingPages";
 import pluginService from "./pluginService";
 import { uploadLocalFileToAzure } from "@/app/api/upload/route";
+import { encryptMessage } from "@/app/lib/crypto";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -222,14 +223,14 @@ const createSampleMessage = async (portalId) => {
       receiver: endUser?.id,
       portalId: portalId,
       subject: "Meeting",
-      text: "Can review Q3 Plans?",
+      text: encryptMessage("Can review Q3 Plans?"),
     },
     {
       sender: endUser?.id,
       receiver: portalCreatedAdmin?.id,
       portalId: portalId,
       subject: "Lunch",
-      text: "Available?",
+      text: encryptMessage("Available?"),
     },
   ];
 
