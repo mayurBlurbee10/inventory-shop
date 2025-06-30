@@ -51,9 +51,11 @@ const ProductsContent = () => {
   const [pagesData, setPagesData] = useState([]);
   const [isUpdateLoading, setIsUpdateLoading] = useState(null)
   const [isAllTaskModalOpen, setIsAllTaskModalOpen] = useState(false);
+  const [defaultPageAlert, setDefaultPageAlert] = useState(false);
   const hasFetched = useRef(false);
 
   const { data : user } = useSelector((state) => state.user);
+  const { data: allPages } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
 
   const fetchExistingPages = async () => {
@@ -143,6 +145,7 @@ const ProductsContent = () => {
 
   const handleUpdatePageStatus = async (pageId, pageStatus) => {
     try {
+      setDefaultPageAlert(false);
       setIsUpdateLoading(pageId);
       setPagesData((prevPages) => prevPages.map((p) => p.id === pageId ? { ...p, isPageVisible: pageStatus} : p ));
       const response = await fetchWrapper(
@@ -160,7 +163,7 @@ const ProductsContent = () => {
         throw new Error("Failed to update page");
       }
       const data = await response.json();
-      dispatch(setPages(pagesData.map((p) => p.id === pageId ? { ...p, isPageVisible: pageStatus} : p )))
+      dispatch(setPages(allPages.map((p) => p.id === pageId ? { ...p, isPageVisible: pageStatus} : p )))
     } catch (error) {
       console.error("Error fetching plugins:", error);
       setPagesData((prevPages) => prevPages.map((p) => p.id === pageId ? { ...p, isPageVisible: !pageStatus} : p ));
@@ -202,6 +205,28 @@ const ProductsContent = () => {
       setDeleteLoading(null);
     }
   };
+
+ const isDefaultPageVisible = (toggleToPage) => {
+   if (toggleToPage?.title === "dashboard") {
+     const sharedDocsPage = pagesData.find(
+       (item) => item?.title === "shared-docs"
+     );
+     if (!sharedDocsPage?.isPageVisible) {
+       setDefaultPageAlert(true);
+       return false;
+     }
+   } else if (toggleToPage?.title === "shared-docs") {
+     const documentsPage = pagesData.find(
+       (item) => item?.title === "dashboard"
+     );
+     if (!documentsPage?.isPageVisible) {
+       setDefaultPageAlert(true);
+       return false;
+     }
+   }
+   return true;
+ };
+
 
   useEffect(() => {
     fetchPlugins();
@@ -426,29 +451,37 @@ const ProductsContent = () => {
                               page?.title.slice(1)}
                           </h4>
                           <p className="text-sm text-gray-500">
-                            {page.description}
+                            {page?.description}
                           </p>
                         </div>
                       </div>
-                      {page.title !== "dashboard" && (
-                        <div className="flex items-center">
-                          {isUpdateLoading === page?.id && (
-                            <div className="mr-3">
-                              <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleUpdatePageStatus(page?.id, !page.isPageVisible)
+                       <div className="flex items-center">
+                        {isUpdateLoading === page?.id && (
+                          <div className="mr-3">
+                            <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isDefaultPageVisible(page)) {
+                              handleUpdatePageStatus(
+                                page?.id,
+                                !page?.isPageVisible
+                              );
                             }
-                            className={`
+                          }}
+                          className={`
                             relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                            ${page?.isPageVisible ? "bg-blue-600" : "bg-gray-200"}
+                            ${
+                              page?.isPageVisible
+                                ? "bg-blue-600"
+                                : "bg-gray-200"
+                            }
                           `}
-                          >
-                            <span
-                              className={`
+                        >
+                          <span
+                            className={`
                               pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
                               ${
                                 page?.isPageVisible
@@ -456,15 +489,18 @@ const ProductsContent = () => {
                                   : "translate-x-0"
                               }
                             `}
-                            />
-                          </button>
-                        </div>
-                      )}
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
               })}
           </div>
+          {defaultPageAlert && (
+            <p className="text-red-600 text-sm p-1 md:p-2 lg:pt-4 lg:px-4"><span className="font-semibold">Note*:</span> You cannot turn off both the Dashboard and Shared Docs pages. At
+              least one page should remain enabled.</p>
+          )}
         </>
       )}
       <CreatePluginModal

@@ -129,7 +129,6 @@ function Navbar({ content, config, filterValue }) {
     dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
     dispatch(setPortal(null));
     dispatch(setCurrentUser(null));
-    dispatch(setReduxPages(null));
   }
   const handleLogout = async () => {
     clearUserData();

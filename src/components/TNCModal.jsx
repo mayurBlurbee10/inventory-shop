@@ -7,7 +7,8 @@ import { setUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { setCurrentUser } from "@/store/services/userService";
 import { useDispatch } from "react-redux";
-import { UserRole } from "@/config/constants";
+import { PluginType, UserRole } from "@/config/constants";
+import { setPages } from "../store/services/pageService";
 
 function TNCModal({ onClose, user, email, password, page }) {
   const params = useParams();
@@ -15,6 +16,41 @@ function TNCModal({ onClose, user, email, password, page }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
   const dispatch = useDispatch()
+
+  const fetchPlugins = async () => {
+    try {
+      const encodedType = encodeURIComponent(PluginType.PAGES);
+      const response = await fetchWrapper(
+        `/api/plugins?portalId=${params?.portalid}&type=${encodedType}`,
+        {},
+        "fetch-pages"
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch plugins");
+      }
+      const data = await response.json();
+
+      const pageData = data?.data[0]?.pages || [];
+      dispatch(setPages(pageData));
+      const filterPagePlugin = pageData.filter(
+        (item) => !item.isCustomPage && item.isPageVisible
+      );
+      let pageToRedirect = filterPagePlugin?.find(
+        (item) => item?.title === "dashboard"
+      );
+      if (!pageToRedirect) {
+        pageToRedirect = filterPagePlugin?.find(
+          (item) => item?.title === "shared-docs"
+        );
+        pageToRedirect.pageTitle = "shared documents"
+      }else {
+        pageToRedirect.pageTitle = "dashboard"
+      }
+      return pageToRedirect;
+    } catch (error) {
+      console.error("Error fetching plugins:", error);
+    }
+  };
 
   const handleClose = async () => {
     try {
@@ -39,48 +75,14 @@ function TNCModal({ onClose, user, email, password, page }) {
         throw new Error("Failed to update user");
       }
       const updatedData = await response.json();
+      const pageToRedirect = await fetchPlugins();
       console.log("Update updatedData", updatedData);
-      // const loginResponse = await fetchWrapper(
-      //   "/api/auth/login",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       email,
-      //       password,
-      //       portalid: params.portalid,
-      //     }),
-      //   },
-      //   "default-login"
-      // );
-
-      // if (!loginResponse.ok) {
-      //   const data = await loginResponse.json();
-      //   throw new Error(data.error || "Login failed");
-      // }
-
-      // const data = await loginResponse.json();
-      // // Store user data using auth utility
-      // const userData = data.user;
-      // // setUserData(userData);
-      // dispatch(setCurrentUser(userData))
-      // // localStorage.setItem("portal", params.portalid);
-      // localStorage.setItem("accessToken", data.accessToken);
-
-      // console.log("Redirecting to home");
-
-      // if (user.isOnboardingRequired) {
-      //   router.push(`onboarding`);
-      // } else {
       const targetRoute =
         user?.role === UserRole.MODERATOR
           ? "advisor/dashboard"
-          : "dashboard";
+          : pageToRedirect?.title;
       router.push(targetRoute);
-      toast.success("Redirecting to dashboard");
-      // }
+      toast.success(`Redirecting to ${pageToRedirect?.pageTitle}`);
     } catch (error) {
       console.error("Error fetching plugins:", error);
     } finally {
