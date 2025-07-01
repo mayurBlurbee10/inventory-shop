@@ -92,7 +92,7 @@ function DetailsPage() {
       if (!userData || !files) return;
 
       const loansFolder = await new Promise((resolve) => {
-        const foundItems = findFolderWithName(files, "Loans");
+        const foundItems = findFolderWithName(files, "Forms");
         resolve(foundItems);
       });
       let loansId = loansFolder?.id;
@@ -104,7 +104,7 @@ function DetailsPage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              name: "Loans",
+              name: "Forms",
               boxFolderId: userData?.boxFolderId,
             }),
           },
@@ -115,7 +115,7 @@ function DetailsPage() {
         if (!response.ok) {
           if (folderData?.response?.status !== 409) {
             throw new Error(
-              folderData.error || "Failed to create Loans folder"
+              folderData.error || "Failed to create forms folder"
             );
           } else {
             return;

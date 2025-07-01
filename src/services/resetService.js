@@ -17,10 +17,11 @@ import taskService from "./taskService";
 import { ContentManagement } from "@/entities/ContentManagement";
 import { createESign } from "@/app/api/box/e-sign/route";
 import { bulkPages } from "@/app/api/pages/bulk/route";
-import { existingPages } from "@/app/lib/data/existingPages";
+import { existingPages, tradingPage } from "@/app/lib/data/existingPages";
 import pluginService from "./pluginService";
 import { uploadLocalFileToAzure } from "@/app/api/upload/route";
 import { encryptMessage } from "@/app/lib/crypto";
+import pageService from "./pageService";
 
 const getRepository = async (entity) => {
   await connectDatabase();
@@ -72,6 +73,10 @@ const deleteCustomPages = async (pageRepository, pluginRepository, portalId) => 
       isCustomPage: true,
     });
   }
+  await pageService.createPage({
+    ...tradingPage,
+    plugin: plugin?.id,
+  });
   await bulkPages(existingPages, [], [], portalId, plugin?.id, true);
 };
 

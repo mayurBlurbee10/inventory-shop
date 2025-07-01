@@ -4,7 +4,7 @@ import path from "path";
 import { logApiCall } from "@/app/lib/api-log-middleware";
 import portalService from "@/services/portalService";
 import userService from "@/services/userService";
-import { UserRole } from "@/config/constants";
+import { PluginType, UserRole } from "@/config/constants";
 import permissionService from "@/services/permissionService";
 import { sendSuccessPortalEmail } from "@/app/lib/email";
 import { generateNanoToken } from "@/app/lib/jwt";
@@ -15,6 +15,8 @@ import messageService from "@/services/messageService";
 import contentManagementService from "@/services/contentManagementService";
 import checkListService from "@/services/checkListService";
 import taskService from "@/services/taskService";
+import pageService from "../../../services/pageService";
+import { tradingPage } from "../../lib/data/existingPages";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -85,12 +87,17 @@ export async function POST(req) {
     await resetService.createSampleMessage(portalId);
     await resetService.createSampleTasks(portalId);
     await pluginService.createTncPlugin(portalId, portal?.portalCreatedAdmin);
+    const pagePlugin = await pluginService.createPlugin({
+      type: PluginType.PAGES,
+      portalId: portalId,
+      createdBy: portal?.portalCreatedAdmin,
+    });
+    await pageService.createPage({
+      ...tradingPage,
+      plugin: pagePlugin?.id,
+    });
     const user = await userService.getUserById(portal?.portalCreatedAdmin);
-    await uploadSampleFiles(
-      user?.email,
-      user?.boxUserId,
-      user?.folderId
-    );
+    await uploadSampleFiles(user?.email, user?.boxUserId, user?.folderId);
 
     // const token = user?.resetPasswordToken
     //   ? user.resetPasswordToken
