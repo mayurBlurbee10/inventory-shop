@@ -32,7 +32,7 @@ function LoansPage() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const page = pages?.find((page) => page.title === "loans");
+    const page = pages?.find((page) => page.title === "forms");
     if (page && !page.isPageVisible) {
       router.push("access-denied");
     }
@@ -79,22 +79,22 @@ console.log("loanData", loanData);
         <div className="border-b border-[#dee2e6] pt-4 sm:pt-12 pb-5 flex justify-between sm:items-center flex-col md:flex-row gap-3">
           <div className="text-sm font-lato">
             <span className="block md:inline text-black text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
-              Loan Origination
+              Custom Forms
             </span>
             <span className="block md:inline text-black">
-              Securely execute a loan origination workflow, including application, document ingestion, and eSignature.
+              Create new forms and collect new data from customers, partners and employees and route as required.
             </span>
           </div>
           <div>
           {loanData?.length === 3 ? (
           <div
             className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl cursor-pointer font-lato"
-            onClick={() => router.push(`loans/new?type=mortgage`)}
+            onClick={() => router.push(`forms/new?type=mortgage`)}
           >
             <List className="size-8" />
             View Application
           </div>
-        ) : (
+        ) : ( 
           <div
             className={`flex items-center justify-between cursor-pointer bg-[#f8f9fa] border border-transparent hover:border-[#dee2e6] p-3 max-w-48 rounded-md relative ${isLoanOptionOpen && "bg-[#dadcdd]"
               }`}
@@ -102,18 +102,18 @@ console.log("loanData", loanData);
           >
             <div className="flex items-center gap-2 font-lato">
               <Plus className="font-bold" />
-              New Loan
+              Create New
             </div>
             <ChevronDown className="fill-black " />
             {isLoanOptionOpen && (
               <div ref={newLoanDropdownRef} className="flex flex-col border border-[#dee2e6] bg-white  w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer font-lato z-[50]">
-                <div onClick={() => router.push(`loans/new?type=mortgage`)}>
+                <div onClick={() => router.push(`forms/new?type=mortgage`)}>
                   Mortgage
                 </div>
-                <div onClick={() => router.push(`loans/new?type=auto`)}>
+                <div onClick={() => router.push(`forms/new?type=auto`)}>
                   Auto
                 </div>
-                <div onClick={() => router.push(`loans/new?type=personal`)}>
+                <div onClick={() => router.push(`forms/new?type=personal`)}>
                   Personal
                 </div>
               </div>
@@ -149,7 +149,7 @@ console.log("loanData", loanData);
           <table className=" border-[#dee2e6] text-sm font-lato w-full">
             <thead className="border-t">
               <tr>
-                <th className="p-3">My Loans</th>
+                <th className="p-3">Forms</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
@@ -177,7 +177,7 @@ console.log("loanData", loanData);
                     </td>
                     <td
                       className="text-blue-500 cursor-pointer"
-                      onClick={() => router.push(`loans/details/${id}`)}
+                      onClick={() => router.push(`forms/details/${id}`)}
                     >
                       Details
                     </td>
@@ -185,7 +185,7 @@ console.log("loanData", loanData);
                 )): (
                     <tr>
                       <td colSpan="5" className="text-center text-gray-500 py-4">
-                        No loan found
+                        No form found
                       </td>
                     </tr>
                 )}

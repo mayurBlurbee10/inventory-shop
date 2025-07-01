@@ -49,7 +49,7 @@ export const existingPages = [
     isCustomPage : false,
   },
   {
-    title: "loans",
+    title: "forms",
     description: "Track and manage loan details.",
     sections: [],
     isCustomPage : false,

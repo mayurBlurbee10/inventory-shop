@@ -368,7 +368,7 @@ const LoanEstimateStep = () => {
           className="border border-black rounded-md py-3 px-4 text-xl"
           onClick={() =>
             router.push(
-              params.portalid ? `/${params.portalid}/loans` : "/loans"
+              params.portalid ? `/${params.portalid}/forms` : "/forms"
             )
           }
         >

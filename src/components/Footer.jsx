@@ -44,13 +44,15 @@ const Footer = ({
   if (isLoading) {
     return (
       <footer className="pt-12 mt-auto">
-        <div className="container mx-auto px-4">
-          <div className="max-w-[1140px] mx-auto md:px-[15px]">
-            <div className="animate-pulse">
-              <div className="bg-gray-200 h-8 w-32 mb-4"></div>
-              <div className="bg-gray-200 h-4 w-64 mb-2"></div>
-              <div className="bg-gray-200 h-4 w-48 mb-2"></div>
-              <div className="bg-gray-200 h-4 w-56"></div>
+        <div className="container px-4">
+          <div className="max-w-[1140px] md:px-[15px]">
+            <div className="animate-pulse flex justify-start items-start space-x-2">
+              <div className="bg-gray-200 h-4 w-32 mb-1"></div>
+              <div className="bg-gray-200 h-4 w-52 mb-1"></div>
+              <div className="bg-gray-200 h-4 w-32 mb-1"></div>
+              <div className="bg-gray-200 h-4 w-32 mb-1"></div>
+              <div className="bg-gray-200 h-4 w-32 mb-1"></div>
+              <div className="bg-gray-200 h-4 w-32 mb-1"></div>
             </div>
           </div>
         </div>

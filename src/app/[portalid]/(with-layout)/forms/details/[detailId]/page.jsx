@@ -188,10 +188,10 @@ function DetailsPage() {
     <div className="bg-white rounded-lg flex flex-col relative w-full lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div className="border-b border-[#dee2e6] font-lato flex items-end justify-center gap-5 py-5">
         <div
-          className="flex items-end text-blue-600"
+          className="flex items-end text-blue-600 cursor-pointer"
           onClick={() => router.back()}
         >
-          <ChevronLeft className="size-6" /> Back to Loans
+          <ChevronLeft className="size-6" /> Back to Forms
         </div>
         <h1 className="text-3xl font-lato font-light text-center">
           Loan Detail

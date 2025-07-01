@@ -826,7 +826,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
         isOpen={isSignModalOpen}
         onClose={() => setIsSignModalOpen(false)}
         signUrl={selectedSignUrl}
-        redirect_url={`/${params?.portalid}/loans`}
+        redirect_url={`/${params?.portalid}/forms`}
       />
       <div className="flex w-full justify-end mt-5">
         {/* <button

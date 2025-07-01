@@ -328,11 +328,11 @@ function Navbar({ content, config, filterValue }) {
                      }
                    />
                  )}
-                 {filterPageVisibility("loans") && (
+                 {filterPageVisibility("forms") && (
                    <NavBarItem
-                     title="Loans"
+                     title="Forms"
                      href={
-                       params.portalid ? `/${params.portalid}/loans` : "/loans"
+                       params.portalid ? `/${params.portalid}/forms` : "/forms"
                      }
                    />
                  )}
@@ -627,13 +627,13 @@ function Navbar({ content, config, filterValue }) {
                          }
                        />
                      )}
-                     {filterPageVisibility("loans") && (
+                     {filterPageVisibility("forms") && (
                        <NavBarItem
-                         title="Loans"
+                         title="Forms"
                          href={
                            params.portalid
-                             ? `/${params.portalid}/loans`
-                             : "/loans"
+                             ? `/${params.portalid}/forms`
+                             : "/forms"
                          }
                        />
                      )}
