@@ -47,9 +47,6 @@ function Navbar({ content, config, filterValue }) {
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isOpenNavbar, setIsOpenNavbar] = useState(false);
   const [isAccountInfoModalOpen, setIsAccountInfoModalOpen] = useState(false);
-  const [isAdvisorViewModalOpen, setIsAdvisorViewModalOpen] = useState(false);
-  const [isAdvisorViewOpen, setIsAdvisorViewOpen] = useState(false);
-  // const isAdvisorViewOpen = pathname.includes("advisor");
   const dropdownRef = useRef(null);
   const moreLinksDropdownRef = useRef(null);
   const [logo, setLogo] = useState(null);
@@ -72,7 +69,10 @@ function Navbar({ content, config, filterValue }) {
         setAccountDropdown(false);
       }
 
-      if (moreLinksDropdownRef.current && !moreLinksDropdownRef.current.contains(event.target)) {
+      if (
+        moreLinksDropdownRef.current &&
+        !moreLinksDropdownRef.current.contains(event.target)
+      ) {
         setIsOpenMoreLinksDropdown(false);
       }
     };
@@ -83,31 +83,31 @@ function Navbar({ content, config, filterValue }) {
     };
   }, []);
 
-  useEffect(() => {
-    setIsAdvisorViewOpen(pathname.includes("advisor"));
-  }, [pathname]);
-
-  const NavBarItem = ({ title, href }) => {
+  const NavBarItem = ({ title, href, activeRoutes = [] }) => {
     if (!href) {
       console.error("href prop is required for NavBarItem.");
       return null;
     }
-
+    const isActive = pathname.includes(href) || activeRoutes.some(route => pathname.includes(route));
     return (
       <Link href={href} passHref>
         <div
           className={`relative mx-2 h-full flex items-center border-b-2 transition-all justify-center`}
           style={{
-            borderBottomColor: pathname.includes(href) ? config?.primaryColor : "transparent",
-            borderBottomWidth: pathname.includes(href) ? "3px" : "",
+            borderBottomColor: isActive
+              ? config?.primaryColor
+              : "transparent",
+            borderBottomWidth: isActive ? "3px" : "",
           }}
           onClick={() => setIsOpenNavbar(false)}
         >
           <button
             className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-              pathname.includes(href) ? "font-bold" : "text-black"
+              isActive ? "font-bold" : "text-black"
             }`}
-            style={pathname.includes(href) ? { color: config?.primaryColor } : {}}
+            style={
+              isActive ? { color: config?.primaryColor } : {}
+            }
           >
             {title}
           </button>
@@ -124,19 +124,22 @@ function Navbar({ content, config, filterValue }) {
       </Link>
     );
   };
-  const clearStoreData = ()=>{
+  const clearStoreData = () => {
     dispatch(setFileList(null));
     dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
     dispatch(setPortal(null));
     dispatch(setCurrentUser(null));
-  }
+  };
   const handleLogout = async () => {
     clearUserData();
     clearStoreData();
     await signOut();
     toast.success("User signout successfully");
-    document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    window.location.href = params.portalid ? `/${params.portalid}/login` : "/login";
+    document.cookie =
+      "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    window.location.href = params.portalid
+      ? `/${params.portalid}/login`
+      : "/login";
   };
 
   useEffect(() => {
@@ -150,36 +153,44 @@ function Navbar({ content, config, filterValue }) {
     setCustomPages(filterCustomPages);
   }, [pageData]);
 
-   const fetchPages = async () => {
-     try {
-      const encodedPage = encodeURIComponent('pages');
+  const fetchPages = async () => {
+    try {
+      const encodedPage = encodeURIComponent("pages");
       const response = await fetchWrapper(
         `/api/plugins?portalId=${params?.portalid}&type=${encodedPage}`,
         {},
         "fetch-page"
       );
-       if (!response.ok) {
-         throw new Error("Failed to fetch plugins");
-       }
-       const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to fetch plugins");
+      }
+      const data = await response.json();
 
-       const filterPages =
-       Array.isArray(data?.data) && data.data.length > 0
-         ? data.data[0]?.pages?.filter((item) => item.isCustomPage === false) || []
-         : [];
+      const filterPages =
+        Array.isArray(data?.data) && data.data.length > 0
+          ? data.data[0]?.pages?.filter(
+              (item) => item.isCustomPage === false
+            ) || []
+          : [];
       //  setPages(filterPages);
-       dispatch(setReduxPages(Array.isArray(data?.data) && data.data.length > 0
-       && data.data[0]?.pages))
-     } catch (error) {
-       console.error("Error fetching plugins:", error);
-     }
-   };
+      dispatch(
+        setReduxPages(
+          Array.isArray(data?.data) &&
+            data.data.length > 0 &&
+            data.data[0]?.pages
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching plugins:", error);
+    }
+  };
 
   const filterPageVisibility = (pageTitle) => {
-    const page = pages?.length && pages?.find((page) => page.title === pageTitle);
-    return page ?  page.isPageVisible : true
-  }
-  
+    const page =
+      pages?.length && pages?.find((page) => page.title === pageTitle);
+    return page ? page.isPageVisible : true;
+  };
+
   function sanitizeName(name) {
     let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
     return sanitizeName.endsWith(".")
@@ -188,49 +199,55 @@ function Navbar({ content, config, filterValue }) {
   }
 
   useEffect(() => {
-    setUserIsAdmin(user?.role !== UserRole.USER && user?.role !== UserRole.MODERATOR);
+    setUserIsAdmin(
+      user?.role !== UserRole.USER && user?.role !== UserRole.MODERATOR
+    );
     setUserIsModerator(user?.role === UserRole.MODERATOR);
     fetchPages();
   }, []);
 
   const filterTheme = (title) => {
-        const contentItem = content && content?.portalContent?.find((item) => item.title === title);
-        let fontSize = fontSizes.find((item) => item.key === title)
-        let theme = contentItem ? contentItem.theme : {
+    const contentItem =
+      content && content?.portalContent?.find((item) => item.title === title);
+    let fontSize = fontSizes.find((item) => item.key === title);
+    let theme = contentItem
+      ? contentItem.theme
+      : {
           fontSize: fontSize?.size,
           color: "#000000e6",
-          fontWeight: title === 'Paragraph' ? 300 : 400,
+          fontWeight: title === "Paragraph" ? 300 : 400,
         };
-        return theme;
-      };
+    return theme;
+  };
 
   const LogoImage = () => {
-      const baseSize = 100; // Set a reasonable base size (in pixels)
-  
-      const logoSize =
-        (filterTheme("Logo")?.fontSize &&
-          logoSizeRatio[
-            filterTheme("Logo")?.fontSize
-          ]) ||
-        logoSizeRatio.medium;
-      return (
-        <div className="block min-w-16" >
-              <img
-                src={logo.replace("/api/upload", "/uploads")}
-                alt={params.portalid}
-                className="object-contain mr-2"
-                style={{
-                  height: `${baseSize * logoSize}px`, 
-                  width: "auto",                     
-                  maxWidth: "100%",                   
-                }}
-              />
-        </div>
-      );
-    };
+    const baseSize = 100; // Set a reasonable base size (in pixels)
+
+    const logoSize =
+      (filterTheme("Logo")?.fontSize &&
+        logoSizeRatio[filterTheme("Logo")?.fontSize]) ||
+      logoSizeRatio.medium;
+    return (
+      <div className="block min-w-16">
+        <img
+          src={logo.replace("/api/upload", "/uploads")}
+          alt={params.portalid}
+          className="object-contain mr-2"
+          style={{
+            height: `${baseSize * logoSize}px`,
+            width: "auto",
+            maxWidth: "100%",
+          }}
+        />
+      </div>
+    );
+  };
 
   return (
-    <div className="border-b border-[#0000001a] relative" style={{ backgroundColor: config?.accentColor}}>
+    <div
+      className="border-b border-[#0000001a] relative"
+      style={{ backgroundColor: config?.accentColor }}
+    >
       <div className="w-full mx-auto px-2">
         <nav className="flex justify-between">
           <div className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2">
@@ -250,93 +267,83 @@ function Navbar({ content, config, filterValue }) {
               style={{
                 fontSize: filterTheme("Header Text").fontSize,
                 fontWeight: filterTheme("Header Text").fontWeight,
-                lineHeight: "1.2", 
+                lineHeight: "1.2",
                 paddingBottom: "2px",
-                paddingInline:"2px" 
+                paddingInline: "2px",
               }}
             >
               {
-              // content?.portalContent === undefined ? ( 
-              //   <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
-              // ) : 
-              filterValue("Header Text") &&
-                filterValue("Header Text") !== "Premier Customer Portal" ? (
-                filterValue("Header Text") 
-              ) : (
-                params?.portalid 
-              )}
+                // content?.portalContent === undefined ? (
+                //   <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
+                // ) :
+                filterValue("Header Text") &&
+                filterValue("Header Text") !== "Premier Customer Portal"
+                  ? filterValue("Header Text")
+                  : params?.portalid
+              }
             </span>
-
           </div>
 
           <div className="hidden lg:flex">
-            {isAdvisorViewOpen ? (
-              <>
-                <NavBarItem
-                  title="Dashboard"
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/advisor/dashboard`
-                      : `/dashboard`
-                  }
-                />
-                <NavBarItem
-                  title="Shared Documents"
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/advisor/shared-docs`
-                      : "/shared-docs"
-                  }
-                />
-              </>
-            ) : (
-              <>
-                {filterPageVisibility("dashboard") && (
-                   <NavBarItem
-                     title="Dashboard"
-                     href={
-                       params.portalid
-                         ? `/${params.portalid}/dashboard`
-                         : `/dashboard`
-                     }
-                   />
-                 )}
-                {/* <NavBarItem
+            {filterPageVisibility("dashboard") && (
+              <NavBarItem
+                title="Dashboard"
+                href={
+                  params.portalid
+                    ? `/${params.portalid}/dashboard`
+                    : `/dashboard`
+                }
+              />
+            )}
+            {/* <NavBarItem
                   title="My Documents"
                   href={
                     params.portalid ? `/${params.portalid}/my-docs` : "/my-docs"
                   }
                 /> */}
 
-                  {filterPageVisibility("shared-docs") && (
-                   <NavBarItem
-                     title="Shared Documents"
-                     href={
-                       params.portalid
-                         ? `/${params.portalid}/shared-docs`
-                         : "/shared-docs"
-                     }
-                   />
-                 )}
-                 {filterPageVisibility("esignature") && (
-                   <NavBarItem
-                     title="eSignature"
-                     href={
-                       params.portalid
-                         ? `/${params.portalid}/esignature`
-                         : "/esignature"
-                     }
-                   />
-                 )}
-                 {filterPageVisibility("forms") && (
-                   <NavBarItem
-                     title="Forms"
-                     href={
-                       params.portalid ? `/${params.portalid}/forms` : "/forms"
-                     }
-                   />
-                 )}
-                 {/* {customPages?.length > 0 && (
+            {filterPageVisibility("shared-docs") && (
+              <NavBarItem
+                title="Shared Documents"
+                href={
+                  params.portalid
+                    ? `/${params.portalid}/shared-docs`
+                    : "/shared-docs"
+                }
+              />
+            )}
+            {filterPageVisibility("esignature") && (
+              <NavBarItem
+                title="eSignature"
+                href={
+                  params.portalid
+                    ? `/${params.portalid}/esignature`
+                    : "/esignature"
+                }
+              />
+            )}
+            {(userIsAdmin || userIsModerator) && (
+              <NavBarItem
+                title="Advisor Dashboard"
+                href={
+                  params.portalid
+                    ? `/${params.portalid}/advisor/dashboard`
+                    : "/advisor/dashboard"
+                }
+                activeRoutes={[
+                  params.portalid
+                    ? `/${params.portalid}/advisor/shared-docs`
+                    : "/advisor/shared-docs",
+                ]}
+              />
+            )}
+            {filterPageVisibility("forms") && (
+              <NavBarItem
+                title="Forms"
+                href={params.portalid ? `/${params.portalid}/forms` : "/forms"}
+              />
+            )}
+            {/* {customPages?.length > 0 && (
                     <div className="relative text-gray-800 cursor-pointer mr-5" ref={moreLinksDropdownRef}>
                       <div onClick={() => setIsOpenMoreLinksDropdown((prev) => !prev)}>
                         <Ellipsis />
@@ -367,20 +374,21 @@ function Navbar({ content, config, filterValue }) {
                       )}
                     </div>
                   )} */}
-                  {customPages?.length > 0 && customPages?.map((page) => (
-                    <NavBarItem 
-                      key={page?.id}
-                      title={page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/${sanitizeName(
-                            page?.title
-                            )}`
-                          : `/dashboard`
-                      }
-                    />
-                  ))}
-                {/* {userIsAdmin && (
+            {customPages?.length > 0 &&
+              customPages?.map((page) => (
+                <NavBarItem
+                  key={page?.id}
+                  title={
+                    page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)
+                  }
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/${sanitizeName(page?.title)}`
+                      : `/dashboard`
+                  }
+                />
+              ))}
+            {/* {userIsAdmin && (
                   <NavBarItem
                     title="Settings"
                     href={
@@ -390,8 +398,6 @@ function Navbar({ content, config, filterValue }) {
                     }
                   />
                 )} */}
-              </>
-            )}
 
             {/* Profile dropdown */}
             <div className="flex items-center space-x-8 cursor-pointer">
@@ -402,15 +408,14 @@ function Navbar({ content, config, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                    }`}
+                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                  }`}
                 >
                   {/* {
                     isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
                   } */}
-                  {
-                    user?.name?.charAt(0).toUpperCase() || "U"
-                  }
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div className="flex flex-col text-sm xl:text-base">
                   <span className="text-gray-900 font-medium">
@@ -423,98 +428,62 @@ function Navbar({ content, config, filterValue }) {
 
                 {/* DROPDOWN SECTION DONE*/}
                 {accountDropdown && (
-                  <>
-                    {isAdvisorViewOpen ? (
-                      <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                        {!userIsModerator && (
-                          <button
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                            onClick={() =>
-                              router.push(
-                                params.portalid
-                                  ? `/${params.portalid}/dashboard`
-                                  : "/dashboard"
-                              )
-                            }
-                          >
-                            <UserRoundPen className="h-5 w-5" /> Client View
-                          </button>
-                        )}
-                        {
-                          userIsModerator && (
-                            <button
-                              onClick={handleLogout}
-                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                            >
-                              <LogOut className="h-5 w-5" />
-                              Sign out
-                            </button>
-                          )
+                  <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                    <button
+                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                      onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
+                    >
+                      <CircleUserRound className="h-5 w-5" /> Account Info
+                    </button>
+                    {userIsAdmin && (
+                      <button
+                        onClick={() =>
+                          setIsTechSupportModalOpen((prev) => !prev)
                         }
-                      </div>
-                    ) : (
-                      <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                        <button
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          onClick={() =>
-                            setIsAccountInfoModalOpen((prev) => !prev)
-                          }
-                        >
-                          <CircleUserRound className="h-5 w-5" /> Account Info
-                        </button>
-                        {userIsAdmin && (
-                          <button
-                            onClick={() =>
-                              setIsTechSupportModalOpen((prev) => !prev)
-                            }
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          >
-                            <Headset className="h-5 w-5" />
-                            Tech Support
-                          </button>
-                        )}
-                        {/* Edit button */}
-                        {userIsAdmin && !isAdvisorViewOpen && (
-                          <button
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                            onClick={() =>
-                              router.push(
-                                params.portalid
-                                  ? `/${params.portalid}/settings`
-                                  : "/settings"
-                              )
-                            }
-                          >
-                            <Bolt className="h-5 w-5" />
-                            Tools
-                          </button>
-                        )}
-                        {
-                          userIsAdmin && (
-                              <button
-                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                                onClick={() =>
-                                  router.push(
-                                    params.portalid
-                                      ? `/${params.portalid}/advisor/dashboard`
-                                      : "/advisor/dashboard"
-                                  )
-                                }
-                              >
-                                <UserRoundPen className="h-5 w-5" /> Advisor View
-                              </button>
-                          )
-                        }
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        >
-                          <LogOut className="h-5 w-5" />
-                          Sign out
-                        </button>
-                      </div>
+                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                      >
+                        <Headset className="h-5 w-5" />
+                        Tech Support
+                      </button>
                     )}
-                  </>
+                    {/* Edit button */}
+                    {userIsAdmin && (
+                      <button
+                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        onClick={() =>
+                          router.push(
+                            params.portalid
+                              ? `/${params.portalid}/settings`
+                              : "/settings"
+                          )
+                        }
+                      >
+                        <Bolt className="h-5 w-5" />
+                        Tools
+                      </button>
+                    )}
+                    {/* {userIsAdmin && (
+                          <button
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                            onClick={() =>
+                              router.push(
+                                params.portalid
+                                  ? `/${params.portalid}/advisor/dashboard`
+                                  : "/advisor/dashboard"
+                              )
+                            }
+                          >
+                            <UserRoundPen className="h-5 w-5" /> Advisor View
+                          </button>
+                        )} */}
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      Sign out
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -568,38 +537,17 @@ function Navbar({ content, config, filterValue }) {
 
               {/* Navbar Content */}
               <div className="flex flex-col justify-center space-y-4 mt-10">
-                {isAdvisorViewOpen ? (
-                  <>
-                    <NavBarItem
-                      title="Dashboard"
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/advisor/dashboard`
-                          : `/dashboard`
-                      }
-                    />
-                    <NavBarItem
-                      title="Shared Documents"
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/advisor/shared-docs`
-                          : "/shared-docs"
-                      }
-                    />
-                  </>
-                ) : (
-                  <>
-                    {filterPageVisibility("dashboard") && (
-                       <NavBarItem
-                         title="Dashboard"
-                         href={
-                           params.portalid
-                             ? `/${params.portalid}/dashboard`
-                             : `/dashboard`
-                         }
-                       />
-                     )}
-                    {/* <NavBarItem
+                {filterPageVisibility("dashboard") && (
+                  <NavBarItem
+                    title="Dashboard"
+                    href={
+                      params.portalid
+                        ? `/${params.portalid}/dashboard`
+                        : `/dashboard`
+                    }
+                  />
+                )}
+                {/* <NavBarItem
                       title="My Documents"
                       href={
                         params.portalid
@@ -607,51 +555,64 @@ function Navbar({ content, config, filterValue }) {
                           : "/my-docs"
                       }
                     /> */}
-                    {filterPageVisibility("shared-docs") && (
-                       <NavBarItem
-                         title="Shared Documents"
-                         href={
-                           params.portalid
-                             ? `/${params.portalid}/shared-docs`
-                             : "/shared-docs"
-                         }
-                       />
-                     )}
-                     {filterPageVisibility("esignature") && (
-                       <NavBarItem
-                         title="eSignature"
-                         href={
-                           params.portalid
-                             ? `/${params.portalid}/esignature`
-                             : "/esignature"
-                         }
-                       />
-                     )}
-                     {filterPageVisibility("forms") && (
-                       <NavBarItem
-                         title="Forms"
-                         href={
-                           params.portalid
-                             ? `/${params.portalid}/forms`
-                             : "/forms"
-                         }
-                       />
-                     )}
-                     {customPages?.length > 0 && customPages?.map((page) => (
-                        <NavBarItem 
-                          key={page?.id}
-                          title={page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
-                          href={
-                            params.portalid
-                              ? `/${params.portalid}/${sanitizeName(
-                                page?.title
-                                )}`
-                              : `/dashboard`
-                          }
-                        />
-                      ))}
-                  </>
+                {filterPageVisibility("shared-docs") && (
+                  <NavBarItem
+                    title="Shared Documents"
+                    href={
+                      params.portalid
+                        ? `/${params.portalid}/shared-docs`
+                        : "/shared-docs"
+                    }
+                  />
                 )}
+                {filterPageVisibility("esignature") && (
+                  <NavBarItem
+                    title="eSignature"
+                    href={
+                      params.portalid
+                        ? `/${params.portalid}/esignature`
+                        : "/esignature"
+                    }
+                  />
+                )}
+                {filterPageVisibility("forms") && (
+                  <NavBarItem
+                    title="Forms"
+                    href={
+                      params.portalid ? `/${params.portalid}/forms` : "/forms"
+                    }
+                  />
+                )}
+                {(userIsAdmin || userIsModerator) && (
+                  <NavBarItem
+                    title="Advisor Dashboard"
+                    href={
+                      params.portalid
+                        ? `/${params.portalid}/advisor/dashboard`
+                        : "/advisor/dashboard"
+                    }
+                    activeRoutes={[
+                      params.portalid
+                        ? `/${params.portalid}/advisor/shared-docs`
+                        : "/advisor/shared-docs",
+                    ]}
+                  />
+                )}
+                {customPages?.length > 0 &&
+                  customPages?.map((page) => (
+                    <NavBarItem
+                      key={page?.id}
+                      title={
+                        page?.title?.charAt(0).toUpperCase() +
+                        page?.title?.slice(1)
+                      }
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/${sanitizeName(page?.title)}`
+                          : `/dashboard`
+                      }
+                    />
+                  ))}
                 <div className="flex items-center space-x-2 cursor-pointer">
                   <div
                     ref={dropdownRef}
@@ -660,8 +621,9 @@ function Navbar({ content, config, filterValue }) {
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                        }`}
+                      className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
+                        userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                      }`}
                     >
                       {/* {
                         isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
@@ -678,100 +640,66 @@ function Navbar({ content, config, filterValue }) {
                     </div>
 
                     {accountDropdown && (
-                      <>
-                        {isAdvisorViewOpen ? (
-                          <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                            {!userIsModerator && (
-                              <button
-                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                                onClick={() =>
-                                  router.push(
-                                    params.portalid
-                                      ? `/${params.portalid}/dashboard`
-                                      : "/dashboard"
-                                  )
-                                }
-                              >
-                                <UserRoundPen className="h-5 w-5" /> Client View
-                              </button>
-                            )}
-                            {
-                              userIsModerator && (
-                                <button
-                                  onClick={handleLogout}
-                                  className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                                >
-                                  <LogOut className="h-5 w-5" />
-                                  Sign out
-                                </button>
-                              )
+                      <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                        <button
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          onClick={() => {
+                            setIsAccountInfoModalOpen((prev) => !prev);
+                            setIsOpenNavbar(false);
+                          }}
+                        >
+                          <CircleUserRound className="h-5 w-5" /> Account Info
+                        </button>
+                        {userIsAdmin && (
+                          <button
+                            onClick={() =>
+                              setIsTechSupportModalOpen((prev) => !prev)
                             }
-                          </div>
-                        ) : (
-                          <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                            <button
-                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                              onClick={() =>{
-                                setIsAccountInfoModalOpen((prev) => !prev);
-                                setIsOpenNavbar(false);
-                              }}
-                            >
-                              <CircleUserRound className="h-5 w-5" /> Account
-                              Info
-                            </button>
-                            {userIsAdmin && (
-                              <button
-                                onClick={() =>
-                                  setIsTechSupportModalOpen((prev) => !prev)
-                                }
-                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                              >
-                                <Headset className="h-5 w-5" />
-                                Tech Support
-                              </button>
-                            )}
-                            {/* Edit button */}
-                            {userIsAdmin && !isAdvisorViewOpen && (
-                              <button
-                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                                onClick={() =>
-                                  router.push(
-                                    params.portalid
-                                      ? `/${params.portalid}/settings`
-                                      : "/settings"
-                                  )
-                                }
-                              >
-                                <Bolt className="h-5 w-5" />
-                                Tools
-                              </button>
-                            )}
-                            {
-                              userIsAdmin && (
-                                  <button
-                                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                                    onClick={() =>
-                                      router.push(
-                                        params.portalid
-                                          ? `/${params.portalid}/advisor/dashboard`
-                                          : "/advisor/dashboard"
-                                      )
-                                    }
-                                  >
-                                    <UserRoundPen className="h-5 w-5" /> Advisor View
-                                  </button>
-                              )
-                            }
-                            <button
-                              onClick={handleLogout}
-                              className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                            >
-                              <LogOut className="h-5 w-5" />
-                              Sign out
-                            </button>
-                          </div>
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          >
+                            <Headset className="h-5 w-5" />
+                            Tech Support
+                          </button>
                         )}
-                      </>
+                        {/* Edit button */}
+                        {userIsAdmin && (
+                          <button
+                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                            onClick={() =>
+                              router.push(
+                                params.portalid
+                                  ? `/${params.portalid}/settings`
+                                  : "/settings"
+                              )
+                            }
+                          >
+                            <Bolt className="h-5 w-5" />
+                            Tools
+                          </button>
+                        )}
+                        {/* {userIsAdmin && (
+                              <button
+                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                                onClick={() =>
+                                  router.push(
+                                    params.portalid
+                                      ? `/${params.portalid}/advisor/dashboard`
+                                      : "/advisor/dashboard"
+                                  )
+                                }
+                              >
+                                <UserRoundPen className="h-5 w-5" /> Advisor
+                                View
+                              </button>
+                            )} */}
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Sign out
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

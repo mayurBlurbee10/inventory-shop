@@ -15,7 +15,8 @@ import {
     X,
     FolderInput,
     Download,
-    Trash2
+    Trash2,
+    ArrowLeft
 } from "lucide-react";
 import CreateFolder from "@/components/CreateFolder";
 import UploadArea from "@/components/UploadArea";
@@ -639,18 +640,18 @@ export default function AdvisorViewSharedDocsPage() {
         fetchPage();
     },[]);
 
-      const LoadingSpinner = () => (
-        <div className="h-[83vh] flex justify-center items-center bg-white">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      );
+    const LoadingSpinner = () => (
+      <div className={`h-[80vh] flex items-center justify-center bg-white`}>
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
       
     if(boxUserId && !user) return <LoadingSpinner />;
 console.log("User:", user);
 
     return (
-        <div className="max-w-[1820px] mx-auto px-4">
-            {/* <div className="grid grid-cols-1 lg:grid-cols-4 pt-8 gap-7">
+      <div className="max-w-[1820px] mx-auto px-4">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-4 pt-8 gap-7">
 
                 <div className="col-span-1">
                     <h3 className="text-xl font-light font-lato text-black mb-4">Your Clients</h3>
@@ -706,36 +707,60 @@ console.log("User:", user);
                     )}
                 </div>
             </div> */}
-
-            <div className="grid gap-7 grid-cols-5 pt-4 sm:pt-12">
-                <div className="col-span-5 lg:col-span-3 ">
-                    <Documents fileType={"advisor"} clientFolderId={user ? user?.folderId : loggedInUser?.folderId} key={user ? user.id : loggedInUser.id}/>
+        <div className="pt-5 lg:pt-10">
+          <button
+            className="flex items-center text-gray-600 hover:text-blue-700 font-medium text-sm sm:text-md transition-colors duration-200 group"
+            onClick={() =>
+              router.push(
+                params.portalid
+                  ? `/${params.portalid}/advisor/dashboard`
+                  : "/advisor/dashboard"
+              )
+            }
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-45 mr-1 group-hover:-translate-x-1 transition-transform duration-200" />
+            Back
+          </button>
+        </div>
+        <div className="grid gap-7 grid-cols-5 pt-2">
+          <div className="col-span-5 lg:col-span-3 ">
+            <Documents
+              fileType={"advisor"}
+              clientFolderId={user ? user?.folderId : loggedInUser?.folderId}
+              key={user ? user.id : loggedInUser.id}
+            />
+          </div>
+          <div className="col-span-5 lg:col-span-2">
+            {filterVisibility("My Task Section") && (
+              <div>
+                <TasksSection
+                  client={user ? user : loggedInUser}
+                  key={user ? user.id : loggedInUser.id}
+                />
+              </div>
+            )}
+            {filterVisibility("Advisor Section") && (
+              <div>
+                <div className="mb-7">
+                  <AdvisorSection
+                    title="Your Client"
+                    userName={user ? user?.name : loggedInUser?.name}
+                    role={user ? user?.email : loggedInUser?.email}
+                  />
                 </div>
-                <div className="col-span-5 lg:col-span-2">
-                    {filterVisibility("My Task Section") && (
-                        <div>
-                            <TasksSection client={user ? user : loggedInUser} key={user ? user.id : loggedInUser.id} />
-                        </div>
-                    )}
-                    {filterVisibility("Advisor Section") && (
-                        <div>
-                            <div className="mb-7">
-                                <AdvisorSection
-                                    title="Your Client"
-                                    userName={user ? user?.name : loggedInUser?.name}
-                                    role={user ? user?.email : loggedInUser?.email}
-                                />
-                            </div>
-                        </div>
-                    )}
-                    {filterVisibility("Messaging") && (
-                        <div>
-                            <MessageSection clientId={user ? user.id : loggedInUser.id} key={user ? user.id : loggedInUser.id} />
-                        </div>
-                    )}
-                </div>
-            </div>
-            {/* {isMyTaskPopupOpen && (
+              </div>
+            )}
+            {filterVisibility("Messaging") && (
+              <div>
+                <MessageSection
+                  clientId={user ? user.id : loggedInUser.id}
+                  key={user ? user.id : loggedInUser.id}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        {/* {isMyTaskPopupOpen && (
                 <MyTaskPopupBox
                     onClose={() => setIsMyTaskPopupOpen(false)}
                     content={myTaskPopupBoxContent}
@@ -746,7 +771,6 @@ console.log("User:", user);
                 onClose={() => setIsCompleteFormPopupOpen(false)}
                 isOpen={isCompleteFormPopupOpen}
             /> */}
-
-        </div>
+      </div>
     );
 }

@@ -43,7 +43,7 @@ const Footer = ({
   const isFromAvailable = from;
   if (isLoading) {
     return (
-      <footer className="pt-12 mt-auto">
+      <footer className="pt-5 mt-auto">
         <div className="container px-4">
           <div className="max-w-[1140px] md:px-[15px]">
             <div className="animate-pulse flex justify-start items-start space-x-2">

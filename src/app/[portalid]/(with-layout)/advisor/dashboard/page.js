@@ -197,6 +197,13 @@ export default function AdvisorViewDashboard() {
       }, []);
       console.log("Data:", data);
       
+      const LoadingSpinner = () => (
+        <div className={`h-[80vh] flex items-center justify-center bg-white`}>
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+
+      if (isLoading || isPageLoading) return <LoadingSpinner />;
 
     return (
         // <Container>
