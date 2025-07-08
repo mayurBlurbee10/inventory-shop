@@ -368,13 +368,13 @@ const TextEditor = ({ content, onChange,from }) => {
     },
     onUpdate({ editor }) {
       const plainText = editor.getText().replace(/\s/g, ''); // remove all spaces
-      if(from){
-        if (plainText.length <= MAX_CHARACTERS) {
-          onChange(editor.getHTML());
-        } else {
-          editor.commands.undo(); // revert the last input
-        }
-      }
+      // if(from){
+      //   if (plainText.length <= MAX_CHARACTERS) {
+      //     onChange(editor.getHTML());
+      //   } else {
+      //     editor.commands.undo(); // revert the last input
+      //   }
+      // }
       onChange(editor.getHTML());
     },
   });

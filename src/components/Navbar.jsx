@@ -322,7 +322,7 @@ function Navbar({ content, config, filterValue }) {
                 }
               />
             )}
-            {(userIsAdmin || userIsModerator) && (
+            {(userIsAdmin || userIsModerator) && filterPageVisibility("advisor dashboard") && (
               <NavBarItem
                 title="Advisor Dashboard"
                 href={
@@ -583,7 +583,7 @@ function Navbar({ content, config, filterValue }) {
                     }
                   />
                 )}
-                {(userIsAdmin || userIsModerator) && (
+                {(userIsAdmin || userIsModerator) && filterPageVisibility("advisor dashboard") && (
                   <NavBarItem
                     title="Advisor Dashboard"
                     href={

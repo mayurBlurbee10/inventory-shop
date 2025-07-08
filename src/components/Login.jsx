@@ -264,10 +264,7 @@ function Login() {
       localStorage.setItem("accessToken", data.accessToken);
 
       if (!tncPage || (tncPage && userData?.isTNCAccepted)) {
-        const targetRoute =
-          userData?.role === UserRole.MODERATOR
-            ? "advisor/dashboard"
-            : pageToRedirect?.title;
+        const targetRoute = pageToRedirect?.title;
         router.push(targetRoute);
         toast.success(`Redirecting to ${pageToRedirect?.pageTitle}`);
       }
@@ -282,13 +279,18 @@ function Login() {
 
   const filterValue = (title) => {
     if (!content) return null;
+    console.log("Content ========>", content);
+    
     const contentItem =
       content && content?.portalContent.find((item) => item.title === title);
     const value = contentItem ? contentItem.value : null;
+    console.log("value ========>", value);
 
     if (!value) {
       const defaultItem =
         content && content?.defaultContent.find((item) => item.title === title);
+        console.log("defaultItem===============>", defaultItem);
+        
       return defaultItem ? defaultItem.value : null;
     }
     return value;

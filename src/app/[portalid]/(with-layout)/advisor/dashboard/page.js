@@ -42,16 +42,16 @@ export default function AdvisorViewDashboard() {
     const [isPageLoading, setIsPageLoading] = useState(false)
     const [page, setPage] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
-
+    const router = useRouter();
     const { data : user } = useSelector((state) => state.user);
+    const {data : pages } = useSelector((state)=>state.pages);
 
     const [dayAndDate, setDayAndDate] = useState({
         day: "",
         date: "",
         month: "",
     });
-
-
+    
     useEffect(() => {
         const date = new Date();
         const dayIndex = date.getDay();
@@ -102,11 +102,6 @@ export default function AdvisorViewDashboard() {
             setIsLoading(false);
         }
     };
-
-    useEffect(() => {
-        fetchUser();
-        fetchPage();
-    }, []);
 
     const fetchConfig = async () => {
         try {
@@ -188,14 +183,26 @@ export default function AdvisorViewDashboard() {
         }));
     };
 
-
-     useEffect(() => {
+      useEffect(() => {
+        const page = pages?.find((page) => page.title === "advisor dashboard");
+        
+        if (page && !page.isPageVisible) {
+          router.push(
+            `${
+              params?.portalid
+                ? `/${params?.portalid}/access-denied`
+                : "/access-denied"
+            }`
+          );
+           return;
+        }
+        fetchUser();
+        fetchPage();
         fetchConfig().then((portal) => {
-        //   getChartData(2025, portal?.id).then((data) => setData(data));
+          //   getChartData(2025, portal?.id).then((data) => setData(data));
           generateMockData(2025, portal?.id).then((data) => setData(data));
         });
       }, []);
-      console.log("Data:", data);
       
       const LoadingSpinner = () => (
         <div className={`h-[80vh] flex items-center justify-center bg-white`}>

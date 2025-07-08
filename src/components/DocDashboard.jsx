@@ -96,7 +96,7 @@ export default function DocDashboard() {
 
   const isAnySideSectionVisible = () => {
     if (isPageLoading) return true; 
-    if (!page || !page.length) return true; 
+    if (!page || !page?.length) return true; 
     
     return page.some((item) => item.visible);
   };
@@ -214,7 +214,7 @@ export default function DocDashboard() {
 
   const filterVisibility = (label) => {
     if (isPageLoading) return false;  
-    if (!page || !page.length) return true;       
+    if (!page || !page?.length) return true;       
     
     const section = page.find((item) => item.label === label);
     return section?.visible ?? false; 
@@ -277,8 +277,8 @@ export default function DocDashboard() {
                     <div className="w-full">
                       <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
                         {
-                          filterValue("Dashboard Heading").length > 0 ? (
-                            <div className="page flex items-center font lato" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true}/>
+                          filterValue("Dashboard Heading")?.length > 0 ? (
+                            <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true}/>
                           ) : (
                             <div className="pr-2 flex items-center">{`Hello, ${user?.name}!`}</div>
                           )

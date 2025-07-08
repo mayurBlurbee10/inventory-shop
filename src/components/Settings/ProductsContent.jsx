@@ -430,7 +430,7 @@ const ProductsContent = () => {
             {pagesData &&
               pagesData.length > 0 &&
               pagesData.map((page, idx) => {
-                if(page?.title.includes("advisor")){
+                if(page?.title.includes("advisor shared-docs")){
                   return;
                 }
                 return (

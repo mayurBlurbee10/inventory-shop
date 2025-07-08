@@ -79,12 +79,27 @@ export default function AdvisorViewSharedDocsPage() {
     const [page, setPage] = useState(null)
     const [isPageLoading, setIsPageLoading] = useState(false)
     const { data: config } = useSelector((state) => state.portal);
+     const {data : pages } = useSelector((state)=>state.pages);
     const { data: loggedInUser } = useSelector((state) => state.user);
     const searchParams = useSearchParams();
     const boxUserId = searchParams.get("userId");
     const dispatch = useDispatch()
 
     const router = useRouter();
+     useEffect(() => {
+       const page = pages?.find((page) => page.title === "advisor dashboard");
+        
+        if (page && !page.isPageVisible) {
+          router.push(
+            `${
+              params?.portalid
+                ? `/${params?.portalid}/access-denied`
+                : "/access-denied"
+            }`
+          );
+           return;
+        }
+     }, []);
 
     const [dayAndDate, setDayAndDate] = useState({
         day: "",
