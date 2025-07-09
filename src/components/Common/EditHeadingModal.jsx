@@ -77,7 +77,7 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
       setIsLoading(false);
     }
   };
-  
+ 
   return (
     <>
       {isOpen && (
@@ -106,13 +106,15 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
               </div>
 
               <div className="flex flex-col w-full max-h-[500px]">
-                <label className="text-xl font-semibold mb-1">Description</label>
+                <label className="text-xl font-semibold mb-1">
+                  Description
+                </label>
                 <Controller
                   name="value"
                   control={control}
                   render={({ field }) => (
                     <TextEditor
-                      from={"Dashboard Heading"}
+                      from={data?.title || "Heading"}
                       content={field.value || ""}
                       onChange={(value) => setValue("value", value)}
                     />
@@ -120,8 +122,19 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
                 />
               </div>
               <div className="w-full flex items-center justify-end mr-12 gap-2">
-                <Button type="Secondary" label="Cancel" disabled={isLoading} onClick={onClose}/>
-                <Button buttonType="submit" type="Primary" label={data.value ? "Save" : "Add"} isLoading={isLoading} disabled={isLoading}/>
+                <Button
+                  type="Secondary"
+                  label="Cancel"
+                  disabled={isLoading}
+                  onClick={onClose}
+                />
+                <Button
+                  buttonType="submit"
+                  type="Primary"
+                  label={data?.value ? "Save" : "Add"}
+                  isLoading={isLoading}
+                  disabled={isLoading}
+                />
               </div>
             </form>
           </div>

@@ -50,8 +50,9 @@ const ContentManagementContent = ({
   const pathname= usePathname();
   const onBoarding = pathname.includes("/onboarding");
   const { data: config } = useSelector((state) => state.portal);
-  const [isEditModalOpen,setIsEditModalOpen] = useState(false)
-  const [isDeletePopUpOpen,setIsDeletePopUpOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
   const [isLoadingRemoveContent , setIsLoadingRemoveContent] = useState(false);
   const { data: contentData } = useSelector((state) => state.content);
   // const [colors, setColors] = useState({
@@ -455,7 +456,9 @@ const filterValue = (title) => {
 const handleRemoveHeading = async () => {
   try {
     setIsLoadingRemoveContent(true)
-    const contentToRemove = filterValue("Dashboard Heading");
+    const contentToRemove = deleteTarget === "dashboard"
+                    ? filterValue("Dashboard Heading")
+                    : filterValue("Shared Docs Heading")
     if (!contentToRemove) {
       toast.error("Content not found to delete");
       return;
@@ -481,7 +484,7 @@ const handleRemoveHeading = async () => {
     toast.error("Something went wrong while deleting");
   } finally{
     setIsLoadingRemoveContent(false)
-    setIsDeletePopUpOpen(false);
+    setDeleteTarget(false);
   }
 };
 
@@ -622,47 +625,63 @@ const handleRemoveHeading = async () => {
         )}
       </div>
       <hr/>
-      <div className="py-2 text-gray-900">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 pt-3 ">
+        <div className="py-2 text-gray-900">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 pt-3">
+            {/* Dashboard Heading */}
             <div className="pl-3">
               <div className="border flex justify-center items-center p-4 rounded-md">
-                <h3 className="font-lato font-semibold text-lg">
-                  Dashboard Welcome Note
-                </h3>
-                <div className="flex items-center ml-auto ">
-                  <button
-                    type="button"
-                    className="inline-flex items-center px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => {
-                      setIsEditModalOpen(true);
-                    }}
-                  >
+                <h3 className="font-lato font-semibold text-lg">Dashboard Welcome Note</h3>
+                <div className="flex items-center ml-auto gap-2">
+                  <button onClick={() => setEditTarget("dashboard")}>
                     <Edit className="size-5 text-blue-700" />
                   </button>
-                  {filterValue("Dashboard Heading").from && (
-                    <button
-                      type="button"
-                      className="inline-flex items-center px-4 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                      onClick={() => {
-                        setIsDeletePopUpOpen(true);
-                      }}
-                    >
+                  {filterValue("Dashboard Heading")?.from === "portalContent" && (
+                    <button onClick={() => setDeleteTarget("dashboard")}>
                       <Trash2 className="size-5 text-red-700" />
                     </button>
                   )}
                 </div>
               </div>
             </div>
+
+
+            {/* Shared Docs Heading */}
+            <div className="pl-3">
+              <div className="border flex justify-center items-center p-4 rounded-md">
+                <h3 className="font-lato font-semibold text-lg">Shared Docs Welcome Note</h3>
+                <div className="flex items-center ml-auto gap-2">
+                  <button onClick={() => setEditTarget("sharedDocs")}>
+                    <Edit className="size-5 text-blue-700" />
+                  </button>
+                  {filterValue("Shared Docs Heading")?.from === "portalContent" && (
+                    <button onClick={() => setDeleteTarget("sharedDocs")}>
+                      <Trash2 className="size-5 text-red-700" />
+                    </button>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {deleteTarget && (
+            <DeleteConfirmDialog
+              isModalOpen={true}
+              setIsModalOpen={() => setDeleteTarget(null)}
+              handleDelete={() =>
+                handleRemoveHeading(
+                  deleteTarget === "dashboard"
+                    ? filterValue("Dashboard Heading")
+                    : filterValue("Shared Docs Heading")
+                )
+              }
+              title="Remove Welcome Note"
+              content="Confirm to remove the welcome note."
+              isLoading={isLoadingRemoveContent}
+            />
+          )}
+
         </div>
-              <DeleteConfirmDialog
-                isModalOpen={isDeletePopUpOpen}
-                setIsModalOpen={setIsDeletePopUpOpen}
-                handleDelete={handleRemoveHeading}
-                title="Remove Welcome Note"
-                content="Confirm to remove the dashboard welcome note."
-                isLoading={isLoadingRemoveContent}
-              />
-      </div>
       {/* Dialog Box */}
       {isDialogOpen && (
         <AddContentModal
@@ -757,15 +776,17 @@ const handleRemoveHeading = async () => {
         </div>
       )}
     </div>
-      {
-        isEditModalOpen && (
-          <EditHeadingModal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-           data ={filterValue("Dashboard Heading")}
-          />
-        )
-      }
+      {editTarget && (
+        <EditHeadingModal
+          isOpen={true}
+          onClose={() => setEditTarget(null)}
+          data={
+            editTarget === "dashboard"
+              ? filterValue("Dashboard Heading")
+              : filterValue("Shared Docs Heading")
+          }
+        />
+      )}
     </>
   );
 };

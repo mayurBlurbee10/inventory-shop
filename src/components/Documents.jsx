@@ -1125,12 +1125,12 @@ function Documents({
   // }, [])
 
   const LoadingSpinner = () => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="h-[80vh] flex items-center justify-center bg-white">
       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
-  // if (!config || !content) return <LoadingSpinner />;
+  // if (!filterValue("Shared Docs Heading")) return <LoadingSpinner />;
   const userIsAdmin = isAdmin();
 
   return (
@@ -1169,7 +1169,7 @@ function Documents({
                     </div>
                   )}
                   <div className="flex items-center gap-10">
-                    <p className="text-sm font-lato">
+                    {/* <p className="text-sm font-lato">
                       <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
                         Shared Documents
                       </span>
@@ -1177,7 +1177,38 @@ function Documents({
                         Securely share content with your advisor and trusted
                         collaborators
                       </span>
-                    </p>
+                    </p> */}
+                    <div className="w-full">
+                      <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
+                        <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
+                          Shared Documents
+                        </span>
+                        <span className="text-sm font-normal text-black font-lato block md:inline">
+                          {
+                            // Check if content and its required properties are loaded
+                            (!content || !content.portalContent || !content.defaultContent) ? (
+                              <div className="pr-2 flex items-center">
+                                <div className="flex space-x-1">
+                                  <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce"></div>
+                                  <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                  <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                </div>
+                              </div>
+                            ) : (
+                              // Content is fully loaded, now check for custom content
+                              (() => {
+                                const customContent = filterValue("Shared Docs Heading");
+                                return (customContent && customContent.trim().length > 0) ? (
+                                  <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: customContent }} suppressHydrationWarning={true} />
+                                ) : (
+                                  <div className="pr-2 flex items-center">Securely share content with your advisor and trusted collaborators</div>
+                                );
+                              })()
+                            )
+                          }
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <hr className="my-5" />
