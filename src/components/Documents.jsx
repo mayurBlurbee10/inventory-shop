@@ -1180,9 +1180,6 @@ function Documents({
                     </p> */}
                     <div className="w-full">
                       <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
-                        <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
-                          Shared Documents
-                        </span>
                         <span className="text-sm font-normal text-black font-lato block md:inline">
                           {
                             // Check if content and its required properties are loaded
@@ -1201,7 +1198,12 @@ function Documents({
                                 return (customContent && customContent.trim().length > 0) ? (
                                   <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: customContent }} suppressHydrationWarning={true} />
                                 ) : (
-                                  <div className="pr-2 flex items-center">Securely share content with your advisor and trusted collaborators</div>
+                                    <div className="pr-2 flex flex-wrap items-center">
+                                      <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
+                                        Shared Documents
+                                      </span>
+                                      <span>Securely share content with your advisor and trusted collaborators</span>
+                                    </div>
                                 );
                               })()
                             )
