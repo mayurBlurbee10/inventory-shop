@@ -1,6 +1,9 @@
 import path from "path";
 import { promises as fs } from "fs";
 import apiLogService from "../../services/apiLogsService";
+import userService from "@/services/userService";
+import portalService from "@/services/portalService";
+import apiLogsService from "../../services/apiLogsService";
 
 const dir = path.join(process.cwd(), "src", "app", "data");
 const filePath = path.join(process.cwd(), "src", "app", "data", "api-log.json");
@@ -44,16 +47,39 @@ const formatDate = (date) => {
   return `${month}-${day}-${year}`;
 };
 
-export const logApiCall = async (req, next) => {
+function reverseSanitizeName(sanitizedName) {
+  let reversedName = sanitizedName.endsWith("-")
+    ? sanitizedName.slice(0, -1)
+    : sanitizedName;
+
+  reversedName = reversedName.replace(/-/g, " ");
+  reversedName = reversedName
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  return reversedName;
+}
+
+export const logApiCall = async (req, next, type = null, userId = null, fileId = null) => {
   await ensureDirectory(dir);
+  // const data = await req.json();
 
-  const data = await readJsonFile(filePath);
+  const isGetMethod =
+    req.method === "GET" &&
+    type !== "file-edit" &&
+    type !== "file-preview" &&
+    type !== "file-download";
 
-  const userId = req.headers.get("x-user-id");
+  const XUserId = req.headers.get("x-user-id");
   const portalId = req.headers.get("x-portal-id");
   const apiType = req.headers.get("x-api-type");
+  const user = userId ? userId : XUserId;
 
-  if (!userId || !portalId || !apiType) {
+  console.log("User, PortalId, ApiType=============>", user, portalId, apiType);
+  
+
+  if (!user || !portalId || !apiType || ["undefined", "null", ""].includes(user) || ["undefined", "null", ""].includes(apiType) || ["undefined", "null", ""].includes(portalId) || isGetMethod) {
     console.log("Missing required headers. Skipping logging.");
     if (typeof next === "function") {
       return next();
@@ -61,17 +87,60 @@ export const logApiCall = async (req, next) => {
     return;
   }
 
-  const now = new Date();
+  const userData = await userService.getUserById(user);
+  const portalData = await portalService.getPortalByLegalName(reverseSanitizeName(portalId));
+
+  const findPermission = userData?.userPermissions?.find((p) => p?.portalId === portalId);
+  if (findPermission && findPermission?.apiLimit) {
+    const ApiLimittype = findPermission?.apiLimit.per;
+
+    const apiCallMonth = await apiLogsService.getApiLogsByType(portalId, ApiLimittype, userData.role === "user" ? userData.id : null);
+
+    const sender = portalData?.portalCreatedAdmin;
+
+    const limit = findPermission?.apiLimit?.limit;
+    const step = Math.ceil(limit * 0.25); // 25% of limit
+    const currentUsage = apiCallMonth.length;
+
+    if (currentUsage >= limit) {
+      const lastNotified = findPermission;
+      const lastThreshold = lastNotified?.apiLimit?.threshold || 0;
+      const currentThreshold = Math.floor(currentUsage / step) * step;
+
+      if (currentThreshold > lastThreshold) {
+        await apiLimitCrossEmail(
+          sender.email,
+          sender.name,
+          userData.name,
+          portalData.legalName,
+          limit,
+          findPermission.apiLimit.per,
+          currentUsage - findPermission.apiLimit.limit
+        );
+        const updatedPermission = userData?.userPermissions?.map((item) =>
+          item.portalId === portalId
+            ? { ...item, apiLimit: { ...item?.apiLimit, threshold: currentThreshold, notifiedAt: new Date() } }
+            : item
+        );
+        await userService.updateUser(user, {
+          userPermissions: updatedPermission,
+        });
+      }
+    }
+  }
+
   const logEntry = {
-    date: formatDate(now),
-    userId: userId,
-    name: portalId,
-    type: apiType,
+    createdBy: user,
+    portalId: portalId,
+    type: type ? type : apiType,
+    source: fileId
   };
 
+  console.log("logEntry=================>", logEntry);
+  
+
   // data.push(logEntry);
-  // const res = await apiLogService.createApiLogs(logEntry)
-  // console.log("Response from api-log-middleware : ", res);
+  const res = await apiLogService.createApiLogs(logEntry)
   // await writeJsonFile(dir, filePath, data);
   if (typeof next === "function") {
     next();

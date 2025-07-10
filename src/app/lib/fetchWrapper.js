@@ -1,15 +1,34 @@
+import { getUserData } from "@/lib/auth";
+
 export const fetchWrapper = async (url, options = {}, type) => {
 
   // Get dynamic header values (e.g., from localStorage, cookies, or a session)
-  const user = JSON.parse(localStorage.getItem("user")) || {
-    id: "defaultUser",
+  const user = getUserData() || {
+    id: null,
   };
   const portal = localStorage.getItem("portal");
+
+   let portalId = "admin"; // default
+  
+  if (options.body && typeof options.body === "string") {
+    try {
+      const parsedBody = JSON.parse(options.body);
+      portalId = user?.portalId || parsedBody.portalid || "admin";
+    } catch (error) {
+      console.warn("Failed to parse body for portalid:", error);
+      portalId = user?.portalId || "admin";
+    }
+  } else if (options.body && typeof options.body === "object") {
+    portalId = user?.portalId || options.body.portalid || "admin";
+  } else {
+    portalId = user?.portalId || "admin";
+  }
+
 
   // Default headers
   const defaultHeaders = {
     "x-user-id": user.id,
-    "x-portal-id": portal,
+    "x-portal-id": portalId,
     "x-api-type": type, // Replace with your API type logic
   };
 

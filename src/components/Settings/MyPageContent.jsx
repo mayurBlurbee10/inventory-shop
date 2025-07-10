@@ -133,15 +133,11 @@ const MyPageContent = () => {
           createdBy: user?.id,
         };
         const pluginResponse = await fetchWrapper(
-          "/api/plugins",
+          `/api/plugins?portalId=${params.portalid}&&type=${PluginType.PAGES}`,
           {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(pluginPayload),
+            method: "GET",
           },
-          "save-plugin"
+          "fetch-plugin"
         );
 
         if (!pluginResponse.ok) {

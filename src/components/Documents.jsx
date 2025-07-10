@@ -668,7 +668,7 @@ function Documents({
         const response = await fetchWrapper(
           `/api/box/move`,
           requestOptions,
-          "moveFileOrFolder"
+          "move-file-or-folder"
         );
         if (!response.ok) throw new Error("Failed to move file or folder");
         toast.success(

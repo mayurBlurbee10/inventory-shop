@@ -3,22 +3,27 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Users } from "./Users";
 import BaseTable from "./BaseTable";
 
-export @Entity("api_logs")
-  class ApiLogs extends BaseTable {
-  @Column({ type: "nvarchar", length: 255 })
-  date;
+export
+@Entity("api_logs")
+class ApiLogs extends BaseTable {
+  @ManyToOne(() => Users, { nullable: true })
+  @JoinColumn({ name: "createdBy" })
+  createdBy;
 
-  @Column({ type: "nvarchar", length: 255 })
-  userId;
-
-  @Column({ type: "nvarchar", length: 255 })
-  name;
+  @Column({ type: "nvarchar", length: 255, nullable: true })
+  portalId;
 
   @Column({ type: "nvarchar", length: 255 })
   type;
+
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
+  source;
 }

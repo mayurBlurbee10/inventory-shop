@@ -69,7 +69,7 @@ function TNCModal({ onClose, user, email, password, page }) {
             userId: user?.id,
           }),
         },
-        "update-user"
+        "tnc-accept"
       );
       if (!response.ok) {
         throw new Error("Failed to update user");

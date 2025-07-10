@@ -60,7 +60,7 @@ export default function PreviewModal({ isOpen, onClose, fileId }) {
           });
         }
 
-        const response = await fetchWrapper(`/api/box/preview/${fileId}`,{}, 'preview');
+        const response = await fetchWrapper(`/api/box/preview/${fileId}`,{}, 'file-preview');
         const data = await response.json();
 
         if (!response.ok || !data.accessToken) {

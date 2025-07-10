@@ -24,6 +24,7 @@ import { getUserData } from "@/app/lib/auth";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
+import DataTableSection from "./DataTableSection";
 
 const generateMockData = async (year, portalId) => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -180,83 +181,8 @@ const ReportsContent = () => {
     <div className="flex">
       {/* Main Content */}
       <div className="flex-1">
-        {/* Header Section */}
-        <div className="mb-5">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-medium text-gray-900">
-              Statistics Report for {config?.legalName}
-            </h3>
-            {/* <SquareArrowOutUpRight
-              className="text-black hover:text-blue-500 size-4"
-              onClick={() => {
-                const url = `/${sanitizeName(config.legalName)}/login`;
-                window.open(url, "_blank");
-              }}
-            /> */}
-          </div>
-
-          {/* <p className="text-gray-500 mb-6">{subsidiaryData.description}</p> */}
-        </div>
-
-        {/* KPIs in single row */}
-        <div className="flex flex-wrap gap-6 mb-5">
-          <div className="flex-1">
-            <KPICard
-              title="Monthly Active Users"
-              value={activeUsers}
-              total={1000}
-              percentage={calculatePercentage(activeUsers, 1000)}
-            />
-          </div>
-          <div className="flex-1">
-            <KPICard
-              title="API Calls This Month"
-              value={apiCalls}
-              total={10000}
-              percentage={calculatePercentage(apiCalls, 10000)}
-            />
-          </div>
-        </div>
-
-        {/* Graph */}
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900 mb-6">
-            Usage Analytics
-          </h2>
-          <div className="sm:h-[400px] h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={data}
-                margin={{
-                  top: 5,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Line
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="apiCalls"
-                  stroke="#0061D5"
-                  name="API Calls"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="activeUsers"
-                  stroke="#16a34a"
-                  name="Active Users"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+        <div className="flex justify-center items-center">
+          <DataTableSection />
         </div>
       </div>
     </div>

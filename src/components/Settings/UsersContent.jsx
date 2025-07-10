@@ -284,8 +284,8 @@ const UsersContent = () => {
                         title="View Profile"
                         className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
                         onClick={() => {
-                          setIsViewProfileModal((prev) => !prev);
                           setSelectedUser(user);
+                          setIsViewProfileModal((prev) => !prev);
                         }}
                       >
                         <User className="w-5 h-5" />
@@ -314,6 +314,7 @@ const UsersContent = () => {
         user={selectedUser}
         setUser={setSelectedUser}
         setOnDeleteUser={setOnDeleteUser}
+        onSumbit={fetchUsers}
       />
 
       <AddUserModal

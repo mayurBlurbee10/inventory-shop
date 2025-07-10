@@ -27,7 +27,7 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
       const response = await fetchWrapper(
         "/api/box/files",
         requestOptions,
-        "Rename-document"
+        "rename-document"
       );
       const data = await response.json();
       if(!response.ok){

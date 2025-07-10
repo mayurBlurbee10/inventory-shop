@@ -102,7 +102,6 @@ function sanitizeName(name) {
 
 export async function POST(request) {
   try {
-    await logApiCall(request, () => {});
     const data = await request.json();
     console.log("Login attempt for:", data.email);
 
@@ -243,6 +242,7 @@ export async function POST(request) {
     // Include role in the response and ensure it's properly set
     let userData = {
       id: user.id,
+      portalId: userPermission?.portalId || 'admin',
       email: user.email,
       name: user.name,
       role: userRole,
@@ -304,6 +304,7 @@ export async function POST(request) {
     });
 
     console.log("Sending response with user data:", userData);
+    await logApiCall(request, () => {}, "login", user?.id);
     return response;
   } catch (error) {
     console.error("Login error:", error);

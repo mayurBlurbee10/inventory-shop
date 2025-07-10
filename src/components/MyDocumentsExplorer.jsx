@@ -132,7 +132,7 @@ const ShareModal = ({
       const response = await fetchWrapper(
         `/api/box/files/share`,
         obj,
-        "addCollaborator"
+        "share-file"
       );
       const data = await response.json();
       if (!response.ok)

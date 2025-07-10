@@ -191,7 +191,7 @@ function SettingsPage() {
           </div>
         </>
       )}
-      <div className="md:flex-1 min-h-[calc(100vh-180px)] overflow-auto hidden-scrollbar w-full p-6">
+      <div className="md:flex-1 min-h-[calc(100vh-120px)] overflow-auto hidden-scrollbar w-full px-4 py-6 lg:p-6">
         {getActiveContent()}
       </div>
     </div>
