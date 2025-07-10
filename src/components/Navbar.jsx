@@ -131,16 +131,39 @@ function Navbar({ content, config, filterValue }) {
     dispatch(setCurrentUser(null));
   };
   const handleLogout = async () => {
-    clearUserData();
-    clearStoreData();
-    await signOut();
-    toast.success("User signout successfully");
-    document.cookie =
-      "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    window.location.href = params.portalid
-      ? `/${params.portalid}/login`
-      : "/login";
+    try {
+      // First log the logout action
+      await fetchWrapper("/api/api-logs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          portalId: params?.portalid,
+        }),
+      }, "logout");
+
+      // Then clear user and Redux state
+      clearUserData();
+      clearStoreData();
+
+      await signOut();
+      toast.success("User signed out successfully");
+
+      // Clear auth cookie
+      document.cookie =
+        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+
+      // Redirect to login
+      window.location.href = params.portalid
+        ? `/${params.portalid}/login`
+        : "/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
+    }
   };
+
 
   useEffect(() => {
     const filterPages =
