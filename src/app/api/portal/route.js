@@ -16,7 +16,6 @@ import contentManagementService from "@/services/contentManagementService";
 import checkListService from "@/services/checkListService";
 import taskService from "@/services/taskService";
 import pageService from "../../../services/pageService";
-import { tradingPage } from "../../lib/data/existingPages";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -87,15 +86,6 @@ export async function POST(req) {
     await resetService.createSampleMessage(portalId);
     await resetService.createSampleTasks(portalId);
     await pluginService.createTncPlugin(portalId, portal?.portalCreatedAdmin);
-    const pagePlugin = await pluginService.createPlugin({
-      type: PluginType.PAGES,
-      portalId: portalId,
-      createdBy: portal?.portalCreatedAdmin,
-    });
-    await pageService.createPage({
-      ...tradingPage,
-      plugin: pagePlugin?.id,
-    });
     const user = await userService.getUserById(portal?.portalCreatedAdmin);
     await uploadSampleFiles(user?.email, user?.boxUserId, user?.folderId);
 
