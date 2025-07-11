@@ -283,6 +283,10 @@ export default function OnBoardingPage() {
   const filterContent = (title) => {
     const contentItem = content && content?.portalContent?.find((item) => item.title === title);
     let value = contentItem ? contentItem.value : null;
+    if (!value) {
+      const defaultItem = content.defaultContent.find(item => item.title === title);
+      return defaultItem ? defaultItem.value : '';
+    }
     if(title === 'Logo'){
       if(contentItem && contentItem.type === 'Image'){
         return value.replace("/api/upload", "/uploads")
@@ -296,10 +300,6 @@ export default function OnBoardingPage() {
       }else {
         return null
       }
-    }
-    if (!value) {
-      const defaultItem = content.defaultContent.find(item => item.title === title);
-      return defaultItem ? defaultItem.value : '';
     }
     return value;
   };
