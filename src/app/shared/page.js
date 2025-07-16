@@ -194,7 +194,7 @@ export default function SharedPage() {
         const response = await fetchWrapper(
           "/api/box/files",
           requestOptions,
-          "uploadFile"
+          "upload-file"
         );
         if (!response.ok) throw new Error("Failed to upload files");
         setIsModalOpen(true);
@@ -258,7 +258,7 @@ export default function SharedPage() {
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData?.boxFolderId}`,
         requestOptions,
-        "fetchFile"
+        "fetch-file"
       );
       if (!response.ok) throw new Error("Failed to fetch files");
       const data = await response.json();
@@ -806,7 +806,7 @@ export default function SharedPage() {
     const response = await fetchWrapper(
       `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
       { method: "GET" },
-      "fetchContentManagement"
+      "fetch-content-management"
     );
     const data = await response.json();
     if (!response.ok) {

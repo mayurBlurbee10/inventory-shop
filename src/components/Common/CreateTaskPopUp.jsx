@@ -95,7 +95,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
          const response = await fetchWrapper(
            "/api/box/files/duplicate",
            requestOptions,
-           "uploadFile"
+           "upload-file"
          );
          const data = await response.json();
          if (!response.ok) {
@@ -135,7 +135,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
           const fileResponse = await fetchWrapper(
             "/api/box/files",
             requestOptions,
-            "uploadFile"
+            "upload-file"
           );
 
           filedata = await fileResponse.json();
@@ -223,7 +223,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
         const fileResponse = await fetchWrapper(
            "/api/box/files",
            requestOptions,
-           "uploadFile"
+           "upload-file"
          );
         
         filedata = await fileResponse.json();
@@ -302,7 +302,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
           const url = params.portalid
               ? `/api/users?portalid=${params.portalid || "default"}`
               : "/api/users";
-          const response = await fetchWrapper(url, {}, "fetchUserList");
+          const response = await fetchWrapper(url, {}, "fetch-user-list");
           if (!response.ok) throw new Error("Download failed");
           const data = await response.json();
           console.log("UsersList:", data);

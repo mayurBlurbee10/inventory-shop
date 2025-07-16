@@ -72,7 +72,7 @@ function DetailsPage() {
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData?.boxFolderId}`,
         { method: "GET" },
-        "fetchFile"
+        "fetch-file"
       );
       if (!response.ok) throw new Error("Failed to fetch files");
 

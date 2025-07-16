@@ -170,7 +170,7 @@ function Dashboard({ fileType }) {
         const response = await fetchWrapper(
           `/api/box/collaborations`,
           requestOptions,
-          "fetchCollaboratedFolder"
+          "fetch-collaborated-folder"
         );
         if (!response.ok) throw new Error("Failed to get collaborated folder");
         const data = await response.json();
@@ -211,7 +211,7 @@ function Dashboard({ fileType }) {
         const response = await fetchWrapper(
           "/api/box/files",
           requestOptions,
-          "uploadFile"
+          "upload-file"
         );
         if (!response.ok) throw new Error("Failed to upload files");
         setIsModalOpen(true);
@@ -263,7 +263,7 @@ function Dashboard({ fileType }) {
           const response = await fetchWrapper(
             `/api/box/collaborations`,
             requestOptions,
-            "fetchCollaboratedFolder"
+            "fetch-collaborated-folder"
           );
           if (!response.ok)
             throw new Error("Failed to get collaborated folder");
@@ -275,7 +275,7 @@ function Dashboard({ fileType }) {
         const response = await fetchWrapper(
           `/api/box/folders?folderId=${userData?.boxFolderId}`,
           requestOptions,
-          "fetchFile"
+          "fetch-file"
         );
         if (!response.ok) throw new Error("Failed to fetch files");
         const data = await response.json();
@@ -400,7 +400,7 @@ function Dashboard({ fileType }) {
         method: "POST",
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
-      const response = await fetchWrapper(url, body, "fetchUserByEmail");
+      const response = await fetchWrapper(url, body, "fetch-user-by-email");
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;

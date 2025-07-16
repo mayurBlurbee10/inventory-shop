@@ -21,7 +21,8 @@ const client = sdk.getAppAuthClient(
 export async function POST(request) {
   try {
     const { itemId, destinationFolderId, type } = await request.json();
-    await logApiCall(request); // Log the API call
+    const apiType = type === "file" ? "move-file" : "move-folder";
+    await logApiCall(request, () => {}, apiType); // Log the API call
 
     // Validate input parameters
     if (!itemId || !destinationFolderId || !type) {

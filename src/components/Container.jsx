@@ -96,7 +96,7 @@ function Container({ children }) {
         method: "POST",
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
-      const response = await fetchWrapper(url, body, "fetchUserByEmail");
+      const response = await fetchWrapper(url, body, "fetch-user-by-email");
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;

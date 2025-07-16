@@ -97,7 +97,7 @@ const ContentManagementContent = ({
     const typesRequest = await fetchWrapper(
       `/api/contentManagement/type?portalId=${params.portalid ?? "default"}`,
       { method: "GET" },
-      "fetchContentType"
+      "fetch-content-type"
     );
     if (!typesRequest.ok) throw new Error("Failed to fetch Content type");
     const typesData = await typesRequest.json();
@@ -111,7 +111,7 @@ const ContentManagementContent = ({
       const response = await fetchWrapper(
         `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
         { method: "GET" },
-        "fetchContentManagement"
+        "fetch-content-management"
       );
       if (!response.ok) throw new Error("Failed to fetch Content Management");
       const data = await response.json();
@@ -382,7 +382,7 @@ const ContentManagementContent = ({
     const response = await fetchWrapper(
       `/api/users`,
       requestOptions,
-      "changeOnboarding"
+      "change-onboarding"
     );
 
     if (!response.ok) throw new Error(response.error);

@@ -66,7 +66,7 @@ const UploadFileConfirmDialog = ({
         const response = await fetchWrapper(
           "/api/box/files/replace",
           requestOptions,
-          "uploadFile"
+          "upload-file"
         );
         const data = await response.json();
         if (!response.ok) {
@@ -110,7 +110,7 @@ const UploadFileConfirmDialog = ({
         const response = await fetchWrapper(
           "/api/box/files/duplicate",
           requestOptions,
-          "uploadFile"
+          "upload-file"
         );
         const data = await response.json();
         if (!response.ok) {

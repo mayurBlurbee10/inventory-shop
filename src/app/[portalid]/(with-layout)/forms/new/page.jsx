@@ -61,7 +61,7 @@ const ApplicationStep = ({
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData?.boxFolderId}`,
         requestOptions,
-        "fetchFile"
+        "fetch-file"
       );
       if (!response.ok) throw new Error("Failed to fetch files");
       const data = await response.json();
@@ -454,7 +454,7 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
       const response = await fetchWrapper(
         "/api/box/files",
         requestOptions,
-        "uploadFile"
+        "upload-file"
       );
       if (!response.ok) throw new Error("Failed to upload files");
       toast.success("File uploaded successfully");
@@ -702,7 +702,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
         const response = await fetchWrapper(
           `/api/box/folders?folderId=${loanFolderId}`,
           requestOptions,
-          "fetchFile"
+          "fetch-file"
         );
         if (!response.ok) throw new Error("Failed to fetch files");
         const data = await response.json();
@@ -891,7 +891,7 @@ function NewLoanPage() {
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData?.boxFolderId}`,
         requestOptions,
-        "fetchFile"
+        "fetch-file"
       );
       if (!response.ok) throw new Error("Failed to fetch files");
       const data = await response.json();
@@ -916,7 +916,7 @@ function NewLoanPage() {
         const response = await fetchWrapper(
           `/api/box/collaborations`,
           requestOptions,
-          "fetchCollaboratedFolder"
+          "fetch-collaborated-folder"
         );
         if (!response.ok) throw new Error("Failed to get collaborated folder");
         const data = await response.json();

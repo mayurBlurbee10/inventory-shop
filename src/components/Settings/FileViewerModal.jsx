@@ -42,9 +42,10 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
         setLoading(true);
         setError("");
 
-        const requestOptions = {
-          method: "GET",
-        };
+         const requestOptions = {
+           method: "POST",
+           body: JSON.stringify({ collaborated: user?.collaborationIds }),
+         };
 
         // const response = await fetchWrapper(
         //   `/api/box/files?folderId=${encodeURIComponent(user.folderId)}`,{},
@@ -52,9 +53,9 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
         // );
 
         const response = await fetchWrapper(
-          `/api/box/folders?folderId=${encodeURIComponent(user.folderId)}`,
+          `/api/box/collaborations`,
           requestOptions,
-          "fetch-file"
+          "view-user-files"
         );
 
         if (!response.ok) {

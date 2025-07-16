@@ -43,7 +43,7 @@ export default function SetPassword() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
-      }, 'setPassword');
+      }, 'set-password');
 
       const data = await response.json();
       if (response.ok) {
@@ -67,7 +67,7 @@ export default function SetPassword() {
       const checkToken = async() => {
         try { 
           setIsTokenExpired(false);
-          const response = await fetchWrapper(`/api/setPassword?token=${token}`, {method: 'GET'}, 'validateLink')
+          const response = await fetchWrapper(`/api/setPassword?token=${token}`, {method: 'GET'}, 'validate-link')
           if (!response.ok) throw new Error('Failed to validate the link.');
         } catch (error) {
           setIsTokenExpired(true);

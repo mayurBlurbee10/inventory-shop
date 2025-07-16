@@ -13,7 +13,7 @@ const getAllFiles = async (boxFolderId) => {
   const response = await fetchWrapper(
     `/api/box/folders?folderId=${boxFolderId}`,
     requestOptions,
-    "fetchFile"
+    "fetch-file"
   );
   if (!response.ok) throw new Error("Failed to fetch files");
   const data = await response.json();
@@ -49,7 +49,7 @@ export const setCollaboratedFiles = (collaborationIds) => async (dispatch) => {
     const response = await fetchWrapper(
       `/api/box/collaborations`,
       requestOptions,
-      "fetchCollaboratedFolder"
+      "fetch-collaborated-folder"
     );
     if (!response.ok) throw new Error("Failed to get collaborated folder");
     const data = await response.json();

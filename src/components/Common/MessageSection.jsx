@@ -448,7 +448,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
       const url = params.portalid
         ? `/api/users?portalid=${params.portalid || "default"}`
         : "/api/users";
-      const response = await fetchWrapper(url, {}, "fetchUserList");
+      const response = await fetchWrapper(url, {}, "fetch-user-list");
       if (!response.ok) throw new Error("Download failed");
       const data = await response.json();
       setUsersList(data);

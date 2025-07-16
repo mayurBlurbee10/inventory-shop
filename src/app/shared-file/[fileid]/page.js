@@ -30,7 +30,7 @@ export default function SharedFilePage() {
       const response = await fetchWrapper(
         `/api/box/share?fileId=${fileId}`,
         requestOptions,
-        "fetchSharedFile"
+        "fetch-shared-file"
       );
       console.log("response: ", response);
       if (!response.ok) throw new Error("Failed to fetch shared files");

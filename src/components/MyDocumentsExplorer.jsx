@@ -180,7 +180,7 @@ const ShareModal = ({
       const response = await fetchWrapper(
         `/api/box/files/share?fileId=${fileId}&isShareable=${isShareable}`,
         requestOptions,
-        "generateSharedLink"
+        "generate-shared-link"
       );
       setCollabLoading(false);
       const data = await response.json();
@@ -203,7 +203,7 @@ const ShareModal = ({
       const response = await fetchWrapper(
         `/api/box/files/share?collaboratorId=${collaborator.id}&userId=${collaborator.user.id}`,
         obj,
-        "removeCollaborator"
+        "remove-collaborator"
       );
       const data = await response.json();
       if (!response.ok)
@@ -273,7 +273,7 @@ const ShareModal = ({
       const response = await fetchWrapper(
         `/api/box/files/share`,
         obj,
-        "changeCollaboratorRole"
+        "change-collaborator-role"
       );
       const data = await response.json();
       if (!response.ok)
@@ -643,7 +643,7 @@ function SharedFolderExplorer({
       const response = await fetchWrapper(
         `/api/box/files/share?collaboratorId=${collaborator.id}&userId=${collaborator.user.id}`,
         obj,
-        "removeCollaborator"
+        "remove-collaborator"
       );
       const data = await response.json();
       if (!response.ok)
@@ -689,7 +689,7 @@ function SharedFolderExplorer({
       const url = params.portalid
         ? `/api/users?portalid=${params.portalid || "default"}`
         : "/api/users";
-      const response = await fetchWrapper(url, {}, "fetchUserList");
+      const response = await fetchWrapper(url, {}, "fetch-user-list");
       if (!response.ok) throw new Error("Download failed");
       const data = await response.json();
       setUsersList(data);

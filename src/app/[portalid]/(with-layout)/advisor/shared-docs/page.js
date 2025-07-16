@@ -130,7 +130,7 @@ export default function AdvisorViewSharedDocsPage() {
         try {
           setIsLoading(true)
           const url =`/api/users?boxUserId=${boxUserId}`
-          const response = await fetchWrapper(url, {}, "fetchUser");
+          const response = await fetchWrapper(url, {}, "fetch-user");
           if (!response.ok) throw new Error("Something went wrong!!");
           const data = await response.json();
           console.log("User:", data);
@@ -196,7 +196,7 @@ export default function AdvisorViewSharedDocsPage() {
             const response = await fetchWrapper(
                 `/api/box/folders?folderId=${userData?.boxFolderId}`,
                 requestOptions,
-                "fetchFile"
+                "fetch-file"
             );
             if (!response.ok) throw new Error("Failed to fetch files");
             const data = await response.json();
@@ -269,7 +269,7 @@ export default function AdvisorViewSharedDocsPage() {
         const response = await fetchWrapper(
           "/api/box/files",
           requestOptions,
-          "uploadFile"
+          "upload-file"
         );
         const data = await response.json();
         if (!response.ok) {
@@ -554,7 +554,7 @@ export default function AdvisorViewSharedDocsPage() {
                 const response = await fetchWrapper(
                     `/api/box/move`,
                     requestOptions,
-                    "moveFileOrFolder"
+                    "move-file-or-folder"
                 );
                 if (!response.ok) throw new Error("Failed to move file or folder");
                 toast.success(
@@ -609,7 +609,7 @@ export default function AdvisorViewSharedDocsPage() {
                 method: "POST",
                 body: JSON.stringify({ email, portalid: params.portalid }),
             };
-            const response = await fetchWrapper(url, body, "fetchUserByEmail");
+            const response = await fetchWrapper(url, body, "fetch-user-by-email");
             if (!response.ok) throw new Error("Failed to get user from email");
             const data = await response.json();
             const userData = data.user;

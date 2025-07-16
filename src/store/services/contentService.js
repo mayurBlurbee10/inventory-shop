@@ -10,7 +10,7 @@ const getContent = async (portalid) => {
   const response = await fetchWrapper(
     `/api/contentManagement?portalId=${portalid}`,
     { method: "GET" },
-    "fetchContentManagement"
+    "fetch-content-management"
   );
   if (!response.ok) {
     throw new Error("Failed to fetch content");

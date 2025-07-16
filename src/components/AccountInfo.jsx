@@ -53,7 +53,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
             oldPassword: oldPassword,
           }),
         },
-        "updatePassword"
+        "update-password"
       );
 
       const data = await response.json();

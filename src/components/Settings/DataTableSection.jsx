@@ -205,7 +205,7 @@ export const PaginatedTable = ({ data, isLoading }) => {
                         className={`border-b text-gray-800 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition`}
                       >
                         <td className="py-3 px-4">{formatTimestamp(d?.createdAt)}</td>
-                        <td className="py-3 px-4">{d?.type}</td>
+                        <td className="py-3 px-4">{d?.type?.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</td>
                         <td className="py-3 px-4">{d?.createdBy?.name || "N/A"}</td>
                       </tr>
                     ))
