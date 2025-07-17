@@ -54,15 +54,108 @@ export async function POST(request) {
   }
 }
 
+async function fetchCollaborators(itemId, type) {
+  try {
+    if (type === "folder") {
+      const collaborations = await client.folders.getCollaborations(itemId);
+      return collaborations.entries.map((collaboration) => ({
+        id: collaboration.id,
+        role: collaboration.role,
+        user: collaboration.accessible_by,
+        type: collaboration.type,
+      }));
+    } else {
+      const collaborations = await client.files.getCollaborations(itemId);
+      return collaborations.entries.map((collaboration) => ({
+        id: collaboration.id,
+        role: collaboration.role,
+        user: collaboration.accessible_by,
+        type: collaboration.type,
+      }));
+    }
+  } catch (error) {
+    console.error(
+      `Error fetching collaborators for folder ${itemId}:`,
+      error.message
+    );
+    return [];
+  }
+}
+
+function isTrashedOrNotFoundError(error) {
+  const message =
+    error?.response?.body?.message?.toLowerCase() ||
+    error?.message?.toLowerCase() ||
+    "";
+  return (
+    message.includes("trashed") ||
+    error?.response?.body?.code === "item_not_found" ||
+    error?.statusCode === 404 ||
+    error?.response?.status === 404
+  );
+}
+
 export async function GET(req) {
   try {
     await logApiCall(req);
     const folderId = req.nextUrl.searchParams.get("folderId") || "0";
+    const collaboratedParam = req.nextUrl.searchParams.get("collaborated") || [];
+    const collaborated = JSON.parse(collaboratedParam);
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100", 10);
-    const items = await fetchNestedItems(folderId, limit);
+    const items = [];
+    for await (const element of collaborated) {
+      try {
+        const collaborators = await fetchCollaborators(
+          element.folderId,
+          element.type
+        );
+
+        let currentUserCollab = collaborators.find(
+          (collab) =>
+            collab?.item?.id === element?.folderId &&
+            collab?.user?.id === boxUserId
+        );
+
+        let currentUserRole = currentUserCollab?.role || element.role;
+
+        if (element.type === "folder") {
+          const folder = await fetchNestedItems(
+            element.folderId,
+            currentUserRole,
+            boxUserId
+          );
+          const folderDetails = await client.folders.get(element.folderId);
+          items.push({
+            ...folderDetails,
+            children: folder,
+            collaborators,
+            currentUserRole: currentUserRole,
+          });
+        } else {
+          const file = await client.files.get(element.folderId);
+          items.push({
+            ...file,
+            collaborators,
+            currentUserRole: currentUserRole,
+          });
+        }
+      } catch (error) {
+        if (isTrashedOrNotFoundError(error)) {
+          console.warn(`Skipping trashed item: ${element.folderId}`);
+          continue;
+        }
+        console.error(
+          `Error processing element ${element.folderId}:`,
+          error.message
+        );
+        throw error;
+      }
+    }
+
+    const nestedItems = await fetchNestedItems(folderId, limit);
     return Response.json({
       message: "Folder items fetched successfully",
-      items,
+      items: [...items, ...nestedItems],
     });
   } catch (error) {
     console.error("Error fetching folder items:", error);

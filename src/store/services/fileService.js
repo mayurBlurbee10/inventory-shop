@@ -6,12 +6,20 @@ import {
 } from "../actions/messageAction";
 const { fetchWrapper } = require("@/app/lib/fetchWrapper");
 
-const getAllFiles = async (boxFolderId) => {
+const getAllFiles = async (boxFolderId, collaborationIds) => {
   const requestOptions = {
     method: "GET",
   };
+  const query = collaborationIds
+    ? new URLSearchParams({
+        folderId: boxFolderId,
+        collaborated: JSON.stringify(collaborationIds),
+      })
+    : new URLSearchParams({
+        folderId: boxFolderId,
+      });
   const response = await fetchWrapper(
-    `/api/box/folders?folderId=${boxFolderId}`,
+    `/api/box/folders?${query.toString()}`,
     requestOptions,
     "fetch-file"
   );
@@ -20,14 +28,14 @@ const getAllFiles = async (boxFolderId) => {
   return data?.items || [];
 };
 
-export const setFiles = (boxFolderId) => async (dispatch) => {
+export const setFiles = (boxFolderId, collaborationIds) => async (dispatch) => {
   if (!boxFolderId) {
     return dispatch(setFileList(null));
   }
   dispatch(clearResponseMsg());
-  dispatch(setFilesLoading())
+  dispatch(setFilesLoading());
   try {
-    const data = await getAllFiles(boxFolderId);
+    const data = await getAllFiles(boxFolderId, collaborationIds);
     dispatch(setFileList(data));
     dispatch(setResponseSuccessMsg("Files fetched successfully!"));
   } catch (error) {

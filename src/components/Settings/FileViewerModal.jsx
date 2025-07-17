@@ -44,7 +44,7 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
 
          const requestOptions = {
            method: "POST",
-           body: JSON.stringify({ collaborated: user?.collaborationIds }),
+           body: JSON.stringify({ collaborated: user?.collaborationIds, boxUserId: user?.boxUserId }),
          };
 
         // const response = await fetchWrapper(

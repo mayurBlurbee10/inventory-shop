@@ -32,7 +32,7 @@ function ViewProfileModal({
   user,
   setUser,
   setOnDeleteUser,
-  onSumbit
+  onSumbit,
 }) {
   const router = useRouter();
   const params = useParams();
@@ -87,7 +87,7 @@ function ViewProfileModal({
       role: UserRole.USER,
       logo: null,
     });
-    setPreviewUrl(null)
+    setPreviewUrl(null);
     setError("");
     setPhoneError("");
   };
@@ -121,8 +121,7 @@ function ViewProfileModal({
       role: user?.role || UserRole.USER,
       logo: user?.company?.logo || null,
     });
-    setPreviewUrl(user?.company?.logo || "")
-    
+    setPreviewUrl(user?.company?.logo || "");
   }, [isOpen, user]);
 
   const handleFormChange = (key, val) => {
@@ -207,7 +206,7 @@ function ViewProfileModal({
       console.log("User updated:", result.user);
       toast.success("Profile updated successfully");
       handleModelClose();
-      onSumbit()
+      onSumbit();
     } catch (error) {
       console.error("Failed to update user:", error);
       alert("Failed to update profile: " + error.message);
@@ -445,13 +444,25 @@ function ViewProfileModal({
                   </div>
                 )}
               </div>
-              <div className="flex flex-col flex-wrap justify-center items-end gap-2">
+              <div className="flex flex-wrap justify-between gap-2">
+                <Button
+                  type="Secondary"
+                  onClick={handleModelClose}
+                  disabled={isLoading || isDeleteLoading}
+                  label="Cancel"
+                />
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button
-                    type="Secondary"
-                    onClick={handleModelClose}
-                    disabled={isLoading || isDeleteLoading}
-                    label="Cancel"
+                    onClick={() => {
+                      setIsDeleteModalOpen(user);
+                      setEnteredEmail("");
+                      setError("");
+                      handleModelClose();
+                    }}
+                    disabled={loggedInUser?.id === user?.id || isLoading}
+                    isLoading={isDeleteLoading}
+                    label="Delete Account"
+                    type="Delete"
                   />
                   <Button
                     onClick={handelUpdateProfile}
@@ -461,18 +472,6 @@ function ViewProfileModal({
                     label="Update"
                   />
                 </div>
-                <Button
-                  onClick={() => {
-                    setIsDeleteModalOpen(user);
-                    setEnteredEmail("");
-                    setError("");
-                    handleModelClose();
-                  }}
-                  disabled={loggedInUser?.id === user?.id || isLoading}
-                  isLoading={isDeleteLoading}
-                  label="Delete This Account"
-                  type="Delete"
-                />
               </div>
             </div>
           </Dialog.Panel>

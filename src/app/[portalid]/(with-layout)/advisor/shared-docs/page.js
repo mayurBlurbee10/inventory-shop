@@ -743,6 +743,7 @@ console.log("User:", user);
               fileType={"advisor"}
               clientFolderId={user ? user?.folderId : loggedInUser?.folderId}
               key={user ? user.id : loggedInUser.id}
+              advisorSelectedUser = {user}
             />
           </div>
           <div className="col-span-5 lg:col-span-2">

@@ -67,7 +67,8 @@ function Documents({
   selectedItems,
   isRest,
   loanFolderId,
-  clientFolderId
+  clientFolderId,
+  advisorSelectedUser
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
@@ -403,7 +404,7 @@ function Documents({
           // const data = await response.json();
           // const newFilesList = data?.items;
           // setFilesList(newFilesList)
-          dispatch(setCollaboratedFiles(userData?.collaborationIds));
+          dispatch(setCollaboratedFiles(userData?.collaborationIds, userData?.boxFolderId));
         } else {
           if (!userData?.boxFolderId) {
             return;
@@ -417,13 +418,15 @@ function Documents({
           // const data = await response.json();
           // const newFilesList = data?.items || [];
           // setFilesList(newFilesList)
-          dispatch(setFiles(userData?.boxFolderId));
+          dispatch(setFiles(userData?.boxFolderId, userData?.collaborationIds));
         }
       } else if(fileType === 'advisor'){
         if (!clientFolderId) {
           return;
         }
-        dispatch(setFiles(clientFolderId));
+        console.log("userData=============>", advisorSelectedUser);
+        
+        dispatch(setFiles(clientFolderId, advisorSelectedUser.collaborationIds));
       }  else {
         if (!userData?.boxFolderId) {
           return;
@@ -437,7 +440,7 @@ function Documents({
         // const data = await response.json();
         // const newFilesList = data?.items || [];
         // setFilesList(newFilesList)
-        dispatch(setFiles(userData?.boxFolderId));
+        dispatch(setFiles(userData?.boxFolderId, userData?.collaborationIds));
       }
     } catch (error) {
       console.error("Error refreshing files:", error);
