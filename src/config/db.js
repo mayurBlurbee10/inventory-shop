@@ -18,11 +18,36 @@ export const AppDataSource = new DataSource({
   entities: [ApiLogs, ContentManagement, Portals, Users, Plugins, Pages, Tasks, Messages, CheckLists],
   logging: false,
   synchronize: true,
+   options: {
+    encrypt: true,
+  },
+  extra: {
+    trustServerCertificate: true,
+    keepAlive: true,
+    connectionTimeout: 30000,
+    requestTimeout: 30000,
+  },
 });
+
+async function connectWithRetry(attemptsLeft = 5) {
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+    }
+  } catch (err) {
+
+    if (attemptsLeft > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      return await connectWithRetry(attemptsLeft - 1);
+    } else {
+      throw new Error("All connection attempts failed");
+    }
+  }
+}
 
 export const connectDatabase = async () => {
   if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
+    await connectWithRetry();
     console.log("TypeORM connected");
   }
 };
