@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning={true}
       > 
       <Script
-        src="https://mstrategy-onlyoffice.azurewebsites.net/web-apps/apps/api/documents/api.js"
+        src="https://mstrategy-portal-onlyoffice.azurewebsites.net/web-apps/apps/api/documents/api.js"
         strategy="lazyOnload"
       />
       {/* <SocketProvider> */}

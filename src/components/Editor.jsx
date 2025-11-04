@@ -82,7 +82,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       setFileType(fileType);
       const userData = getUserData();
       const secretKey = new TextEncoder().encode(
-        "4f5e6eef675c4ed79ba5c56b421cd6d2"
+        "ZykZUibhbuZcljcVnXklIZiWEaVxnROm"
       );
 
       const tokenPayload = {
