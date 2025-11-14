@@ -495,7 +495,7 @@ export default function OnBoardingPage() {
       {/* Preview Page */}
       <div className="col-span-1 md:col-span-1 lg:col-span-12 h-full relative overflow-hidden bg-background flex flex-col justify-between">
         <div>
-          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.accentColor}}>
+          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.primaryColor }}>
           {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
               // src="/default_logo_purple.png"

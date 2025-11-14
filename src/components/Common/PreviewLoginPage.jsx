@@ -112,7 +112,7 @@ const PreviewLoginPage = () => {
     return (
         <div className="min-h-screen bg-background flex flex-col justify-between">
             <div>
-                <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.accentColor }}>
+                <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.primaryColor }}>
                     <div className="max-w-[1140px] w-full mx-auto min-h-[70px]">
                         <a className=" flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
                             {user?.company?.logo || config?.logo ? (

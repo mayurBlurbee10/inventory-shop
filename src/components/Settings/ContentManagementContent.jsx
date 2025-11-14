@@ -2,7 +2,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { PlusCircle, X, Pencil, Trash2, Edit } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useParams, useRouter , usePathname } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import Button from "../Common/Elements/Button";
 import AddContentModal from "./AddContentModal";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,7 +11,7 @@ import { getUserData } from "@/lib/auth";
 import { fontSizes } from "@/app/lib/data/font_size";
 import EditHeadingModal from "../Common/EditHeadingModal";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
-import { setContent as setReduxContent} from "@/store/services/contentService";
+import { setContent as setReduxContent } from "@/store/services/contentService";
 
 const ContentManagementContent = ({
   isAddRequired,
@@ -47,7 +47,7 @@ const ContentManagementContent = ({
   const [loading, setLoading] = useState(false);
   const [linkFields, setLinkFields] = useState([{ label: "", link: "" }]);
   const [contentLength, setContentLength] = useState("");
-  const pathname= usePathname();
+  const pathname = usePathname();
   const onBoarding = pathname.includes("/onboarding");
   const { data: config } = useSelector((state) => state.portal);
   const [editTarget, setEditTarget] = useState(null);
@@ -560,71 +560,98 @@ const handleRemoveHeading = async () => {
 
       <hr/>
 
-      <div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">Set Colors</h3>
-          {/* <p className="text-gray-600 text-sm">
-            Organize and edit the information displayed across your platform.
-          </p> */}
-        </div>
-        <div className="pt-6 p-1 md:p-2 lg:p-3">
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Header Links
+        <div className="max-w-4xl">
+          <h2 className="text-lg font-medium text-gray-900 mb-6">Theme</h2>
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-3 sm:p-6 md:p-8 shadow-lg border border-white/50">
+            <div className="flex items-center justify-center gap-4 flex-wrap flex-col sm:flex-row">
+              <div className="flex-1 sm:mr-8">
+                <label className="block text-base font-medium text-gray-600 mb-4">
+                  Theme colour
                 </label>
-                <input
-                  type="color"
-                  name="primaryColor"
-                  value={colors?.primaryColor}
-                  onChange={handleChange}
-                  className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
+                <div className="space-y-3">
+                  <div className="relative w-48 h-12">
+                    <div
+                      className="absolute w-full h-full rounded-lg shadow-sm cursor-pointer"
+                      style={{ backgroundColor: colors?.primaryColor }}
+                    ></div>
+                    <input
+                      type="color"
+                      name="primaryColor"
+                      value={colors?.primaryColor}
+                      onChange={handleChange}
+                      className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div
+                className="w-full sm:w-0.5 h-0.5 sm:h-20"
+                  style={{ backgroundColor: colors?.primaryColor }}
+              ></div>
+              <div className="flex-1 sm:mr-8">
+                <label className="block text-base font-medium text-gray-600 mb-4">
+                  Font colour
+                </label>
+                <div className="space-y-3">
+                  <div className="relative w-48 h-12">
+                    <div
+                      className="absolute w-full h-full rounded-lg shadow-sm cursor-pointer"
+                      style={{ backgroundColor: colors?.secondaryColor }}
+                    ></div>
+                    <input
+                      type="color"
+                      name="secondaryColor"
+                      value={colors?.secondaryColor}
+                      onChange={handleChange}
+                      className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div
+                className="w-full sm:w-0.5 h-0.5 sm:h-20"
+                  style={{ backgroundColor: colors?.primaryColor }}
+              ></div>
+
+              <div className="flex-1 sm:mr-8">
+                <label className="block text-base font-medium text-gray-600 mb-4">
+                  Hover colour
+                </label>
+                <div className="space-y-3">
+                  <div className="relative w-48 h-12">
+                    <div
+                      className="absolute w-full h-full rounded-lg shadow-sm cursor-pointer"
+                      style={{ backgroundColor: colors?.accentColor }}
+                    ></div>
+                    <input
+                      type="color"
+                      name="accentColor"
+                      value={colors?.accentColor}
+                      onChange={handleChange}
+                      className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+               {onBoarding ? (
+              <></>
+            ) : (
+              <div className="md:ml-8">
+                <Button
+                  onClick={handleSave}
+                  disabled={isSubmitting}
+                  label={"Save"}
+                  type="Primary"
+                  className="ml-auto"
+                  isLoading={isSubmitting}
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Buttons
-                </label>
-                <input
-                  type="color"
-                  name="secondaryColor"
-                  value={colors?.secondaryColor}
-                  onChange={handleChange}
-                  className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Header Background
-                </label>
-                <input
-                  type="color"
-                  name="accentColor"
-                  value={colors?.accentColor}
-                  onChange={handleChange}
-                  className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
-                />
-              </div>
+            )}
             </div>
+           
           </div>
         </div>
-        {onBoarding ? (
-          <></>
-        ) : (
-          <div className="my-5">
-            <Button
-              onClick={handleSave}
-              disabled={isSubmitting}
-              label={"Save"}
-              type="Primary"
-              className="ml-auto"
-              isLoading={isSubmitting}
-            />
-          </div>
-        )}
-      </div>
-      <hr/>
+        <hr />
         <div className="py-2 text-gray-900">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 pt-3">
             {/* Dashboard Heading */}

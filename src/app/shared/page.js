@@ -844,7 +844,7 @@ export default function SharedPage() {
             <div className="hidden md:flex space-x-4 items-center">
               <NavBarItem title="Dashboard" href='/dashboard' />
               <NavBarItem title="Shared Document" href='/shared' />
-              <NavBarItem title="Settings" href='/settings' />
+              <NavBarItem title="Settings" href='/settings?tab=customization' />
 
               {/* Profile dropdown */}
 

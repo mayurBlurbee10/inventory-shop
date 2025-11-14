@@ -23,14 +23,20 @@ import {
   Users,
   X,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { useRouter, useSearchParams } from "next/navigation";
 
 function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("customization");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: config } = useSelector((state) => state.portal);
+  const isUpdatingRef = useRef(false);
+
+  const tabFromURL = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromURL || "customization");
   const [isUserData, setIsUserData] = useState("");
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
-  const { data: config } = useSelector((state) => state.portal);
   const [colors, setColors] = useState({
     primaryColor: config.primaryColor,
     secondaryColor: config.secondaryColor,
@@ -41,7 +47,41 @@ function SettingsPage() {
     const userData = getUserData();
     setIsUserData(userData?.isOnboardingRequired);
   }, []);
-  // console.log('isUserData', isUserData);
+  useEffect(() => {
+    if (!isUpdatingRef.current && tabFromURL && tabFromURL !== activeTab) {
+      setActiveTab(tabFromURL);
+    }
+  }, [tabFromURL, activeTab]);
+
+  const handleTabClick = (tabId) => {
+    if (tabId === activeTab) return;
+
+    isUpdatingRef.current = true;
+    setActiveTab(tabId);
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", tabId);
+    router.replace(`?${params.toString()}`);
+
+    setTimeout(() => {
+      isUpdatingRef.current = false;
+    }, 100);
+
+    if (window.innerWidth < 1024) {
+      setIsSideBarOpen(false);
+    }
+  };
+
+  const shouldHighlightMyFormsTab = () => {
+    return ["forms_management", "form_submission"].includes(activeTab);
+  };
+
+  const isTabActive = (tabId) => {
+    if (tabId === "forms_management") {
+      return shouldHighlightMyFormsTab();
+    }
+    return activeTab === tabId;
+  };
 
   const tabs = [
     // { id: 'homepage_configuration', label: 'Home Page', icon: FileText },
@@ -94,36 +134,46 @@ function SettingsPage() {
       <div className="hidden lg:block w-2/5 md:w-72 border-r h-[calc(100vh-120px)] border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs">
         <h2 className="text-xl text-gray-800 font-semibold mb-6">Tools</h2>
         <nav className="space-y-1">
-          {tabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${
-                activeTab === id
-                  ? "bg-[#2563eb]/95 text-white"
-                  : "text-gray-700/90 hover:bg-blue-600/10"
-              }`}
-            >
-              <div className="flex items-center space-x-3">
+          {tabs.map(({ id, label, icon: Icon }) => {
+            const isActive = isTabActive(id);
+            const primaryColor = config.primaryColor;
+            const accentColor = config?.accentColor || "#ffffff";
+            return (
+              <button
+                key={id}
+                onClick={() => handleTabClick(id)}
+                className="w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
+                style={{
+                  backgroundColor: isActive ? accentColor : "transparent",
+                  color: isActive ? primaryColor : "#3f3f46",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive)
+                    e.currentTarget.style.backgroundColor = `${accentColor}1A`;
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive)
+                    e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div>
+                    <Icon
+                      className={`w-5 h-5 ${
+                        isActive ? primaryColor : "text-gray-700/90"
+                      }`}
+                    />
+                  </div>
+                  <span className="text-left">{label}</span>
+                </div>
                 <div>
-                  <Icon
-                    className={`w-5 h-5 ${
-                      activeTab === id ? "text-white" : "text-gray-700/90"
-                    }`}
+                  <ChevronRight
+                    className={`w-4 h-4 ${isActive ? primaryColor : "#3f3f46"}`}
                   />
                 </div>
-                <span className="text-left">{label}</span>
-              </div>
-              <div>
-                {" "}
-                <ChevronRight
-                  className={`w-4 h-4 ${
-                    activeTab === id ? "text-white" : "text-gray-700/80"
-                  }`}
-                />
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </nav>
       </div>
       <div
@@ -154,38 +204,48 @@ function SettingsPage() {
                 </button>
               </div>
               <nav className="space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
-                {tabs.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => {
-                      setActiveTab(id);
-                      setIsSideBarOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${
-                      activeTab === id
-                        ? "bg-[#2563eb]/95 text-white"
-                        : "text-gray-700/90 hover:bg-blue-600/10"
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
+                {tabs.map(({ id, label, icon: Icon }) => {
+                  const isActive = isTabActive(id);
+                  const primaryColor = config.primaryColor;
+                  const accentColor = config?.accentColor || "#ffffff";
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => handleTabClick(id)}
+                      className="w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
+                      style={{
+                        backgroundColor: isActive ? accentColor : "transparent",
+                        color: isActive ? primaryColor : "#3f3f46",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive)
+                          e.currentTarget.style.backgroundColor = `${accentColor}1A`;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive)
+                          e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div>
+                          <Icon
+                            className={`w-5 h-5 ${
+                              isActive ? primaryColor : "text-gray-700/90"
+                            }`}
+                          />
+                        </div>
+                        <span className="text-left">{label}</span>
+                      </div>
                       <div>
-                        <Icon
-                          className={`w-5 h-5 ${
-                            activeTab === id ? "text-white" : "text-gray-700/90"
+                        <ChevronRight
+                          className={`w-4 h-4 ${
+                            isActive ? primaryColor : "#3f3f46"
                           }`}
                         />
                       </div>
-                      <span className="text-left">{label}</span>
-                    </div>
-                    <div>
-                      <ChevronRight
-                        className={`w-4 h-4 ${
-                          activeTab === id ? "text-white" : "text-gray-700/80"
-                        }`}
-                      />
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </nav>
             </div>
           </div>

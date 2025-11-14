@@ -76,7 +76,7 @@ function DeleteConfirmDialog({
                onClick={handleDelete}
                disabled={isLoading}
                isLoading={isLoading}
-               type="Primary"
+               type="Delete"
                label={buttonText}
                icon={Trash2}
               />

@@ -88,39 +88,65 @@ function Navbar({ content, config, filterValue }) {
       console.error("href prop is required for NavBarItem.");
       return null;
     }
-    const isActive = pathname.includes(href) || activeRoutes.some(route => pathname.includes(route));
-    return (
-      <Link href={href} passHref>
-        <div
-          className={`relative mx-2 h-full flex items-center border-b-2 transition-all justify-center`}
-          style={{
-            borderBottomColor: isActive
-              ? config?.primaryColor
-              : "transparent",
-            borderBottomWidth: isActive ? "3px" : "",
-          }}
-          onClick={() => setIsOpenNavbar(false)}
-        >
-          <button
-            className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-              isActive ? "font-bold" : "text-black"
-            }`}
-            style={
-              isActive ? { color: config?.primaryColor } : {}
-            }
-          >
-            {title}
-          </button>
-          {/* Line Below Button */}
-          {/* <div
-            className={`h-1 w-full absolute left-0 transition-all duration-300 ${isOpenNavbar ? " -bottom-1" : "-bottom-6 "} ${
-              pathname.includes(href) ? "opacity-100" : "opacity-0"
-            }`}
+    const isActive =
+      pathname.includes(href) ||
+      activeRoutes.some((route) => pathname.includes(route));
+
+    const [isHovered, setIsHovered] = useState(false);
+    const isActiveOrHovered = isActive || isHovered;
+
+    if (isOpenNavbar) {
+      return (
+        <Link href={href} passHref>
+          <div
+            className="relative mx-2 h-full flex items-center border-b-2 transition-all justify-center"
             style={{
-              backgroundColor: pathname.includes(href) ? config?.primaryColor : "transparent",
+              borderBottomColor: isActive
+                ? config?.primaryColor
+                : "transparent",
+              borderBottomWidth: isActive ? "3px" : "",
             }}
-          ></div> */}
-        </div>
+            onClick={() => setIsOpenNavbar(false)}
+          >
+            <button
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+                isActive ? "font-bold" : "text-black"
+              }`}
+              style={isActive ? { color: config?.primaryColor } : {}}
+            >
+              {title}
+            </button>
+          </div>
+        </Link>
+      );
+    }
+
+    return (
+      <Link
+        href={href}
+        passHref
+        className="mr-2"
+        onClick={() => setIsOpenNavbar(false)}
+      >
+        <button
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="px-4 py-2 text-sm font-semibold rounded-md whitespace-nowrap hover:scale-105 transition-all duration-200"
+          style={{
+            color: isActiveOrHovered
+              ? config?.primaryColor
+              : config?.secondaryColor,
+            backgroundColor: isHovered
+              ? config?.accentColor
+              : isActive
+              ? config?.accentColor
+              : "transparent",
+          }}
+        >
+          {title}
+        </button>
       </Link>
     );
   };
@@ -133,15 +159,19 @@ function Navbar({ content, config, filterValue }) {
   const handleLogout = async () => {
     try {
       // First log the logout action
-      await fetchWrapper("/api/api-logs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      await fetchWrapper(
+        "/api/api-logs",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            portalId: params?.portalid,
+          }),
         },
-        body: JSON.stringify({
-          portalId: params?.portalid,
-        }),
-      }, "logout");
+        "logout"
+      );
 
       // Then clear user and Redux state
       clearUserData();
@@ -163,7 +193,6 @@ function Navbar({ content, config, filterValue }) {
       toast.error("Logout failed");
     }
   };
-
 
   useEffect(() => {
     const filterPages =
@@ -269,7 +298,7 @@ function Navbar({ content, config, filterValue }) {
   return (
     <div
       className="border-b border-[#0000001a] relative"
-      style={{ backgroundColor: config?.accentColor }}
+      style={{ backgroundColor: config?.primaryColor }}
     >
       <div className="w-full mx-auto px-2">
         <nav className="flex justify-between">
@@ -307,7 +336,7 @@ function Navbar({ content, config, filterValue }) {
             </span>
           </div>
 
-          <div className="hidden lg:flex">
+          <div className="hidden lg:flex items-center">
             {filterPageVisibility("dashboard") && (
               <NavBarItem
                 title="Dashboard"
@@ -345,21 +374,22 @@ function Navbar({ content, config, filterValue }) {
                 }
               />
             )}
-            {(userIsAdmin || userIsModerator) && filterPageVisibility("advisor dashboard") && (
-              <NavBarItem
-                title="Advisor Dashboard"
-                href={
-                  params.portalid
-                    ? `/${params.portalid}/advisor/dashboard`
-                    : "/advisor/dashboard"
-                }
-                activeRoutes={[
-                  params.portalid
-                    ? `/${params.portalid}/advisor/shared-docs`
-                    : "/advisor/shared-docs",
-                ]}
-              />
-            )}
+            {(userIsAdmin || userIsModerator) &&
+              filterPageVisibility("advisor dashboard") && (
+                <NavBarItem
+                  title="Advisor Dashboard"
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/advisor/dashboard`
+                      : "/advisor/dashboard"
+                  }
+                  activeRoutes={[
+                    params.portalid
+                      ? `/${params.portalid}/advisor/shared-docs`
+                      : "/advisor/shared-docs",
+                  ]}
+                />
+              )}
             {filterPageVisibility("forms") && (
               <NavBarItem
                 title="Forms"
@@ -476,8 +506,8 @@ function Navbar({ content, config, filterValue }) {
                         onClick={() =>
                           router.push(
                             params.portalid
-                              ? `/${params.portalid}/settings`
-                              : "/settings"
+                              ? `/${params.portalid}/settings?tab=customization`
+                              : "/settings?tab=customization"
                           )
                         }
                       >
@@ -606,21 +636,22 @@ function Navbar({ content, config, filterValue }) {
                     }
                   />
                 )}
-                {(userIsAdmin || userIsModerator) && filterPageVisibility("advisor dashboard") && (
-                  <NavBarItem
-                    title="Advisor Dashboard"
-                    href={
-                      params.portalid
-                        ? `/${params.portalid}/advisor/dashboard`
-                        : "/advisor/dashboard"
-                    }
-                    activeRoutes={[
-                      params.portalid
-                        ? `/${params.portalid}/advisor/shared-docs`
-                        : "/advisor/shared-docs",
-                    ]}
-                  />
-                )}
+                {(userIsAdmin || userIsModerator) &&
+                  filterPageVisibility("advisor dashboard") && (
+                    <NavBarItem
+                      title="Advisor Dashboard"
+                      href={
+                        params.portalid
+                          ? `/${params.portalid}/advisor/dashboard`
+                          : "/advisor/dashboard"
+                      }
+                      activeRoutes={[
+                        params.portalid
+                          ? `/${params.portalid}/advisor/shared-docs`
+                          : "/advisor/shared-docs",
+                      ]}
+                    />
+                  )}
                 {customPages?.length > 0 &&
                   customPages?.map((page) => (
                     <NavBarItem

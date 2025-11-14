@@ -113,7 +113,7 @@ const Header = ({
                 <CircleUserRound className="h-5 w-5" /> Account Info
               </button>
               <button
-                onClick={() => router.push("/settings")}
+                onClick={() => router.push("/settings?tab=customization")}
                 className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
               >
                 <Settings className="h-5 w-5" />
@@ -168,7 +168,7 @@ const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
     <div className="space-y-2">
       {userIsAdmin && (
         <button
-          onClick={() => router.push("/settings")}
+          onClick={() => router.push("/settings?tab=customization")}
           className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
         >
           <Settings className="w-5 h-5" />
@@ -253,7 +253,7 @@ const Sidepanel = ({
 
         <button
           className="flex items-center gap-2 w-full rounded-full font-medium py-2 px-3 text-gray-800 text-sm hover:bg-gray-200 my-1"
-          onClick={() => router.push("/settings")}
+          onClick={() => router.push("/settings?tab=customization")}
         >
           <Settings className="h-5 w-5" /> Settings
         </button>
