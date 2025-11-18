@@ -43,7 +43,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         setBlobReq(true);
       }
       const userData = getUserData();
-      console.log("FileType", fileType)
+      console.log("FileType", fileType);
       const response = await fetchWrapper(
         `/api/box/files/proxy-file?url=${encodeURIComponent(
           url
@@ -82,7 +82,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       setFileType(fileType);
       const userData = getUserData();
       const secretKey = new TextEncoder().encode(
-        "ZykZUibhbuZcljcVnXklIZiWEaVxnROm"
+        "4f5e6eef675c4ed79ba5c56b421cd6d2"
       );
 
       const tokenPayload = {
@@ -96,7 +96,11 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         documentType: getDocumentType(fileType),
         editorConfig: {
           user: { id: userData.id, name: userData.name },
-          customization: { autoSave: true, uiTheme: 'default-light', features : { tabBackground : { mode : "toolbar"}} },
+          customization: {
+            autoSave: true,
+            uiTheme: "default-light",
+            features: { tabBackground: { mode: "toolbar" } },
+          },
         },
         events: {
           onRequestSaveAs: async function (event) {
@@ -223,8 +227,8 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
   useEffect(() => {
     const userData = getUserData();
-    setUser(userData)
-    fetFileComments()
+    setUser(userData);
+    fetFileComments();
   }, []);
 
   useEffect(() => {
@@ -256,8 +260,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       if (!response.ok) {
         throw new Error(data.error || "Failed to delete page");
       }
-      setComments(data.data)
-
+      setComments(data.data);
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -265,225 +268,243 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     }
   };
 
-    const handleAddComment = async () => {
-      try {
-        setIsPostLoading(true);
-        const response = await fetchWrapper(
-          "/api/box/comment",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ message: message, fileId: item?.id, boxUserId : user.boxUserId }),
+  const handleAddComment = async () => {
+    try {
+      setIsPostLoading(true);
+      const response = await fetchWrapper(
+        "/api/box/comment",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          "create-comment"
-        );
+          body: JSON.stringify({
+            message: message,
+            fileId: item?.id,
+            boxUserId: user.boxUserId,
+          }),
+        },
+        "create-comment"
+      );
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to delete page");
-        }
-        fetFileComments();
-        setMessage("");
-      } catch (error) {
-        toast.error(error.message);
-      } finally {
-        setIsPostLoading(false);
-        setIsOpenCommentBox(false)
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete page");
       }
+      fetFileComments();
+      setMessage("");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsPostLoading(false);
+      setIsOpenCommentBox(false);
+    }
+  };
+
+  function formatTimestamp(isoString) {
+    const date = new Date(isoString);
+    const now = new Date();
+
+    const isToday = date.toDateString() === now.toDateString(); // Check if the date is today
+
+    const options = {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
     };
 
-    function formatTimestamp(isoString) {
-      const date = new Date(isoString);
-      const now = new Date();
-    
-      const isToday =
-        date.toDateString() === now.toDateString(); // Check if the date is today
-    
-      const options = {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      };
-    
-      const timeString = date.toLocaleTimeString("en-US", options); // Format time
-    
-      if (isToday) {
-        return `Today at ${timeString}`;
-      } else {
-        const dateString = date.toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        });
-        return `${dateString} at ${timeString}`;
-      }
+    const timeString = date.toLocaleTimeString("en-US", options); // Format time
+
+    if (isToday) {
+      return `Today at ${timeString}`;
+    } else {
+      const dateString = date.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+      return `${dateString} at ${timeString}`;
     }
+  }
 
   return (
-    <Dialog open={isModalOpen} onClose={() => {}} className="relative z-50">
-      {/* Modal Background */}
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+    <>
+      {isModalOpen && (
+        <div className="relative z-50">
+          {/* Modal Background */}
+          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
-      {/* Modal Content */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-      <DialogPanel className="w-full max-w-[90vw] min-h-[80vh] max-h-[90vh] overflow-auto bg-white rounded-lg shadow-lg">
-          {/* Header */}
-          <div className="flex justify-between items-center border-b px-6 py-4 text-black">
-            <h2 className="text-lg font-semibold">Edit “{item?.name}”</h2>
-            <button
-              onClick={() => {
-                if (editorRef.current?.destroyEditor) {
-                  editorRef.current.destroyEditor();
-                }
-                setIsModalOpen(false);
-              }}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div className="flex flex-col md:flex-row w-full h-[80vh] sm:h-[70vh]">
-            {/* Editor Section */}
-            <div className="flex-1 overflow-auto min-h-[400px]">
-              <div className="h-[100%]">
-                {isLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-                  </div>
-                ) : (
-                  <div
-                    id="onlyoffice-editor"
-                    ref={editorRef}
-                    className="h-full w-full"
-                    // style={{backgroundColor:' #007BFF !important'}}
-                  ></div>
-                )}
+          {/* Modal Content */}
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <div className="w-full max-w-[90vw] min-h-[80vh] max-h-[90vh] overflow-auto bg-white rounded-lg shadow-lg">
+              {/* Header */}
+              <div className="flex justify-between items-center border-b px-6 py-4 text-black">
+                <h2 className="text-lg font-semibold">Edit “{item?.name}”</h2>
+                <button
+                  onClick={() => {
+                    if (editorRef.current?.destroyEditor) {
+                      editorRef.current.destroyEditor();
+                    }
+                    setIsModalOpen(false);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            </div>
 
-            {/* Comment Section */}
-            <div className="w-full md:w-[30%] md:border-l p-3 bg-gray-50 text-sm text-[#000000e8] flex flex-col font-lato pb-4">
-              {comments &&
-                comments.length > 0 &&
-                comments?.map((comment) => (
-                  <div
-                    key={comment?.id}
-                    className="cursor-pointer w-full"
-                    onClick={() => setIsOpenCommentBox((prev) => !prev)}
-                  >
-                    {comment?.user && (
-                      <div className="flex items-start gap-3 pt-3 pb-5 border-b border-[#0000001a]">
+              {/* Body */}
+              <div className="flex flex-col md:flex-row w-full h-[80vh] sm:h-[70vh]">
+                {/* Editor Section */}
+                <div className="flex-1 overflow-auto min-h-[400px]">
+                  <div className="h-[100%]">
+                    {isLoading ? (
+                      <div className="flex items-center justify-center h-full">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+                      </div>
+                    ) : (
+                      <div
+                        id="onlyoffice-editor"
+                        ref={editorRef}
+                        className="h-full w-full"
+                        // style={{backgroundColor:' #007BFF !important'}}
+                      ></div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Comment Section */}
+                <div className="w-full md:w-[30%] md:border-l p-3 bg-gray-50 text-sm text-[#000000e8] flex flex-col font-lato pb-4">
+                  {comments &&
+                    comments.length > 0 &&
+                    comments?.map((comment) => (
+                      <div
+                        key={comment?.id}
+                        className="cursor-pointer w-full"
+                        onClick={() => setIsOpenCommentBox((prev) => !prev)}
+                      >
+                        {comment?.user && (
+                          <div className="flex items-start gap-3 pt-3 pb-5 border-b border-[#0000001a]">
+                            <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
+                              {comment?.user?.name
+                                ?.split(" ")
+                                .map((word) => word.charAt(0).toUpperCase())
+                                .slice(0, 2)
+                                .join("")}
+                            </div>
+                            <div>
+                              <p>{comment?.user?.email}</p>
+                              <p className="text-gray-600">
+                                {formatTimestamp(comment?.created_at)}
+                              </p>
+                              <p>{comment?.message}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  {comments && comments.length === 0 && (
+                    <div className="flex flex-col items-center my-auto text-gray-500 py-5">
+                      <MessageSquareDiff className="w-10 h-10 text-blue-500" />
+                      <p className="text-lg font-semibold mt-2 text-[#000000bd]">
+                        No comments to show
+                      </p>
+                      <span className="text-sm text-[#000000bd]">
+                        Be the first to add a comment!
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Comment Input */}
+                  {isOpenCommentBox ? (
+                    <div className="flex flex-col mt-auto">
+                      <div className="flex items-start mb-4">
                         <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                          {comment?.user?.name
+                          {user?.name
                             ?.split(" ")
                             .map((word) => word.charAt(0).toUpperCase())
                             .slice(0, 2)
                             .join("")}
                         </div>
-                        <div>
-                          <p>{comment?.user?.email}</p>
-                          <p className="text-gray-600">
-                            {formatTimestamp(comment?.created_at)}
-                          </p>
-                          <p>{comment?.message}</p>
-                        </div>
+                        <textarea
+                          placeholder="Write a comment..."
+                          className="border w-full mx-3 cursor-pointer h-24 rounded-md shadow-inner px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 resize-none placeholder-gray-400"
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          rows={4}
+                        />
                       </div>
-                    )}
-                  </div>
-                ))}
-              {comments && comments.length === 0 && (
-                <div className="flex flex-col items-center my-auto text-gray-500 py-5">
-                  <MessageSquareDiff className="w-10 h-10 text-blue-500" />
-                  <p className="text-lg font-semibold mt-2 text-[#000000bd]">
-                    No comments to show
-                  </p>
-                  <span className="text-sm text-[#000000bd]">
-                    Be the first to add a comment!
-                  </span>
-                </div>
-              )}
+                      <div className="flex ml-auto space-x-2">
+                        <Button
+                          type="Secondary"
+                          onClick={() => setIsOpenCommentBox(false)}
+                          disabled={isPostLoading}
+                          label="Cancel"
+                        />
 
-              {/* Comment Input */}
-              {isOpenCommentBox ? (
-                <div className="flex flex-col mt-auto">
-                  <div className="flex items-start mb-4">
-                    <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                      {user?.name
-                        ?.split(" ")
-                        .map((word) => word.charAt(0).toUpperCase())
-                        .slice(0, 2)
-                        .join("")}
+                        <Button
+                          type="Primary"
+                          onClick={handleAddComment}
+                          disabled={isPostLoading}
+                          label={"Post"}
+                          isLoading={isPostLoading}
+                        />
+                        {/* <button
+                          className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
+                          onClick={() => setIsOpenCommentBox(false)}
+                          disabled={isPostLoading}
+                        >
+                          Cancel
+                        </button> */}
+                        {/* <button
+                          className={`text-white px-4 py-2 rounded-lg border-gray bg-blue-500 hover:bg-blue-600  ${
+                            isPostLoading ? "bg-gray-400 cursor-not-allowed" : ""
+                          }`}
+                          onClick={handleAddComment}
+                          disabled={isPostLoading}
+                        >
+                          {isPostLoading ? "Posting..." : "Post"}
+                        </button> */}
+                      </div>
                     </div>
-                    <textarea
-                      placeholder="Write a comment..."
-                      className="border w-full mx-3 cursor-pointer h-24 rounded-md shadow-inner px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 resize-none placeholder-gray-400"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      rows={4}
-                    />
-                  </div>
-                  <div className="flex ml-auto space-x-2">
-                    <Button
-                      type="Secondary"
-                      onClick={() => setIsOpenCommentBox(false)}
-                      disabled={isPostLoading}
-                      label="Cancel"
-                    />
-
-                    <Button
-                      type="Primary"
-                      onClick={handleAddComment}
-                      disabled={isPostLoading}
-                      label={"Post"}
-                      isLoading={isPostLoading}
-                    />
-                    {/* <button
-                      className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
-                      onClick={() => setIsOpenCommentBox(false)}
-                      disabled={isPostLoading}
+                  ) : (
+                    <div
+                      className="flex items-center mt-auto cursor-pointer"
+                      onClick={() => setIsOpenCommentBox((prev) => !prev)}
+                    >
+                      <div className="flex items-center justify-center size-8 p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
+                        {user?.name
+                          ?.split(" ")
+                          .map((word) => word.charAt(0).toUpperCase())
+                          .slice(0, 2)
+                          .join("")}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Write a comment"
+                        className="border w-full mx-3 h-9 rounded-md shadow-inner pl-4 text-sm outline-none text-gray-700"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Footer Buttons */}
+              <div className="flex justify-end border-t px-4 py-3 space-x-2">
+                {/* <button
+                      onClick={() => {
+                        if (editorRef.current?.destroyEditor) {
+                          editorRef.current.destroyEditor();
+                        }
+                        setIsModalOpen(false);
+                      }}
+                      disabled={isSaveLoading}
+                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
                     >
                       Cancel
                     </button> */}
-                    {/* <button
-                      className={`text-white px-4 py-2 rounded-lg border-gray bg-blue-500 hover:bg-blue-600  ${
-                        isPostLoading ? "bg-gray-400 cursor-not-allowed" : ""
-                      }`}
-                      onClick={handleAddComment}
-                      disabled={isPostLoading}
-                    >
-                      {isPostLoading ? "Posting..." : "Post"}
-                    </button> */}
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="flex items-center mt-auto cursor-pointer"
-                  onClick={() => setIsOpenCommentBox((prev) => !prev)}
-                >
-                  <div className="flex items-center justify-center size-8 p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                    {user?.name
-                      ?.split(" ")
-                      .map((word) => word.charAt(0).toUpperCase())
-                      .slice(0, 2)
-                      .join("")}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Write a comment"
-                    className="border w-full mx-3 h-9 rounded-md shadow-inner pl-4 text-sm outline-none text-gray-700"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-          {/* Footer Buttons */}
-          <div className="flex justify-end border-t px-4 py-3 space-x-2">
-            {/* <button
+                <Button
+                  type="Secondary"
                   onClick={() => {
                     if (editorRef.current?.destroyEditor) {
                       editorRef.current.destroyEditor();
@@ -491,45 +512,34 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                     setIsModalOpen(false);
                   }}
                   disabled={isSaveLoading}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-                >
-                  Cancel
-                </button> */}
-            <Button
-              type="Secondary"
-              onClick={() => {
-                if (editorRef.current?.destroyEditor) {
-                  editorRef.current.destroyEditor();
-                }
-                setIsModalOpen(false);
-              }}
-              disabled={isSaveLoading}
-              label="Cancel"
-            />
+                  label="Cancel"
+                />
 
-            <Button
-              type="Primary"
-              disabled={isSaveLoading}
-              onClick={handleSaveFile}
-              label={"Save"}
-              isLoading={isSaveLoading}
-            />
-            {/* <button
-                  onClick={handleSaveFile}
+                <Button
+                  type="Primary"
                   disabled={isSaveLoading}
-                  className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {isSaveLoading ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-2" />
-                  )}
-                  Save
-                </button> */}
+                  onClick={handleSaveFile}
+                  label={"Save"}
+                  isLoading={isSaveLoading}
+                />
+                {/* <button
+                      onClick={handleSaveFile}
+                      disabled={isSaveLoading}
+                      className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isSaveLoading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
+                      Save
+                    </button> */}
+              </div>
+            </div>
           </div>
-        </DialogPanel>
-      </div>
-    </Dialog>
+        </div>
+      )}
+    </>
   );
 }
 

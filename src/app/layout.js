@@ -28,28 +28,28 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
-      > 
-      <Script
-        src="https://mstrategy-portal-onlyoffice.azurewebsites.net/web-apps/apps/api/documents/api.js"
-        strategy="lazyOnload"
-      />
-      {/* <SocketProvider> */}
-          <StoreProvider>
-            {children}
-            <ToastContainer
-              position="top-right"
-              autoClose={1000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick={false}
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-              transition={Bounce}
-            />
-          </StoreProvider>
+      >
+        <Script
+          src="https://mstrategy-onlyoffice.azurewebsites.net/web-apps/apps/api/documents/api.js"
+          strategy="lazyOnload"
+        />
+        {/* <SocketProvider> */}
+        <StoreProvider>
+          {children}
+          <ToastContainer
+            position="top-right"
+            autoClose={1000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick={false}
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            transition={Bounce}
+          />
+        </StoreProvider>
         {/* </SocketProvider> */}
       </body>
     </html>
