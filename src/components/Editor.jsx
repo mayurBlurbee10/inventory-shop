@@ -1,3 +1,4 @@
+"use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Loader2, MessageSquareDiff, Save, X } from "lucide-react";
@@ -6,6 +7,7 @@ import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { SignJWT } from "jose";
 import Button from "./Common/Elements/Button";
+import { useSelector } from "react-redux";
 
 function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const editorRef = useRef(null);
@@ -16,11 +18,13 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const [fileType, setFileType] = useState("");
   const [blobReq, setBlobReq] = useState(false);
   const [replaceReq, setReplaceReq] = useState(false);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [isOpenCommentBox, setIsOpenCommentBox] = useState(false);
   const [message, setMessage] = useState("");
   const [isPostLoading, setIsPostLoading] = useState(false);
   const [comments, setComments] = useState([]);
+
+  const { data: user } = useSelector((state) => state.user);
 
   const getDocumentType = (fileType) => {
     const fileMappings = {
@@ -35,19 +39,18 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     );
   };
 
-  const getBlobFromUrl = async (url, fileType) => {
+  const getBlobFromUrl = async (url, fileTypeParam) => {
     try {
       if (blobReq) {
         return;
       } else {
         setBlobReq(true);
       }
-      const userData = getUserData();
-      console.log("FileType", fileType);
+      console.log("FileType", fileTypeParam);
       const response = await fetchWrapper(
         `/api/box/files/proxy-file?url=${encodeURIComponent(
           url
-        )}&fileType=${fileType}&token=${token}`,
+        )}&fileType=${fileTypeParam}&token=${token}`,
         { responseType: "blob" }
       );
 
@@ -58,44 +61,63 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       const blob = await response.blob(); // ✅ Convert response to Blob
       console.log("✅ Blob received:", blob);
 
+      setBlobReq(false);
       return blob;
     } catch (error) {
       console.error("❌ Error fetching blob:", error);
+      setBlobReq(false);
       return null;
     }
   };
 
   const getFile = useCallback(async () => {
     if (!item?.id || isLoading) return;
+
+    const response = await fetchWrapper(`/api/box/editor?fileId=${item.id}`, {
+      method: "GET",
+    });
+
+    if (!response || !response.ok) throw new Error("Failed to fetch file");
+
+    const { fileUrl, fileType: fetchedFileType } = await response.json();
+    setFileType(fetchedFileType);
+
+    // Wait for OnlyOffice API to be available
+    if (typeof window !== "undefined" && !window.DocsAPI) {
+      // Wait for script to load
+      let attempts = 0;
+      while (!window.DocsAPI && attempts < 50) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        attempts++;
+      }
+      if (!window.DocsAPI) {
+        console.error("OnlyOffice API failed to load");
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await fetchWrapper(`/api/box/editor?fileId=${item.id}`, {
-        method: "GET",
-      });
+      const documentType = getDocumentType(fetchedFileType);
+      // Capture fileType for use in event callbacks
+      const currentFileType = fetchedFileType;
 
-      if (!response || !response.ok) throw new Error("Failed to fetch file");
-
-      const { fileUrl, fileType } = await response.json();
-      setIsLoading(false);
-      setFileUrl(fileUrl);
-      setFileType(fileType);
-      const userData = getUserData();
       const secretKey = new TextEncoder().encode(
         "4f5e6eef675c4ed79ba5c56b421cd6d2"
       );
 
       const tokenPayload = {
         document: {
-          fileType: fileType,
-          key: item.id,
+          fileType: fetchedFileType,
+          key: `${item?.id}_${Date.now()}`,
           title: item.name,
           url: fileUrl,
           permissions: { edit: true, download: true },
         },
-        documentType: getDocumentType(fileType),
+        documentType: documentType,
         editorConfig: {
-          user: { id: userData.id, name: userData.name },
+          user: { id: user?.id, name: user?.name },
           customization: {
             autoSave: true,
             uiTheme: "default-light",
@@ -108,12 +130,13 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
             try {
               const data = event.data; // Get file data from ONLYOFFICE
               console.log("fileData", event);
-              const blob = await getBlobFromUrl(data.url, fileType);
+              const blob = await getBlobFromUrl(data.url, currentFileType);
               console.log("blob", blob);
-              await uploadFileToBox(blob);
+              if (blob) {
+                await uploadFileToBox(blob);
+              }
             } catch (error) {
               console.error("Error updating file:", error);
-              toast.error("Failed to save document.");
             }
           },
           onRequestClose: function () {
@@ -123,28 +146,31 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
             }
           },
           onDownloadAs: async function (event) {
-            console.log("Saving document...");
+            console.log("Downloading document...");
             try {
               const data = event.data; // Get file data from ONLYOFFICE
               console.log("fileData", event);
-              const blob = await getBlobFromUrl(data.url, fileType);
+              const blob = await getBlobFromUrl(data.url, currentFileType);
               console.log("blob", blob);
-              await uploadFileToBox(blob);
+              if (blob) {
+                await uploadFileToBox(blob);
+              }
             } catch (error) {
-              console.error("Error updating file:", error);
-              toast.error("Failed to save document.");
+              console.error("Error downloading file:", error);
             }
           },
         },
       };
 
-      const token = await new SignJWT(tokenPayload)
+      const jwtToken = await new SignJWT(tokenPayload)
         .setProtectedHeader({ alg: "HS256", typ: "JWT" })
         .setIssuedAt()
         .setExpirationTime("1h")
         .sign(secretKey);
-      setToken(token);
 
+      setToken(jwtToken);
+
+      // Destroy existing editor instance if it exists
       if (
         editorRef.current &&
         typeof editorRef.current.destroyEditor === "function"
@@ -153,14 +179,20 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         editorRef.current.destroyEditor();
       }
 
+      console.log("editor.current Before", editorRef.current);
+      console.log("token", jwtToken);
+
+      // Initialize new editor instance
       editorRef.current = new window.DocsAPI.DocEditor("onlyoffice-editor", {
         ...tokenPayload,
-        token,
+        token: jwtToken,
         height: "100%",
         width: "100%",
       });
 
       console.log("editor.current", editorRef.current);
+
+      setIsLoading(false);
     } catch (error) {
       console.error("Error loading file:", error);
       toast.error("Error loading document.");
@@ -177,9 +209,11 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     }
     if (!blob) {
       console.log("No blob");
+      setReplaceReq(false);
       return;
     }
     try {
+      setIsSaveLoading(true);
       const userData = getUserData();
       const formData = new FormData();
       formData.append("file", blob, item.name);
@@ -197,45 +231,52 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
       if (!response.ok) throw new Error("Failed to upload file");
 
+      const result = await response.json();
+      console.log("File uploaded successfully:", result);
       toast.success("File saved successfully");
-      editorRef.current.destroyEditor();
+
+      if (editorRef.current?.destroyEditor) {
+        editorRef.current.destroyEditor();
+      }
       setIsModalOpen(false);
+      setReplaceReq(false);
+      setIsSaveLoading(false);
     } catch (error) {
       toast.error(error.message);
       console.error("Error processing file:", error);
       setIsModalOpen(false);
       setIsSaveLoading(false);
+      setReplaceReq(false);
     }
   };
 
-  async function handleSaveFile() {
-    if (!editorRef.current) return;
-    setIsSaveLoading(true);
-
-    try {
-      console.log("editor.current", editorRef.current);
-      editorRef.current.downloadAs();
-    } catch (error) {
-      console.error("Error saving document:", error);
-      toast.error("Failed to save document.");
+  const handleClose = () => {
+    if (editorRef.current?.destroyEditor) {
+      console.log("🔹 Destroying old editor instance...", editorRef.current);
+      editorRef.current.destroyEditor();
     }
-  }
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
-    if (isModalOpen) getFile();
-  }, [isModalOpen]);
+    if (isModalOpen && item) {
+      getFile();
+    }
+  }, [isModalOpen, item, getFile]);
 
   useEffect(() => {
-    const userData = getUserData();
-    setUser(userData);
+    // const userData = getUserData();
+    // setUser(userData);
     fetFileComments();
   }, []);
 
   useEffect(() => {
     return () => {
       if (editorRef.current) {
-        console.log("Destroy", editorRef.current);
-        editorRef.current.destroyEditor();
+        if (editorRef.current.destroyEditor) {
+          console.log("Destroy", editorRef.current);
+          editorRef.current.destroyEditor();
+        }
         editorRef.current = null;
       }
     };
@@ -337,38 +378,34 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
           {/* Modal Content */}
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <div className="w-full max-w-[90vw] min-h-[80vh] max-h-[90vh] overflow-auto bg-white rounded-lg shadow-lg">
+            <div className="w-full max-w-[90vw] min-h-[80vh] max-h-[90vh] overflow-auto bg-white rounded-lg shadow-lg flex flex-col">
               {/* Header */}
-              <div className="flex justify-between items-center border-b px-6 py-4 text-black">
-                <h2 className="text-lg font-semibold">Edit “{item?.name}”</h2>
+              <div className="flex justify-between items-center border-b px-6 py-4">
+                <h2 className="text-xl text-gray-800 font-semibold">
+                  Edit &quot;{item?.name}&quot;
+                </h2>
                 <button
-                  onClick={() => {
-                    if (editorRef.current?.destroyEditor) {
-                      editorRef.current.destroyEditor();
-                    }
-                    setIsModalOpen(false);
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
+                  onClick={handleClose}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Body */}
+              {/* Editor Section */}
               <div className="flex flex-col md:flex-row w-full h-[80vh] sm:h-[70vh]">
-                {/* Editor Section */}
-                <div className="flex-1 overflow-auto min-h-[400px]">
+                <div className="flex-1 overflow-hidden min-h-0">
                   <div className="h-[100%]">
                     {isLoading ? (
                       <div className="flex items-center justify-center h-full">
-                        <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                       </div>
                     ) : (
                       <div
                         id="onlyoffice-editor"
                         ref={editorRef}
                         className="h-full w-full"
-                        // style={{backgroundColor:' #007BFF !important'}}
+                        // style={{ minHeight: "600px" }}
                       ></div>
                     )}
                   </div>
@@ -450,22 +487,6 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                           label={"Post"}
                           isLoading={isPostLoading}
                         />
-                        {/* <button
-                          className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
-                          onClick={() => setIsOpenCommentBox(false)}
-                          disabled={isPostLoading}
-                        >
-                          Cancel
-                        </button> */}
-                        {/* <button
-                          className={`text-white px-4 py-2 rounded-lg border-gray bg-blue-500 hover:bg-blue-600  ${
-                            isPostLoading ? "bg-gray-400 cursor-not-allowed" : ""
-                          }`}
-                          onClick={handleAddComment}
-                          disabled={isPostLoading}
-                        >
-                          {isPostLoading ? "Posting..." : "Post"}
-                        </button> */}
                       </div>
                     </div>
                   ) : (
@@ -491,18 +512,6 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
               </div>
               {/* Footer Buttons */}
               <div className="flex justify-end border-t px-4 py-3 space-x-2">
-                {/* <button
-                      onClick={() => {
-                        if (editorRef.current?.destroyEditor) {
-                          editorRef.current.destroyEditor();
-                        }
-                        setIsModalOpen(false);
-                      }}
-                      disabled={isSaveLoading}
-                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-                    >
-                      Cancel
-                    </button> */}
                 <Button
                   type="Secondary"
                   onClick={() => {
@@ -517,23 +526,16 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
                 <Button
                   type="Primary"
-                  disabled={isSaveLoading}
-                  onClick={handleSaveFile}
+                  disabled={isSaveLoading || isLoading}
+                  onClick={async () => {
+                    if (editorRef.current?.downloadAs) {
+                      setIsSaveLoading(true);
+                      editorRef.current.downloadAs();
+                    }
+                  }}
                   label={"Save"}
                   isLoading={isSaveLoading}
                 />
-                {/* <button
-                      onClick={handleSaveFile}
-                      disabled={isSaveLoading}
-                      className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      {isSaveLoading ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Save className="w-4 h-4 mr-2" />
-                      )}
-                      Save
-                    </button> */}
               </div>
             </div>
           </div>
