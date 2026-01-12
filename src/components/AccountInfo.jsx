@@ -104,8 +104,9 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
               {/* User Image */}
               <div className="w-[100px] h-[100px] md:w-[150px] md:h-[150px] flex-shrink-0 flex items-center justify-center">
                 <div
-                  className={`size-20 rounded-full w-[70px] h-[70px] text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
+                  className={`size-20 rounded-full w-[70px] h-[70px] text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 
                     }`}
+                    style={{ backgroundColor: config.secondaryColor, color: config.primaryColor }}
                 >
                   {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </div>

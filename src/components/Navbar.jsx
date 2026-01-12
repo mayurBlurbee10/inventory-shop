@@ -111,9 +111,8 @@ function Navbar({ content, config, filterValue }) {
             <button
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-                isActive ? "font-bold" : "text-black"
-              }`}
+              className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${isActive ? "font-bold" : "text-black"
+                }`}
               style={isActive ? { color: config?.primaryColor } : {}}
             >
               {title}
@@ -141,8 +140,8 @@ function Navbar({ content, config, filterValue }) {
             backgroundColor: isHovered
               ? config?.accentColor
               : isActive
-              ? config?.accentColor
-              : "transparent",
+                ? config?.accentColor
+                : "transparent",
           }}
         >
           {title}
@@ -221,15 +220,15 @@ function Navbar({ content, config, filterValue }) {
       const filterPages =
         Array.isArray(data?.data) && data.data.length > 0
           ? data.data[0]?.pages?.filter(
-              (item) => item.isCustomPage === false
-            ) || []
+            (item) => item.isCustomPage === false
+          ) || []
           : [];
       //  setPages(filterPages);
       dispatch(
         setReduxPages(
           Array.isArray(data?.data) &&
-            data.data.length > 0 &&
-            data.data[0]?.pages
+          data.data.length > 0 &&
+          data.data[0]?.pages
         )
       );
     } catch (error) {
@@ -265,10 +264,10 @@ function Navbar({ content, config, filterValue }) {
     let theme = contentItem
       ? contentItem.theme
       : {
-          fontSize: fontSize?.size,
-          color: "#000000e6",
-          fontWeight: title === "Paragraph" ? 300 : 400,
-        };
+        fontSize: fontSize?.size,
+        color: "#000000e6",
+        fontWeight: title === "Paragraph" ? 300 : 400,
+      };
     return theme;
   };
 
@@ -329,7 +328,7 @@ function Navbar({ content, config, filterValue }) {
                 //   <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
                 // ) :
                 filterValue("Header Text") &&
-                filterValue("Header Text") !== "Premier Customer Portal"
+                  filterValue("Header Text") !== "Premier Customer Portal"
                   ? filterValue("Header Text")
                   : params?.portalid
               }
@@ -461,9 +460,11 @@ function Navbar({ content, config, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                    userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                  }`}
+                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 `}
+                  style={{
+                    backgroundColor: config?.secondaryColor,
+                    color: config?.primaryColor
+                  }}
                 >
                   {/* {
                     isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
@@ -471,7 +472,11 @@ function Navbar({ content, config, filterValue }) {
                   {user?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div className="flex flex-col text-sm xl:text-base">
-                  <span className="text-gray-900 font-medium">
+                  <span className="font-medium"
+                    style={{
+                      color: config?.secondaryColor
+                    }}
+                  >
                     {/* {
                       isAdvisorViewOpen ? "Erica Smith" : user?.name
                     } */}
@@ -675,9 +680,8 @@ function Navbar({ content, config, filterValue }) {
                   >
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
-                      className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${
-                        userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                      }`}
+                      className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105`}
+                      style={{ backgroundColor: config.secondaryColor, color: config.primaryColor }}
                     >
                       {/* {
                         isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
