@@ -16,7 +16,7 @@ export const useChat = (userId, senderId, receiverId, portalId) => {
       }
       setMessages([]);
       const res = await fetchWrapper(
-        `/api/messages?portalId=${portalId}&senderId=${senderId}&receiverId=${receiverId}`,
+        `/api/messages?portalId=${portalId || "root"}&senderId=${senderId}&receiverId=${receiverId}`,
         {},
         "fetch-messages"
       );

@@ -27,7 +27,7 @@ const UsersContent = () => {
   const fetchUsers = async () => {
     try {
       const url = params.portalid
-        ? `/api/users?portalid=${params.portalid}`
+        ? `/api/users?portalid=${params.portalid || "root"}`
         : "/api/users";
       const response = await fetchWrapper(url, {}, "fetch-user");
       if (!response.ok) {
@@ -79,7 +79,7 @@ const UsersContent = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email: user.email, portalid: params.portalid }),
+          body: JSON.stringify({ email: user.email, portalid: params.portalid || "root" }),
         },
         "resend-invite"
       );

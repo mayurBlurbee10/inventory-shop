@@ -139,7 +139,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
     const messageData = {
       sender: user?.id,
       receiver: message?.sender?.id === user?.id ? message?.receiver?.id : message?.sender?.id,
-      portalId: params.portalid,
+      portalId: params.portalid || "root",
       subject: message.subject,
       text: encryptMessage(replyMessage.text),
       parentMessage: message?.id
@@ -446,7 +446,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
     try {
       setIsLoading(true);
       const url = params.portalid
-        ? `/api/users?portalid=${params.portalid || "default"}`
+        ? `/api/users?portalid=${params.portalid || "root"}`
         : "/api/users";
       const response = await fetchWrapper(url, {}, "fetch-user-list");
       if (!response.ok) throw new Error("Download failed");
@@ -471,7 +471,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
     const messageData = {
       sender: user?.id,
       receiver: id,
-      portalId: params.portalid,
+      portalId: params.portalid || "root",
       subject: message.subject,
       text: encryptMessage(message.text),
     };
@@ -620,7 +620,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
     try {
       setIsMessagesLoading(true);
       const res = await fetchWrapper(
-        `/api/messages?portalId=${params?.portalid}&senderId=${user?.id}`,
+        `/api/messages?portalId=${params?.portalid || "root"}&senderId=${user?.id}`,
         {},
         "fetch-messages"
       );
@@ -817,7 +817,7 @@ const MessageSection = ({clientId}) => {
     try {
       setIsMessagesLoading(true);
       const res = await fetchWrapper(
-        `/api/messages?portalId=${params?.portalid}&senderId=${clientId ? clientId : user?.id}`,
+        `/api/messages?portalId=${params?.portalid || "root "}&senderId=${clientId ? clientId : user?.id}`,
         {},
         "fetch-messages"
       );

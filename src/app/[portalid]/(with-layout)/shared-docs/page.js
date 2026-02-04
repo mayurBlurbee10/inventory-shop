@@ -330,14 +330,14 @@ export default function SharedDocsPage() {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
-        body: JSON.stringify({ email, portalid: params.portalid || null }),
+        body: JSON.stringify({ email, portalid: params.portalid || "root" }),
       };
       const response = await fetchWrapper(url, body, "fetchUserByEmail");
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
       setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      localStorage.setItem("portal", params.portalid || "root");
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
@@ -803,7 +803,7 @@ export default function SharedDocsPage() {
     const fetchConfig = async () => {
       try {
         const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
+          `/api/portal?portalid=${params.portalid || "root"}`,
           {},
           "portal-login"
         );
@@ -848,7 +848,7 @@ export default function SharedDocsPage() {
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+      `/api/contentManagement?portalId=${params.portalid || "root"}`,
       { method: "GET" },
       "fetchContentManagement"
     );

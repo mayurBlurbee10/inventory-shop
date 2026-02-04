@@ -628,7 +628,7 @@ export default function AdvisorViewSharedDocsPage() {
           if (!params?.portalid) return;
           const page = encodeURIComponent("advisor shared-docs")
           const response = await fetchWrapper(
-            `/api/pages?portalId=${params.portalid || "default"}&page=${page}`,
+            `/api/pages?portalId=${params.portalid || "root"}&page=${page}`,
             {},
             "fetch-page"
           );

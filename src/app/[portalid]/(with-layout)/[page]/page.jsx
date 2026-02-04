@@ -49,7 +49,7 @@ function Page() {
     try {
       setIsLoading(true);
       const response = await fetchWrapper(
-        `/api/pages?portalId=${params?.portalid}&page=${
+        `/api/pages?portalId=${params?.portalid || "root"}&page=${
           reverseSanitizeName(params?.page) || ""
         }`,
         {},

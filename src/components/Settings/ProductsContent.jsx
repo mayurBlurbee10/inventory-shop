@@ -65,7 +65,7 @@ const ProductsContent = () => {
       setLoading(true);
       const pluginPayload = {
         type: PluginType.PAGES,
-        portalId: params.portalid || "default",
+        portalId: params.portalid || "root",
         createdBy: user?.id,
       };
       const pluginResponse = await fetchWrapper(
@@ -94,7 +94,7 @@ const ProductsContent = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            portalId: params.portalid,
+            portalId: params.portalid || "root",
             pluginId: savedPluginData?.data?.id,
           }),
         },
@@ -112,7 +112,7 @@ const ProductsContent = () => {
     try {
       setLoading(true);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid || ""}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}`,
         {},
         "fetch-plugins"
       );

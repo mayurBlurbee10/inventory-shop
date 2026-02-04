@@ -60,7 +60,7 @@ const MyPageContent = () => {
       setLoading(true);
       const encodedType = encodeURIComponent(PluginType.PAGES);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid}&type=${encodedType}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
         "fetch-plugins"
       );
@@ -91,7 +91,7 @@ const MyPageContent = () => {
         const pageIds = pages.map((item)=>item.id)
         const pluginPayload = {
           type: PluginType.PAGES,
-          portalId: params.portalid ,
+          portalId: params.portalid || "root",
           pageId: pageIds,
           existingPages : pagesData,
         };
@@ -129,11 +129,11 @@ const MyPageContent = () => {
         setLoading(true);
         const pluginPayload = {
           type: PluginType.PAGES,
-          portalId: params.portalid || "default",
+          portalId: params.portalid || "root",
           createdBy: user?.id,
         };
         const pluginResponse = await fetchWrapper(
-          `/api/plugins?portalId=${params.portalid}&&type=${PluginType.PAGES}`,
+          `/api/plugins?portalId=${params.portalid || "root"}&&type=${PluginType.PAGES}`,
           {
             method: "GET",
           },
@@ -154,7 +154,7 @@ const MyPageContent = () => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              portalId: params.portalid,
+              portalId: params.portalid || "root",
               pluginId: savedPluginData?.data?.id,
             }),
           },

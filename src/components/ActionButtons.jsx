@@ -40,7 +40,7 @@ export default function ActionButtons({
         // }
         // const data = await response.json();
         // setConfig(data.data);
-        dispatch(setPortal(portalId || "default"))
+        dispatch(setPortal(portalId || "root"))
       } catch (error) {
         console.log("error: ", error);
         setIsLoading(false);

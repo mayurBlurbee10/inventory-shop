@@ -28,7 +28,7 @@ const ForgotPassword = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, portalid: params.portalid }),
+                body: JSON.stringify({ email, portalid: params.portalid || "root"}),
             });
 
             const data = await response.json();

@@ -208,7 +208,7 @@ function Navbar({ content, config, filterValue }) {
     try {
       const encodedPage = encodeURIComponent("pages");
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid}&type=${encodedPage}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedPage}`,
         {},
         "fetch-page"
       );

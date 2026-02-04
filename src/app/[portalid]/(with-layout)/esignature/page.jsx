@@ -32,7 +32,7 @@ const TrackStatus = ({ trackedRequests }) => {
       const messageData = {
         sender: user?.id,
         receiver: signer?.embed_url_external_user_id,
-        portalId: params.portalid,
+        portalId: params.portalid || "root",
         subject: `Sign Document`,
         text: `Please sign "${signRequest?.source_files[0].name}"`,
       };

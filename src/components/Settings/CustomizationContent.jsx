@@ -61,7 +61,7 @@ const CustomizationContent = () => {
       const response = await fetchWrapper("/api/reset", {
         method: "POST",
         body: JSON.stringify({
-          portalId: params.portalid,
+          portalId: params.portalid || "root",
         }),
       });
       const data = await response.json();

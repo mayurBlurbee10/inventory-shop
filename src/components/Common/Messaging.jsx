@@ -18,7 +18,7 @@ const Messaging = () => {
     try {
       setLoading(true);
       const url = params?.portalid
-        ? `/api/users?portalid=${params?.portalid || "default"}`
+        ? `/api/users?portalid=${params?.portalid || "root"}`
         : "/api/users";
       const response = await fetchWrapper(url, {}, "fetch-user-list");
       if (!response.ok) throw new Error("Download failed");

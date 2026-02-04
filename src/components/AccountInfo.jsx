@@ -47,7 +47,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            portalid: params.portalid,
+            portalid: params.portalid || "root",
             email: user?.email,
             newPassword: password,
             oldPassword: oldPassword,

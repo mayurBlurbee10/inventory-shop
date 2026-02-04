@@ -143,7 +143,7 @@ const CheckListContent = () => {
   const fetchChecklists = async () => {
     try {
       setIsChecklistLoading(true);
-      const url = `/api/checklists?portalId=${params.portalid}`;
+      const url = `/api/checklists?portalId=${params.portalid || "root"}`;
 
       const response = await fetchWrapper(url, {}, "fetch-checklist");
       const data = await response.json();

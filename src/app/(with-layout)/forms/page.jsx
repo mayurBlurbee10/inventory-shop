@@ -116,7 +116,7 @@ function LoansPage() {
                     >
                       {status}
                     </td>
-                    <td className="text-blue-500 cursor-pointer" onClick={()=>router.push(`loans/details/${id}`)}>Details</td>
+                    <td className="text-blue-500 cursor-pointer" onClick={() => router.push(`/forms/details/${id}`)}>Details</td>
                   </tr>
                 ))}
             </tbody>
@@ -124,8 +124,8 @@ function LoansPage() {
         </div>
         {newLoan ? (
           <div
-            className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl py-10 cursor-pointer"
-            onClick={() => router.push(`loans/new`)}
+            className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl cursor-pointer font-lato"
+            onClick={() => router.push(`forms/new?type=mortgage`)}
           >
             <List className="size-8" />
             View Application
@@ -144,9 +144,9 @@ function LoansPage() {
             <ChevronDown className="fill-black " />
             {isLoanOptionOpen && (
               <div className="flex flex-col border border-[#dee2e6] w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer">
-                <div onClick={() => router.push(`loans/new`)}>Mortgage</div>
-                <div onClick={() => router.push(`loans/new`)}>Auto</div>
-                <div onClick={() => router.push(`loans/new`)}>Personal</div>
+                <div onClick={() => router.push(`forms/new?type=mortgage`)}>Mortgage</div>
+                <div onClick={() => router.push(`forms/new?type=auto`)}>Auto</div>
+                <div onClick={() => router.push(`forms/new?type=personal`)}>Personal</div>
               </div>
             )}
           </div>

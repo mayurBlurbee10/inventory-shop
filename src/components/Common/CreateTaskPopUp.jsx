@@ -62,7 +62,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
               fileId: fileId,
               signers,
               boxUserId: user ? user?.boxUserId : formData?.userID?.boxUserId,
-              portal: params.portalid,
+              portal: params.portalid || "root",
               onSameDoc: false,
             }),
           },
@@ -249,7 +249,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
           user: user ? user?.id : formData.userID?.id,
           createdBy: loggedInUser?.id,
           uploads: fileIds || [],
-          portalId: params.portalid,
+          portalId: params.portalid || "root",
           checklist : formData?.checkList?.id
         };
         if (filedata?.files?.length > 0) {
@@ -300,7 +300,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
       try {
           setIsLoading(true);
           const url = params.portalid
-              ? `/api/users?portalid=${params.portalid || "default"}`
+              ? `/api/users?portalid=${params.portalid || "root"}`
               : "/api/users";
           const response = await fetchWrapper(url, {}, "fetch-user-list");
           if (!response.ok) throw new Error("Download failed");
@@ -317,7 +317,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
   const fetchChecklists = async () => {
     try {
       setIsChecklistLoading(true);
-      const url = `/api/checklists?portalId=${params.portalid}`;
+      const url = `/api/checklists?portalId=${params.portalid || "root"}`;
 
       const response = await fetchWrapper(url, {}, "fetch-checklist");
       const data = await response.json();

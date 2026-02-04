@@ -40,7 +40,7 @@ const createPortal = async (data) => {
   }
 };
 
-const getPortalsByUser = async (user) => {
+const getPortalsByUser = async (user, skipUserCount = false) => {
   const portalRepository = await getRepository(Portals);
   try {
     const userId = String(user).toLowerCase();
@@ -55,6 +55,10 @@ const getPortalsByUser = async (user) => {
         createdAt: "DESC",
       },
     });
+
+    if (skipUserCount) {
+      return { portals: portals, activeUsers: 0 };
+    }
 
     const allUsers = new Set();
 
@@ -73,7 +77,8 @@ const getPortalsByUser = async (user) => {
 
     return { portals: portalWithUserCounts, activeUsers: allUsers.size };
   } catch (error) {
-    throw new Error("Failed to get portals.");
+    console.error("Error in getPortalsByUser:", error);
+    throw new Error("Failed to get portals: " + error.message);
   }
 };
 

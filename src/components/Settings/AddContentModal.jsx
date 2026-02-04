@@ -90,20 +90,20 @@ const AddContentModal = ({
             ...newContent,
             value: imageUrl,
             fontSize: newContent.fontSize || "medium", // Add fontSize here
-            portalId: params.portalid ?? "default",
+            portalId: params.portalid || "root",
           }
         : newContent.type === "Links"
         ? {
             ...newContent,
             value: JSON.stringify(linkFields),
             fontSize: "14px", // Add fontSize here
-            portalId: params.portalid ?? "default",
+            portalId: params.portalid || "root",
           }
         : {
             ...newContent,
             value: newContent.value || " ",
             fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "default",
+            portalId: params.portalid ?? "root",
           };
 
       console.log("newContentPayload : ", obj);

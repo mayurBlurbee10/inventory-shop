@@ -67,7 +67,7 @@ function Login() {
     try {
       const encodedType = encodeURIComponent(PluginType.PAGES);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid}&type=${encodedType}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
         "fetch-pages"
       );
@@ -103,7 +103,7 @@ function Login() {
       setIsLoading(true);
       const encodedPage = encodeURIComponent(`t&c`);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid}&type=${encodedPage}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedPage}`,
         {},
         "fetch-page"
       );
@@ -216,10 +216,10 @@ function Login() {
 
   useEffect(() => {
     const fetchConfig = async () => {
-      dispatch(setPortal(params.portalid || "default"));
+      dispatch(setPortal(params.portalid || "root"));
     };
     const fetchContent = async () => {
-      dispatch(setContent(params?.portalid ?? "default"));
+      dispatch(setContent(params?.portalid || "root"));
     };
     fetchConfig();
     fetchContent();
@@ -240,7 +240,7 @@ function Login() {
           body: JSON.stringify({
             email,
             password,
-            portalid: params.portalid || "default",
+            portalid: params.portalid || "root",
           }),
         },
         "default-login"

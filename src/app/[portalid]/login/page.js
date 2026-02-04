@@ -44,7 +44,7 @@ export default function LoginPage() {
     const fetchConfig = async () => {
       try {
         const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
+          `/api/portal?portalid=${params.portalid || "root"}`,
           {},
           "portal-login"
         );
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+      `/api/contentManagement?portalId=${params.portalid || "root"}`,
       { method: "GET" },
       "fetchContentManagement"
     );
@@ -111,7 +111,7 @@ export default function LoginPage() {
           body: JSON.stringify({
             email,
             password,
-            portalid: params.portalid || "default",
+            portalid: params.portalid || "root",
           }),
         },
         "default-login"
@@ -185,7 +185,7 @@ export default function LoginPage() {
       const data = await response.json();
       const userData = data.user;
       setUserData(userData);
-      localStorage.setItem("portal", params.portalid);
+      localStorage.setItem("portal", params.portalid || "root");
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);

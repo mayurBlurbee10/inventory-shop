@@ -525,7 +525,7 @@ function SharedFolderExplorer({
       if (!params?.portalid) return;
       const response = await fetchWrapper(
         `/api/pages?portalId=${
-          params.portalid || "default"
+          params.portalid || "root"
         }&&page=${"esignature"}`,
         {},
         "fetch-page"
@@ -687,7 +687,7 @@ function SharedFolderExplorer({
   const fetchUser = async () => {
     try {
       const url = params.portalid
-        ? `/api/users?portalid=${params.portalid || "default"}`
+        ? `/api/users?portalid=${params.portalid || "root"}`
         : "/api/users";
       const response = await fetchWrapper(url, {}, "fetch-user-list");
       if (!response.ok) throw new Error("Download failed");
@@ -829,7 +829,7 @@ function SharedFolderExplorer({
               },
             ],
             boxUserId: user.boxUserId,
-            portal: params.portalid,
+            portal: params.portalid || "root",
             onSameDoc: false
           }),
         },

@@ -111,7 +111,7 @@ export async function GET(request) {
   try {
     await logApiCall(request);
     const { searchParams } = new URL(request.url);
-    const portalId = searchParams.get('portalId') || "default";
+    const portalId = searchParams.get('portalId') || "root";
     // const portalId = request.nextUrl.searchParams.get("portalId") || "default";
     console.log('content portalId: ', portalId)
     // Ensure the directory exists

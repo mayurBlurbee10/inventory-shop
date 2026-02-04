@@ -87,9 +87,9 @@ export default function AdvisorViewDashboard() {
     const fetchUser = async () => {
         try {
             setIsLoading(true);
-            const url = params.portalid
-                ? `/api/users?portalid=${params.portalid || "default"}`
-                : "/api/users";
+            const url =
+                `/api/users?portalid=${params.portalid || "root"}`
+                ?? "/api/users";
             const response = await fetchWrapper(url, {}, "fetch-user-list");
             if (!response.ok) throw new Error("Download failed");
             const data = await response.json();
@@ -143,7 +143,7 @@ export default function AdvisorViewDashboard() {
         if (!params?.portalid) return;
         const page = encodeURIComponent("advisor dashboard")
         const response = await fetchWrapper(
-          `/api/pages?portalId=${params.portalid || "default"}&page=${page}`,
+          `/api/pages?portalId=${params.portalid || "root"}&page=${page}`,
           {},
           "fetch-page"
         );

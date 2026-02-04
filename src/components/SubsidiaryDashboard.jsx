@@ -90,7 +90,7 @@ const generateMockData = async (year, portalId) => {
   // }));
   try {
     const response = await fetchWrapper(
-      `/api/chart?portalId=${portalId}&year=${year}`,
+      `/api/chart?portalId=${portalId || "root"}&year=${year}`,
       {
         method: "GET",
         headers: {
@@ -326,7 +326,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
   const getChartData = async (year, portalId) => {
     try {
       const response = await fetchWrapper(
-        `/api/chart?portalId=${portalId}&year=${year}`,
+        `/api/chart?portalId=${portalId || "root"}&year=${year}`,
         {
           method: "GET",
           headers: {

@@ -95,7 +95,7 @@ const ContentManagementContent = ({
 
   const fetchContentType = async () => {
     const typesRequest = await fetchWrapper(
-      `/api/contentManagement/type?portalId=${params.portalid ?? "default"}`,
+      `/api/contentManagement/type?portalId=${params.portalid || "root"}`,
       { method: "GET" },
       "fetch-content-type"
     );
@@ -109,7 +109,7 @@ const ContentManagementContent = ({
     try {
       setLoading(true);
       const response = await fetchWrapper(
-        `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+        `/api/contentManagement?portalId=${params.portalid || "root"}`,
         { method: "GET" },
         "fetch-content-management"
       );
@@ -163,19 +163,19 @@ const ContentManagementContent = ({
         ? {
             ...newContent,
             fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "default",
+            portalId: params.portalid ?? "root",
           }
         : newContent.type === "Links"
         ? {
             ...newContent,
             value: JSON.stringify(linkFields),
             fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "default",
+            portalId: params.portalid ?? "root",
           }
         : {
             ...newContent,
             fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "default",
+            portalId: params.portalid ?? "root",
           };
 
       console.log("newContentPayload : ", obj);
@@ -288,7 +288,7 @@ const ContentManagementContent = ({
         body: JSON.stringify({
           title: newTitle,
           type: newType,
-          portalId: params.portalid || "default",
+          portalId: params.portalid || "root",
         }),
       };
       const response = await fetchWrapper(
@@ -470,7 +470,7 @@ const handleRemoveHeading = async () => {
       },
       body: JSON.stringify({
         title: contentToRemove.title,
-        portalId: params.portalid,
+        portalId: params.portalid || "root",
       }),
     });
     const result = await response.json();
@@ -478,7 +478,7 @@ const handleRemoveHeading = async () => {
       throw new Error(result?.error || "Failed to delete content");
     }
     toast.success("Heading removed successfully");
-    dispatch(setReduxContent(params.portalid));
+    dispatch(setReduxContent(params.portalid || "root" ));
   } catch (error) {
     console.error("Delete Error:", error);
     toast.error("Something went wrong while deleting");

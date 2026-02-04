@@ -38,7 +38,9 @@ const getUsers = async () => {
 const getUsersByPortal = async (portalId) => {
   const userRepository = await getRepository(Users);
   try {
-    const users = await userRepository.find();
+    const users = await userRepository.find({
+      select: ["id", "permissions"],
+    });
 
     const filteredUsers = users.filter(
       (user) =>
@@ -48,7 +50,8 @@ const getUsersByPortal = async (portalId) => {
 
     return filteredUsers;
   } catch (error) {
-    throw new Error("Failed to get users.");
+    console.error("Error in getUsersByPortal:", error);
+    throw new Error("Failed to get users: " + error.message);
   }
 };
 
@@ -68,11 +71,11 @@ const getUserByEmail = async (email, portalId) => {
 
       if (!hasPermission) {
         const hasSuperAdminPermission =
-           Array.isArray(user.permissions) &&
-           user.permissions.some((perm) => perm.role === UserRole.SUPER_ADMIN);
-         if (hasSuperAdminPermission) {
-           return user;
-         }
+          Array.isArray(user.permissions) &&
+          user.permissions.some((perm) => perm.role === UserRole.SUPER_ADMIN);
+        if (hasSuperAdminPermission) {
+          return user;
+        }
       }
     }
     return user;
@@ -97,7 +100,7 @@ const getUserByRole = async (role, userId) => {
       }
 
       if (!Array.isArray(user.groupMembersIds) || user.groupMembersIds.length === 0) {
-        return []; 
+        return [];
       }
 
       // Fetch users matching the group member IDs
@@ -163,8 +166,8 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
     if (!user) {
       throw new Error("Invalid or expired reset token");
     }
-  
-    if(newPassword!="") {
+
+    if (newPassword != "") {
       // Hash and set the new password
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt);
@@ -246,7 +249,7 @@ const setResetPasswordToken = async (email, token) => {
 const getUserById = async (id) => {
   const userRepository = await getRepository(Users);
   try {
-    return await userRepository.findOneBy({id});
+    return await userRepository.findOneBy({ id });
   } catch (error) {
     throw new Error("Failed to get users.");
   }
@@ -302,9 +305,9 @@ const removeSignRequest = async (user, uploadIdsFromSignTasks) => {
 const getPortalCreateAdminByEmail = async (email) => {
   try {
     const user = await getUserByEmail(email);
-    if(user) {
+    if (user) {
       const portal = await portalService.getPortalByPortalAdmin(user?.id)
-      if(portal){
+      if (portal) {
         throw new Error(`This user can't be the admin in this portal as it is already an admin in portal ${portal.legalName}`)
       }
       return user;

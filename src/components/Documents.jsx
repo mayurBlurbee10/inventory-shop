@@ -188,7 +188,7 @@ function Documents({
       setIsPageLoading(true);
       if (!params?.portalid) return;
       const response = await fetchWrapper(
-        `/api/pages?portalId=${params.portalid || "default"}&&page=${pathname
+        `/api/pages?portalId=${params.portalid || "root" }&&page=${pathname
           .split("/")
           .pop()}`,
         {},
@@ -919,7 +919,7 @@ function Documents({
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+      `/api/contentManagement?portalId=${params.portalid || "root"}`,
       { method: "GET" },
       "fetch-content-management"
     );
@@ -1035,7 +1035,7 @@ function Documents({
   const fetchTasks = async () => {
     try {
       setIsTaskLoading(true);
-      const url =`/api/tasks?portalId=${params.portalid}&userId=${user?.id}`
+      const url =`/api/tasks?portalId=${params.portalid || "root"}&userId=${user?.id}`
       const response = await fetchWrapper(url, {}, "fetch-tasks");
       if (!response.ok) throw new Error("Something went wrong!!");
       const data = await response.json();

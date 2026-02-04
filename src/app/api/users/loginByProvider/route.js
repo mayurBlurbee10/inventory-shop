@@ -17,8 +17,12 @@ export async function POST(request) {
       );
     }
     let portalCreatedAdmin = null;
-    if(portalCreatedAdmin){
-      portalCreatedAdmin = await portalService.getPortalCreatedAdmin(data?.portalid);
+    if (data?.portalid && data.portalid !== "root") {
+      try {
+        portalCreatedAdmin = await portalService.getPortalCreatedAdmin(data.portalid);
+      } catch (error) {
+        console.warn(`Portal admin not found for portal: ${data.portalid}`);
+      }
     }
     const userPermission =
       Array.isArray(user.permissions) &&
@@ -41,7 +45,7 @@ export async function POST(request) {
           { status: 403 }
         );
       }
-    }else {
+    } else {
       userRole = userPermission?.role;
     }
 
@@ -59,7 +63,7 @@ export async function POST(request) {
       permissions: user.permissions,
     };
 
-    if(portalCreatedAdmin){
+    if (portalCreatedAdmin) {
       userData.boxFolderId = portalCreatedAdmin?.folderId
     } else {
       userData.boxFolderId = user.folderId

@@ -21,7 +21,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
     try {
       setIsTasksLoading(true);
       const response = await fetchWrapper(
-        `/api/tasks?portalId=${params?.portalid}`,
+        `/api/tasks?portalId=${params?.portalid || "root"}`,
         {},
         "fetch-tasks"
       );

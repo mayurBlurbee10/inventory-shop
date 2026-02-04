@@ -355,7 +355,7 @@ const DataTableSection = () => {
             setIsLoading(true);
             const user = getUserData();
             // let url = `/api/chart/report?portalId=${params?.portalid}&userId=${user?.id}`
-            let url = `/api/box/events?portalId=${params?.portalid}&userId=${user?.id}`
+            let url = `/api/box/events?portalId=${params?.portalid || "root"}&userId=${user?.id}`
             if (startDate) {
                 url = url + `&startDate=${startDate}`
             }

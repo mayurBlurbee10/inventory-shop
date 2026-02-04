@@ -149,11 +149,11 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
         logo: logoUrl,
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId,
-        portal: params.portalid || "",
+        portal: params.portalid || "root",
         isOnboardingRequired: false,
         createdBy: user.id,
         permissions: {
-          portalId: params.portalid,
+          portalId: params.portalid || "root",
           role: formData.role,
         },
       };
@@ -671,7 +671,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
         logo: logoUrl,
         boxUserId: boxData.user.userId,
         folderId: boxData.user.folderId,
-        portal: params.portalid || "",
+        portal: params.portalid,
         isOnboardingRequired: false,
         createdBy: user.id,
         permissions: {

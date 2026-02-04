@@ -29,7 +29,7 @@ function Tasks({ user }) {
     const fetchTasks = async () => {
         try {
           setIsLoading(true);
-          const url =`/api/tasks?portalId=${params.portalid}&userId=${user?.id}`
+          const url =`/api/tasks?portalId=${params.portalid || "root"}&userId=${user?.id}`
           const response = await fetchWrapper(url, {}, "fetch-tasks");
           if (!response.ok) throw new Error("Something went wrong!!");
           const data = await response.json();

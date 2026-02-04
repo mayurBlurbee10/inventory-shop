@@ -69,7 +69,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
      
       const encodedType = encodeURIComponent(plugin?.type);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid}&type=${encodedType}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
         "fetch-plugins"
       );
@@ -369,10 +369,10 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
   };
 
   useEffect(() => {
-    if (isOpen && params.portalid && pluginData.type) {
+    if (isOpen && pluginData.type) {
       fetchPlugin();
     }
-  }, [isOpen, params.portalid, pluginData.type, onPageCreated, pageCreated]);
+  }, [isOpen, pluginData.type, onPageCreated, pageCreated]);
 
   const fetchPlugin = async () => {
     try {
@@ -381,7 +381,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
       setPages([]);
       const encodedType = encodeURIComponent(pluginData.type);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid}&type=${encodedType}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
         "fetch-plugins"
       );

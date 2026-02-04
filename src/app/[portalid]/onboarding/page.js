@@ -93,7 +93,7 @@ export default function OnBoardingPage() {
   };
   const fetchContentType = async () => {
     const typesRequest = await fetchWrapper(
-      `/api/contentManagement/type?portalId=${params.portalid ?? "default"}`,
+      `/api/contentManagement/type?portalId=${params.portalid || "root"}`,
       { method: "GET" },
       "fetch-content-type"
     );
@@ -121,7 +121,7 @@ export default function OnBoardingPage() {
     try {
       setLoading(true);
       const response = await fetchWrapper(
-        `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+        `/api/contentManagement?portalId=${params.portalid || "root"}`,
         { method: "GET" },
         "fetch-content-management"
       );
@@ -152,7 +152,7 @@ export default function OnBoardingPage() {
         //   throw new Error(data.error || "Failed to fetch portal config");
         // }
         // setConfig(data.data);
-        dispatch(setPortal(params.portalid || 'default'))
+        dispatch(setPortal(params.portalid || 'root'))
       } catch (error) {
         console.log("error: ", error);
       } finally {

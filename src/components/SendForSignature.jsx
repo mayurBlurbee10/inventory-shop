@@ -50,7 +50,7 @@ function SendforSignatureDialog({
             fileId: item.id,
             signers,
             boxUserId: userData.boxUserId,
-            portal: params.portalid,
+            portal: params.portalid || "root",
             onSameDoc: isOnSameDoc,
           }),
         },

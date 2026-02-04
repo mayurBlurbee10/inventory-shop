@@ -119,8 +119,12 @@ export async function POST(request) {
     const user = await userService.getUserByEmail(data.email);
 
     let portalCreatedAdmin = null;
-    if(data?.portalid){
-      portalCreatedAdmin = await portalService.getPortalCreatedAdmin(data?.portalid);
+    if (data?.portalid && data.portalid !== "root") {
+      try {
+        portalCreatedAdmin = await portalService.getPortalCreatedAdmin(data.portalid);
+      } catch (error) {
+        console.warn(`Portal admin not found for portal: ${data.portalid}`);
+      }
     }
     if (!user) {
       return NextResponse.json(
@@ -153,14 +157,16 @@ export async function POST(request) {
         if (userData?.groupMembersIds && userData.groupMembersIds?.length > 0) {
           for (const id of userData.groupMembersIds) {
             const groupPortals = await portalService.getPortalsByUser(
-              String(id).toLowerCase()
+              String(id).toLowerCase(),
+              true
             );
             console.log("groupPortal", groupPortals.portals)
             allPortals = [...allPortals, ...groupPortals.portals];
           }
         }
         const portals = await portalService.getPortalsByUser(
-          String(user.id).toLowerCase()
+          String(user.id).toLowerCase(),
+          true
         );
         console.log("portals", portals);
         allPortals = [...allPortals, ...portals.portals];
@@ -181,7 +187,7 @@ export async function POST(request) {
         );
       }
     }
-    
+
     if (data.role && data.role !== userRole) {
       return NextResponse.json(
         { error: "This user does not have access to this portal" },
@@ -252,15 +258,15 @@ export async function POST(request) {
       // boxFolderId: user.folderId,
       collaborationIds: user.collaborationIds,
       signRequestsIds: user.signRequestsId,
-      permissions : user.permissions,
-      isTNCAccepted : user.isTNCAccepted,
+      permissions: user.permissions,
+      isTNCAccepted: user.isTNCAccepted,
       title: user.title,
-      phoneNo:user.phoneNo,
+      phoneNo: user.phoneNo,
     };
 
-    if(portalCreatedAdmin){
+    if (portalCreatedAdmin) {
       userData.boxFolderId = portalCreatedAdmin?.folderId;
-    }else {
+    } else {
       userData.boxFolderId = user?.folderId;
     }
 
@@ -304,7 +310,7 @@ export async function POST(request) {
     });
 
     console.log("Sending response with user data:", userData);
-    await logApiCall(request, () => {}, "login", user?.id);
+    await logApiCall(request, () => { }, "login", user?.id);
     return response;
   } catch (error) {
     console.error("Login error:", error);

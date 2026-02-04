@@ -804,7 +804,7 @@ export default function SharedPage() {
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+      `/api/contentManagement?portalId=${params.portalid || "root"}`,
       { method: "GET" },
       "fetch-content-management"
     );

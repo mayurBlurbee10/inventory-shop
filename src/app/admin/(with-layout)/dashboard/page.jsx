@@ -313,7 +313,7 @@ const AdminDashboardPage = () => {
     try {
       const pluginPayload = {
         type: PluginType.PAGES,
-        portalId: sanitizeName(legalName) || "default",
+        portalId: sanitizeName(legalName) || "root",
         createdBy: user?.id,
       };
       const pluginResponse = await fetchWrapper(

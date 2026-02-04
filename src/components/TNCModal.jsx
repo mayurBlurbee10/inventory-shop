@@ -21,7 +21,7 @@ function TNCModal({ onClose, user, email, password, page }) {
     try {
       const encodedType = encodeURIComponent(PluginType.PAGES);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid}&type=${encodedType}`,
+        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
         "fetch-pages"
       );

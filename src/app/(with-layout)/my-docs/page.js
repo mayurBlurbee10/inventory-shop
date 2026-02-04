@@ -760,7 +760,7 @@ export default function MyDocsPage() {
     const fetchConfig = async () => {
       try {
         const response = await fetchWrapper(
-          `/api/portal?portalid=${params.portalid || "default"}`,
+          `/api/portal?portalid=${params.portalid || "root"}`,
           {},
           "portal-login"
         );
@@ -805,7 +805,7 @@ export default function MyDocsPage() {
 
   const fetchContent = async () => {
     const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid ?? "default"}`,
+      `/api/contentManagement?portalId=${params.portalid || "root"}`,
       { method: "GET" },
       "fetchContentManagement"
     );

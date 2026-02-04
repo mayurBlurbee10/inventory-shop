@@ -320,7 +320,7 @@ const TasksSection = ({ client = null }) => {
             setIsPageLoading(true);
             if (!params?.portalid) return;
             const response = await fetchWrapper(
-                `/api/pages?portalId=${params.portalid || "default"}&page=${pathname
+                `/api/pages?portalId=${params.portalid || "root"}&page=${pathname
                     .split("/")
                     .pop()}`,
                 {},
@@ -345,7 +345,7 @@ const TasksSection = ({ client = null }) => {
     const fetchChecklists = async () => {
       try {
         setIsChecklistLoading(true);
-        const url = `/api/checklists?portalId=${params.portalid}&sorted=${true}`;
+        const url = `/api/checklists?portalId=${params.portalid || "root"}&sorted=${true}`;
 
         const response = await fetchWrapper(url, {}, "fetch-checklist");
         const data = await response.json();

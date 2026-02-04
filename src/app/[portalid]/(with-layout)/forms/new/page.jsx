@@ -737,7 +737,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
               },
             ],
             boxUserId: userData.boxUserId,
-            portal: params.portalid,
+            portal:  params.portalid || "root",
             onSameDoc: false,
           }),
         },

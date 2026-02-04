@@ -114,7 +114,7 @@ const ReportsContent = () => {
   const getChartData = async (year, portalId) => {
     try {
       const response = await fetchWrapper(
-        `/api/chart?portalId=${portalId}&year=${year}`,
+        `/api/chart?portalId=${portalId || "root"}&year=${year}`,
         {
           method: "GET",
           headers: {
@@ -136,7 +136,7 @@ const ReportsContent = () => {
   const fetchConfig = async () => {
     try {
       const response = await fetchWrapper(
-        `/api/portal?portalid=${params.portalid}`,
+        `/api/portal?portalid=${params.portalid || "root"}`,
         {},
         "fetch-portal"
       );
