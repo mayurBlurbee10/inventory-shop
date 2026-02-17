@@ -25,6 +25,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
+const getIconForType = (t) =>
+  t === "auto" ? "CarFront" : t === "personal" ? "User" : "Home";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isRecoverableFolderError = (msg) =>
+  /same name|already exists|reserved by another processing|name is in use|wait and retry/i.test(
+    msg || ""
+  );
+
 const ApplicationStep = ({
   setActiveStep,
   type,
@@ -33,6 +43,7 @@ const ApplicationStep = ({
   userData,
   setUserData,
   uniqueNo,
+  onLoanCreated,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const preUserData = {
@@ -81,8 +92,9 @@ const ApplicationStep = ({
         return;
       }
       setIsLoading(true);
-      let files = filesList && filesList.length > 0 ? filesList : await getFile();
-      let loansFolder = findFolderWithName(files, "Loans");
+      let files =
+        filesList && filesList.length > 0 ? filesList : await getFile();
+      let loansFolder = findFolderWithName(files, "Forms");
       let loansId = loansFolder?.id;
       console.log("filesList", filesList);
 
@@ -90,7 +102,7 @@ const ApplicationStep = ({
         // make loan folder
         const userData = getUserData();
         let obj = {
-          name: "Loans",
+          name: "Forms",
           boxFolderId: userData.boxFolderId,
         };
         const response = await fetchWrapper(
@@ -106,14 +118,38 @@ const ApplicationStep = ({
         );
 
         const folderData = await response.json();
-        if (!response.ok)
-          throw new Error(folderData.error || "Failed to create Loans folder");
-        loansId = folderData.id;
+        if (!response.ok) {
+          const canRecover =
+            response.status === 409 ||
+            isRecoverableFolderError(folderData?.error);
+          if (canRecover) {
+            await sleep(1500);
+            const refreshed = await getFile();
+            const existingForms = findFolderWithName(
+              refreshed || [],
+              "Forms"
+            );
+            loansFolder = existingForms;
+            loansId = existingForms?.id;
+          }
+          if (!loansId) {
+            throw new Error(
+              folderData.error || "Failed to create or find Forms folder"
+            );
+          }
+        } else {
+          loansId = folderData.id;
+        }
       }
 
+      const randomId = Math.floor(100000 + Math.random() * 900000);
+      const typeKey = (type || "mortgage").toLowerCase().trim();
+      const typeLabel =
+        typeKey.charAt(0).toUpperCase() + typeKey.slice(1);
+      const loanName = `${typeLabel} - ${randomId}`;
       const loanFolderExist = findFolderWithName(
         loansFolder?.children || [],
-        "Mortgage - 174192"
+        loanName
       );
       if (!loanFolderExist) {
         const res = await fetchWrapper(
@@ -124,8 +160,7 @@ const ApplicationStep = ({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              // name: `${type} - ${uniqueNo}`,
-              name: "Mortgage - 174192",
+              name: loanName,
               boxFolderId: loansId,
             }),
           },
@@ -133,13 +168,66 @@ const ApplicationStep = ({
         );
 
         const loanTypeFolder = await res.json();
-        if (!res.ok)
-          throw new Error(loanTypeFolder.error || "Failed to create folder");
+        if (!res.ok) {
+          const canRecover =
+            res.status === 409 ||
+            isRecoverableFolderError(loanTypeFolder?.error);
+          if (canRecover) {
+            await sleep(1500);
+            const refreshed = await getFile();
+            const refreshedForms = findFolderWithName(
+              refreshed || [],
+              "Forms"
+            );
+            const existingLoanFolder = refreshedForms
+              ? findFolderWithName(
+                  refreshedForms.children || [],
+                  loanName
+                )
+              : null;
+            if (existingLoanFolder) {
+              setLoanFolderId(existingLoanFolder.id);
+              onLoanCreated?.({
+                id: existingLoanFolder.id,
+                name: existingLoanFolder.name,
+                folderId: existingLoanFolder.id,
+                type:
+                  (type || "Mortgage").charAt(0).toUpperCase() +
+                  (type || "mortgage").slice(1),
+                icon: getIconForType((type || "").toLowerCase()),
+                status: "Processing",
+              });
+              setActiveStep("documents");
+              return;
+            }
+          }
+          throw new Error(
+            loanTypeFolder.error || "Failed to create loan folder"
+          );
+        }
 
         setLoanFolderId(loanTypeFolder.id);
+        onLoanCreated?.({
+          id: loanTypeFolder.id,
+          name: loanName,
+          folderId: loanTypeFolder.id,
+          type:
+            (type || "Mortgage").charAt(0).toUpperCase() +
+            (type || "mortgage").slice(1),
+          icon: getIconForType((type || "").toLowerCase()),
+          status: "Processing",
+        });
         setActiveStep("documents");
       } else {
         setLoanFolderId(loanFolderExist.id);
+        onLoanCreated?.({
+          id: loanFolderExist.id,
+          name: loanFolderExist.name,
+          folderId: loanFolderExist.id,
+          type: (type || "Mortgage").charAt(0).toUpperCase() + (type || "mortgage").slice(1),
+          icon: getIconForType((type || "").toLowerCase()),
+          status: "Processing",
+        });
         setActiveStep("documents");
       }
     } catch (error) {
@@ -848,6 +936,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
 function NewLoanPage() {
   const [activeStep, setActiveStep] = useState("application");
   const [loanFolderId, setLoanFolderId] = useState(null);
+  const [createdLoan, setCreatedLoan] = useState(null);
   const [filesList, setFilesList] = useState([]);
   const [shareFilesList, setShareFilesList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -931,7 +1020,7 @@ function NewLoanPage() {
   };
 
   const finalStep = () => {
-    dispatch(setNewLoan(newLoanData));
+    dispatch(setNewLoan(createdLoan ? [createdLoan] : newLoanData));
   };
 
   const getActiveStepContent = () => {
@@ -946,6 +1035,7 @@ function NewLoanPage() {
             userData={userData}
             setUserData={setUserData}
             uniqueNo={uniqueNo}
+            onLoanCreated={setCreatedLoan}
           />
         );
       case "documents":

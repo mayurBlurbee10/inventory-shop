@@ -164,14 +164,14 @@ export default function AdvisorViewDashboard() {
     };
 
     const sortedClients = usersList && [...usersList].sort((a, b) => {
-        if (sortConfig.key === "name") {
-          return sortConfig.direction === "asc" 
-            ? a.name.localeCompare(b.name) 
-            : b.name.localeCompare(a.name);
-        } else if (sortConfig.key === "email"){
-            return sortConfig.direction === "asc" 
-            ? a.email.localeCompare(b.email) 
-            : b.email.localeCompare(a.email);
+        if (sortConfig?.key === "name") {
+          return sortConfig?.direction === "asc" 
+            ? a?.name?.localeCompare(b?.name) 
+            : b?.name?.localeCompare(a?.name);
+        } else if (sortConfig?.key === "email"){
+            return sortConfig?.direction === "asc" 
+            ? a?.email?.localeCompare(b?.email) 
+            : b?.email?.localeCompare(a?.email);
         }
         return 0;
     });

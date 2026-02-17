@@ -29,6 +29,12 @@ const getRepository = async (entity) => {
   return connection.getRepository(entity);
 };
 
+const isSocketTimeoutError = (error) => {
+  const code = error?.code || error?.cause?.code;
+  const msg = error?.message || "";
+  return code === "ESOCKETTIMEDOUT" || /ESOCKETTIMEDOUT/i.test(msg);
+};
+
 const resetPortal = async (portalId) => {
   const checkListRepository = await getRepository(CheckLists);
   const userRepository = await getRepository(Users);
@@ -38,7 +44,7 @@ const resetPortal = async (portalId) => {
   const contentManagementRepository = await getRepository(ContentManagement);
 
   try {
-    await Promise.all([
+    const tasks = [
       deleteCustomPages(pageRepository, pluginRepository, portalId),
       deleteFilesAndFolder(portalId),
       deleteChecklists(checkListRepository, portalId),
@@ -46,7 +52,22 @@ const resetPortal = async (portalId) => {
       deleteContent(contentManagementRepository, portalId),
       updateUsersTNCStatus(userRepository, portalId),
       resetPortalTheme(portalId),
-    ]);
+    ];
+
+    const results = await Promise.allSettled(tasks);
+
+    // If any task fails with a non-timeout error, surface it. Timeout errors are logged but not fatal.
+    for (const result of results) {
+      if (result.status === "rejected") {
+        const err = result.reason;
+        if (isSocketTimeoutError(err)) {
+          console.warn("Non-fatal timeout during portal reset:", err?.message);
+          continue;
+        }
+        console.error("Error resetting portal:", err?.message);
+        throw err;
+      }
+    }
 
     return;
   } catch (error) {

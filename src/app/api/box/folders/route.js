@@ -99,8 +99,14 @@ export async function GET(req) {
   try {
     await logApiCall(req);
     const folderId = req.nextUrl.searchParams.get("folderId") || "0";
-    const collaboratedParam = req.nextUrl.searchParams.get("collaborated") || [];
-    const collaborated = JSON.parse(collaboratedParam);
+    const collaboratedParam = req.nextUrl.searchParams.get("collaborated") ?? "[]";
+    let collaborated = [];
+    try {
+      collaborated = JSON.parse(collaboratedParam);
+    } catch {
+      collaborated = [];
+    }
+    if (!Array.isArray(collaborated)) collaborated = [];
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100", 10);
     const items = [];
     for await (const element of collaborated) {

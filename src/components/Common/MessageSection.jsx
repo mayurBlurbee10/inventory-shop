@@ -36,6 +36,17 @@ const formatDate = (timestamp) => {
   }
 };
 
+/** Try to decrypt; if result is empty (plain text stored), return raw text. */
+const getDisplayText = (text) => {
+  if (!text) return "";
+  try {
+    const decrypted = decryptMessage(text);
+    return decrypted || text;
+  } catch {
+    return text;
+  }
+};
+
 const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
   const params = useParams();
   const [showMenu, setShowMenu] = useState(false);
@@ -177,10 +188,9 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
   useEffect(() => {
     setEditedMessage({
       subject: message?.subject ? message?.subject : "",
-      text: decryptMessage(message?.text),
+      text: getDisplayText(message?.text),
     });
   }, [message]);
-console.log("sendTo:", message?.receiver?.id);
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
@@ -294,7 +304,7 @@ console.log("sendTo:", message?.receiver?.id);
                     />
                     ) : (
                     <div className="p-3 max-h-[200px] overflow-y-auto bg-gray-100 border border-gray-300 rounded-md text-gray-700">
-                        {decryptMessage(message?.text) || "No message content."}
+                        {getDisplayText(message?.text) || "No message content."}
                     </div>
                     )}
                 </div>
@@ -308,14 +318,14 @@ console.log("sendTo:", message?.receiver?.id);
                     <span
                       className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-800 font-semibold border border-white"
                     >
-                      {reply?.sender?.name[0].toUpperCase()}
+                      {((reply?.sender?.name ?? "")[0] ?? "?").toUpperCase()}
                     </span>
 
                   </div>
                   <span className="text-gray-200 mx-3">|</span>
                   <div className="border-gray-300 rounded-md text-gray-700">
                     <div className="text-gray-500 text-sm font-lato ">{reply.sender?.name}</div>
-                    <div><p>{decryptMessage(reply.text)}</p></div>
+                    <div><p>{getDisplayText(reply?.text)}</p></div>
                   </div>
                 </div>
               ))
@@ -833,9 +843,6 @@ const MessageSection = ({clientId}) => {
   useEffect(() => {
     fetchMessages();
   }, []);
-
-  console.log("messages:", messages);
-  
 
   const sortedMessages = messages && [...messages].sort((a, b) => {
     if (sortConfig.key === "createdAt"){

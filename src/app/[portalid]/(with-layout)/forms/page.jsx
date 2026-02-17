@@ -86,15 +86,15 @@ console.log("loanData", loanData);
             </span>
           </div>
           <div>
-          {loanData?.length === 3 ? (
-          <div
-            className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl cursor-pointer font-lato"
-            onClick={() => router.push(`forms/new?type=mortgage`)}
-          >
-            <List className="size-8" />
-            View Application
-          </div>
-        ) : ( 
+          {/* {loanData?.length === 3 ? (
+            <div
+              className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl cursor-pointer font-lato"
+              onClick={() => router.push(`forms/new?type=mortgage`)}
+            >
+              <List className="size-8" />
+              View Application
+            </div>
+        ) : (  */}
           <div
             className={`flex items-center justify-between cursor-pointer bg-[#f8f9fa] border border-transparent hover:border-[#dee2e6] p-3 max-w-48 rounded-md relative ${isLoanOptionOpen && "bg-[#dadcdd]"
               }`}
@@ -119,7 +119,7 @@ console.log("loanData", loanData);
               </div>
             )}
           </div>
-        )}
+        {/* )} */}
         </div>
         </div>
         <div className="flex flex-col pt-8">

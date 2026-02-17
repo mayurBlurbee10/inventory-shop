@@ -184,7 +184,7 @@ function ViewProfileModal({
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Something went wrong");
+        throw new Error(result?.error || "Something went wrong");
       }
       const updatedUserData = {
         ...user,
@@ -196,17 +196,16 @@ function ViewProfileModal({
         },
       };
 
-      // Optionally clean up formData extras
       delete updatedUserData.companyName;
       delete updatedUserData.logo;
 
       dispatch(setCurrentUser(updatedUserData));
 
-      // ✅ Optional: show success toast or update local user state
-      console.log("User updated:", result.user);
       toast.success("Profile updated successfully");
+      if (typeof onSumbit === "function") {
+        await Promise.resolve(onSumbit());
+      }
       handleModelClose();
-      onSumbit();
     } catch (error) {
       console.error("Failed to update user:", error);
       alert("Failed to update profile: " + error.message);
@@ -546,6 +545,7 @@ function ViewProfileModal({
                   <Button
                     onClick={handleDeleteAccount}
                     disabled={isLoading}
+                    isLoading={isDeleteLoading}
                     type="Delete"
                     label="Delete This Account"
                   />

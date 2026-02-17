@@ -11,6 +11,7 @@ import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
+import { setContent } from "@/store/services/contentService";
 
 function Container({ children }) {
   const params = useParams();
@@ -42,6 +43,7 @@ function Container({ children }) {
 
       // setConfig(data.data);
       dispatch(setPortal(params.portalid))
+      dispatch(setContent(params.portalid))
     } catch (error) {
       console.log("error: ", error);
     }

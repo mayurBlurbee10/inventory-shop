@@ -5,7 +5,7 @@ import { getUserData } from "@/lib/auth";
 import { setLoans } from "@/store/services/loanService";
 import { ArrowDownUp, ChevronLeft, Folder, Loader2, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 const data = [
   {
@@ -48,6 +48,7 @@ function DetailsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { data: loanData } = useSelector((state) => state.loans);
   const dispatch = useDispatch();
+  const fetchInProgressRef = useRef(false);
 
   const findFolderWithName = (data, targetName) => {
     for (const item of data) {
@@ -84,6 +85,13 @@ function DetailsPage() {
     }
   };
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const isRecoverableFolderError = (errorMsg) =>
+    /same name|already exists|reserved by another processing|name is in use|wait and retry/i.test(
+      errorMsg || ""
+    );
+
   const handleGetFolderId = async (loan) => {
     try {
       setIsLoading(true);
@@ -91,7 +99,7 @@ function DetailsPage() {
       const userData = getUserData();
       if (!userData || !files) return;
 
-      const loansFolder = await new Promise((resolve) => {
+      let loansFolder = await new Promise((resolve) => {
         const foundItems = findFolderWithName(files, "Forms");
         resolve(foundItems);
       });
@@ -113,15 +121,23 @@ function DetailsPage() {
 
         const folderData = await response.json();
         if (!response.ok) {
-          if (folderData?.response?.status !== 409) {
-            throw new Error(
-              folderData.error || "Failed to create forms folder"
-            );
-          } else {
-            return;
+          const canRecover =
+            response.status === 409 || isRecoverableFolderError(folderData?.error);
+          if (canRecover) {
+            await sleep(1500);
+            const refreshedFiles = await getFiles();
+            const existingForms = findFolderWithName(refreshedFiles || [], "Forms");
+            loansId = existingForms?.id;
+            if (existingForms) loansFolder = existingForms;
           }
+          if (!loansId) {
+            throw new Error(
+              folderData?.error || "Failed to create or find Forms folder"
+            );
+          }
+        } else {
+          loansId = folderData.id;
         }
-        loansId = folderData.id;
       }
 
       let loanFolder = await new Promise((resolve) => {
@@ -131,7 +147,6 @@ function DetailsPage() {
         );
         resolve(foundItems);
       });
-      console.log("loanFolder", loanFolder);
       if (!loanFolder) {
         const res = await fetchWrapper(
           "/api/box/folders",
@@ -144,12 +159,26 @@ function DetailsPage() {
         );
 
         const loanFolderData = await res.json();
-        if (!res.ok)
-          throw new Error(
-            loanFolderData.error || "Failed to create loan folder"
-          );
-
-        loanFolder = loanFolderData;
+        if (!res.ok) {
+          const canRecover =
+            res.status === 409 || isRecoverableFolderError(loanFolderData?.error);
+          if (canRecover) {
+            await sleep(1500);
+            const refreshedFiles = await getFiles();
+            const refreshedForms = findFolderWithName(refreshedFiles || [], "Forms");
+            loanFolder = findFolderWithName(
+              refreshedForms?.children || [],
+              loan?.name
+            );
+          }
+          if (!loanFolder) {
+            throw new Error(
+              loanFolderData?.error || "Failed to create or find loan folder"
+            );
+          }
+        } else {
+          loanFolder = loanFolderData;
+        }
       }
 
       setLoan((prev) => ({ ...prev, folderId: loanFolder.id }));
@@ -162,25 +191,39 @@ function DetailsPage() {
   };
 
   useEffect(() => {
+    if (!params?.detailId) return;
+
+    if (fetchInProgressRef.current) return;
+
+    const foundLoan = loanData.find(
+      (d) => String(d.id) === String(params.detailId) || d.id === Number(params.detailId)
+    );
+    if (!foundLoan) return;
+    if (foundLoan.folderId) {
+      setLoan(foundLoan);
+      return;
+    }
+
+    fetchInProgressRef.current = true;
+    setLoan(foundLoan);
+
     const fetchLoanFolder = async () => {
-      if (params?.detailId) {
-        const foundLoan = loanData.find((d) => d.id === Number(params.detailId));
-
-        if (foundLoan) {
-          setLoan(foundLoan);
-          const folderId = await handleGetFolderId(foundLoan);
+      try {
+        const folderId = await handleGetFolderId(foundLoan);
+        if (folderId != null) {
           foundLoan.folderId = folderId;
-
           const updatedLoans = loanData.map((loan) =>
             loan.id === foundLoan.id ? foundLoan : loan
           );
           dispatch(setLoans(updatedLoans));
         }
+      } finally {
+        fetchInProgressRef.current = false;
       }
     };
 
     fetchLoanFolder();
-  }, [params?.detailId]);
+  }, [params?.detailId, loanData]);
 
   if (!loan) return <p>Loading loan details...</p>;
 

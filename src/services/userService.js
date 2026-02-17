@@ -38,9 +38,7 @@ const getUsers = async () => {
 const getUsersByPortal = async (portalId) => {
   const userRepository = await getRepository(Users);
   try {
-    const users = await userRepository.find({
-      select: ["id", "permissions"],
-    });
+    const users = await userRepository.find();
 
     const filteredUsers = users.filter(
       (user) =>

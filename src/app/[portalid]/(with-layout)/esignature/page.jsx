@@ -10,6 +10,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { encryptMessage } from "@/app/lib/crypto";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
@@ -33,8 +34,8 @@ const TrackStatus = ({ trackedRequests }) => {
         sender: user?.id,
         receiver: signer?.embed_url_external_user_id,
         portalId: params.portalid || "root",
-        subject: `Sign Document`,
-        text: `Please sign "${signRequest?.source_files[0].name}"`,
+        subject: "Sign Document",
+        text: encryptMessage(`Please sign "${signRequest?.source_files[0].name}"`),
       };
       setIsSendReminderLoading(signer?.embed_url_external_user_id);
       try {
