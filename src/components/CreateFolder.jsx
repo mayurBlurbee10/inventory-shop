@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Button from "./Common/Elements/Button";
 
 export default function CreateFolder({
+  loanFolderId,
   onFolderCreated,
   selectedItem,
   isModalOpen,
@@ -61,7 +62,7 @@ export default function CreateFolder({
       const userData = getUserData();
       let obj = {
         name: folderName,
-        boxFolderId: userData.boxFolderId,
+        boxFolderId: loanFolderId || userData.boxFolderId,
       };
       console.log(selectedItem);
       if (!!selectedItem && selectedItem.type == "folder") {

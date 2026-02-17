@@ -266,7 +266,7 @@ function Documents({
       const userData = getUserData();
       let obj = {
         name: folderName,
-        boxFolderId: userData.boxFolderId,
+        boxFolderId: loanFolderId || userData.boxFolderId,
       };
       console.log(selectedItem);
       if (!!selectedItem && selectedItem.type == "folder") {
@@ -319,7 +319,7 @@ function Documents({
         if (!!selectedItem && selectedItem.type == "folder") {
           uploadData.append("boxFolderId", selectedItem.id);
         } else {
-          uploadData.append("boxFolderId", userData.boxFolderId);
+          uploadData.append("boxFolderId", loanFolderId || userData.boxFolderId);
         }
 
         uploadData.append("email", userData.email);
@@ -1505,6 +1505,7 @@ function Documents({
               {isNewFolderModalOpen && (
                 <div className="absolute top-[50%] left-[50%]">
                   <CreateFolder
+                    loanFolderId={loanFolderId}
                     onFolderCreated={refreshFiles}
                     onUploadClick={() => setShowUploadArea(true)}
                     selectedItem={selectedItem}
