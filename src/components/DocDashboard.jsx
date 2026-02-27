@@ -263,7 +263,7 @@ export default function DocDashboard() {
       <div className={`${filterVisibility("Ticker Tape") ? "pt-5" : "pt-5 sm:pt-14"}`}>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
           <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
-            <div className="flex flex-col justify-center gap-4">
+            <div className="flex flex-col justify-center gap-3">
               <div className="flex justify-center">
                 {filterVisibility("Ticker Tape") && (
                   <div className="w-[96%] md:w-[80%]">
@@ -272,7 +272,7 @@ export default function DocDashboard() {
                 )}
               </div>
               <div className="w-full flex justify-center">
-                <div className="pb-4 border-b w-[96%] md:w-[80%] ">
+                <div className="pb-2 border-b w-[96%] md:w-[80%] ">
                   {filterVisibility("Header Section") && (
                     <div className="w-full">
                       <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
@@ -291,7 +291,7 @@ export default function DocDashboard() {
             </div>
 
             {/* Chart */}
-            <div className="mt-5 flex flex-col items-center">
+            <div className="mt-3 flex flex-col items-center">
               {filterVisibility("Chart Section") && (
                 <>
                   <h3 className="text-xl font-light font-lato text-center text-black mb-4">

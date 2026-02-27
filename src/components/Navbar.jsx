@@ -365,7 +365,7 @@ function Navbar({ content, config, filterValue }) {
             )}
             {filterPageVisibility("esignature") && (
               <NavBarItem
-                title="eSignature"
+                title="Sign"
                 href={
                   params.portalid
                     ? `/${params.portalid}/esignature`
@@ -625,7 +625,7 @@ function Navbar({ content, config, filterValue }) {
                 )}
                 {filterPageVisibility("esignature") && (
                   <NavBarItem
-                    title="eSignature"
+                    title="Sign"
                     href={
                       params.portalid
                         ? `/${params.portalid}/esignature`

@@ -229,7 +229,7 @@ export default function AdvisorViewDashboard() {
                 <div className="flex flex-col w-full">
                     {filterVisibility("Your Clients Section") && (
                         <div >
-                            <div className="w-full flex justify-center items-center">
+                            <div className="w-full flex justify-center items-center mt-1">
                                 <h3 className="text-xl font-light font-lato text-black mb-4">
                                     Your Clients
                                 </h3>

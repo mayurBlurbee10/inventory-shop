@@ -176,7 +176,7 @@ export default function AdminLoginPage() {
         </div> */}
         {/* footer with copyright and some links */}
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p>&copy; 2025 MStrategy. All rights reserved.</p>
+          <p>&copy; 2026 MStrategy. All rights reserved.</p>
           <p className="mt-2">
             <a href="#" className="text-[#0061D5] hover:text-blue-500">
               Privacy Policy

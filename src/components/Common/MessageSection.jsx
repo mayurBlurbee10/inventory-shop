@@ -910,7 +910,7 @@ useEffect(() => {
   return (
     <div className="relative text-gray-700">
       {/* Header */}
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-3 items-center">
         <div></div>
         <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
           Messaging

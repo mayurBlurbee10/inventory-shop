@@ -84,7 +84,7 @@ const CredentialPage = () => {
           </div>
           </div>
         <div className="w-full border-t bg-gray-50 rounded-b-md flex justify-center items-center h-[50px]">
-          <p className="text-sm text-gray-600">M Strategy Group 2025. All rights reserved.</p>
+          <p className="text-sm text-gray-600">M Strategy Group 2026. All rights reserved.</p>
         </div>
       </div>
     </div>

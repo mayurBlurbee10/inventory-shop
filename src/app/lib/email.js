@@ -162,7 +162,7 @@ export const sendSetPasswordEmail = async (
                               font-size: 14px;
                               margin: 0px 0px 10px;
                             "
-                            >M Strategy Group 2025.</span
+                            >M Strategy Group 2026.</span
                           ><span
                             class="size"
                             style="

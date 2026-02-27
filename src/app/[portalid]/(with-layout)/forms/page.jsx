@@ -39,11 +39,13 @@ function LoansPage() {
   }, []);
 
   useEffect(() => {
-    dispatch(setLoans(loanData?.length < 3 ? defaultLoanData : loanData));
+    // dispatch(setLoans(loanData?.length < 3 ? defaultLoanData : loanData));
+    dispatch(setLoans( loanData));
   }, []);
 
   const handleRefresh = () => {
-    dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
+    // dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
+    dispatch(setLoans( loanData));
   };
 
   useEffect(() => {

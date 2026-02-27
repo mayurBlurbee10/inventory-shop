@@ -1187,7 +1187,7 @@ function Documents({
                           {
                             // Check if content and its required properties are loaded
                             (!content || !content.portalContent || !content.defaultContent) ? (
-                              <div className="pr-2 flex items-center">
+                              <div className="pr-2 flex items-center mb-6">
                                 <div className="flex space-x-1">
                                   <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce"></div>
                                   <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -1781,7 +1781,7 @@ function Documents({
           {/* right panel */}
 
           {fileType !== "loan" && fileType !== "advisor" && (
-            <div className="col-span-5 lg:col-span-2">
+            <div className="col-span-5 lg:col-span-2 pt-[22px]">
               <div>
                 {/* Tasks */}
                 {filterVisibility("My Task Section") && (

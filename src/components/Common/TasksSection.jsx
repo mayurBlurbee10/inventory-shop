@@ -577,10 +577,10 @@ const sortedTasks =
 
   
     return (
-      <div className="relative mt-1">
+      <div className="relative">
         {/* {filterVisibility("My Task Section") && ( */}
           <>
-            <div className={`grid grid-cols-3 mb-2`}>
+            <div className={`grid grid-cols-3 mb-2 items-center`}>
               <div></div>
               <h3 className="text-xl font-light text-center text-[#212529] font-lato">
                 My Tasks

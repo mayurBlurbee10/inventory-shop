@@ -309,27 +309,27 @@ function ESignature() {
         <div className="border mt-[20px]">
         <div className="flex border-b p-4 bg-gray-50">
           <button
-            className={`px-4 py-2 text-md sm:text-lg font-lato ${activeTab === "pending"
+            className={`px-4 py-2 text-md sm:text-lg font-lato font-light ${activeTab === "pending"
               ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600"
+              : "text-black"
               }`}
             onClick={() => setActiveTab("pending")}
           >
             Pending Requests ({pendingRequests?.length || 0})
           </button>
           <button
-            className={`px-4 py-2 text-md sm:text-lg font-lato ${activeTab === "completed"
+            className={`px-4 py-2 text-md sm:text-lg font-lato font-light ${activeTab === "completed"
               ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600"
+              : "text-black"
               }`}
             onClick={() => setActiveTab("completed")}
           >
             Completed Requests ({completedRequests?.length || 0})
           </button>
           <button
-            className={`px-4 py-2 text-md sm:text-lg font-lato ${activeTab === "track_status"
+            className={`px-4 py-2 text-md sm:text-lg font-lato font-light ${activeTab === "track_status"
               ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-600"
+              : "text-black"
               }`}
             onClick={() => setActiveTab("track_status")}
           >

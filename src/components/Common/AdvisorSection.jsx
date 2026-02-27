@@ -8,7 +8,7 @@ const AdvisorSection = ({
   return (
     <div className="mb-7">
       <div>
-        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-5">
           {title}
         </h3>
       </div>

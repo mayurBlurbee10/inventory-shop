@@ -3,33 +3,33 @@ import { ArrowDownUp, ChevronLeft, Folder, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 const data = [
-  {
-    id: 635789,
-    // icon: CarFront,
-    name: "Auto - 635789",
-    type: "Auto",
-    status: "Active",
-    complete: 75,
-    paid: "$40,225.00 Paid",
-  },
-  {
-    id: 990154,
-    // icon: User,
-    name: "Personal - 990154",
-    type: "Personal",
-    status: "Fully Paid",
-    complete: 100,
-    paid: "Fully Paid",
-  },
-  {
-    id: 174192,
-    // icon: Home,
-    name: "Mortgage - 174192",
-    type: "Mortgage	",
-    status: "Processing",
-    complete: 30,
-    paid: "In process",
-  },
+  // {
+  //   id: 635789,
+  //   // icon: CarFront,
+  //   name: "Auto - 635789",
+  //   type: "Auto",
+  //   status: "Active",
+  //   complete: 75,
+  //   paid: "$40,225.00 Paid",
+  // },
+  // {
+  //   id: 990154,
+  //   // icon: User,
+  //   name: "Personal - 990154",
+  //   type: "Personal",
+  //   status: "Fully Paid",
+  //   complete: 100,
+  //   paid: "Fully Paid",
+  // },
+  // {
+  //   id: 174192,
+  //   // icon: Home,
+  //   name: "Mortgage - 174192",
+  //   type: "Mortgage	",
+  //   status: "Processing",
+  //   complete: 30,
+  //   paid: "In process",
+  // },
 ];
 
 const calculatePercentage = (value, totalValue) => {
