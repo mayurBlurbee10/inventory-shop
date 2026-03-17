@@ -254,7 +254,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
              <div className="flex items-center space-x-2">
               <span className="font-medium">Sender:</span>
               <span className="text-gray-600">
-                {message?.sender?.name || "Unknown"}
+                {message?.sender?.firstName + " " + message?.sender?.lastName || "Unknown"}
               </span>
             </div>
 
@@ -262,7 +262,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
             <div className="flex items-center space-x-2">
               <span className="font-medium">Receiver:</span>
               <span className="text-gray-600">
-                {message?.receiver?.name || "Unknown"}
+                {message?.receiver?.firstName + " " + message?.receiver?.lastName || "Unknown"}
               </span>
             </div>
 
@@ -318,13 +318,13 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                     <span
                       className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-800 font-semibold border border-white"
                     >
-                      {((reply?.sender?.name ?? "")[0] ?? "?").toUpperCase()}
+                      {((reply?.sender?.firstName + " " + reply?.sender?.lastName ?? "")[0] ?? "?").toUpperCase()}
                     </span>
 
                   </div>
                   <span className="text-gray-200 mx-3">|</span>
                   <div className="border-gray-300 rounded-md text-gray-700">
-                    <div className="text-gray-500 text-sm font-lato ">{reply.sender?.name}</div>
+                    <div className="text-gray-500 text-sm font-lato ">{reply.sender?.firstName + " " + reply.sender?.lastName}</div>
                     <div><p>{getDisplayText(reply?.text)}</p></div>
                   </div>
                 </div>
@@ -518,7 +518,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
     const users = usersList.map((user) => ({
       ...user,
       value: user.boxUserId,
-      label: `${user.name} (${user.email})`,
+      label: `${`${user.firstName || ''} ${user.lastName || ''}`.trim()} (${user.email})`,
     }));
 
     const loggedInUserId = user?.boxUserId;
@@ -555,7 +555,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
                   <div className="w-full">
                     <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
                       <div className="text-sm text-[#495057]">
-                        {sendTo?.name} ({sendTo?.email})
+                        {sendTo?.firstName + " " + sendTo?.lastName} ({sendTo?.email})
                       </div>
                     </div>
                   </div>
@@ -783,7 +783,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                               {formatDate(row?.createdAt)}
                             </td>
                             <td className="p-4 whitespace-nowrap">
-                              {row?.receiver?.name || "Unknown"}
+                              {row?.receiver?.firstName + " " + row?.receiver?.lastName || "Unknown"}
                             </td>
                             <td className="p-4 whitespace-nowrap">
                               {row?.subject || "No Subject"}
@@ -1005,7 +1005,7 @@ useEffect(() => {
                         {formatDate(row?.createdAt)}
                       </td>
                       <td className="p-4 whitespace-nowrap">
-                        {row?.receiver?.name || "Unknown"}
+                        {row?.receiver?.firstName + " " + row?.receiver?.lastName || "Unknown"}
                       </td>
                       <td className="p-4 whitespace-nowrap">
                         {row?.subject || "No Subject"}

@@ -280,7 +280,7 @@ export default function DocDashboard() {
                           filterValue("Dashboard Heading")?.length > 0 ? (
                             <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true}/>
                           ) : (
-                            <div className="pr-2 flex items-center">{`Hello, ${user?.name}!`}</div>
+                            <div className="pr-2 flex items-center">{`Hello, ${`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}!`}</div>
                           )
                         }
                       </div>

@@ -335,7 +335,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
       const users = usersList.map((user) => ({
         ...user,
         value: user.boxUserId,
-        label: `${user.name} (${user.email})`,
+        label: `${`${user.firstName || ''} ${user.lastName || ''}`.trim()} (${user.email})`,
       }));
   
       // const loggedInUserId = loggedInUser?.boxUserId;
@@ -449,7 +449,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task=null, onTas
                         <label className="block text-sm text-gray-600 mb-1">Selected User</label>
                         <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
                           <div className="text-sm text-[#495057]">
-                            {user?.name} ({user?.email})
+                            {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()} ({user?.email})
                           </div>
                         </div>
                     </div>

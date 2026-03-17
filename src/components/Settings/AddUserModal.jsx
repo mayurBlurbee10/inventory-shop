@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Check, ChevronDown, ChevronRight, X } from "lucide-react";
+import { Box, Check, ChevronDown, ChevronRight, X, User, Mail, Phone, Briefcase, Shield, Image, UserPlus, Building } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
 import { getUserData } from "@/app/lib/auth";
@@ -10,8 +10,8 @@ import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
 
-const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , setFormData, handleModalClose, from}) => {
-  
+const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, setFormData, handleModalClose, from }) => {
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(formData?.logo || "");
@@ -28,11 +28,12 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
   const{data:user} = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [initialFormData, setInitialFormData] = useState({
-    id: user.id || "" ,
-    name: user.name || "" ,
-    email: user.email || "" ,
-    phoneNo:user.phoneNo || "" , 
-    title: user.title || "" ,
+    id: user.id || "",
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    email: user.email || "",
+    phoneNo: user.phoneNo || "",
+    title: user.title || "",
     companyName: user.company?.name || "",
     role:user.role || UserRole.USER,
     logo: user.company?.logo || null,
@@ -44,7 +45,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
       return formData[key] !== initialFormData[key];
     });
   };
-  
+
   // const handleModalClose = () => {
   //   // reset state on modal close
   //   setFormData({
@@ -141,7 +142,8 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
       const userData = {
         email: formData.email,
         phone: formData.phone,
-        name: formData.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         title: formData.title,
         companyName: formData.companyName,
         password: "000",
@@ -238,217 +240,238 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
   };
 
   const handelNext = async () => {
-      try {
-        setIsLoading(true);
-        setActiveStep("Permissions");
-      } catch (error) {
-        console.error("Error creating folder files:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    try {
+      setIsLoading(true);
+      setActiveStep("Permissions");
+    } catch (error) {
+      console.error("Error creating folder files:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const validateEmail = (email) => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email format validation
-      if (!emailRegex.test(email)) {
-        setEmailError("Invalid email format");
-      } else {
-        setEmailError("");
-      }
-    };
-    
-    const handleEmailChange = (e) => {
-      const email = e.target.value;
-      handleFormChange("email", email);
-      validateEmail(email);
-    };
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email format validation
+    if (!emailRegex.test(email)) {
+      setEmailError("Invalid email format");
+    } else {
+      setEmailError("");
+    }
+  };
 
-    // const validatePhoneNumber = (phone) => {
-    //   if (!phone.trim()) {
-    //     setPhoneError(""); // Clear error if input is empty
-    //     return;
-    //   }
-    //   const usCanadaRegex = /^\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // US & Canada: 10 digits
-    //   const mexicoRegex = /^(\+52|52)[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // Mexico: 10-12 digits
-    
-    //   if (usCanadaRegex.test(phone) || mexicoRegex.test(phone)) {
-    //     setPhoneError(""); // Valid number
-    //   } else {
-    //     setPhoneError("Enter a valid phone number");
-    //   }
-    // };
-    
-    // const handlePhoneChange = (e) => {
-    //   let phone = e.target.value;
-    //   phone = phone.replace(/[^0-9\s-.+]/g, "");
-    //   handleFormChange("phone", phone);
-    //   validatePhoneNumber(phone);
-    // };
-    const validateOnlyDigits = (value) => {
-      return /^\d*$/.test(value); // Allows only digits and empty string
-    };
-    
-    const handlePhoneChange = (e) => {
-      const phone = e.target.value;
-    
-      if (validateOnlyDigits(phone)) {
-        handleFormChange("phoneNo", phone);
-        setPhoneError(phone.length > 0 ? "" : null); // Clear error if valid or empty
-      } else {
-        setPhoneError("Only digits are allowed");
-      }
-    };
+  const handleEmailChange = (e) => {
+    const email = e.target.value;
+    handleFormChange("email", email);
+    validateEmail(email);
+  };
 
-    const handelUpdateProfile = async () => {
-      try {
-        setIsLoading(true);
-        let logoUrl = user.company?.logo || "";
-        if (formData.logo instanceof File) {
-          const uploadData = new FormData();
-          uploadData.append("file", formData.logo);
-  
-          const uploadResponse = await fetchWrapper(
-            "/api/upload",
-            {
-              method: "POST",
-              body: uploadData,
-            },
-            "user-logo"
-          );
-  
-          if (!uploadResponse.ok) {
-            throw new Error("Failed to upload logo");
-          }
-  
-          const uploadResult = await uploadResponse.json();
-          logoUrl = uploadResult.url;
-        }
+  // const validatePhoneNumber = (phone) => {
+  //   if (!phone.trim()) {
+  //     setPhoneError(""); // Clear error if input is empty
+  //     return;
+  //   }
+  //   const usCanadaRegex = /^\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // US & Canada: 10 digits
+  //   const mexicoRegex = /^(\+52|52)[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // Mexico: 10-12 digits
 
-        const requestData = {
-          ...formData,
-          company:{
-            name: formData.companyName,
-            logo: logoUrl,
-          }
-        }
-        delete requestData.companyName;
-        delete requestData.logo;
+  //   if (usCanadaRegex.test(phone) || mexicoRegex.test(phone)) {
+  //     setPhoneError(""); // Valid number
+  //   } else {
+  //     setPhoneError("Enter a valid phone number");
+  //   }
+  // };
 
-        const requestOptions = {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
+  // const handlePhoneChange = (e) => {
+  //   let phone = e.target.value;
+  //   phone = phone.replace(/[^0-9\s-.+]/g, "");
+  //   handleFormChange("phone", phone);
+  //   validatePhoneNumber(phone);
+  // };
+  const validateOnlyDigits = (value) => {
+    return /^\d*$/.test(value); // Allows only digits and empty string
+  };
+
+  const handlePhoneChange = (e) => {
+    const phone = e.target.value;
+
+    if (validateOnlyDigits(phone)) {
+      handleFormChange("phoneNo", phone);
+      setPhoneError(phone.length > 0 ? "" : null); // Clear error if valid or empty
+    } else {
+      setPhoneError("Only digits are allowed");
+    }
+  };
+
+  const handelUpdateProfile = async () => {
+    try {
+      setIsLoading(true);
+      let logoUrl = user.company?.logo || "";
+      if (formData.logo instanceof File) {
+        const uploadData = new FormData();
+        uploadData.append("file", formData.logo);
+
+        const uploadResponse = await fetchWrapper(
+          "/api/upload",
+          {
+            method: "POST",
+            body: uploadData,
           },
-          body: JSON.stringify(requestData),
-        };
-        const response = await fetchWrapper(
-          "/api/users", 
-          requestOptions,
-          "Update User"
+          "user-logo"
         );
-    
-        const result = await response.json();
-    
-        if (!response.ok) {
-          throw new Error(result.error || "Something went wrong");
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload logo");
         }
-        const updatedUserData = {
-          ...user,
-          ...formData,
-          company: {
-            ...user.company,
-            name: formData.companyName,
-            logo: logoUrl,
-          },
-        };
-        
-        // Optionally clean up formData extras
-        delete updatedUserData.companyName;
-        delete updatedUserData.logo;
-        
-        dispatch(setCurrentUser(updatedUserData));
-        
-        // ✅ Optional: show success toast or update local user state
-        console.log("User updated:", result.user);
-        toast.success("Profile updated successfully");
-        handleModalClose()
-      } catch (error) {
-        console.error("Failed to update user:", error);
-        alert("Failed to update profile: " + error.message);
-      } finally {
-        setIsLoading(false);
+
+        const uploadResult = await uploadResponse.json();
+        logoUrl = uploadResult.url;
       }
-    };
-    console.log("Updated User Details:", formData);
-    
-    
-    
+
+      const requestData = {
+        ...formData,
+          company:{
+          name: formData.companyName,
+          logo: logoUrl,
+        }
+      }
+      delete requestData.companyName;
+      delete requestData.logo;
+
+      const requestOptions = {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      };
+      const response = await fetchWrapper(
+        "/api/users",
+        requestOptions,
+        "Update User"
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Something went wrong");
+      }
+      const updatedUserData = {
+        ...user,
+        ...formData,
+        company: {
+          ...user.company,
+          name: formData.companyName,
+          logo: logoUrl,
+        },
+      };
+
+      // Optionally clean up formData extras
+      delete updatedUserData.companyName;
+      delete updatedUserData.logo;
+
+      dispatch(setCurrentUser(updatedUserData));
+
+      // ✅ Optional: show success toast or update local user state
+      console.log("User updated:", result.user);
+      toast.success("Profile updated successfully");
+      handleModalClose()
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      alert("Failed to update profile: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  console.log("Updated User Details:", formData);
+
+
+
   return (
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     //   <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <form onSubmit={handleSubmit} className={`space-y-4 ${from === 'editProfile' ? "mt-2": ""}`}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Full Name <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-              value={formData.name}
-              onChange={(e) => handleFormChange("name", e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="email"
-              required
-              disabled={from === 'editProfile'}
-              className={`mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed`}
-              value={formData.email}
-              onChange={handleEmailChange}
-            />
-          </div>
-          {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Phone No</label>
-            <input
-              type="text"
-              // maxLength={16}
-              className={`mt-1 pl-2 block w-full text-gray-500 rounded-md border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300 text-gray-500"
-                }`}
-              value={formData.phoneNo ?? ""}
-              onChange={handlePhoneChange}
-            />
-          </div>
-          {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Title <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-              value={formData.title}
-              onChange={(e) => handleFormChange("title", e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Company Name <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-              value={formData.companyName}
-              onChange={(e) => handleFormChange("companyName", e.target.value)}
-            />
-          </div>
+    <form onSubmit={handleSubmit} className={`space-y-4 ${from === 'editProfile' ? "mt-2" : ""}`}>
+      <div className="flex gap-4 w-full">
+        <div className="w-1/2">
+          <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+            <User className="h-4 w-4" />
+            First Name <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="text"
+            required
+            className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+            value={formData.firstName}
+            onChange={(e) => handleFormChange("firstName", e.target.value)}
+          />
+        </div>
+        <div className="w-1/2">
+          <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+            <User className="h-4 w-4" />
+            Last Name
+          </label>
+          <input
+            type="text"
+            className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+            value={formData.lastName}
+            onChange={(e) => handleFormChange("lastName", e.target.value)}
+          />
+        </div>
+      </div>
+      <div>
+        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+          <Mail className="h-4 w-4" />
+          Email <span className="text-red-600">*</span>
+        </label>
+        <input
+          type="email"
+          required
+          disabled={from === 'editProfile'}
+          className={`mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed`}
+          value={formData.email}
+          onChange={handleEmailChange}
+        />
+      </div>
+      {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+      <div>
+        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+          <Phone className="h-4 w-4" />
+          Phone No
+        </label>
+        <input
+          type="text"
+          // maxLength={16}
+          className={`mt-1 pl-2 block w-full text-gray-500 rounded-md border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300 text-gray-500"
+            }`}
+          value={formData.phoneNo ?? ""}
+          onChange={handlePhoneChange}
+        />
+      </div>
+      {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
+      <div>
+        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+          <Briefcase className="h-4 w-4" />
+          Title <span className="text-red-600">*</span>
+        </label>
+        <input
+          type="text"
+          className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+          value={formData.title}
+          onChange={(e) => handleFormChange("title", e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+          <Building className="h-4 w-4" />
+          Company Name <span className="text-red-600">*</span>
+        </label>
+        <input
+          type="text"
+          className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+          value={formData.companyName}
+          onChange={(e) => handleFormChange("companyName", e.target.value)}
+        />
+      </div>
 
-          {/* <div>
+      {/* <div>
             <label className="block text-sm font-medium text-gray-700">Company Name</label>
             <div className="relative">
               <button
@@ -498,46 +521,48 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
             </div>
 
           </div> */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Role <span className="text-red-600">*</span>
-            </label>
-            <select
-              disabled={from === 'editProfile'}
-              className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
-              value={formData.role}
-              onChange={(e) => handleFormChange("role", e.target.value)}
-              style={{ height: "2.5rem" }}
-            >
-              <option value={UserRole.USER}>User</option>
-              <option value={UserRole.ADMIN}>Admin</option>
-              <option value={UserRole.MODERATOR}>Moderator</option>
-            </select>
+      <div>
+        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+          <UserPlus className="h-4 w-4" />
+          Role <span className="text-red-600">*</span>
+        </label>
+        <select
+          disabled={from === 'editProfile'}
+          className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
+          value={formData.role}
+          onChange={(e) => handleFormChange("role", e.target.value)}
+          style={{ height: "2.5rem" }}
+        >
+          <option value={UserRole.USER}>User</option>
+          <option value={UserRole.ADMIN}>Admin</option>
+          <option value={UserRole.MODERATOR}>Moderator</option>
+        </select>
+      </div>
+      <div>
+        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+          <Image className="h-4 w-4" />
+          Company Logo
+        </label>
+        <div className="mt-1 flex items-center space-x-4">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+        </div>
+        {previewUrl && (
+          <div className="mt-2">
+            <img
+              src={previewUrl}
+              alt="Logo preview"
+              className="h-20 w-20 object-contain rounded border"
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Company Logo
-            </label>
-            <div className="mt-1 flex items-center space-x-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-            </div>
-            {previewUrl && (
-              <div className="mt-2">
-                <img
-                  src={previewUrl}
-                  alt="Logo preview"
-                  className="h-20 w-20 object-contain rounded border"
-                />
-              </div>
-            )}
-          </div>
-          <div className="flex justify-end space-x-3">
-            {/* <button
+        )}
+      </div>
+      <div className="flex justify-end space-x-3">
+        {/* <button
               type="button"
               onClick={handleModalClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
@@ -545,13 +570,13 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
             >
               Cancel
             </button> */}
-            <Button 
-            type="Secondary"
-            onClick={handleModalClose}
-            disabled={loading}
-            label="Cancel"
-            />
-            {/* <button
+        <Button
+          type="Secondary"
+          onClick={handleModalClose}
+          disabled={loading}
+          label="Cancel"
+        />
+        {/* <button
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
               disabled={loading}
@@ -570,15 +595,15 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData , 
           ) : (
             <Button
               onClick={handelNext}
-              disabled={isLoading || !formData.name || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
+              disabled={isLoading || !formData.firstName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
               isLoading={isLoading}
               type="Primary"
               label="Next"
             />
           )
         }
-          </div>
-        </form>
+      </div>
+    </form>
     //   </div>
     // </div>
   );
@@ -663,7 +688,8 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
       const userData = {
         email: formData.email,
         phoneNo: formData.phoneNo,
-        name: formData.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         title: formData.title,
         companyName: formData.companyName,
         password: "000",
@@ -896,51 +922,52 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     id: from === 'editProfile' ? user.id || "" : "",
-    name: from === 'editProfile' ? user.name || "" : "",
+    firstName: from === 'editProfile' ? user.firstName || "" : "",
+    lastName: from === 'editProfile' ? user.lastName || "" : "",
     email: from === 'editProfile' ? user.email || "" : "",
-    phoneNo: from === 'editProfile' ? user.phoneNo || "" : "", 
+    phoneNo: from === 'editProfile' ? user.phoneNo || "" : "",
     title: from === 'editProfile' ? user.title || "" : "",
     companyName: from === 'editProfile' ? user.company?.name || "" : "",
     role: from === 'editProfile' ? user.role || UserRole.USER : UserRole.USER,
     logo: from === 'editProfile' ? user.company?.logo || null : null,
   });
-  
 
-    const finalStep = () => {
-      dispatch(setNewLoan(newLoanData));
-    };
-  
-    const getActiveStepContent = () => {
-      switch (activeStep) {
-        case "User Details":
-          return (
-            <UserDetails
-              formData={formData}
-              setFormData={setFormData}
-              users={users}
-              onAdd={onAdd}
-              onClose={onClose}
-              setActiveStep={setActiveStep}
-              handleModalClose={handleModalClose}
-              from={from}
-            />
-          );
-        case "Permissions":
-          return (
-            <PermissionsModel
-              formData={formData}
-              onAdd={onAdd}
-              setFormData={setFormData}
-              setActiveStep={setActiveStep}
-              onClose={onClose}
-              finalStep={finalStep}
-              handleModalClose={handleModalClose}
-            />
-          );
-        default:
-          return null;
-      }
-    };
+
+  const finalStep = () => {
+    dispatch(setNewLoan(newLoanData));
+  };
+
+  const getActiveStepContent = () => {
+    switch (activeStep) {
+      case "User Details":
+        return (
+          <UserDetails
+            formData={formData}
+            setFormData={setFormData}
+            users={users}
+            onAdd={onAdd}
+            onClose={onClose}
+            setActiveStep={setActiveStep}
+            handleModalClose={handleModalClose}
+            from={from}
+          />
+        );
+      case "Permissions":
+        return (
+          <PermissionsModel
+            formData={formData}
+            onAdd={onAdd}
+            setFormData={setFormData}
+            setActiveStep={setActiveStep}
+            onClose={onClose}
+            finalStep={finalStep}
+            handleModalClose={handleModalClose}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   const WizardStep = ({ step, currentStep }) => {
     const isCompleted = currentStep > step;
@@ -976,38 +1003,39 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
   };
 
   const steps = ["User Details", "Permissions"];
-    const activeStepIndex = steps.indexOf(activeStep);
-    const stepRefs = useRef([]);
-    const scrollContainerRef = useRef(null);
-    useEffect(() => {
-      if (activeStepIndex >= 0 && stepRefs.current[activeStepIndex]) {
-        stepRefs.current[activeStepIndex].scrollIntoView({
-          behavior: "smooth",
-          inline: "center",
-          block: "nearest",
-        });
-      }
-    }, [activeStepIndex]);
-
-    const handleClose = () => {
-      onClose()
+  const activeStepIndex = steps.indexOf(activeStep);
+  const stepRefs = useRef([]);
+  const scrollContainerRef = useRef(null);
+  useEffect(() => {
+    if (activeStepIndex >= 0 && stepRefs.current[activeStepIndex]) {
+      stepRefs.current[activeStepIndex].scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
     }
+  }, [activeStepIndex]);
+
+  const handleClose = () => {
+    onClose()
+  }
 if (!isOpen) return ;
-console.log("activeStep:", activeStep);
-const handleModalClose = () => {
-  setFormData({
-    name: "",
-    email: "",
-    phone: "",
-    title: "",
-    companyName: "",
-    role: "user",
-    logo: null,
-  });
-  setError("");
-  onClose();
-  setActiveStep("User Details");
-};
+  console.log("activeStep:", activeStep);
+  const handleModalClose = () => {
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      title: "",
+      companyName: "",
+      role: "user",
+      logo: null,
+    });
+    setError("");
+    onClose();
+    setActiveStep("User Details");
+  };
   return (
     <>
       <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">

@@ -51,7 +51,7 @@ export const PaginatedTable = ({ data, isLoading }) => {
       let filtered = data.filter((row) => {
         const type = row.type?.toLowerCase() || "";
         const searchTerm = debouncedSearchTerm.toLowerCase();
-        const userName = row.createdBy?.name?.toLowerCase() || "";
+        const userName = row.createdBy?.firstName?.toLowerCase() || "";
         const sourceName = row.source?.name?.toLowerCase() || "";
 
       
@@ -206,7 +206,7 @@ export const PaginatedTable = ({ data, isLoading }) => {
                       >
                         <td className="py-3 px-4">{formatTimestamp(d?.createdAt)}</td>
                         <td className="py-3 px-4">{d?.type?.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</td>
-                        <td className="py-3 px-4">{d?.createdBy?.name || "N/A"}</td>
+                        <td className="py-3 px-4">{d?.createdBy?.firstName + " " + d?.createdBy?.lastName || "N/A"}</td>
                       </tr>
                     ))
                   ) : (
@@ -342,7 +342,7 @@ const DataTableSection = () => {
       const exportData = data.map(log => ({
         "Date & Time": formatTimestamp(log?.createdAt),
         "Name": log?.type || 'N/A',
-        "User": log.createdBy?.name || 'N/A'
+        "User": log.createdBy?.firstName || 'N/A'
       }));
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const csvOutput = XLSX.utils.sheet_to_csv(worksheet);

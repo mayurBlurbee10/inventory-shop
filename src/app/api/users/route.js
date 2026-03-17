@@ -141,7 +141,8 @@ export async function POST(request) {
       const token = await generateNanoToken();
       let newUser = {
         email: userData.email,
-        name: userData.name || userData.email.split("@")[0],
+        firstName: userData.firstName || userData.email.split("@")[0],
+        lastName: userData.lastName || "",
         role: userData.role,
         phoneNo: userData.phoneNo,
         // permissions: userData.permissions, //updated Field
@@ -171,10 +172,10 @@ export async function POST(request) {
       if (userData.role !== UserRole.MASTER) {
         // TODO: send email as exisiting user like reset Password
         const userPortal =
-        userData.role === UserRole.SUPER_ADMIN ? "admin" : userData.permissions.portalId;
+          userData.role === UserRole.SUPER_ADMIN ? "admin" : userData.permissions.portalId;
         sendSetPasswordEmail(
           newUser.email,
-          newUser.name,
+          `${newUser.firstName} ${newUser.lastName}`.trim(),
           token,
           userPortal,
           true,
@@ -225,7 +226,8 @@ export async function POST(request) {
       // id: Date.now().toString(),
       email: userData.email,
       phoneNo: userData.phoneNo,
-      name: userData.name || userData.email.split("@")[0],
+      firstName: userData.firstName || userData.email.split("@")[0],
+      lastName: userData.lastName || "",
       password: userData.password, // Default password as requested
       extra: process.env.NODE_ENV === "development" ? userData.password : null, // Default password as requested
       company: {},
@@ -276,7 +278,7 @@ export async function POST(request) {
       // because super_admin will be created from admin so it should go to admin for set password
       const userPortal =
         userData.role === UserRole.SUPER_ADMIN ? "admin" : userData.portal;
-        sendSetPasswordEmail(newUser.email, newUser.name, token, userPortal, false, from ? "" : "reset");
+      sendSetPasswordEmail(newUser.email, `${newUser.firstName} ${newUser.lastName}`.trim(), token, userPortal, false, from ? "" : "reset");
     }
 
     if (mainUserRole === UserRole.SUPER_ADMIN && userData.role === UserRole.SUPER_ADMIN) {

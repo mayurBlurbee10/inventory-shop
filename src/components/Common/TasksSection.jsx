@@ -143,7 +143,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                     <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
                       {/* Avatar */}
                       <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
-                        {task?.user?.name
+                        {task?.user?.firstName
                           ?.split(" ")
                           .map((word) => word.charAt(0).toUpperCase())
                           .slice(0, 2)
@@ -152,7 +152,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
 
                       {/* User Info */}
                       <div>
-                        <p className="text-lg font-semibold text-gray-800">{task?.user?.name || "Unknown User"}</p>
+                        <p className="text-lg font-semibold text-gray-800">{task?.user?.firstName || "Unknown User"}</p>
                         <p className="text-gray-500 text-sm">{task?.user?.email || "No Email Provided"}</p>
                       </div>
                     </div>
@@ -162,7 +162,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                     <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
                       {/* Avatar */}
                       <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
-                        {task?.createdBy?.name
+                        {task?.createdBy?.firstName
                           ?.split(" ")
                           .map((word) => word.charAt(0).toUpperCase())
                           .slice(0, 2)
@@ -171,7 +171,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
 
                       {/* User Info */}
                       <div>
-                        <p className="text-lg font-semibold text-gray-800">{task?.createdBy?.name || "Unknown User"}</p>
+                        <p className="text-lg font-semibold text-gray-800">{task?.createdBy?.firstName + " " + task?.createdBy?.lastName || "Unknown User"}</p>
                         <p className="text-gray-500 text-sm">{task?.createdBy?.email || "No Email Provided"}</p>
                       </div>
                     </div>
@@ -708,12 +708,12 @@ const sortedTasks =
                                       "en-US"
                                     )
                                   : new Date().toLocaleDateString("en-US")} */}
-                                  {task?.createdBy?.name}
+                                  {task?.createdBy?.firstName + " " + task?.createdBy?.lastName}
                               </p>
                             </td>
                             <td className="px-3 py-4 max-w-[100px]">
                               <p className="font-lato text-[#212529] text-sm truncate">
-                                  {task?.user?.name}
+                                  {task?.user?.firstName + " " + task?.user?.lastName}
                               </p>
                             </td>
                             <td className="relative px-3 py-4 cursor-pointer text-gray-800 text-sm">

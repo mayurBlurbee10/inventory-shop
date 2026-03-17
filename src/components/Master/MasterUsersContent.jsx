@@ -94,18 +94,18 @@ export default function MasterUsersContent() {
                       {user.company?.logo ? (
                         <img
                           src={user.company.logo}
-                          alt={`${user.name} logo`}
+                          alt={`${`${user.firstName || ''} ${user.lastName || ''}`.trim()} logo`}
                           className="h-8 w-8 object-contain rounded-full mr-3"
                         />
                       ) : (
                         <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
                           <span className="text-sm font-medium text-blue-600">
-                            {user.name.charAt(0).toUpperCase()}
+                            {user.firstName.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
                       <div className="text-sm font-medium text-gray-900">
-                        {user.name}
+                        {`${user.firstName || ''} ${user.lastName || ''}`.trim()}
                       </div>
                     </div>
                   </td>

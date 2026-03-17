@@ -467,9 +467,9 @@ function Navbar({ content, config, filterValue }) {
                   }}
                 >
                   {/* {
-                    isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
+                    isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.firstName?.charAt(0).toUpperCase() || "U"
                   } */}
-                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                  {user?.firstName?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div className="flex flex-col text-sm xl:text-base">
                   <span className="font-medium"
@@ -478,9 +478,9 @@ function Navbar({ content, config, filterValue }) {
                     }}
                   >
                     {/* {
-                      isAdvisorViewOpen ? "Erica Smith" : user?.name
+                      isAdvisorViewOpen ? "Erica Smith" : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
                     } */}
-                    {user?.name}
+                    {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                   </span>
                 </div>
 
@@ -684,16 +684,16 @@ function Navbar({ content, config, filterValue }) {
                       style={{ backgroundColor: config.secondaryColor, color: config.primaryColor }}
                     >
                       {/* {
-                        isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.name?.charAt(0).toUpperCase() || "U"
+                        isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.firstName?.charAt(0).toUpperCase() || "U"
                       } */}
-                      {user?.name?.charAt(0).toUpperCase() || "U"}
+                      {user?.firstName?.charAt(0).toUpperCase() || "U"}
                     </div>
                     <div className="flex flex-col text-sm xl:text-base">
                       <span className="text-gray-900 font-medium">
                         {/* {
-                          isAdvisorViewOpen ? "Erica Smith" : user?.name
+                          isAdvisorViewOpen ? "Erica Smith" : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
                         } */}
-                        {user?.name}
+                        {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                       </span>
                     </div>
 

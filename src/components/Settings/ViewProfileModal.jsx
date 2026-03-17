@@ -3,7 +3,7 @@ import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
-import { X } from "lucide-react";
+import { X, User, Mail, Phone, Briefcase, Shield, Image, Building, UserPlus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -48,7 +48,8 @@ function ViewProfileModal({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(null);
   const [formData, setFormData] = useState({
     id: "",
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phoneNo: "",
     title: "",
@@ -58,7 +59,8 @@ function ViewProfileModal({
   });
   const [initialFormData, setInitialFormData] = useState({
     id: "",
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phoneNo: "",
     title: "",
@@ -70,7 +72,8 @@ function ViewProfileModal({
   const handleModelClose = () => {
     handleClose();
     setFormData({
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phone: "",
       title: "",
@@ -79,7 +82,8 @@ function ViewProfileModal({
       logo: null,
     });
     setInitialFormData({
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phone: "",
       title: "",
@@ -103,7 +107,8 @@ function ViewProfileModal({
   useEffect(() => {
     setFormData({
       id: user?.id || "",
-      name: user?.name || "",
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
       email: user?.email || "",
       phoneNo: user?.phoneNo || "",
       title: user?.title || "",
@@ -113,7 +118,8 @@ function ViewProfileModal({
     });
     setInitialFormData({
       id: user?.id || "",
-      name: user?.name || "",
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
       email: user?.email || "",
       phoneNo: user?.phoneNo || "",
       title: user?.title || "",
@@ -342,20 +348,36 @@ function ViewProfileModal({
             </div>
 
             <div className={`space-y-4 p-4 lg:p-6`}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Full Name <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-                  value={formData.name}
-                  onChange={(e) => handleFormChange("name", e.target.value)}
-                />
+              <div className="flex gap-4 w-full">
+                <div className="w-1/2">
+                  <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                    <User className="h-4 w-4" />
+                    First Name <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+                    value={formData.firstName}
+                    onChange={(e) => handleFormChange("firstName", e.target.value)}
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                    <User className="h-4 w-4" />
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+                    value={formData.lastName}
+                    onChange={(e) => handleFormChange("lastName", e.target.value)}
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                  <Mail className="h-4 w-4" />
                   Email <span className="text-red-600">*</span>
                 </label>
                 <input
@@ -367,7 +389,8 @@ function ViewProfileModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                  <Phone className="h-4 w-4" />
                   Phone No
                 </label>
                 <input
@@ -382,7 +405,8 @@ function ViewProfileModal({
                 <p className="text-red-500 text-sm mt-1">{phoneError}</p>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                  <Briefcase className="h-4 w-4" />
                   Title <span className="text-red-600">*</span>
                 </label>
                 <input
@@ -393,7 +417,8 @@ function ViewProfileModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                  <Building className="h-4 w-4" />
                   Company Name <span className="text-red-600">*</span>
                 </label>
                 <input
@@ -406,7 +431,8 @@ function ViewProfileModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                  <UserPlus className="h-4 w-4" />
                   Role <span className="text-red-600">*</span>
                 </label>
                 <select
@@ -422,7 +448,8 @@ function ViewProfileModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+                  <Image className="h-4 w-4" />
                   Company Logo
                 </label>
                 <div className="mt-1 flex items-center space-x-4">
@@ -499,7 +526,7 @@ function ViewProfileModal({
                 </button>
               </div>
               <div className="text-center text-gray-700 py-4">
-                <p className="font-bold">{isDeleteModalOpen?.name}</p>
+                <p className="font-bold">{`${isDeleteModalOpen?.firstName || ""} ${isDeleteModalOpen?.lastName || ""}`.trim()}</p>
                 <p className="">{isDeleteModalOpen?.email}</p>
                 <div className="text-gray-700 p-5 space-y-2 border-t ">
                   <p className="text-sm">

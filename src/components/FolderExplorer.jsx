@@ -61,7 +61,7 @@ const ShareModal = ({
   useEffect(() => {
     const users = usersList.map((user) => ({
       value: user.boxUserId,
-      label: `${user.name} (${user.email})`,
+      label: `${`${user.firstName || ''} ${user.lastName || ''}`.trim()} (${user.email})`,
     }));
     setUserList(users);
   }, [usersList]);
@@ -193,14 +193,14 @@ const ShareModal = ({
         collaborator[collabIndex] = {
           id: collab.id,
           role: collab.role,
-          user: { name: user.name, id: user.boxUserId },
+          user: { firstName: user.firstName, lastName: user.lastName, id: user.boxUserId },
           type: collab.type,
         };
       } else {
         collaborator.push({
           id: collab.id,
           role: "viewer",
-          user: { name: user.name, id: user.boxUserId },
+          user: { firstName: user.firstName, lastName: user.lastName, id: user.boxUserId },
           type: collab.type,
         });
       }
@@ -359,7 +359,7 @@ const ShareModal = ({
                     className="text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group grid grid-cols-2"
                   >
                     <div className="flex items-center">
-                      {content?.user.name}
+                      {content?.user.firstName}
                     </div>
                     <div className="flex items-center justify-between">
                       <select
@@ -636,14 +636,14 @@ function FolderExplorer({
   const getUserName = (file) => {
     if (file?.collaborators?.length > 0 && file.type == "folder") {
       const findeduser = usersList.find(
-        (user) => user.email == file.collaborators[0].user.name
+        (user) => user.email == file.collaborators[0].user.firstName
       );
-      return findeduser ? findeduser.name : file.collaborators[0].user.name;
+      return findeduser ? findeduser.firstName : file.collaborators[0].user.firstName;
     } else if (file.type == "file" && file.description != "") {
       const findeduser = usersList.find(
         (user) => user.email == file.description
       );
-      return findeduser ? findeduser.name : file.description;
+      return findeduser ? findeduser.firstName : file.description;
     } else {
       return "";
     }

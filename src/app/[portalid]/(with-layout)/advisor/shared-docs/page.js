@@ -684,7 +684,7 @@ console.log("User:", user);
                             ) : (
                                 <>
                                 <h3 className="text-sm sm:text-md text-blue-600 font-medium">
-                                    {user ? user?.name : loggedInUser?.name}
+                                    {user ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() : `${loggedInUser?.firstName || ''} ${loggedInUser?.lastName || ''}`.trim()}
                                 </h3>
                                 <p className="text-gray-600 text-xs sm:text-sm truncate w-full">
                                     {user ? user?.email : loggedInUser?.email}
@@ -760,7 +760,7 @@ console.log("User:", user);
                 <div className="mb-7">
                   <AdvisorSection
                     title="Your Client"
-                    userName={user ? user?.name : loggedInUser?.name}
+                    userName={user ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() : `${loggedInUser?.firstName || ''} ${loggedInUser?.lastName || ''}`.trim()}
                     role={user ? user?.email : loggedInUser?.email}
                   />
                 </div>

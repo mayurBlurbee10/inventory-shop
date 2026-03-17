@@ -7,7 +7,8 @@ import Button from "../Common/Elements/Button";
 
 export default function AddSuperUserModal({ onClose, onAdd }) {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     password: "",
@@ -20,7 +21,8 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
 
   const handleModalClose = () => {
     setFormData({
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phone: "",
       password: "",
@@ -83,7 +85,8 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
       const userData = {
         email: formData.email,
         phone: formData.phone,
-        name: formData.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         password: "admin123",
         companyName: formData.companyName,
         logo: logoUrl,
@@ -162,17 +165,31 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <input
-              type="text"
-              required
-              className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-              value={formData.name}
-              onChange={(e) => handleFormChange("name", e.target.value)}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                First Name
+              </label>
+              <input
+                type="text"
+                required
+                className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+                value={formData.firstName}
+                onChange={(e) => handleFormChange("firstName", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Last Name
+              </label>
+              <input
+                type="text"
+                required
+                className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+                value={formData.lastName}
+                onChange={(e) => handleFormChange("lastName", e.target.value)}
+              />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">

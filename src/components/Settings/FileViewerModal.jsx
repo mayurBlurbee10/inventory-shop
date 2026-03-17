@@ -86,7 +86,7 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
       <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] flex flex-col relative">
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
-            Files - {user.name}
+            Files - {`${user.firstName || ''} ${user.lastName || ''}`.trim()}
           </h2>
           <button
             onClick={onClose}

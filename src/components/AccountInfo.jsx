@@ -106,18 +106,25 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                 <div
                   className={`size-20 rounded-full w-[70px] h-[70px] text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 
                     }`}
-                    style={{ backgroundColor: config.secondaryColor, color: config.primaryColor }}
+                  style={{ backgroundColor: config.secondaryColor, color: config.primaryColor }}
                 >
-                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  {user?.firstName?.charAt(0)?.toUpperCase() || "U"}
                 </div>
               </div>
               {/* User Details */}
               <div className="flex-1 space-y-2">
-                {/* Name */}
+                {/* First Name */}
                 <div className="flex items-center">
-                  <p className="text-sm text-gray-500 w-20">Name:</p>
+                  <p className="text-sm text-gray-500 w-20">First Name:</p>
                   <h2 className="text-md sm:text-lg font-semibold text-gray-700">
-                    {user?.name}
+                    {user?.firstName}
+                  </h2>
+                </div>
+                {/* Last Name */}
+                <div className="flex items-center">
+                  <p className="text-sm text-gray-500 w-20">Last Name:</p>
+                  <h2 className="text-md sm:text-lg font-semibold text-gray-700">
+                    {user?.lastName}
                   </h2>
                 </div>
                 {/* Email */}
@@ -153,14 +160,14 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
               <div className="w-[100px] h-[100px] md:w-[150px] md:h-[150px] border flex-shrink-0">
                 {user?.company?.logo || config?.logo ? (
                   <img
-                  src={
-                    typeof user?.logo === "string" && user.logo
-                      ? user.logo
-                      : typeof user?.company?.logo === "string" && user.company.logo
-                        ? user.company.logo.replace("/api/upload", "/uploads")
-                        : config?.logo
-                  }
-                  
+                    src={
+                      typeof user?.logo === "string" && user.logo
+                        ? user.logo
+                        : typeof user?.company?.logo === "string" && user.company.logo
+                          ? user.company.logo.replace("/api/upload", "/uploads")
+                          : config?.logo
+                    }
+
                     alt={params.portalid}
                     className="h-full object-contain"
                   />
@@ -190,14 +197,14 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
               Change Password
             </button> */}
             <Button
-               onClick={() => setIsChangePassModalOpen((prev) => !prev)}
-               type="Secondary"
-               label="Change Password"
+              onClick={() => setIsChangePassModalOpen((prev) => !prev)}
+              type="Secondary"
+              label="Change Password"
             />
             <Button
-               onClick={() => setIsEditProfileModalOpen((prev) => !prev)}
-               type="Secondary"
-               label="Edit Profile"
+              onClick={() => setIsEditProfileModalOpen((prev) => !prev)}
+              type="Secondary"
+              label="Edit Profile"
             />
             {/* <button
                             type="button"

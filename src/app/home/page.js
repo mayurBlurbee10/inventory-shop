@@ -95,10 +95,10 @@ const Header = ({
               userIsAdmin ? "bg-blue-600" : "bg-gray-700"
             }`}
           >
-            {user?.name?.charAt(0) || "U"}
+            {user?.firstName?.charAt(0) || "U"}
           </div>
           <div className="flex flex-col">
-            <span className="text-gray-900 font-medium">{user?.name}</span>
+            <span className="text-gray-900 font-medium">{`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}</span>
             {userIsAdmin && (
               <span className="text-blue-600 text-sm font-medium">
                 Administrator
@@ -618,7 +618,7 @@ export default function HomePage() {
           >
             <div className="mb-4">
               <h3 className="text-2xl text-[#3c4043] font-medium text-center mb-5">
-                Welcome, {user.name}
+                Welcome, {`${user.firstName || ''} ${user.lastName || ''}`.trim()}
               </h3>
               {/* NEW FOLDER MODEL */}
               <div className="flex items-center gap-3">

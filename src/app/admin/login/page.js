@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
         // localStorage.setItem('user', JSON.stringify({
         //   email: user.email,
         //   role: user.role,
-        //   name: user.name
+        //   firstName: user?.firstName, lastName: user?.lastName
         // }));
         // localStorage.setItem('portal','admin')
         router.push('/admin/dashboard');

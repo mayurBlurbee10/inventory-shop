@@ -117,7 +117,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         },
         documentType: documentType,
         editorConfig: {
-          user: { id: user?.id, name: user?.name },
+          user: { id: user?.id, firstName: user?.firstName, lastName: user?.lastName },
           customization: {
             autoSave: true,
             uiTheme: "default-light",
@@ -405,7 +405,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                         id="onlyoffice-editor"
                         ref={editorRef}
                         className="h-full w-full"
-                        // style={{ minHeight: "600px" }}
+                      // style={{ minHeight: "600px" }}
                       ></div>
                     )}
                   </div>
@@ -424,7 +424,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                         {comment?.user && (
                           <div className="flex items-start gap-3 pt-3 pb-5 border-b border-[#0000001a]">
                             <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                              {comment?.user?.name
+                              {comment?.user?.firstName
                                 ?.split(" ")
                                 .map((word) => word.charAt(0).toUpperCase())
                                 .slice(0, 2)
@@ -458,7 +458,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                     <div className="flex flex-col mt-auto">
                       <div className="flex items-start mb-4">
                         <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                          {user?.name
+                          {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()
                             ?.split(" ")
                             .map((word) => word.charAt(0).toUpperCase())
                             .slice(0, 2)
@@ -495,7 +495,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                       onClick={() => setIsOpenCommentBox((prev) => !prev)}
                     >
                       <div className="flex items-center justify-center size-8 p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                        {user?.name
+                        {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()
                           ?.split(" ")
                           .map((word) => word.charAt(0).toUpperCase())
                           .slice(0, 2)

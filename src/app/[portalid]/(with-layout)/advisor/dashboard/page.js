@@ -166,8 +166,8 @@ export default function AdvisorViewDashboard() {
     const sortedClients = usersList && [...usersList].sort((a, b) => {
         if (sortConfig?.key === "name") {
           return sortConfig?.direction === "asc" 
-            ? a?.name?.localeCompare(b?.name) 
-            : b?.name?.localeCompare(a?.name);
+            ? a?.firstName?.localeCompare(b?.firstName) 
+            : b?.firstName?.localeCompare(a?.firstName);
         } else if (sortConfig?.key === "email"){
             return sortConfig?.direction === "asc" 
             ? a?.email?.localeCompare(b?.email) 
@@ -271,7 +271,7 @@ export default function AdvisorViewDashboard() {
                                                     <tr key={user?.id} className="hover:bg-gray-100 transition-colors">
                                                         <td className="py-2 px-4 border-b text-blue-600 text-sm">
                                                             <Link href={`shared-docs?userId=${user?.boxUserId}`} passHref>
-                                                                {user?.name}
+                                                                {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                                                             </Link>
                                                         </td>
                                                         <td className="p-4 border-b text-sm">

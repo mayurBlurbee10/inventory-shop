@@ -25,7 +25,7 @@ function SendforSignatureDialog({
       value: user.boxUserId,
       email: user.email,
       userId: user.id,
-      label: `${user.name} (${user.email})`,
+      label: `${`${user.firstName || ''} ${user.lastName || ''}`.trim()} (${user.email})`,
     }));
     setUserList(users);
   }, [usersList]);

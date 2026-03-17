@@ -789,7 +789,7 @@ function Dashboard({ fileType }) {
           >
             <div className="mb-4">
               <h3 className="text-lg xl:text-2xl text-[#3c4043] font-medium text-center xl:mb-5">
-                Welcome, {user.name}
+                Welcome, {`${user.firstName || ''} ${user.lastName || ''}`.trim()}
               </h3>
               {/* NEW FOLDER MODEL */}
               <div className="flex items-center gap-3">

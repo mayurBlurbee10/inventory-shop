@@ -321,11 +321,11 @@ export default function DashboardPage() {
   //                     userIsAdmin ? "bg-blue-600" : "bg-gray-700"
   //                   }`}
   //                 >
-  //                   {user?.name?.charAt(0) || "U"}
+  //                   {user?.firstName?.charAt(0) || "U"}
   //                 </div>
   //                 <div className="flex flex-col text-sm xl:text-base">
   //                   <span className="text-gray-900 font-medium">
-  //                     {user?.name}
+  //                     {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
   //                   </span>
   //                   {userIsAdmin && (
   //                     <span className="text-blue-600 text-sm font-medium">
@@ -411,7 +411,7 @@ export default function DashboardPage() {
   //         <div>
   //           <h2 className="text-xl font-light text-black font-lato">
   //             {/* Hello, David West! Today is Wednesday, January 15th. */}
-  //             {`Hello, ${user?.name}! Today is ${dayAndDate.day}, ${
+  //             {`Hello, ${`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}! Today is ${dayAndDate.day}, ${
   //               dayAndDate.month
   //             } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${
   //               dayAndDate.date === 2 ? "nd" : ""

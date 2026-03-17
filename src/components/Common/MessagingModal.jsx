@@ -165,14 +165,14 @@ const MessagingModal = ({ isOpen, onClose, receiver }) => {
             <Dialog.Title className="text-lg font-semibold text-gray-900">
               <div className="flex px-5">
                 <div className="flex w-8 h-8 items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                  {receiver?.name
+                  {receiver?.firstName
                     ?.split(" ")
                     .map((word) => word.charAt(0).toUpperCase())
                     .slice(0, 2)
                     .join("")}
                 </div>
                 <div className="ml-2">
-                  <p>{receiver?.name}</p>
+                  <p>{receiver?.firstName}</p>
                   <p className="text-xs text-gray-400 font-normal">
                     Active Now
                   </p>
@@ -211,7 +211,7 @@ const MessagingModal = ({ isOpen, onClose, receiver }) => {
                     {/* Avatar for Receiver */}
                     {msg?.sender?.id !== user?.id && (
                       <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-sm mr-2">
-                        {msg?.sender?.name
+                        {msg?.sender?.firstName
                           ?.split(" ")
                           .map((word) => word.charAt(0).toUpperCase())
                           .slice(0, 2)
@@ -299,7 +299,7 @@ const MessagingModal = ({ isOpen, onClose, receiver }) => {
                     {/* Avatar for Sender */}
                     {msg?.sender?.id === user?.id && (
                       <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-400 text-white font-bold text-sm ml-2">
-                        {msg?.sender?.name
+                        {msg?.sender?.FirstName
                           ?.split(" ")
                           .map((word) => word.charAt(0).toUpperCase())
                           .slice(0, 2)

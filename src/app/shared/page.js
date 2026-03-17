@@ -857,10 +857,10 @@ export default function SharedPage() {
                   <div
                     className={`size-8 xl:size-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105  bg-gray-700`}
                   >
-                    {user?.name?.charAt(0) || "U"}
+                    {user?.firstName?.charAt(0) || "U"}
                   </div>
                   <div className="flex flex-col text-sm xl:text-base">
-                    <span className="text-gray-900 font-medium">{user?.name}</span>
+                    <span className="text-gray-900 font-medium">{`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}</span>
                   </div>
 
                   {/* DROPDOWN SECTION DONE*/}
@@ -905,10 +905,10 @@ export default function SharedPage() {
                     className={`w-8 h-8 xl:w-10 xl:h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
                       }`}
                   >
-                    {user?.name?.charAt(0) || "U"}
+                    {user?.firstName?.charAt(0) || "U"}
                   </div>
                   <div className="flex flex-col text-sm xl:text-base">
-                    <span className="text-gray-900 font-medium">{user?.name}</span>
+                    <span className="text-gray-900 font-medium">{`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}</span>
                     {userIsAdmin && (
                       <span className="text-blue-600 text-sm font-medium">
                         Administrator

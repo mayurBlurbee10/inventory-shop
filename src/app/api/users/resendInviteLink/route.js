@@ -35,7 +35,7 @@ export async function POST(request) {
     await userService.setResetPasswordToken(user.email, token);
 
     if (user.role !== UserRole.SUPER_ADMIN && user.role !== UserRole.MASTER) {
-      sendSetPasswordEmail(user.email, user.name, token, userPermission.portalId,false,'reset');
+      sendSetPasswordEmail(user.email, `${user.firstName || ''} ${user.lastName || ''}`.trim(), token, userPermission.portalId, false, 'reset');
     }
 
     return NextResponse.json({

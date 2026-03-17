@@ -7,12 +7,15 @@ import { IsNotEmpty, ValidateIf } from "class-validator";
 import { UserRole } from "@/config/constants";
 
 export @Entity("users")
- class Users extends BaseTable {
+class Users extends BaseTable {
   @Column({ type: "nvarchar", length: 255, unique: true })
   email;
 
   @Column({ type: "nvarchar", length: 255 })
-  name;
+  firstName;
+
+  @Column({ type: "nvarchar", length: 255 })
+  lastName;
 
   @Column({ type: "nvarchar", length: 255, nullable: true })
   portalId;
@@ -58,7 +61,7 @@ export @Entity("users")
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   collaborationIds;
 
-  @Column({ type:"bit", nullable: false, default: 0})
+  @Column({ type: "bit", nullable: false, default: 0 })
   isOnboardingRequired;
 
   // Make fields optional for super_admin and required for admin/user roles

@@ -128,7 +128,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
                           index % 2 === 0 ? "bg-white" : "bg-gray-50"
                         } hover:bg-gray-100 transition`}
                       >
-                        <td className="py-3 px-4">{task?.user?.name}</td>
+                        <td className="py-3 px-4">{task?.user?.firstName}</td>
                         <td className="py-3 px-4">{task?.type}</td>
                         <td className="py-3 px-4">{task?.title}</td>
                         <td className="py-3 px-4">{task?.status}</td>

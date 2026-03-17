@@ -485,8 +485,8 @@ const AdministratorStep = ({ formData, setFormData }) => {
         // Populate the formData with fetched user details
         setFormData({
           ...formData,
-          firstName: userData.name.split(" ")[0] || "",
-          lastName: userData.name.split(" ")[1] || "",
+          firstName: userData.firstName || "",
+          lastName: userData.lastName || "",
           jobTitle: userData.title || "",
           phoneNumber: userData.phoneNo || ""
           // permissions: userData?.permissions || {}, // Pre-populate permissions if available
