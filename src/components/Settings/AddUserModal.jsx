@@ -389,6 +389,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
     // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     //   <div className="bg-white rounded-lg p-6 w-full max-w-md">
     <form onSubmit={handleSubmit} className={`space-y-4 ${from === 'editProfile' ? "mt-2" : ""}`}>
+      <div className="px-6 space-y-4">
       <div className="flex gap-4 w-full">
         <div className="w-1/2">
           <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
@@ -406,10 +407,11 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
         <div className="w-1/2">
           <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
             <User className="h-4 w-4" />
-            Last Name
+            Last Name <span className="text-red-600">*</span>
           </label>
           <input
             type="text"
+            required
             className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
             value={formData.lastName}
             onChange={(e) => handleFormChange("lastName", e.target.value)}
@@ -561,7 +563,8 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           </div>
         )}
       </div>
-      <div className="flex justify-end space-x-3">
+      </div>
+      <div className="flex justify-end space-x-3 sticky bottom-0 bg-white border-t p-4">
         {/* <button
               type="button"
               onClick={handleModalClose}
@@ -587,7 +590,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           from === "editProfile" ? (
             <Button
               onClick={handelUpdateProfile}
-              disabled={isLoading || !isFormChanged()}
+              disabled={isLoading || !isFormChanged() || !formData.firstName || !formData.lastName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
               isLoading={isLoading}
               type="Primary"
               label="Update"
@@ -595,7 +598,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           ) : (
             <Button
               onClick={handelNext}
-              disabled={isLoading || !formData.firstName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
+              disabled={isLoading || !formData.firstName || !formData.lastName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
               isLoading={isLoading}
               type="Primary"
               label="Next"
@@ -1045,7 +1048,7 @@ if (!isOpen) return ;
               {from === 'editProfile' ? "Edit Profile" : "Add New User"}
             </h2>
             <button
-              onClick={handleClose}
+              onClick={handleModalClose}
               className="text-gray-400 hover:text-gray-500"
             >
               <X className="h-6 w-6" />
@@ -1067,7 +1070,7 @@ if (!isOpen) return ;
               </div>
             )
           }
-          <div className="w-full px-6 pb-6 max-h-[72vh] overflow-y-auto">{getActiveStepContent()}</div>
+          <div className="w-full max-h-[72vh] overflow-y-auto">{getActiveStepContent()}</div>
         </div>
       </div>
     </>

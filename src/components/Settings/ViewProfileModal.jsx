@@ -104,6 +104,23 @@ function ViewProfileModal({
     });
   };
 
+  const isFormValid = () => {
+    // Check all required fields are filled
+    return (
+      formData.firstName &&
+      formData.firstName.trim() !== "" &&
+      formData.lastName &&
+      formData.lastName.trim() !== "" &&
+      formData.email &&
+      formData.email.trim() !== "" &&
+      formData.title &&
+      formData.title.trim() !== "" &&
+      formData.companyName &&
+      formData.companyName.trim() !== "" &&
+      formData.role
+    );
+  };
+
   useEffect(() => {
     setFormData({
       id: user?.id || "",
@@ -365,10 +382,11 @@ function ViewProfileModal({
                 <div className="w-1/2">
                   <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
                     <User className="h-4 w-4" />
-                    Last Name
+                    Last Name <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="text"
+                    required
                     className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
                     value={formData.lastName}
                     onChange={(e) => handleFormChange("lastName", e.target.value)}
@@ -470,7 +488,8 @@ function ViewProfileModal({
                   </div>
                 )}
               </div>
-              <div className="flex flex-wrap justify-between gap-2">
+            </div>
+              <div className="flex flex-wrap justify-between gap-2 sticky bottom-0 bg-white border-t p-4">
                 <Button
                   type="Secondary"
                   onClick={handleModelClose}
@@ -483,7 +502,6 @@ function ViewProfileModal({
                       setIsDeleteModalOpen(user);
                       setEnteredEmail("");
                       setError("");
-                      handleModelClose();
                     }}
                     disabled={loggedInUser?.id === user?.id || isLoading}
                     isLoading={isDeleteLoading}
@@ -492,14 +510,13 @@ function ViewProfileModal({
                   />
                   <Button
                     onClick={handelUpdateProfile}
-                    disabled={isLoading || !isFormChanged() || isDeleteLoading}
+                    disabled={isLoading || !isFormChanged() || !isFormValid() || isDeleteLoading}
                     isLoading={isLoading}
                     type="Primary"
                     label="Update"
                   />
                 </div>
               </div>
-            </div>
           </Dialog.Panel>
         </div>
       </Dialog>
