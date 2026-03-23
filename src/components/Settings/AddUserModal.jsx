@@ -8,7 +8,6 @@ import { toast } from "react-toastify";
 import { UserRole } from "@/config/constants";
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
-import { setCurrentUser } from "@/store/services/userService";
 
 const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, setFormData, handleModalClose, from }) => {
 
@@ -368,8 +367,6 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
       delete updatedUserData.companyName;
       delete updatedUserData.logo;
 
-      dispatch(setCurrentUser(updatedUserData));
-
       // ✅ Optional: show success toast or update local user state
       console.log("User updated:", result.user);
       toast.success("Profile updated successfully");
@@ -564,7 +561,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
         )}
       </div>
       </div>
-      <div className="flex justify-end space-x-3 sticky bottom-0 bg-white border-t p-4">
+      <div className="flex justify-end space-x-3 sticky bottom-0 bg-white border-t p-4 rounded-b-lg">
         {/* <button
               type="button"
               onClick={handleModalClose}
@@ -748,7 +745,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
   };
 
   return (
-    <>
+    <div className="p-6">
       {/* Permissions */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -916,7 +913,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
           label="Add User"
         />
       </div>
-    </>
+    </div>
   )
 }
 
@@ -977,7 +974,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
     const isActive = currentStep === step;
 
     return (
-      <div className="flex items-center w-40">
+      <div className="flex items-center w-30">
         <div
           className={`
           w-8 h-8 rounded-full flex items-center justify-center border
@@ -1041,7 +1038,7 @@ if (!isOpen) return ;
   };
   return (
     <>
-      <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg  w-full max-w-2xl">
           <div className="flex justify-between items-center border-b px-4 pt-4 pb-3">
             <h2 className="text-xl text-gray-800 font-semibold">
@@ -1056,8 +1053,8 @@ if (!isOpen) return ;
           </div>
           {
             from !== 'editProfile' && (
-              <div ref={scrollContainerRef} className="px-6 py-4 overflow-auto flex w-full sm:justify-center">
-                <div className="flex justify-between items-center space-x-8">
+              <div ref={scrollContainerRef} className="px-6 py-4 flex w-full justify-center">
+                <div className="flex justify-between items-center space-x-2 md:space-x-8">
                   {[0, 1].map((step) => (
                     <div key={step} className="flex items-center" ref={(el) => (stepRefs.current[step] = el)}>
                       <WizardStep step={step} currentStep={activeStepIndex} />
@@ -1070,7 +1067,7 @@ if (!isOpen) return ;
               </div>
             )
           }
-          <div className="w-full max-h-[72vh] overflow-y-auto">{getActiveStepContent()}</div>
+          <div className="w-full max-h-[72vh] overflow-y-auto hidden-scrollbar">{getActiveStepContent()}</div>
         </div>
       </div>
     </>

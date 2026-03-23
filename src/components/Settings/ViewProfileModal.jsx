@@ -8,7 +8,6 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../Common/Elements/Button";
-import { setCurrentUser } from "@/store/services/userService";
 import { useDispatch } from "react-redux";
 
 const filterRole = (user, portalId) => {
@@ -222,8 +221,6 @@ function ViewProfileModal({
       delete updatedUserData.companyName;
       delete updatedUserData.logo;
 
-      dispatch(setCurrentUser(updatedUserData));
-
       toast.success("Profile updated successfully");
       if (typeof onSumbit === "function") {
         await Promise.resolve(onSumbit());
@@ -348,7 +345,7 @@ function ViewProfileModal({
         <DialogBackdrop className="fixed inset-0 bg-black/30 overflow-y-hidden" />
         <div className="fixed inset-0 flex items-center justify-center">
           <Dialog.Panel className="mx-2 w-full max-w-2xl max-h-[90vh] overflow-y-auto hidden-scrollbar rounded-xl bg-white shadow-xl">
-            <div className="flex justify-between items-center border-b px-8 py-4 sticky top-0 bg-white">
+            <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white">
               <Dialog.Title className="text-xl text-gray-600 font-medium">
                 Profile
               </Dialog.Title>
@@ -489,14 +486,13 @@ function ViewProfileModal({
                 )}
               </div>
             </div>
-              <div className="flex flex-wrap justify-between gap-2 sticky bottom-0 bg-white border-t p-4">
-                <Button
+              <div className="flex flex-wrap justify-end gap-2 sticky bottom-0 bg-white border-t p-4">
+                {/* <Button
                   type="Secondary"
                   onClick={handleModelClose}
                   disabled={isLoading || isDeleteLoading}
                   label="Cancel"
-                />
-                <div className="flex flex-wrap justify-center gap-2">
+                /> */}
                   <Button
                     onClick={() => {
                       setIsDeleteModalOpen(user);
@@ -515,7 +511,7 @@ function ViewProfileModal({
                     type="Primary"
                     label="Update"
                   />
-                </div>
+               
               </div>
           </Dialog.Panel>
         </div>

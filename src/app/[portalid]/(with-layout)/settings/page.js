@@ -142,7 +142,7 @@ function SettingsPage() {
               <button
                 key={id}
                 onClick={() => handleTabClick(id)}
-                className="w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
+                className="w-full flex justify-between items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
                 style={{
                   backgroundColor: isActive ? accentColor : "transparent",
                   color: isActive ? primaryColor : "#3f3f46",

@@ -694,7 +694,7 @@ function FolderExplorer({
                   />
                 </td>
                 <td
-                  className="py-3"
+                  className={`py-3 ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                   onClick={() =>
                     file.type === "folder" && handleFolderClick(file)
                   }
@@ -862,7 +862,7 @@ function FolderExplorer({
                       onClick={() =>
                         file.type === "folder" && handleFolderClick(file)
                       }
-                      className="cursor-pointer"
+                      className={`${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                     >
                       <div className="flex items-center gap-2">
                         {file.type === "folder" ? (

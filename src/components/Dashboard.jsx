@@ -854,7 +854,9 @@ function Dashboard({ fileType }) {
                           handleSuggestionClick(item);
                         }}
                         key={item.id}
-                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${
+                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition ${
+                          item.type === "folder" ? "cursor-pointer" : "cursor-default"
+                        } ${
                           suggestions.length - 1 === index
                             ? "rounded-bl-[30px] rounded-br-[30px]"
                             : ""

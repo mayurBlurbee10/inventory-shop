@@ -330,7 +330,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                 </div>
               ))
             ) : (
-              <div className="w-full flex justify-center text-gray-800 text-sm"><p>No replies yet</p></div>
+              <div className="w-full flex justify-center text-gray-800 text-sm p-3"><p>No replies yet</p></div>
             )}
           </div>
           {isReplying && (

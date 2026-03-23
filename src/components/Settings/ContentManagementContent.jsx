@@ -338,22 +338,22 @@ const ContentManagementContent = ({
   };
 
   const handleLinkChange = (index, field, value) => {
-    const updatedLinks = linkFields.map((item, idx) =>
+    const updatedLinks = linkFields?.map((item, idx) =>
       idx === index ? { ...item, [field]: value } : item
     );
     setLinkFields(updatedLinks);
   };
 
   const handleRemoveLinkField = (index) => {
-    const updatedLinks = linkFields.filter((_, idx) => idx !== index);
+    const updatedLinks = linkFields?.filter((_, idx) => idx !== index);
     setLinkFields(updatedLinks);
   };
 
   const handleAddLinkField = () => {
     if (
-      linkFields.length < 10 &&
-      linkFields[linkFields.length - 1].label != "" &&
-      linkFields[linkFields.length - 1].link != ""
+      linkFields?.length < 10 &&
+      linkFields[linkFields?.length - 1].label != "" &&
+      linkFields[linkFields?.length - 1].link != ""
     ) {
       setLinkFields([...linkFields, { label: "", link: "" }]);
     }

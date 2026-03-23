@@ -1365,7 +1365,7 @@ function Documents({
                             handleSuggestionClick(item);
                           }}
                           key={item.id}
-                          className={`flex items-center px-4 py-2 hover:bg-gray-100 transition relative cursor-pointer`}
+                          className={`flex items-center px-4 py-2 hover:bg-gray-100 transition relative ${item.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                         >
                           <span className="mr-2">
                             {item.type === "folder" ? (
@@ -1531,8 +1531,8 @@ function Documents({
                 onChange={handleFileSelect}
                 multiple
               />
-
-              <div className={` ${isFilesLoading === true ? "visible" : "hidden"}`}>
+    
+              <div className={` ${isFilesLoading || isLoading === true ? "visible" : "hidden"}`}>
                 <LinearProgress />
               </div>
 

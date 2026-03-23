@@ -994,7 +994,7 @@ function SharedFolderExplorer({
 
                         <td className="py-1">
                           <button
-                            className="text-sm text-black font-lato group-hover:text-[#1a5976] max-w-64 w-full text-start mx-4"
+                            className={`text-sm text-black font-lato group-hover:text-[#1a5976] max-w-64 w-full text-start mx-4 ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                             onClick={() =>
                               file?.type === "folder" && handleFolderClick(file)
                             }
@@ -1231,7 +1231,7 @@ function SharedFolderExplorer({
                       className={`border border-[#e8e8e8] card-shadow hover:border-sky-500`}
                     >
                       <div
-                        className="min-h-48 flex items-center justify-center bg-[#fbfbfb] cursor-pointer"
+                        className={`min-h-48 flex items-center justify-center bg-[#fbfbfb] ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                         onClick={() =>
                           file?.type === "folder" && handleFolderClick(file)
                         }
