@@ -425,7 +425,7 @@ const ShareModal = ({
                       className="text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group grid grid-cols-2"
                     >
                       <div className="flex items-center">
-                        {content?.user.firstName}
+                        {content?.user.name}
                       </div>
                       <div className="flex items-center justify-between">
                         <select
