@@ -56,7 +56,7 @@ const ShareModal = ({
   user,
 }) => {
   const params = useParams();
-  const [userID, setUserID] = useState("");
+  const [userID, setUserID] = useState(null);
   const [copied, setCopied] = useState(false);
   const [userList, setUserList] = useState([]);
   const [role, setRole] = useState("viewer");
@@ -117,6 +117,12 @@ const ShareModal = ({
     try {
       // setCollabLoading(true);
       setSendButtonLoading(true);
+      
+      // Ensure userID is not empty and has the required value property
+      if (!userID || !userID.value) {
+        throw new Error("Please select a user to share with");
+      }
+      
       const obj = {
         method: "POST",
         headers: {
@@ -145,12 +151,13 @@ const ShareModal = ({
         isForAdd: true,
         type: item?.type,
       });
-      setUserID("");
+      setUserID(null); // Reset to null for react-select
       toast.success("File shared successfully");
     } catch (error) {
       toast.error(error.message);
       console.error("Add Collaborator error:", error);
       setCollabLoading(false);
+      setSendButtonLoading(false);
     }
   };
 
@@ -232,13 +239,13 @@ const ShareModal = ({
         collaborator[collabIndex] = {
           id: collab.id,
           role: collab.role,
-          user: { firstName: user.firstName, lastName: user.lastName, id: user.boxUserId },
+          user: { name: user.email, id: user.boxUserId },
         };
       } else {
         collaborator.push({
           id: collab.id,
           role: role,
-          user: { firstName: user.firstName, lastName: user.lastName, id: user.boxUserId },
+          user: { name: user.email, id: user.boxUserId },
         });
       }
     } else {
@@ -701,14 +708,14 @@ function SharedFolderExplorer({
   const getUserName = (file) => {
     if (file?.collaborators?.length > 0 && file.type == "folder") {
       const findeduser = usersList.find(
-        (user) => user.email == file.collaborators[0].user.firstName
+        (user) => user.email == file.collaborators[0].user.name
       );
-      return findeduser ? findeduser.firstName : file.collaborators[0].user.firstName;
+      return findeduser ? findeduser.email : file.collaborators[0].user.name;
     } else if (file.type == "file" && file.description != "") {
       const findeduser = usersList.find(
         (user) => user.email == file.description
       );
-      return findeduser ? findeduser.firstName : file.description;
+      return findeduser ? findeduser.email : file.description;
     } else {
       return "";
     }
