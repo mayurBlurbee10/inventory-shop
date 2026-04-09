@@ -1,20 +1,25 @@
-import { X, Phone, FileSearch, Calculator } from "lucide-react";
+import { X, Phone, FileSearch, Calculator, Upload, Image, Video, File, XCircle } from "lucide-react";
 import React, { useState } from "react";
 import Button from "./Common/Elements/Button";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 function TechSupport({ isOpen, onClose }) {
-  const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
     issueType: "bug",
     message: "",
   });
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const {data:user}=useSelector((state) => state.user);
 
   const handleModalClose = () => {
     setFormData({
       issueType: "bug",
       message: "",
     });
+    setUploadedFiles([]);
     setError("");
     onClose();
   };
@@ -27,11 +32,86 @@ function TechSupport({ isOpen, onClose }) {
     });
   };
 
+    const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'video/mp4', 'video/avi', 'video/mov', 'video/wmv'];
+    const maxSize = 50 * 1024 * 1024; // 50MB
+
+    const validFiles = files.filter(file => {
+      if (!validTypes.includes(file.type)) {
+        setError(`Invalid file type: ${file.name}. Only PDF, images, and videos are allowed.`);
+        return false;
+      }
+      if (file.size > maxSize) {
+        setError(`File too large: ${file.name}. Maximum size is 50MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    // Store files directly for FormData submission
+    setUploadedFiles(prev => [...prev, ...validFiles]);
+    setError("");
+  };
+
+  const removeFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(false);
-    handleModalClose();
+    setLoading(true);
+    
+    try {
+      const submitterEmail = user?.email || '';
+      const submitterName = user?.firstName + ' ' + user?.lastName || '';
+      
+      // Create FormData for multipart/form-data submission
+      const requestData = new FormData();
+      requestData.append('subject', formData.issueType);
+      requestData.append('message', formData.message);
+      requestData.append('submitterEmail', submitterEmail);
+      requestData.append('submitterName', submitterName);
+      
+      // Append files to FormData
+      uploadedFiles.forEach(file => {
+        requestData.append('files', file);
+      });
+
+      // Call backend Zendesk API
+      const response = await fetch('/api/zendesk', {
+        method: 'POST',
+        body: requestData // Browser sets Content-Type automatically for FormData
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setError('');
+        setLoading(false);
+        handleModalClose();
+        toast.success('Support ticket created successfully!');
+      } else {
+        throw new Error(result.error || 'Failed to create ticket');
+      }
+      
+    } catch (error) {
+      console.error('Error submitting to Zendesk:', error);
+      setError('Failed to submit support request. Please try again.');
+    } finally {
+      setLoading(false);
+      setUploadedFiles([]);
+      setError('');
+    }
   };
 
   const handleActionButton = (action) => {
@@ -97,6 +177,100 @@ function TechSupport({ isOpen, onClose }) {
                 placeholder="Please describe your issue or request..."
               ></textarea>
             </div>
+
+              <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Attachments
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              <input
+                type="file"
+                id="file-upload"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.wmv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer flex flex-col items-center"
+              >
+                <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                <span className="text-sm text-gray-600">
+                  Click to upload or drag and drop
+                </span>
+                <span className="text-xs text-gray-500 mt-1">
+                  PDF, Images, Videos (MAX. 50MB)
+                </span>
+              </label>
+            </div>
+
+            {uploadedFiles.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <div className="">
+                  {uploadedFiles.length > 0 && (
+                    <div className="mt-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-semibold text-gray-700">
+                             Uploaded file{uploadedFiles.length > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                       
+                      </div>
+
+                      <div className="w-full flex flex-col gap-2">
+                        {uploadedFiles.map((file, index) => {
+                          const fileIcon = file.type.startsWith('image/') ? <Image/> :
+                            file.type.startsWith('video/') ? <Video/> :
+                              file.type === 'application/pdf' ? <File/> : <File/>;
+
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                            >
+                              <div className="flex items-center gap-3 flex-1 ">
+                                <div className="text-2xl text-gray-600">{fileIcon}</div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-800 truncate">
+                                    {file.name}
+                                  </p>
+                                  <div className="flex items-center gap-3 mt-1">
+                                    <span className="text-xs text-gray-500">
+                                      {formatFileSize(file.size)}
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                      •
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {file.type.split('/')[1]?.toUpperCase() || 'FILE'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => removeFile(index)}
+                                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                  title="Remove file"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
             <div className="flex justify-end space-x-4">
               <Button
