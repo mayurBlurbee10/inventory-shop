@@ -7,6 +7,7 @@ import { Plugins } from "@/entities/Plugins";
 import { Portals } from "@/entities/Portals";
 import { Tasks } from "@/entities/Tasks";
 import { Users } from "@/entities/Users";
+import { NdaAgreements } from "@/entities/NdaAgreements";
 import { DataSource } from "typeorm";
 
 export const AppDataSource = new DataSource({
@@ -15,7 +16,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [ApiLogs, ContentManagement, Portals, Users, Plugins, Pages, Tasks, Messages, CheckLists],
+  entities: [ApiLogs, ContentManagement, Portals, Users, Plugins, Pages, Tasks, Messages, CheckLists, NdaAgreements],
   logging: true,
   synchronize: true,
   options: {

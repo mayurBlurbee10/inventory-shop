@@ -13,11 +13,13 @@ const excludedRoutes = {
   '/api/plugins': ['GET'],
   '/api/box/files/proxy-file': ['GET'],
   '/api/users/resendInviteLink': ['POST'],
+   '/api/nda-agreements': ['GET'],
 };
 
 const publicRoutes = [
   '/api/upload/',
   '/api/auth',
+  '/api/box/preview',
 ];
 
 export function middleware(request) {

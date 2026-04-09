@@ -75,6 +75,7 @@ async function prepareUserData(mainUser, userData, createdBy) {
       logo: userData.logo,
     },
     permissions: [userData.permissions],
+    ndaPages: userData.ndaPages || null,
     resetPasswordToken: token,
     isOnboardingRequired: userData.isOnboardingRequired,
     createdBy,

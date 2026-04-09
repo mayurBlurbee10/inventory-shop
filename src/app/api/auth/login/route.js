@@ -263,6 +263,7 @@ export async function POST(request) {
       isTNCAccepted: user.isTNCAccepted,
       title: user.title,
       phoneNo: user.phoneNo,
+      ndaPages: user.ndaPages,
     };
 
     if (portalCreatedAdmin) {

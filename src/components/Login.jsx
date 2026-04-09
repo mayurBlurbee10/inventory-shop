@@ -57,6 +57,7 @@ function Login() {
   // const [user, setUser] = useState(null);
   const [isTNCOpen, setIsTNCOpen] = useState(false);
   const [tncPage, setTncPage] = useState(null);
+  const [ndaPages, setNdaPages] = useState([]);
 
   const { data: config } = useSelector((state) => state.portal);
   const { data: content } = useSelector((state) => state.content);
@@ -98,33 +99,44 @@ function Login() {
     }
   };
 
-  const fetchPage = async () => {
+  const fetchNdaPages = async () => {
     try {
-      setIsLoading(true);
-      const encodedPage = encodeURIComponent(`t&c`);
       const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedPage}`,
+        `/api/nda-agreements?portalId=${params?.portalid}`,
         {},
-        "fetch-page"
+        "fetch-nda-agreements"
       );
       if (!response.ok) {
+        setNdaPages([]);
+        setTncPage(null);
         return;
       }
       const data = await response.json();
-      if (!data || (data && data?.length === 0)) {
-        setTncPage(null);
-        return;
-      }
-      if (data?.data.length > 0 && data?.data[0].pages.length > 0) {
-        setTncPage(data?.data[0].pages[0]);
-      } else {
-        setTncPage(null);
-      }
+      const pages = data?.data || [];
+      setNdaPages(pages);
+      setTncPage(pages.find((page) => page?.isDefault) || null);
     } catch (error) {
-      console.error("Error fetching plugins:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching NDA pages:", error);
+      setNdaPages([]);
+      setTncPage(null);
     }
+  };
+
+  const resolveNdaPageForUser = (userData, pages = []) => {
+    if (!pages.length) {
+      return null;
+    }
+
+    if (userData?.ndaPages) {
+      const userAssignedPage = pages.find(
+        (page) => page?.id === userData.ndaPages
+      );
+      if (userAssignedPage) {
+        return userAssignedPage;
+      }
+    }
+
+    return pages.find((page) => page?.isDefault) || null;
   };
 
   const validateUserAccess = async (user, config, portalId) => {
@@ -223,7 +235,7 @@ function Login() {
     };
     fetchConfig();
     fetchContent();
-    fetchPage();
+    fetchNdaPages();
   }, []);
 
   const handleLogin = async (e) => {
@@ -253,20 +265,22 @@ function Login() {
 
       // Store user data using auth utility
       const userData = data.user;
-      const pageToRedirect = await fetchPlugins();
-      if (userData && tncPage && !userData?.isTNCAccepted) {
-        setIsTNCOpen(true);
-      }
+      userData.isTNCAccepted = false;
+      const selectedNdaPage = resolveNdaPageForUser(userData, ndaPages);
+      setTncPage(selectedNdaPage);
+
       console.log("Storing user data:", userData);
-      setUserData(userData);
-      dispatch(setCurrentUser(userData));
+      // setUserData(userData);
+      dispatch(setCurrentUser({ ...userData, portalId: params?.portalid }));
+      setUserData({ ...userData, portalId: params?.portalid });
       // localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
-
-      if (!tncPage || (tncPage && userData?.isTNCAccepted)) {
-        const targetRoute = pageToRedirect?.title;
-        router.push(targetRoute);
-        toast.success(`Redirecting to ${pageToRedirect?.pageTitle}`);
+      if (userData && selectedNdaPage && !userData?.isTNCAccepted) {
+        setIsTNCOpen(true);
+      }
+      if (!selectedNdaPage || (selectedNdaPage && userData?.isTNCAccepted)) {
+        router.push("dashboard");
+        toast.success("Redirecting to dashboard");
       }
     } catch (err) {
       console.error("Login error:", err);

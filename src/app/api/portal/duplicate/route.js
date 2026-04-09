@@ -7,6 +7,7 @@ import permissionService from "@/services/permissionService";
 import pluginService from "@/services/pluginService";
 import pageService from "@/services/pageService";
 import { existingPages } from "@/app/lib/data/existingPages";
+import ndaAgreementService from "@/services/ndaAgreementService";
 
 function sanitizeName(name) {
   let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
@@ -97,6 +98,8 @@ export async function POST(req) {
       portalId: sanitizeName(legalName),
       createdBy: createdBy,
     });
+
+    await ndaAgreementService.createDefaultAgreements(sanitizeName(legalName));
     
     const items = existingPages;
     let results = [];

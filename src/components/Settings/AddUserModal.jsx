@@ -8,6 +8,21 @@ import { toast } from "react-toastify";
 import { UserRole } from "@/config/constants";
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
+import Select from "react-select";
+
+
+const customStyles = {
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 1000,
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      zIndex: 1000,
+      maxHeight: "150px",
+      overflowY: "auto",
+    }),
+  };
 
 const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, setFormData, handleModalClose, from }) => {
 
@@ -24,6 +39,8 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [ndaPages, setNdaPages] = useState(null);
+  const [isNdaPagesLoading, setIsNdaPagesLoading] = useState(false);
   const{data:user} = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [initialFormData, setInitialFormData] = useState({
@@ -83,6 +100,34 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
       [key]: val,
     });
   };
+
+   const fetchNdaPages = async () => {
+    try {
+      setIsNdaPagesLoading(true);
+      const url = `/api/nda-agreements?portalId=${params.portalid}`;
+      const response = await fetchWrapper(url, {}, "fetch-nda-agreements");
+      if (!response.ok) {
+        throw new Error("Failed to fetch NDA pages");
+      }
+      const data = await response.json();
+
+      // Transform data for select dropdown
+      const transformedPages = (data?.data || []).map((page) => ({
+        value: page.id,
+        label: page.title,
+      }));
+
+      setNdaPages(transformedPages);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsNdaPagesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNdaPages();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -521,7 +566,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
 
           </div> */}
       <div>
-        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <UserPlus className="h-4 w-4" />
           Role <span className="text-red-600">*</span>
         </label>
@@ -537,6 +582,28 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           <option value={UserRole.MODERATOR}>Moderator</option>
         </select>
       </div>
+      <div>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <Briefcase className="h-4 w-4" />
+            NDA Pages
+          </label>
+          <Select
+            className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
+            classNamePrefix="Choose NDA pages"
+            isClearable={true}
+            isSearchable={true}
+            value={formData.ndaPages ? ndaPages?.find(page => page.value === formData.ndaPages) : null}
+            onChange={(e) => {
+              handleFormChange("ndaPages", e ? e.value : null);
+            }}
+            options={ndaPages || []}
+            isLoading={isNdaPagesLoading}
+            loadingMessage={() => "Fetching NDA pages..."}
+            placeholder="Select NDA pages..."
+            isDisabled={from === "editProfile"}
+            styles={customStyles}
+          />
+        </div>
       <div>
         <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
           <Image className="h-4 w-4" />
@@ -704,6 +771,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
           portalId: params.portalid,
           role: formData.role,
         },
+        ndaPages: formData.ndaPages,
       };
 
       // Save user data
@@ -930,6 +998,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
     companyName: from === 'editProfile' ? user.company?.name || "" : "",
     role: from === 'editProfile' ? user.role || UserRole.USER : UserRole.USER,
     logo: from === 'editProfile' ? user.company?.logo || null : null,
+    ndaPages: from === "editProfile" ? user.ndaPages || null : null,
   });
 
 
@@ -1031,6 +1100,7 @@ if (!isOpen) return ;
       companyName: "",
       role: "user",
       logo: null,
+      ndaPages: null,
     });
     setError("");
     onClose();

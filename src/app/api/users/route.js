@@ -145,6 +145,7 @@ export async function POST(request) {
         lastName: userData.lastName || "",
         role: userData.role,
         phoneNo: userData.phoneNo,
+        ndaPages: userData.ndaPages || null,
         // permissions: userData.permissions, //updated Field
       };
 
@@ -236,6 +237,7 @@ export async function POST(request) {
       // createdAt: new Date().toISOString(),
       role: userData.role,
       permissions: [userData.permissions],
+      ndaPages: userData.ndaPages || null,
     };
 
     if (
@@ -356,7 +358,10 @@ export async function PATCH(request) {
       );
     }
 
-    const updatedUser = await userService.updateUser(id, updatedData);
+    const updatedUser = await userService.updateUser(id, {
+      ...updatedData,
+      ndaPages: updatedData.ndaPages || null
+    });
 
     return NextResponse.json({
       message: "User updated successfully",

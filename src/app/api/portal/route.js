@@ -16,6 +16,7 @@ import contentManagementService from "@/services/contentManagementService";
 import checkListService from "@/services/checkListService";
 import taskService from "@/services/taskService";
 import pageService from "../../../services/pageService";
+import ndaAgreementService from "@/services/ndaAgreementService";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 
@@ -86,6 +87,7 @@ export async function POST(req) {
     await resetService.createSampleMessage(portalId);
     await resetService.createSampleTasks(portalId);
     await pluginService.createTncPlugin(portalId, portal?.portalCreatedAdmin);
+    await ndaAgreementService.createDefaultAgreements(portalId);
     const user = await userService.getUserById(portal?.portalCreatedAdmin);
     await uploadSampleFiles(user?.email, user?.boxUserId, user?.folderId);
 
@@ -246,6 +248,7 @@ export async function DELETE(req) {
     await contentManagementService.deleteAllContent(portalId);
     await checkListService.deleteAllChecklists(portalId);
     await pluginService.deleteAllPlugins(portalId);
+    await ndaAgreementService.deleteByPortalId(portalId);
 
     // Delete the portal
     await portalService.deletePortal(portal.id);

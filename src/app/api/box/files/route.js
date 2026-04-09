@@ -278,22 +278,30 @@ export async function POST(req) {
       );
 
       if (existingFile) {
-        console.log(`File "${file}" already exists, skipping upload.`);
-        const arrayBuffer = await file.arrayBuffer();
-        const base64File = Buffer.from(arrayBuffer).toString("base64");
+        console.log(`File "${file.name}" already exists; creating copy.`);
 
-        let streamObj = {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          base64: base64File, // This allows the frontend to reconstruct the file
-        };
+
+        const copiedFileRes = await newClient.files.copy(
+          existingFile.id,
+          boxFolderId,
+        );
+        const copiedFile = copiedFileRes?.entries?.[0] || copiedFileRes;
+
+        if (!copiedFile?.id) {
+          console.warn("Copy succeeded but no file payload returned:", copiedFileRes);
+          continue;
+        }
+
         duplicateFiles.push({
           id: existingFile.id,
           name: existingFile.name,
-          type: existingFile.type,
-          stream: streamObj,
+          type: "file",
+          copiedFileId: copiedFile?.id,
+          copiedFileName: copiedFile?.name,
         });
+
+        uploadedFiles.push(copiedFile);
+        await logApiCall(req, () => {}, "file-upload-copy", null, copiedFile?.id);
         continue;
       }
 

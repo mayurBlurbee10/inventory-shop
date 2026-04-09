@@ -56,10 +56,9 @@ export const createESign = async (
 
 export async function POST(req) {
   try {
-    await logApiCall(req);
-
+    
     const { fileId, signers, boxUserId, portal, onSameDoc } =
-      await req.json();
+    await req.json();
 
     if (!fileId || !signers || !boxUserId || !portal) {
       return NextResponse.json(

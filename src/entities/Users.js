@@ -20,6 +20,9 @@ class Users extends BaseTable {
   @Column({ type: "nvarchar", length: 255, nullable: true })
   portalId;
 
+  @Column({ type: "nvarchar",length: 255, nullable: true, default: null })
+  ndaPages;
+
   @Column({ type: "simple-json", nullable: true, default: "{}" })
   company;
 

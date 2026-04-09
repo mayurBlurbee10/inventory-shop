@@ -18,6 +18,7 @@ import { setPortal } from "@/store/services/portalService";
 import { setCurrentUser } from "@/store/services/userService";
 import { setPages as setReduxPages } from "@/store/services/pageService";
 import { signOut } from "next-auth/react";
+import TermsAndConditionCreation from "./TermsAndConditionCreation";
 
 const CustomizationContent = () => {
   const params = useParams();
@@ -95,6 +96,9 @@ const CustomizationContent = () => {
         <ProductsContent />
       </div>
       <CheckListContent />
+       <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-4 lg:p-5">
+        <TermsAndConditionCreation />
+      </div>
       <div className="flex items-center justify-end">
         <Button 
           label={"Reset"}

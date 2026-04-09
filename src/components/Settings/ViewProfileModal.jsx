@@ -3,20 +3,44 @@ import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
-import { X, User, Mail, Phone, Briefcase, Shield, Image, Building, UserPlus } from "lucide-react";
+import {
+  X,
+  User,
+  Mail,
+  Phone,
+  Briefcase,
+  Shield,
+  Image,
+  Building,
+  UserPlus,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../Common/Elements/Button";
 import { useDispatch } from "react-redux";
+import Select from "react-select";
+
+const customStyles = {
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 1000,
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      zIndex: 1000,
+      maxHeight: "150px",
+      overflowY: "auto",
+    }),
+  };
 
 const filterRole = (user, portalId) => {
   const permission = user?.permissions?.find(
-    (item) => item.portalId === portalId
+    (item) => item.portalId === portalId,
   );
   if (!permission) {
     const superadminpermission = user?.permissions?.find(
-      (item) => item.role === UserRole?.SUPER_ADMIN
+      (item) => item.role === UserRole?.SUPER_ADMIN,
     );
     if (superadminpermission) {
       return superadminpermission?.role;
@@ -41,6 +65,8 @@ function ViewProfileModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isLoadingRoleChange, setIsLoadingRoleChange] = useState(false);
+  const [ndaPages, setNdaPages] = useState(null);
+  const [isNdaPagesLoading, setIsNdaPagesLoading] = useState(false);
   const [phoneError, setPhoneError] = useState("");
 
   const [role, setRole] = useState(filterRole(user, params?.portalid));
@@ -55,6 +81,7 @@ function ViewProfileModal({
     companyName: "",
     role: UserRole.USER,
     logo: null,
+    ndaPages: null,
   });
   const [initialFormData, setInitialFormData] = useState({
     id: "",
@@ -66,6 +93,7 @@ function ViewProfileModal({
     companyName: "",
     role: UserRole.USER,
     logo: null,
+    ndaPages: null,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
   const handleModelClose = () => {
@@ -79,6 +107,7 @@ function ViewProfileModal({
       companyName: "",
       role: UserRole.USER,
       logo: null,
+      ndaPages: null,
     });
     setInitialFormData({
       firstName: "",
@@ -89,6 +118,7 @@ function ViewProfileModal({
       companyName: "",
       role: UserRole.USER,
       logo: null,
+      ndaPages: null,
     });
     setPreviewUrl(null);
     setError("");
@@ -131,6 +161,7 @@ function ViewProfileModal({
       companyName: user?.company?.name || "",
       role: user?.role || UserRole.USER,
       logo: user?.company?.logo || null,
+      ndaPages: user?.ndaPages || null,
     });
     setInitialFormData({
       id: user?.id || "",
@@ -142,6 +173,7 @@ function ViewProfileModal({
       companyName: user?.company?.name || "",
       role: user?.role || UserRole.USER,
       logo: user?.company?.logo || null,
+      ndaPages: user?.ndaPages || null,
     });
     setPreviewUrl(user?.company?.logo || "");
   }, [isOpen, user]);
@@ -169,7 +201,7 @@ function ViewProfileModal({
             method: "POST",
             body: uploadData,
           },
-          "user-logo"
+          "user-logo",
         );
 
         if (!uploadResponse.ok) {
@@ -186,6 +218,7 @@ function ViewProfileModal({
           name: formData.companyName,
           logo: logoUrl,
         },
+        ndaPages: formData.ndaPages,
       };
       delete requestData.companyName;
       delete requestData.logo;
@@ -200,7 +233,7 @@ function ViewProfileModal({
       const response = await fetchWrapper(
         "/api/users",
         requestOptions,
-        "update-user"
+        "update-user",
       );
 
       const result = await response.json();
@@ -215,6 +248,7 @@ function ViewProfileModal({
           ...user.company,
           name: formData.companyName,
           logo: logoUrl,
+          ndaPages: formData.ndaPages,
         },
       };
 
@@ -231,6 +265,28 @@ function ViewProfileModal({
       alert("Failed to update profile: " + error.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchNdaPages = async () => {
+    try {
+      setIsNdaPagesLoading(true);
+      const url = `/api/nda-agreements?portalId=${params.portalid}`;
+      const response = await fetchWrapper(url, {}, "fetch-nda-pages");
+      if (!response.ok) {
+        throw new Error("Failed to fetch NDA pages");
+      }
+      const data = await response.json();
+      const transformedPages = (data?.data || []).map((page) => ({
+        value: page.id,
+        label: page.title,
+      }));
+
+      setNdaPages(transformedPages);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsNdaPagesLoading(false);
     }
   };
 
@@ -256,7 +312,7 @@ function ViewProfileModal({
               portalId: params?.portalid,
             }),
           },
-          "delete-user"
+          "delete-user",
         );
 
         const data = await response.json();
@@ -292,6 +348,7 @@ function ViewProfileModal({
     if (user) {
       setRole(filterRole(user, params?.portalid));
     }
+    fetchNdaPages();
   }, [user]);
 
   useEffect(() => {
@@ -461,6 +518,34 @@ function ViewProfileModal({
                   <option value={UserRole.ADMIN}>Admin</option>
                   <option value={UserRole.MODERATOR}>Moderator</option>
                 </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <Briefcase className="h-4 w-4" />
+                  NDA Pages
+                </label>
+                <Select
+                  className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
+                  classNamePrefix="Choose NDA pages"
+                  isClearable={true}
+                  isSearchable={true}
+                  value={
+                    formData.ndaPages
+                      ? ndaPages?.find(
+                          (page) => page.value === formData.ndaPages,
+                        )
+                      : null
+                  }
+                  onChange={(e) => {
+                    handleFormChange("ndaPages", e ? e.value : null);
+                  }}
+                  options={ndaPages || []}
+                  isLoading={isNdaPagesLoading}
+                  loadingMessage={() => "Fetching NDA pages..."}
+                  placeholder="Select NDA pages..."
+                  isDisabled={loggedInUser?.id === user?.id}
+                  styles={customStyles}
+                />
               </div>
               <div>
                 <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
