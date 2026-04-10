@@ -64,12 +64,14 @@ function TNCModal({ onClose, user, email, password, page }) {
     };
   }, [isSignModalOpen, signRequest?.id, fetchSignRequestStatus]);
 
+  const portalPrefix = params?.portalid ? `/${params.portalid}` : "";
+
   const handleClose = async () => {
+    if (!user || !user?.id) {
+      return;
+    }
     try {
       setIsLoading(true);
-      if (!user || !user?.id) {
-        return;
-      }
       const response = await fetchWrapper(
         `/api/users/tncAccept`,
         {
@@ -123,7 +125,7 @@ function TNCModal({ onClose, user, email, password, page }) {
       //   router.push(`onboarding`);
       // } else {
       await fetchWrapper("/api/api-logs", { method: "POST" }, "login");
-      
+
       // Check if user has multiple portals
       const userPermissions = user?.permissions || [];
       const validPermissions = userPermissions.filter(
@@ -132,33 +134,23 @@ function TNCModal({ onClose, user, email, password, page }) {
 
       // If user has multiple portals, redirect to portal selection dashboard
       if (validPermissions.length >= 1 && user?.role !== UserRole.USER) {
-        router.push(`portals-dashboard`);
+        router.push(`${portalPrefix}/portals-dashboard`);
         toast.success("Please select a portal");
         return;
       }
 
-      // If single portal, redirect to that portal's dashboard
-      // if (validPermissions.length === 1) {
-      //   const targetRoute =
-      //     user?.role === UserRole.MODERATOR
-      //       ? `advisor/dashboard`
-      //       : `dashboard`;
-      //   router.push(targetRoute);
-      //   toast.success("Redirecting to dashboard");
-      //   return;
-      // }
-
-      // Fallback to current portal's dashboard
+      // Portal-scoped absolute paths (relative "dashboard" breaks from /[portal]/register)
       const targetRoute =
-        user?.role === UserRole.MODERATOR ? "advisor/dashboard" : "dashboard";
-      router.push(targetRoute);
+        user?.role === UserRole.MODERATOR
+          ? `${portalPrefix}/advisor/dashboard`
+          : `${portalPrefix}/dashboard`;
+      router.push(targetRoute || "/dashboard");
       toast.success("Redirecting to dashboard");
-      // }
     } catch (error) {
       console.error("Error fetching plugins:", error);
+      toast.error(error?.message || "Could not complete acceptance. Try again.");
     } finally {
       setIsLoading(false);
-      onClose();
     }
   };
 

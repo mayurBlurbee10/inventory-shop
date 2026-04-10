@@ -45,7 +45,7 @@ const TermsAndConditionCreation = () => {
     setLoading(true);
     try {
       const response = await fetchWrapper(
-        `/api/nda-agreements?portalId=${params.portalid}&page=${page}&limit=${limit}`,
+        `/api/nda-agreements?portalId=${params.portalid || "root"}&page=${page}&limit=${limit}`,
         {},
         "fetch-nda-agreements",
       );
@@ -137,7 +137,7 @@ const TermsAndConditionCreation = () => {
           },
           body: JSON.stringify({
             agreementId,
-            portalId: params.portalid,
+            portalId: params.portalid || "root",
           }),
         },
         "set-default-nda-agreement",

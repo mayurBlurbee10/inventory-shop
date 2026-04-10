@@ -104,7 +104,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
    const fetchNdaPages = async () => {
     try {
       setIsNdaPagesLoading(true);
-      const url = `/api/nda-agreements?portalId=${params.portalid}`;
+      const url = `/api/nda-agreements?portalId=${params.portalid || "root"}`;
       const response = await fetchWrapper(url, {}, "fetch-nda-agreements");
       if (!response.ok) {
         throw new Error("Failed to fetch NDA pages");

@@ -102,7 +102,7 @@ function Login() {
   const fetchNdaPages = async () => {
     try {
       const response = await fetchWrapper(
-        `/api/nda-agreements?portalId=${params?.portalid}`,
+        `/api/nda-agreements?portalId=${params?.portalid || "root"}`,
         {},
         "fetch-nda-agreements"
       );
@@ -595,10 +595,13 @@ function Login() {
                       type="Login"
                       label="Log In"
                     />
-                    <div className="w-full flex justify-center items-center text-sm mt-2 text-black hover:text-blue-700  cursor-pointer">
+                    <div className="w-full flex justify-center items-center text-sm mt-2 text-black hover:text-blue-700  cursor-pointer mb-2">
                       <p onClick={() => router.push(`forgot-password`)}>
                         Forgot Password?
                       </p>
+                    </div>
+                    <div className="w-full flex justify-center items-center text-sm mt-2 text-black cursor-pointer">
+                      <p onClick={() => router.push(`${params?.portalid ? `/${params.portalid}/register` : "/register"}`)}>Don't have an client account? <span className="text-blue-600 hover:underline">Sign up</span></p>
                     </div>
                   </div>
                 </form>

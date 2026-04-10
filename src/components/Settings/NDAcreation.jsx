@@ -120,7 +120,7 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
     e.stopPropagation();
   };
 
-  const portalId = params?.portalid;
+  const portalId = params?.portalid || "root";
 
   const handleSave = async () => {
     const title = getValues("title")?.trim();
