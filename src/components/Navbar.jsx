@@ -16,6 +16,7 @@ import {
   Ellipsis,
   File,
   Headset,
+  Loader,
   LogOut,
   Settings,
   UserRoundPen,
@@ -53,6 +54,7 @@ function Navbar({ content, config, filterValue }) {
   const [pages, setPages] = useState([]);
   const [customPages, setCustomPages] = useState([]);
   const [isOpenMoreLinksDropdown, setIsOpenMoreLinksDropdown] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   const { data: loanData } = useSelector((state) => state.loans);
   const { data: user } = useSelector((state) => state.user);
@@ -111,8 +113,9 @@ function Navbar({ content, config, filterValue }) {
             <button
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${isActive ? "font-bold" : "text-black"
-                }`}
+              className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
+                isActive ? "font-bold" : "text-black"
+              }`}
               style={isActive ? { color: config?.primaryColor } : {}}
             >
               {title}
@@ -156,6 +159,7 @@ function Navbar({ content, config, filterValue }) {
     dispatch(setCurrentUser(null));
   };
   const handleLogout = async () => {
+    setLogoutLoading(true);
     try {
       // First log the logout action
       await fetchWrapper(
@@ -169,7 +173,7 @@ function Navbar({ content, config, filterValue }) {
             portalId: params?.portalid,
           }),
         },
-        "logout"
+        "logout",
       );
 
       // Then clear user and Redux state
@@ -190,6 +194,8 @@ function Navbar({ content, config, filterValue }) {
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Logout failed");
+    } finally {
+      setLogoutLoading(false);
     }
   };
 
@@ -210,7 +216,7 @@ function Navbar({ content, config, filterValue }) {
       const response = await fetchWrapper(
         `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedPage}`,
         {},
-        "fetch-page"
+        "fetch-page",
       );
       if (!response.ok) {
         throw new Error("Failed to fetch plugins");
@@ -220,16 +226,16 @@ function Navbar({ content, config, filterValue }) {
       const filterPages =
         Array.isArray(data?.data) && data.data.length > 0
           ? data.data[0]?.pages?.filter(
-            (item) => item.isCustomPage === false
-          ) || []
+              (item) => item.isCustomPage === false,
+            ) || []
           : [];
       //  setPages(filterPages);
       dispatch(
         setReduxPages(
           Array.isArray(data?.data) &&
-          data.data.length > 0 &&
-          data.data[0]?.pages
-        )
+            data.data.length > 0 &&
+            data.data[0]?.pages,
+        ),
       );
     } catch (error) {
       console.error("Error fetching plugins:", error);
@@ -251,7 +257,7 @@ function Navbar({ content, config, filterValue }) {
 
   useEffect(() => {
     setUserIsAdmin(
-      user?.role !== UserRole.USER && user?.role !== UserRole.MODERATOR
+      user?.role !== UserRole.USER && user?.role !== UserRole.MODERATOR,
     );
     setUserIsModerator(user?.role === UserRole.MODERATOR);
     fetchPages();
@@ -264,10 +270,10 @@ function Navbar({ content, config, filterValue }) {
     let theme = contentItem
       ? contentItem.theme
       : {
-        fontSize: fontSize?.size,
-        color: "#000000e6",
-        fontWeight: title === "Paragraph" ? 300 : 400,
-      };
+          fontSize: fontSize?.size,
+          color: "#000000e6",
+          fontWeight: title === "Paragraph" ? 300 : 400,
+        };
     return theme;
   };
 
@@ -328,7 +334,7 @@ function Navbar({ content, config, filterValue }) {
                 //   <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
                 // ) :
                 filterValue("Header Text") &&
-                  filterValue("Header Text") !== "Premier Customer Portal"
+                filterValue("Header Text") !== "Premier Customer Portal"
                   ? filterValue("Header Text")
                   : params?.portalid
               }
@@ -463,7 +469,7 @@ function Navbar({ content, config, filterValue }) {
                   className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 `}
                   style={{
                     backgroundColor: config?.secondaryColor,
-                    color: config?.primaryColor
+                    color: config?.primaryColor,
                   }}
                 >
                   {/* {
@@ -472,15 +478,16 @@ function Navbar({ content, config, filterValue }) {
                   {user?.firstName?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div className="flex flex-col text-sm xl:text-base">
-                  <span className="font-medium"
+                  <span
+                    className="font-medium"
                     style={{
-                      color: config?.secondaryColor
+                      color: config?.secondaryColor,
                     }}
                   >
                     {/* {
                       isAdvisorViewOpen ? "Erica Smith" : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
                     } */}
-                    {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
+                    {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
                   </span>
                 </div>
 
@@ -512,7 +519,7 @@ function Navbar({ content, config, filterValue }) {
                           router.push(
                             params.portalid
                               ? `/${params.portalid}/settings?tab=customization`
-                              : "/settings?tab=customization"
+                              : "/settings?tab=customization",
                           )
                         }
                       >
@@ -535,10 +542,17 @@ function Navbar({ content, config, filterValue }) {
                           </button>
                         )} */}
                     <button
-                      onClick={handleLogout}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLogout();
+                      }}
                       className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                     >
-                      <LogOut className="h-5 w-5" />
+                      {logoutLoading ? (
+                        <Loader className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <LogOut className="h-5 w-5" />
+                      )}
                       Sign out
                     </button>
                   </div>
@@ -681,7 +695,10 @@ function Navbar({ content, config, filterValue }) {
                     {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                     <div
                       className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105`}
-                      style={{ backgroundColor: config.secondaryColor, color: config.primaryColor }}
+                      style={{
+                        backgroundColor: config.secondaryColor,
+                        color: config.primaryColor,
+                      }}
                     >
                       {/* {
                         isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.firstName?.charAt(0).toUpperCase() || "U"
@@ -693,7 +710,7 @@ function Navbar({ content, config, filterValue }) {
                         {/* {
                           isAdvisorViewOpen ? "Erica Smith" : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
                         } */}
-                        {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
+                        {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
                       </span>
                     </div>
 
@@ -727,7 +744,7 @@ function Navbar({ content, config, filterValue }) {
                               router.push(
                                 params.portalid
                                   ? `/${params.portalid}/settings`
-                                  : "/settings"
+                                  : "/settings",
                               )
                             }
                           >
@@ -751,10 +768,17 @@ function Navbar({ content, config, filterValue }) {
                               </button>
                             )} */}
                         <button
-                          onClick={handleLogout}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleLogout();
+                          }}
                           className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                         >
-                          <LogOut className="h-5 w-5" />
+                          {logoutLoading ? (
+                            <Loader className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <LogOut className="h-5 w-5" />
+                          )}
                           Sign out
                         </button>
                       </div>

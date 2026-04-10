@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   entities: [ApiLogs, ContentManagement, Portals, Users, Plugins, Pages, Tasks, Messages, CheckLists, NdaAgreements],
-  logging: true,
+  logging: false,
   synchronize: true,
   options: {
     encrypt: true,

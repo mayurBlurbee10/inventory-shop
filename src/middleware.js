@@ -19,7 +19,6 @@ const excludedRoutes = {
 const publicRoutes = [
   '/api/upload/',
   '/api/auth',
-  '/api/box/preview',
 ];
 
 export function middleware(request) {
