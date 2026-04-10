@@ -230,7 +230,7 @@ const TermsAndConditionCreation = () => {
     <div className="p-2">
       <div className="flex sm:flex-row flex-col justify-center sm:justify-between items-center gap-2 pb-5">
         <div className=" text-center sm:text-left">
-          <h3 className="text-lg font-medium text-secondary">NDA Pages</h3>
+          <h3 className="text-lg font-medium text-gray-900">NDA Pages</h3>
           <p className="text-gray-600 text-sm">Manage your NDA agreements.</p>
         </div>
         <Button

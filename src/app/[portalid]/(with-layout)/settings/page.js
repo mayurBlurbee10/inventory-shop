@@ -134,7 +134,7 @@ function SettingsPage() {
       <div className="hidden lg:block w-2/5 md:w-72 border-r h-[calc(100vh-120px)] border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs">
         <h2 className="text-xl text-gray-800 font-semibold mb-6">Tools</h2>
         <nav className="space-y-1">
-          {tabs.map(({ id, label, icon: Icon }) => {
+          {tabs.sort((a, b) => a.label.localeCompare(b.label)).map(({ id, label, icon: Icon }) => {
             const isActive = isTabActive(id);
             const primaryColor = config.primaryColor;
             const accentColor = config?.accentColor || "#ffffff";
@@ -204,7 +204,7 @@ function SettingsPage() {
                 </button>
               </div>
               <nav className="space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
-                {tabs.map(({ id, label, icon: Icon }) => {
+                {tabs.sort((a, b) => a.label.localeCompare(b.label)).map(({ id, label, icon: Icon }) => {
                   const isActive = isTabActive(id);
                   const primaryColor = config.primaryColor;
                   const accentColor = config?.accentColor || "#ffffff";
@@ -251,7 +251,7 @@ function SettingsPage() {
           </div>
         </>
       )}
-      <div className="md:flex-1 min-h-[calc(100vh-120px)] overflow-auto hidden-scrollbar w-full px-4 py-6 lg:p-6">
+      <div className="md:flex-1 min-h-[calc(100vh-120px)] overflow-auto hidden-scrollbar w-full px-6 pt-10">
         {getActiveContent()}
       </div>
     </div>
