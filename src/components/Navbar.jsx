@@ -676,20 +676,13 @@ function Navbar({ content, config, filterValue }) {
                                     ? setIsIntegrateDropdownOpen((prev) => !prev)
                                     : openManagePortalTab(id)
                                 }
-                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${
+                                  isActive ? "bg-gray-200" : "bg-transparent"
+                                } ${
+                                  isActive ? "" : "hover:bg-gray-100"
+                                }`}
                                 style={{
-                                  backgroundColor: isActive ? accentColor : "transparent",
                                   color: isActive ? primaryColor : "#3f3f46",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!isActive) {
-                                    e.currentTarget.style.backgroundColor = `${accentColor}1A`;
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!isActive) {
-                                    e.currentTarget.style.backgroundColor = "transparent";
-                                  }
                                 }}
                               >
                                 <div className="flex items-center space-x-3">
