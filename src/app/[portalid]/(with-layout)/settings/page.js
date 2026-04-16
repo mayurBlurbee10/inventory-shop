@@ -176,7 +176,7 @@ function SettingsPage() {
           })}
         </nav>
       </div>
-      <div
+      {/* <div
         className={`block lg:hidden absolute top-2 left-2 z-10 ${
           isSideBarOpen ? "hidden" : "block"
         }`}
@@ -185,7 +185,7 @@ function SettingsPage() {
           className="w-6 h-6 text-gray-800 cursor-pointer"
           onClick={() => setIsSideBarOpen((prev) => !prev)}
         />
-      </div>
+      </div> */}
       {isSideBarOpen && (
         <>
           {/* Backdrop */}

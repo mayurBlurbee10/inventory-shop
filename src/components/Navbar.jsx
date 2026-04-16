@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import SettingsModal from "./Settings";
 import TechSupport from "./TechSupport";
@@ -11,15 +11,31 @@ import {
   setUserData,
 } from "@/app/lib/auth";
 import {
+  Activity,
+  ArrowLeft,
   Bolt,
+  ChevronDown,
+  ChevronRight,
+  CircleEllipsisIcon,
   CircleUserRound,
+  Database,
   Ellipsis,
+  EllipsisVertical,
   File,
+  FileText,
+  Folder,
   Headset,
+  LayoutDashboard,
+  LayoutDashboardIcon,
   Loader,
   LogOut,
+  Menu,
+  MessageSquare,
+  Plug,
   Settings,
+  SquareActivity,
   UserRoundPen,
+  Users,
 } from "lucide-react";
 import { getSession, signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -47,6 +63,8 @@ function Navbar({ content, config, filterValue }) {
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isOpenNavbar, setIsOpenNavbar] = useState(false);
+  const [isManagePortalView, setIsManagePortalView] = useState(false);
+  const [isIntegrateDropdownOpen, setIsIntegrateDropdownOpen] = useState(false);
   const [isAccountInfoModalOpen, setIsAccountInfoModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const moreLinksDropdownRef = useRef(null);
@@ -60,6 +78,8 @@ function Navbar({ content, config, filterValue }) {
   const { data: user } = useSelector((state) => state.user);
   const { data: pageData } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab");
 
   useEffect(() => {
     setLogo(config?.logo || null);
@@ -298,6 +318,29 @@ function Navbar({ content, config, filterValue }) {
         />
       </div>
     );
+  };
+
+  const portalId = Array.isArray(params?.portalid)
+    ? params.portalid[0]
+    : params?.portalid;
+  const ToolsActive = pathname.includes("/settings");
+  const managePortalTabs = [
+    { id: "customization", label: "Configuration", icon: LayoutDashboardIcon },
+    { id: "identity", label: "Identity Management", icon: Users },
+    { id: "reports", label: "Reports", icon: Activity },
+    { id: "users", label: "User Access", icon: Users },
+  ];
+  const integrateOptions = [{ id: "integrate", label: "Integrate", icon: Plug }];
+
+  const openManagePortalTab = (tabId) => {
+    const settingsUrl = portalId
+      ? `/${portalId}/settings?tab=${encodeURIComponent(tabId)}`
+      : `/settings?tab=${encodeURIComponent(tabId)}`;
+    router.push(settingsUrl);
+    setIsOpenNavbar(false);
+    setAccountDropdown(false);
+    setIsManagePortalView(false);
+    setIsIntegrateDropdownOpen(false);
   };
 
   return (
@@ -567,224 +610,290 @@ function Navbar({ content, config, filterValue }) {
             className="lg:hidden text-text"
             onClick={() => setIsOpenNavbar(true)}
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+           <Menu className="h-6 w-6 text-secondary"/>
           </button>
 
           {isOpenNavbar && (
-            <div className="fixed top-0 right-0 sm:w-2/5 w-1/2 h-full bg-white shadow-lg z-50 p-5 transition-all">
-              {/* Close Icon */}
-              <button
-                className="absolute top-5 left-5 text-gray-600 hover:text-black"
-                onClick={() => {
-                  setIsOpenNavbar(false); // Close navbar
-                  setAccountDropdown(false); // Also close account dropdown
-                }} // Close menu
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-
-              {/* Navbar Content */}
-              <div className="flex flex-col justify-center space-y-4 mt-10">
-                {filterPageVisibility("dashboard") && (
-                  <NavBarItem
-                    title="Dashboard"
-                    href={
-                      params.portalid
-                        ? `/${params.portalid}/dashboard`
-                        : `/dashboard`
-                    }
-                  />
-                )}
-                {/* <NavBarItem
-                      title="My Documents"
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/my-docs`
-                          : "/my-docs"
-                      }
-                    /> */}
-                {filterPageVisibility("shared-docs") && (
-                  <NavBarItem
-                    title="Shared Documents"
-                    href={
-                      params.portalid
-                        ? `/${params.portalid}/shared-docs`
-                        : "/shared-docs"
-                    }
-                  />
-                )}
-                {filterPageVisibility("esignature") && (
-                  <NavBarItem
-                    title="Sign"
-                    href={
-                      params.portalid
-                        ? `/${params.portalid}/esignature`
-                        : "/esignature"
-                    }
-                  />
-                )}
-                {filterPageVisibility("forms") && (
-                  <NavBarItem
-                    title="Forms"
-                    href={
-                      params.portalid ? `/${params.portalid}/forms` : "/forms"
-                    }
-                  />
-                )}
-                {(userIsAdmin || userIsModerator) &&
-                  filterPageVisibility("advisor dashboard") && (
-                    <NavBarItem
-                      title="Advisor Dashboard"
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/advisor/dashboard`
-                          : "/advisor/dashboard"
-                      }
-                      activeRoutes={[
-                        params.portalid
-                          ? `/${params.portalid}/advisor/shared-docs`
-                          : "/advisor/shared-docs",
-                      ]}
-                    />
-                  )}
-                {customPages?.length > 0 &&
-                  customPages?.map((page) => (
-                    <NavBarItem
-                      key={page?.id}
-                      title={
-                        page?.title?.charAt(0).toUpperCase() +
-                        page?.title?.slice(1)
-                      }
-                      href={
-                        params.portalid
-                          ? `/${params.portalid}/${sanitizeName(page?.title)}`
-                          : `/dashboard`
-                      }
-                    />
-                  ))}
-                <div className="flex items-center space-x-2 cursor-pointer">
-                  <div
-                    ref={dropdownRef}
-                    className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
-                    onClick={() => setAccountDropdown((prev) => !prev)}
+            <div className="fixed top-0 right-0 sm:w-2/5 w-4/5 h-full bg-white shadow-lg z-50 transition-all">
+              <div className={`flex items-center pt-5 pr-5 ${isManagePortalView ? "justify-between pl-5" : "justify-end"}`}>
+                {isManagePortalView && (
+                  <button
+                    type="button"
+                    onClick={() => setIsManagePortalView(false)}
+                    className="flex items-center gap-2 px-2 py-2 text-sm text-gray-700 hover:font-semibold"
                   >
-                    {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                    <div
-                      className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105`}
-                      style={{
-                        backgroundColor: config.secondaryColor,
-                        color: config.primaryColor,
-                      }}
-                    >
-                      {/* {
-                        isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.firstName?.charAt(0).toUpperCase() || "U"
-                      } */}
-                      {user?.firstName?.charAt(0).toUpperCase() || "U"}
-                    </div>
-                    <div className="flex flex-col text-sm xl:text-base">
-                      <span className="text-gray-900 font-medium">
-                        {/* {
-                          isAdvisorViewOpen ? "Erica Smith" : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
-                        } */}
-                        {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
-                      </span>
-                    </div>
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                  </button>
+                )}
+                <button
+                  className="text-gray-600 hover:bg-gray-100 rounded-full"
+                  onClick={() => {
+                    setIsOpenNavbar(false);
+                    setAccountDropdown(false);
+                    setIsManagePortalView(false);
+                    setIsIntegrateDropdownOpen(false);
+                  }}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
 
-                    {accountDropdown && (
-                      <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                        <button
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          onClick={() => {
-                            setIsAccountInfoModalOpen((prev) => !prev);
-                            setIsOpenNavbar(false);
-                          }}
-                        >
-                          <CircleUserRound className="h-5 w-5" /> Account Info
-                        </button>
-                        {userIsAdmin && (
-                          <button
-                            onClick={() =>
-                              setIsTechSupportModalOpen((prev) => !prev)
-                            }
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                          >
-                            <Headset className="h-5 w-5" />
-                            Tech Support
-                          </button>
-                        )}
-                        {/* Edit button */}
-                        {userIsAdmin && (
-                          <button
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                            onClick={() =>
-                              router.push(
-                                params.portalid
-                                  ? `/${params.portalid}/settings`
-                                  : "/settings",
-                              )
-                            }
-                          >
-                            <Bolt className="h-5 w-5" />
-                            Tools
-                          </button>
-                        )}
-                        {/* {userIsAdmin && (
+              <div className="flex flex-col items-start h-[calc(100%-3rem)] w-full">
+                {isManagePortalView ? (
+                  <div className="w-full h-full flex flex-col p-5">
+                    <div className="flex justify-between items-center mt-2 mb-4">
+                      <h2 className="text-md text-gray-800 font-semibold">Tools</h2>
+                    </div>
+                    <nav className="space-y-1 overflow-y-auto max-h-[calc(100vh-160px)] w-full">
+                      {managePortalTabs
+                        .slice()
+                        .sort((a, b) => a.label.localeCompare(b.label))
+                        .map(({ id, label, icon: Icon, hasDropdown }) => {
+                          const isActive = hasDropdown
+                            ? isIntegrateDropdownOpen || activeTab === "integrate"
+                            : activeTab === id;
+                          const primaryColor = config?.primaryColor || "#3f3f46";
+                          const accentColor = config?.accentColor || "#ffffff";
+                          return (
+                            <div key={id} className="relative">
                               <button
-                                className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                                type="button"
                                 onClick={() =>
-                                  router.push(
-                                    params.portalid
-                                      ? `/${params.portalid}/advisor/dashboard`
-                                      : "/advisor/dashboard"
-                                  )
+                                  hasDropdown
+                                    ? setIsIntegrateDropdownOpen((prev) => !prev)
+                                    : openManagePortalTab(id)
                                 }
+                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
+                                style={{
+                                  backgroundColor: isActive ? accentColor : "transparent",
+                                  color: isActive ? primaryColor : "#3f3f46",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isActive) {
+                                    e.currentTarget.style.backgroundColor = `${accentColor}1A`;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isActive) {
+                                    e.currentTarget.style.backgroundColor = "transparent";
+                                  }
+                                }}
                               >
-                                <UserRoundPen className="h-5 w-5" /> Advisor
-                                View
+                                <div className="flex items-center space-x-3">
+                                  <Icon
+                                    className="w-5 h-5"
+                                    style={{
+                                      color: isActive ? primaryColor : "#3f3f46",
+                                    }}
+                                  />
+                                  <span className="text-left">{label}</span>
+                                </div>
+                                <div>
+                                  {hasDropdown && (
+                                    <ChevronDown
+                                      className={`w-4 h-4 transition-transform ${
+                                        isIntegrateDropdownOpen ? "rotate-180" : ""
+                                      }`}
+                                      style={{ color: isActive ? primaryColor : "#3f3f46" }}
+                                    />
+                                  )}
+                                </div>
                               </button>
-                            )} */}
+
+                              {hasDropdown && isIntegrateDropdownOpen && (
+                                <div className="mt-1 ml-3">
+                                  {integrateOptions.map(({ id: optionId, label: optionLabel, icon: OptionIcon }) => {
+                                    const isOptionActive = activeTab === optionId;
+                                    return (
+                                      <button
+                                        key={optionId}
+                                        type="button"
+                                        onClick={() => openManagePortalTab(optionId)}
+                                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
+                                        style={{
+                                          backgroundColor: isOptionActive ? accentColor : "transparent",
+                                          color: isOptionActive ? primaryColor : "#3f3f46",
+                                        }}
+                                      >
+                                        <span className="flex items-center gap-3">
+                                          <OptionIcon className="w-4 h-4" />
+                                          {optionLabel}
+                                        </span>
+                                        <ChevronRight className="w-4 h-4" />
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </nav>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col items-start gap-2 w-full p-5">
+                      {filterPageVisibility("dashboard") && (
+                        <NavBarItem
+                          title="Dashboard"
+                          href={
+                            params.portalid
+                              ? `/${params.portalid}/dashboard`
+                              : `/dashboard`
+                          }
+                        />
+                      )}
+                      {filterPageVisibility("shared-docs") && (
+                        <NavBarItem
+                          title="Shared Documents"
+                          href={
+                            params.portalid
+                              ? `/${params.portalid}/shared-docs`
+                              : "/shared-docs"
+                          }
+                        />
+                      )}
+                      {filterPageVisibility("esignature") && (
+                        <NavBarItem
+                          title="Sign"
+                          href={
+                            params.portalid
+                              ? `/${params.portalid}/esignature`
+                              : "/esignature"
+                          }
+                        />
+                      )}
+                      {filterPageVisibility("forms") && (
+                        <NavBarItem
+                          title="Forms"
+                          href={
+                            params.portalid ? `/${params.portalid}/forms` : "/forms"
+                          }
+                        />
+                      )}
+                      {(userIsAdmin || userIsModerator) &&
+                        filterPageVisibility("advisor dashboard") && (
+                          <NavBarItem
+                            title="Advisor Dashboard"
+                            href={
+                              params.portalid
+                                ? `/${params.portalid}/advisor/dashboard`
+                                : "/advisor/dashboard"
+                            }
+                            activeRoutes={[
+                              params.portalid
+                                ? `/${params.portalid}/advisor/shared-docs`
+                                : "/advisor/shared-docs",
+                            ]}
+                          />
+                        )}
+                      {customPages?.length > 0 &&
+                        customPages?.map((page) => (
+                          <NavBarItem
+                            key={page?.id}
+                            title={
+                              page?.title?.charAt(0).toUpperCase() +
+                              page?.title?.slice(1)
+                            }
+                            href={
+                              params.portalid
+                                ? `/${params.portalid}/${sanitizeName(page?.title)}`
+                                : `/dashboard`
+                            }
+                          />
+                        ))}
+                    </div>
+                    <div className="flex items-center justify-start space-x-2 w-full mt-auto border-t border-slate-200">
+                      <div ref={dropdownRef} className="w-full">
+                        {accountDropdown && (
+                          <div className="w-full p-5 flex flex-col gap-2">
+                            <button
+                              className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold"
+                              onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
+                            >
+                              <CircleUserRound className="h-4 w-4" />
+                              Account Info
+                            </button>
+                            {userIsAdmin && (
+                              <button
+                                onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
+                                className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold"
+                              >
+                                <Headset className="h-4 w-4" />
+                                Tech Support
+                              </button>
+                            )}
+                            {userIsAdmin && (
+                              <button
+                                className={`flex items-center justify-between w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold ${
+                                  ToolsActive ? "font-semibold" : ""
+                                }`}
+                                onClick={() => {
+                                  setIsManagePortalView(true);
+                                  setAccountDropdown(false);
+                                }}
+                              >
+                                <span className="flex items-center gap-3">
+                                  <Bolt className={`h-4 w-4`} />
+                                  Tools
+                                </span>
+                                <ChevronRight className="h-4 w-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={handleLogout}
+                              className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-red-500 hover:font-semibold"
+                            >
+                              {logoutLoading ? (
+                                <Loader className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <LogOut className="h-4 w-4" />
+                              )}
+                              Sign out
+                            </button>
+                          </div>
+                        )}
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLogout();
-                          }}
-                          className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                          type="button"
+                          className="flex items-center gap-3 w-full text-left bg-slate-100 p-3"
+                          onClick={() => setAccountDropdown((prev) => !prev)}
                         >
-                          {logoutLoading ? (
-                            <Loader className="h-5 w-5 animate-spin" />
-                          ) : (
-                            <LogOut className="h-5 w-5" />
-                          )}
-                          Sign out
+                          <div
+                            className="shrink-0 size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105"
+                            style={{
+                              backgroundColor: config?.secondaryColor,
+                              color: config?.primaryColor,
+                            }}
+                          >
+                            {user?.firstName?.charAt(0).toUpperCase() || "U"}
+                          </div>
+
+                          <div className="flex flex-col text-sm xl:text-base">
+                            <span className="font-medium line-clamp-1 text-black">
+                              {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
+                            </span>
+                          </div>
+                          <span className="ml-auto text-black pr-4">
+                            <EllipsisVertical className="h-4 w-4" />
+                          </span>
                         </button>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
