@@ -1,7 +1,8 @@
 "use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import { useRouter } from "next/navigation";
 
 export default function SignRequestModal({
@@ -82,7 +83,7 @@ export default function SignRequestModal({
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-white">
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <LoaderSpinner size={32} className="text-blue-500"/>
                 <p className="text-gray-500 mt-2">Loading document...</p>
               </div>
             )}

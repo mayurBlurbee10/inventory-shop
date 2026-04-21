@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 const PortalFooter = ({ config, filterValue }) => {
   const contactInfo = filterValue("Footer Content").split("\n");
@@ -26,7 +27,7 @@ const PortalFooter = ({ config, filterValue }) => {
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <LoaderSpinner size={24} className="text-blue-500" />
     </div>
   );
 

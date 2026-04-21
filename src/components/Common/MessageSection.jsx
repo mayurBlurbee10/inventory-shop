@@ -4,7 +4,6 @@ import {
   ChevronDown,
   ChevronUp,
   Edit,
-  Loader2,
   MoreVertical,
   Plus,
   Reply,
@@ -25,6 +24,7 @@ import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import AllTaskModal from "./AllTaskModal";
 import { toast } from "react-toastify";
 import { decryptMessage, encryptMessage } from "@/app/lib/crypto";
+import LoaderSpinner from "./Elements/LoaderSpinner";
 
 const formatDate = (timestamp) => {
   if(timestamp){
@@ -718,7 +718,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
           <div className="h-[calc(80vh-73px)] relative mt-5 font-lato text-sm px-5 sm:px-10 ">
             {isMessagesLoading ? (
               <div className="absolute inset-0 flex items-center justify-center bg-white">
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <LoaderSpinner size={28} className="text-blue-500" />
               </div>
             ) : (
               <div className="h-[97%] overflow-y-auto hidden-scrollbar">
@@ -984,7 +984,7 @@ useEffect(() => {
                       <td colSpan={"6"}>
                         <div className="min-h-[100px] flex items-center justify-center">
                           {isMessagesLoading
-                            ? <Loader2 className="text-blue-500 animate-spin" />
+                            ? <LoaderSpinner size={28} className="text-blue-500" />
                             : <p className="font-lato text-[#212529] text-sm py-4">
                               No Messages to Show !!!
                             </p>}

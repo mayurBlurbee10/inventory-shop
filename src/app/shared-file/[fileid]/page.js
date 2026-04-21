@@ -1,10 +1,11 @@
 "use client";import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <LoaderSpinner size={24} className="text-blue-500" />
   </div>
 );
 

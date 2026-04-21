@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
-import { FolderPlus, Upload, Share2, X, Loader2 } from "lucide-react";
+import { FolderPlus, Upload, Share2, X } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";

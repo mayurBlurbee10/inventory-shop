@@ -1,5 +1,6 @@
 "use client";
 import { defaultLoanData } from "@/app/lib/data/loan-data";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import { setLoans } from "@/store/services/loanService";
 import {
   ArrowDownUp,
@@ -62,8 +63,8 @@ function LoansPage() {
   }, []);
 
   const LoadingSpinner = () => (
-    <div className="h-[80vh] flex items-center justify-center bg-white">
-      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <div className={`h-[80vh] flex items-center justify-center bg-white`}>
+      <LoaderSpinner size={32} className="text-blue-500" />
     </div>
   );
 

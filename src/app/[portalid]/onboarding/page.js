@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import * as LucideIcons from "lucide-react";
 import { coverPhotoRatio, fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -245,7 +246,7 @@ export default function OnBoardingPage() {
 
   const LoadingSpinner = () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <LoaderSpinner size={24} className="text-blue-500" />
     </div>
   );
 

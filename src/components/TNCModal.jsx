@@ -1,12 +1,13 @@
 "use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { UserRole } from "@/config/constants";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
 import SignRequestModal from "@/components/SignRequestModal";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 const ESIGN_DONE_STATUSES = ["signed", "completed", "finalizing"];
 
@@ -372,7 +373,7 @@ function TNCModal({ onClose, user, email, password, page }) {
             aria-busy="true"
             aria-label="Preparing e-sign"
           >
-            <Loader2 className="h-10 w-10 animate-spin text-gray-500" />
+            <LoaderSpinner size={32} className="text-gray-500" />
           </div>
         )}
       </div>

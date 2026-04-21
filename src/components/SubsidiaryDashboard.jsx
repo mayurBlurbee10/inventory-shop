@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Button from "./Common/Elements/Button";
 import { setPortals } from "@/store/actions/portalAction";
 import { setActiveUsers } from "@/store/services/portalService";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 // Mock data - in real app, this would come from an API
 const subsidiariesData = [
@@ -288,7 +289,7 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <LoaderSpinner size={24} className="text-blue-500" />
   </div>
 );
 

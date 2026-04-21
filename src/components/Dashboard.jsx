@@ -33,6 +33,7 @@ import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 const processBoxFiles = (files) => {
   const itemsMap = new Map();
@@ -63,7 +64,7 @@ const processBoxFiles = (files) => {
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <LoaderSpinner size={24} className="text-blue-500" />
   </div>
 );
 

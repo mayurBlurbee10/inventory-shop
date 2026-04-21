@@ -1,6 +1,6 @@
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { useEffect, useState } from "react";
-import { ChevronRight, FolderInput, Loader2, X } from "lucide-react";
+import { ChevronRight, FolderInput, X } from "lucide-react";
 import FileExplorer from "./FileExplorer";
 import Button from "./Common/Elements/Button";
 

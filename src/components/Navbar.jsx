@@ -27,7 +27,6 @@ import {
   Headset,
   LayoutDashboard,
   LayoutDashboardIcon,
-  Loader,
   LogOut,
   Menu,
   MessageSquare,
@@ -49,6 +48,7 @@ import { setCurrentUser } from "@/store/services/userService";
 import { UserRole } from "@/config/constants";
 import { setPages as setReduxPages } from "@/store/services/pageService";
 import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -592,7 +592,7 @@ function Navbar({ content, config, filterValue }) {
                       className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                     >
                       {logoutLoading ? (
-                        <Loader className="h-5 w-5 animate-spin" />
+                        <LoaderSpinner size={24} className="text-blue-500" />
                       ) : (
                         <LogOut className="h-5 w-5" />
                       )}
@@ -851,7 +851,7 @@ function Navbar({ content, config, filterValue }) {
                               className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-red-500 hover:font-semibold"
                             >
                               {logoutLoading ? (
-                                <Loader className="h-4 w-4 animate-spin" />
+                                <LoaderSpinner size={24} className="text-blue-500" />
                               ) : (
                                 <LogOut className="h-4 w-4" />
                               )}

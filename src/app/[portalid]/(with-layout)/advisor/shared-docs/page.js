@@ -38,6 +38,7 @@ import Tasks from "@/components/Common/Tasks";
 import MessageSection from "@/components/Common/MessageSection";
 import TasksSection from "@/components/Common/TasksSection";
 import AdvisorSection from "@/components/Common/AdvisorSection";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 const LoadingSpinner = () => (
   <div className="min-h-[60vh] flex justify-center items-center py-8">
@@ -657,11 +658,11 @@ export default function AdvisorViewSharedDocsPage() {
 
     const LoadingSpinner = () => (
       <div className={`h-[80vh] flex items-center justify-center bg-white`}>
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <LoaderSpinner size={32} className="text-blue-500" />
       </div>
     );
       
-    if(boxUserId && !user) return <LoadingSpinner />;
+    if(boxUserId && !user) return <LoadingSpinner/>;
 console.log("User:", user);
 
     return (

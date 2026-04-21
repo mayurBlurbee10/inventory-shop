@@ -9,6 +9,7 @@ import { useParams } from "next/navigation";
 import ViewProfileModal from "./ViewProfileModal";
 import { toast } from "react-toastify";
 import Button from "../Common/Elements/Button";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const UsersContent = () => {
   const [users, setUsers] = useState([]);
@@ -211,7 +212,7 @@ const UsersContent = () => {
 
       {loading ? (
         <div className="flex justify-center py-8 min-h-[50vh] items-center">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <LoaderSpinner size={32} className="text-blue-500" />
         </div>
       ) : (
         <div className="bg-white shadow rounded-lg overflow-x-scroll custom-scrollbar mt-5">

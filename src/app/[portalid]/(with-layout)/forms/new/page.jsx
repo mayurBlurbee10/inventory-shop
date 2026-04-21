@@ -3,6 +3,7 @@ import { getUserData } from "@/app/lib/auth";
 import { newLoanData } from "@/app/lib/data/loan-data";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Button from "@/components/Common/Elements/Button";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import Documents from "@/components/Documents";
 import SignRequestModal from "@/components/SignRequestModal";
 import { setNewLoan } from "@/store/services/loanService";
@@ -857,10 +858,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
   const LoadingSpinner = () => (
     <div className="w-full inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
       <div className="text-center space-y-3">
-        <div className="mx-auto h-8 w-8 animate-spin">
-          <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
-        </div>
-        <p className="text-sm text-gray-500">Loading...</p>
+        <LoaderSpinner size={32} className="text-blue-500" />
       </div>
     </div>
   );

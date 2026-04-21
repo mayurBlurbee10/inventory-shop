@@ -11,7 +11,6 @@ import {
   Download,
   Eye,
   Search,
-  Loader2,
   XCircle,
   Share2,
   Copy,
@@ -20,6 +19,7 @@ import {
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 const ShareModal = ({ isOpen, onClose, fileName }) => {
   const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
@@ -119,7 +119,7 @@ const SearchBar = memo(({ searchQuery, setSearchQuery, isSearching }) => {
     <div className="relative">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         {isSearching ? (
-          <Loader2 size={18} className="text-gray-400 animate-spin" />
+          <LoaderSpinner size={24} className="text-blue-500" />
         ) : (
           <Search size={18} className="text-gray-800" />
         )}
@@ -406,7 +406,7 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {}, isInDial
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <LoaderSpinner size={24} className="text-blue-500" />
                 ) : (
                   <Eye size={16} />
                 )}

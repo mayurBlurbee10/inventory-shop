@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import SettingsModal from "@/components/Settings";
 import Sidepanel from "@/components/Sidepanel";
 import SignRequestModal from "@/components/SignRequestModal";
-import { Eye, Loader2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -13,6 +13,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 
 function ESignature() {
@@ -151,8 +152,7 @@ function ESignature() {
         {/* Display List of Requests */}
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="ml-2 text-gray-500">Loading...</p>
+            <LoaderSpinner size={32} className="text-blue-500" />
           </div>
         ) : (
           <div className="mt-4 h-[calc(100vh-260px)]">

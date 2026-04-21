@@ -4,11 +4,12 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../Common/Elements/Button";
 import { Dialog } from "@headlessui/react";
-import { ChevronDown, ChevronUp, Edit, Loader2, PlusCircle, Trash2, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit, PlusCircle, Trash2, X } from "lucide-react";
 import { useSelector } from "react-redux";
 import CreateTaskPopUp from "../Common/CreateTaskPopUp";
 import { TaskStatus } from "@/config/constants";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null }) => {
   const params = useParams();
@@ -290,7 +291,7 @@ const CheckListContent = () => {
         <div className="py-2 text-gray-900">
           {isChecklistLoading ? (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <LoaderSpinner size={28} className="text-blue-500" />
             </div>
           ) : (
             <>
@@ -352,7 +353,7 @@ const CheckListContent = () => {
                                 <Trash2 className="size-4 text-red-700" />
                               </div>
                               {isUpdateLoading?.id === checklist?.id && (
-                              <Loader2 className="animate-spin text-blue-500 w-5 h-5" />
+                              <LoaderSpinner size={24} className="text-blue-500" />
                               )}
                               <button
                                 type="button"

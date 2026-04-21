@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { Loader } from "lucide-react";
+import LoaderSpinner from "./LoaderSpinner";
 
 const Button = ({
   label,
@@ -83,9 +83,10 @@ const Button = ({
       disabled={disabled || isLoading}
     >
       {isLoading ? (
-        <Loader
-          className="w-5 h-5 animate-spin"
-          style={{ color: type === "Connect" ? "#1f2937" : secondaryColor }}
+        <LoaderSpinner
+          size={type === "Login" ? 28 : 20}
+          className={type === "Connect" ? "text-gray-800" : ""}
+          color={type === "Connect" ? "#1f2937" : secondaryColor}
         />
       ) : (
         <>

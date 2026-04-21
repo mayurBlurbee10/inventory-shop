@@ -25,6 +25,7 @@ import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 import DataTableSection from "./DataTableSection";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const generateMockData = async (year, portalId) => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -78,7 +79,7 @@ function sanitizeName(name) {
 
 const LoadingSpinner = () => (
   <div className="flex justify-center items-center py-8 min-h-[50vh]">
-    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <LoaderSpinner size={32} className="text-blue-500" />
   </div>
 );
 

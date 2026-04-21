@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 240 240" 
+     style="background: #000; width: 100vw; height: 100vh;">
+  <style>
+    /* Safe container padding avoiding blur clipping */
+    .wrapper {
+      filter: drop-shadow(0 0 6px rgba(255,238,0,.6))
+              drop-shadow(0 0 20px rgba(255,238,0,.35));
+    }
+
+    .seg {
+      fill: #ffee00;
+      /* Origin maintains standard position around SVG center elements */
+      transform-origin: 100px 100px; 
+      animation: wave 1.6s linear infinite;
+    }
+
+    /* Wider dip = multiple segments scale together */
+    @keyframes wave {
+      0%, 35%, 65%, 100% {
+        transform: rotate(var(--angle)) scaleX(1);
+      }
+      /* expanded dip window */
+      45% {
+        transform: rotate(var(--angle)) scaleX(0.6);
+      }
+      50% {
+        transform: rotate(var(--angle)) scaleX(0.4);
+      }
+      55% {
+        transform: rotate(var(--angle)) scaleX(0.6);
+      }
+    }
+  </style>
+
+  <!-- Offset inner original layer properly 20 pixels, allowing 40px bounding edge spaces standard avoiding CSS box clipping bugs cleanly-->
+  <g class="wrapper" transform="translate(20, 20)">
+    
+    <!-- First half -->
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:0deg;   animation-delay:0s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:15deg;  animation-delay:0.13s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:30deg;  animation-delay:0.26s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:45deg;  animation-delay:0.39s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:60deg;  animation-delay:0.52s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:75deg;  animation-delay:0.65s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:90deg;  animation-delay:0.78s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:105deg; animation-delay:0.91s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:120deg; animation-delay:1.04s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:135deg; animation-delay:1.17s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:150deg; animation-delay:1.30s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:165deg; animation-delay:1.43s;" />
+
+    <!-- Opposite half -->
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:180deg; animation-delay:0s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:195deg; animation-delay:0.13s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:210deg; animation-delay:0.26s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:225deg; animation-delay:0.39s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:240deg; animation-delay:0.52s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:255deg; animation-delay:0.65s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:270deg; animation-delay:0.78s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:285deg; animation-delay:0.91s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:300deg; animation-delay:1.04s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:315deg; animation-delay:1.17s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:330deg; animation-delay:1.30s;" />
+    <rect class="seg" x="97" y="20" width="10" height="20" rx="2" style="--angle:345deg; animation-delay:1.43s;" />
+
+  </g>
+</svg>

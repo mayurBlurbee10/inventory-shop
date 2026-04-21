@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
  import { setPages } from "@/store/services/pageService";
 import ContentManagementContent from "./ContentManagementContent";
 import ProductsContent from "./ProductsContent";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const MyPageContent = () => {
   const params = useParams();
@@ -308,7 +309,7 @@ const MyPageContent = () => {
       <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
         {loading ? (
           <div className="flex justify-center py-8">
-             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+             <LoaderSpinner size={28} className="text-blue-500" />
           </div>
         ) : (
           <>

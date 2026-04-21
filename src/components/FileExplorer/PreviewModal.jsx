@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
 import { Loader2, X } from 'lucide-react';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import LoaderSpinner from '../Common/Elements/LoaderSpinner';
 
 // Add CSS to hide Box logo
 const hideBoxLogo = `
@@ -258,7 +259,7 @@ export default function PreviewModal({ isOpen, onClose, fileId, fileName, varian
         <div className="h-[55vh] min-h-[420px] relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <LoaderSpinner size={32} className='text-blue-500'/>
             </div>
           )}
           {error && (
@@ -300,7 +301,7 @@ export default function PreviewModal({ isOpen, onClose, fileId, fileName, varian
           <div className="h-[calc(80vh-73px)] relative">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white">
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <LoaderSpinner size={32} className='text-blue-500'/>
               </div>
             )}
             {error && (

@@ -28,6 +28,7 @@ import { Dialog, DialogBackdrop, Menu, MenuButton, MenuItem, MenuItems } from "@
 import PortalCreatedPopup from "./PortalCreatedPopup";
 import Button from "./Common/Elements/Button";
 import PortalDuplicateModal from "./Settings/PortalDuplicateModal";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 const SidePanel = ({ setCurrentPage }) => (
   <div className="w-80 bg-[#0061D5] z-50 p-6 flex flex-col h-screen fixed left-0">
@@ -340,10 +341,7 @@ const SubsidiaryMetrics = ({ activeUsers, currentPageCount }) => {
 const LoadingSpinner = () => (
   <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
     <div className="text-center space-y-3">
-      <div className="mx-auto h-8 w-8 animate-spin">
-        <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
-      </div>
-      <p className="text-sm text-gray-500">Loading...</p>
+      <LoaderSpinner size={24} className="text-blue-500" />
     </div>
   </div>
 );

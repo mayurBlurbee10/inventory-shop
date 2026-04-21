@@ -20,12 +20,13 @@ import {
     ResponsiveContainer,
   } from "recharts";
 import { useSelector } from "react-redux";
-import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 
 const LoadingSpinner = () => (
     <div className="min-h-full flex justify-center items-center py-8">
-        <Loader2 className="text-blue-500 animate-spin" />
+        <LoaderSpinner size={32} className="text-blue-500" />
     </div>
 );
 
@@ -206,7 +207,7 @@ export default function AdvisorViewDashboard() {
       
       const LoadingSpinner = () => (
         <div className={`h-[80vh] flex items-center justify-center bg-white`}>
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <LoaderSpinner size={32} className="text-blue-500" />
         </div>
       );
 

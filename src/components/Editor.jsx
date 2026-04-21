@@ -1,13 +1,14 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
-import { Loader2, MessageSquareDiff, Save, X } from "lucide-react";
+import { MessageSquareDiff, Save, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { SignJWT } from "jose";
 import Button from "./Common/Elements/Button";
 import { useSelector } from "react-redux";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const editorRef = useRef(null);
@@ -398,7 +399,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
                   <div className="h-[100%]">
                     {isLoading ? (
                       <div className="flex items-center justify-center h-full">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                        <LoaderSpinner size={32} className="text-blue-500" />
                       </div>
                     ) : (
                       <div

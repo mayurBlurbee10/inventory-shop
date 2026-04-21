@@ -6,13 +6,14 @@ import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType, UserRole } from '@/config/constants';
 import { Dialog } from '@headlessui/react';
-import { Calendar, Check, CheckCircle, ChevronDown, ChevronUp, Edit, Ellipsis, FileText, Loader2, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
+import { Calendar, Check, CheckCircle, ChevronDown, ChevronUp, Edit, Ellipsis, FileText, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmDialog from '../DeleteConfirmDialog';
+import LoaderSpinner from './Elements/LoaderSpinner';
 
 export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskStatus, isTaskUpdateLoading, setShowMenu, showMenu }) => {
     const router = useRouter();
@@ -111,7 +112,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                         {task?.status !== TaskStatus?.COMPLETED && (
                           isTaskUpdateLoading ? (
                             <div className='px-4 py-2'>
-                              <Loader2 className='size-4 mx-auto animate-spin text-blue-500' />
+                              <LoaderSpinner size={24} className='mx-auto text-blue-500' />
                             </div>
                           ) : (
                             <button
@@ -633,7 +634,7 @@ const sortedTasks =
                     <tr>
                       <td colSpan={"6"}>
                         <div className="min-h-[100px] flex items-center justify-center">
-                          <Loader2 className="text-blue-500 animate-spin" />
+                          <LoaderSpinner size={24} className="text-blue-500" />
                         </div>
                       </td>
                     </tr>
@@ -690,7 +691,7 @@ const sortedTasks =
                                 }}
                               >
                                 {isSignReqLoading === task?.title ? (
-                                  <Loader2 className="size-5 animate-spin text-blue-500" />
+                                  <LoaderSpinner size={24} className="text-blue-500" />
                                 ) : task?.status === TaskStatus.COMPLETED ? (
                                   <span className="italic">Completed</span>
                                 ) : (

@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
 import { Dialog } from "@headlessui/react";
 import Button from "@/components/Common/Elements/Button";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 const TrackStatus = ({ trackedRequests }) => {
   const params = useParams();
@@ -141,7 +142,7 @@ const TrackStatus = ({ trackedRequests }) => {
                               <span className="text-yellow-600 font-semibold">Pending</span>
                               <button title="Send Reminder" onClick={() => handleSendReminder(signer, expandedRow)}>
                                 {isSendReminderLoading === signer?.embed_url_external_user_id ? (
-                                  <Loader2 className="text-blue-500 hover:text-blue-700 animate-spin size-5 ml-5"/>
+                                  <LoaderSpinner size={24} className="text-blue-500" />
                                 ) : (
                                 <Bell className="text-gray-500 hover:text-gray-700 cursor-pointer size-5 ml-5" />
                                 )}
@@ -267,12 +268,6 @@ function ESignature() {
   //   }
   // }, [isSignModalOpen]);
 
-  const LoadingSpinner = () => (
-    <div className="h-[80vh] flex items-center justify-center bg-white">
-      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-
   useEffect(() => {
     const userData = getUserData();
     // setUser(userData);
@@ -282,8 +277,14 @@ function ESignature() {
     }
   }, [router]);
 
+  const LoadingSpinner = () => (
+    <div className="h-[80vh] flex items-center justify-center bg-white">
+      <LoaderSpinner size={32} className="text-blue-500" />
+    </div>
+  );  
+
   if(isLoading){
-    return <LoadingSpinner/>
+    return <LoadingSpinner />
   }
 
   return (
@@ -340,8 +341,7 @@ function ESignature() {
         {/* Display List of Requests */}
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[400px] sm:min-h-[500px]">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="ml-2 text-gray-500">Loading...</p>
+            <LoaderSpinner size={32} className="text-blue-500" />
           </div>
         ) : (
           <div className="max-h-[550px] overflow-y-auto">

@@ -1,5 +1,6 @@
 "use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import Documents from "@/components/Documents";
 import { getUserData } from "@/lib/auth";
 import { setLoans } from "@/store/services/loanService";
@@ -301,7 +302,7 @@ function DetailsPage() {
             <Documents fileType={"loan"} loanFolderId={loan.folderId} />
           ) : (
             <div className="min-h-[50vh] flex items-center justify-center">
-              <Loader2 className="m-auto size-8 animate-spin text-blue-500" />
+              <LoaderSpinner size={28} className="text-blue-500" />
             </div>
           )}
           {/* <div className="flex items-center gap-2 p-5 bg-[#fcfcfc] border-b border-[#ced4da]">

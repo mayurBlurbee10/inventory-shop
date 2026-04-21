@@ -20,7 +20,6 @@ import {
   FilePen,
   FolderInput,
   Signature,
-  Loader2,
   UserRound,
   UsersRoundIcon,
   FilePenLine,
@@ -46,6 +45,7 @@ import Button from "./Common/Elements/Button";
 import Editor from "./Editor";
 import RenameDocumentModal from "./Common/RenameDocumentModal";
 import moment from "moment";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 const ShareModal = ({
   isOpen,
@@ -1125,7 +1125,7 @@ function SharedFolderExplorer({
                                               <Signature className="h-4 w-4 text-gray-600" />{" "}
                                               {isSignLoading ? (
                                                 <>
-                                                  Signing <Loader2 className="ml-auto size-5 animate-spin text-gray-600" />
+                                                  Signing <LoaderSpinner size={24} className="ml-auto text-gray-500" />
                                                 </>
                                               ) : (
                                                 "Sign"
@@ -1348,7 +1348,7 @@ function SharedFolderExplorer({
                                         <Signature className="h-4 w-4 text-gray-600" />{" "}
                                         {isSignLoading ? (
                                           <>
-                                              Signing <Loader2 className="ml-auto size-5 animate-spin text-gray-600" />
+                                              Signing <LoaderSpinner size={24} className="ml-auto text-gray-500" />
                                           </>
                                         ) : (
                                           "Sign"

@@ -5,7 +5,6 @@ import {
   Edit,
   PlusCircle,
   Plus,
-  Loader2,
   Copy,
   ChevronLeft,
   ChevronRight,
@@ -19,6 +18,7 @@ import NDAcreation from "./NDAcreation";
 import PreviewModal from "../FileExplorer/PreviewModal";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import Button from "../Common/Elements/Button";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const TermsAndConditionCreation = () => {
   const params = useParams();
@@ -243,7 +243,7 @@ const TermsAndConditionCreation = () => {
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <LoaderSpinner size={28} className="text-blue-500" />
         </div>
       ) : agreements.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -308,7 +308,7 @@ const TermsAndConditionCreation = () => {
                           className="sr-only peer"
                         />
                         {isToggleDefault === row?.id ? (
-                          <Loader2 className="size-4 text-blue-400 animate-spin" />
+                          <LoaderSpinner size={24} className="text-blue-400" />
                         ) : (
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                         )}
@@ -326,7 +326,7 @@ const TermsAndConditionCreation = () => {
                           disabled={isCopying === row.id}
                         >
                           {isCopying === row.id ? (
-                            <Loader2 className="size-4 text-gray-600 animate-spin" />
+                            <LoaderSpinner size={24} className="text-gray-600" />
                           ) : (
                             <Copy className="size-4 text-gray-600" />
                           )}

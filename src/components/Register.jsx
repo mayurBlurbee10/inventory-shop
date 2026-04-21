@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { User, Mail, Phone, Briefcase, Building2, Loader } from "lucide-react";
+import { User, Mail, Phone, Briefcase, Building2 } from "lucide-react";
 import TNCModal from "./TNCModal";
 import { registerUser, setUserPassword } from "@/lib/auth-api";
 import { setCurrentUser } from "@/store/services/userService";
@@ -14,6 +14,7 @@ import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 import { setPortal } from "@/store/services/portalService";
 import Button from "./Common/Elements/Button";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 const Register = () => {
   const router = useRouter();
@@ -400,7 +401,7 @@ const Register = () => {
   if (isNdaPagesLoading) {
     return (
       <div className="flex items-center justify-center bg-white h-screen">
-        <Loader className="w-5 h-5 animate-spin text-blue-600" />
+        <LoaderSpinner size={24} className="text-blue-500" />
       </div>
     );
   }

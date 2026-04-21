@@ -1,12 +1,13 @@
 import { useChat } from "@/hooks/useChat";
 import { setMessages } from "@/store/services/messageService";
 import { Dialog } from "@headlessui/react";
-import { ChevronDown, Inbox, Loader2, Send, X } from "lucide-react";
+import { ChevronDown, Inbox, Send, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Button from "./Elements/Button";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
+import LoaderSpinner from "./Elements/LoaderSpinner";
 
 const MessagingModal = ({ isOpen, onClose, receiver }) => {
   const messagesEndRef = useRef(null);
@@ -190,7 +191,7 @@ const MessagingModal = ({ isOpen, onClose, receiver }) => {
           {/* Chat Messages Section */}
           {isLoadingMessages ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="text-blue-500 animate-spin" />
+              <LoaderSpinner size={28} className="text-blue-500" />
             </div>
           ) : (
             <div

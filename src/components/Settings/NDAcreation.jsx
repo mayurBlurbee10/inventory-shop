@@ -4,12 +4,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
-import { X, Upload, FileText, PenLine, Loader2 } from "lucide-react";
+import { X, Upload, FileText, PenLine } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog } from "@headlessui/react";
 import { useParams } from "next/navigation";
 import { getUserData } from "@/app/lib/auth";
 import Button from "../Common/Elements/Button";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const TextEditor = dynamic(() => import("../../components/Plugins/RTE/TextEditor"), {
   ssr: false,
@@ -363,7 +364,7 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
                     </p>
                     {uploadLoading && (
                       <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <LoaderSpinner size={24} className="text-blue-500"/>
                         <p className="text-sm text-primary">Uploading…</p>
                       </div>
                     )}

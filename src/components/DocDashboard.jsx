@@ -26,6 +26,7 @@ import MessageSection from "./Common/MessageSection";
 import TickerTape from "./Common/charts/TickerTape";
 import TopStories from "./Common/charts/TopStories";
 import { MarketOverviewChart, StockMarketChart } from "./Common/charts/Chart";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -247,7 +248,7 @@ export default function DocDashboard() {
 
   const LoadingSpinner = () => (
     <div className="h-[80vh] flex items-center justify-center bg-white">
-      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <LoaderSpinner size={32} className="text-blue-500" />
     </div>
   );
 

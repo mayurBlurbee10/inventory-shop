@@ -1,5 +1,5 @@
 import { Dialog, DialogBackdrop } from "@headlessui/react";
-import { Loader2, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import Button from "./Common/Elements/Button";
 

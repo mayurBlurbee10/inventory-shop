@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import FileExplorer from "../FileExplorer";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const processBoxFiles = (files) => {
   if (!files) return;
@@ -105,7 +106,7 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
 
           {loading ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <LoaderSpinner size={32} className="text-blue-500" />
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">

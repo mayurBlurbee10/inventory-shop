@@ -1,6 +1,7 @@
 "use client";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import CreationWizard from "@/components/CreationWizard";
 import PortalCreatedPopup from "@/components/PortalCreatedPopup";
 import PortalDuplicateModal from "@/components/Settings/PortalDuplicateModal";
@@ -188,10 +189,7 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
 const LoadingSpinner = () => (
   <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
     <div className="text-center space-y-3">
-      <div className="mx-auto h-8 w-8 animate-spin">
-        <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
-      </div>
-      <p className="text-sm text-gray-500">Loading...</p>
+      <LoaderSpinner size={24} className="text-blue-500" />
     </div>
   </div>
 );

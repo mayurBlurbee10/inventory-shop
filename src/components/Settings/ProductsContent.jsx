@@ -8,7 +8,6 @@ import {
   Trash2,
   Edit,
   File,
-  Loader2,
 } from "lucide-react";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import {
@@ -23,6 +22,7 @@ import { PluginType } from "@/config/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPages } from "@/store/services/pageService";
 import AllTaskModal from "../Common/AllTaskModal";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const options = [
   // {
@@ -255,7 +255,7 @@ const ProductsContent = () => {
       </div>
       {loading || !pagesData?.length ? (
         <div className="flex justify-center py-8">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <LoaderSpinner size={28} className="text-blue-500" />
         </div>
       ) : (
         <>
@@ -458,7 +458,7 @@ const ProductsContent = () => {
                        <div className="flex items-center">
                         {isUpdateLoading === page?.id && (
                           <div className="mr-3">
-                            <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
+                            <LoaderSpinner size={24} className="ml-auto text-blue-500" />
                           </div>
                         )}
                         <button
