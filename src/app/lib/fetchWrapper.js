@@ -44,6 +44,39 @@ export const fetchWrapper = async (url, options = {}, type) => {
     // console.trace();  // This prints the function call stack
     const response = await fetch(url, options);
 
+    if (response.status === 401) {
+      let loginPath = "/login";
+      if (portal && portal !== "default") {
+        try {
+          // Use raw fetch instead of fetchWrapper to avoid infinite recursion on 401
+          const portalResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/portal?id=${portal}`,
+            {
+              headers: {
+                Authorization: `Bearer ${getClientToken()}`,
+              },
+            }
+          );
+
+          if (portalResponse.ok) {
+            const result = await portalResponse.json();
+            const portalData = result?.data;
+            // Use slug if available, fallback to sanitized legalName
+            const slug = portalData?.slug || (portalData?.legalName ? portalData.legalName.trim().toLowerCase().replace(/\s+/g, "-") : null);
+            if (slug && slug !== "default") {
+              loginPath = `/${slug}/login`;
+            }
+          }
+        } catch (error) {
+          console.warn("Failed to fetch portal details for redirect:", error.message);
+        }
+      }
+      localStorage.clear();
+
+      if (typeof window !== "undefined") {
+        window.location.href = loginPath;
+      }
+    }
     // Handle non-OK responses
     // if (!response.ok) {
     //   throw new Error(`HTTP error! status: ${response.status}`);

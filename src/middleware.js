@@ -19,14 +19,78 @@ const excludedRoutes = {
 const publicRoutes = [
   '/api/upload/',
   '/api/auth',
+  '/register',
+  '/setpassword',
+  '/forgot-password'
 ];
 
-export function middleware(request) {
+export async function  middleware(request) {
   const authToken = request.cookies.get("token")?.value;
   const { pathname } = request.nextUrl;
 
-  if (publicRoutes.some((route) => pathname.startsWith(route))) {
-  return NextResponse.next();
+  console.log("Middleware running for pathname:", pathname);
+
+  const isStaticAssetRequest =
+    pathname.startsWith("/_next") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    (pathname.includes('.') && !pathname.startsWith('/api'));
+
+  if (isStaticAssetRequest) {
+    return NextResponse.next();
+  }
+
+  const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+  const pathSegments = normalizedPath.split("/").filter(Boolean);
+  const hasTenantPrefix = pathSegments.length > 1;
+  const tenantPrefix = hasTenantPrefix ? `/${pathSegments[0]}` : "";
+
+  // Check if it's a public route (including tenant-prefixed versions of public pages)
+  const isPublicRoute = publicRoutes.some((route) => {
+    if (route.startsWith("/api")) return pathname.startsWith(route);
+    return (
+      normalizedPath === route ||
+      normalizedPath.startsWith(`${route}/`) ||
+      (tenantPrefix &&
+        (normalizedPath === `${tenantPrefix}${route}` ||
+          normalizedPath.startsWith(`${tenantPrefix}${route}/`)))
+    );
+  });
+
+  if (isPublicRoute) {
+    console.log("Public route matched:", pathname);
+    return NextResponse.next();
+  }
+
+  const loginPath = `${tenantPrefix}/login`;
+  const dashboardPath = `${tenantPrefix}/dashboard`;
+  const isLoginPath =
+    normalizedPath === "/login" || normalizedPath === loginPath;
+  const isRegisterPath = normalizedPath === "/register" || (tenantPrefix && normalizedPath === `${tenantPrefix}/register`);
+  
+  console.log("Normalized path:", normalizedPath);
+  console.log("Is register path:", isRegisterPath);
+
+  // Verify token if present
+  let payload = null;
+  if (authToken) {
+    try {
+      const secretKey = new TextEncoder().encode(
+        process.env.NEXT_PUBLIC_JWT_SECRET_KEY
+      );
+      const { payload: decoded } = await jwtVerify(authToken, secretKey);
+      payload = decoded;
+    } catch (error) {
+      console.log("Token verification failed: " + error.message);
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json(
+          { error: "Unauthorized;Token verification failed" },
+          { status: 401 }
+        );
+      }
+      // For non-API routes, if token is invalid, treat as not logged in
+    }
   }
 
   if (request.nextUrl.pathname.startsWith('/api')) {
@@ -35,28 +99,42 @@ export function middleware(request) {
     if (excludedMethods && excludedMethods.includes(method)) {
       return NextResponse.next();
     }
-    if (!authToken) {
-      console.log("Unauthorized access attempt. Token missing.");
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    try {
-      const secretKey = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET_KEY);
-      const { payload } = jwtVerify(authToken, secretKey);
-    } catch (error) {
-      console.log('Token verification failed: ' + error.message);
-      return NextResponse.json({ error: 'Unauthorized;Token verification failed' }, { status: 401 });
+    if (!payload) {
+      console.log("Unauthorized access attempt. Token missing or invalid.");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.next();
   } else {
   
-    const loggedInUserNotAccessPaths = request.nextUrl.pathname.includes("/login");
-    if (loggedInUserNotAccessPaths) {
-      if (authToken) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+     if (isLoginPath) {
+      if (payload) {
+        return NextResponse.redirect(new URL(dashboardPath, request.url));
       }
+    } else if (isRegisterPath) {
+      // Always allow access to register page, regardless of auth status
+      return NextResponse.next();
     } else {
-      if (!authToken) {
-        return NextResponse.redirect(new URL("/login", request.url));
+       if (!payload) {
+        return NextResponse.redirect(new URL(loginPath, request.url));
+      }
+
+      // Role-based access control
+      const restrictedRoutes = ["/advisor", "/admin"];
+      const isRestrictedRoute = restrictedRoutes.some((route) => {
+        const rootRoute = route;
+        const tenantRoute = `${tenantPrefix}${route}`;
+        return (
+          normalizedPath === rootRoute ||
+          normalizedPath.startsWith(`${rootRoute}/`) ||
+          (tenantPrefix &&
+            (normalizedPath === tenantRoute ||
+              normalizedPath.startsWith(`${tenantRoute}/`)))
+        );
+      });
+
+      if (isRestrictedRoute && payload.role === "user") {
+        console.log(`User ${payload.email} denied access to ${normalizedPath}`);
+        return NextResponse.redirect(new URL(dashboardPath, request.url));
       }
     }
     // Always allow access
@@ -69,13 +147,14 @@ export const config = {
   matcher: [
     // "/home",
     "/login",
+    "/register",
     "/settings",
     // "/shared-file",
     "/sharewithme",
-    // "/admin/:path*",
+    "/admin/:path*",
     "/preview",
-    "/api/:path*"
+    "/api/:path*",
     // "/set-password",
-    // "/:portalid/:path*", // Dynamic portal route for nested pages
+    "/:portalid/:path*", // Dynamic portal route for nested pages
   ],
 };
