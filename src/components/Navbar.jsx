@@ -509,7 +509,7 @@ function Navbar({ content, config, filterValue }) {
               >
                 {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
                 <div
-                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 `}
+                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 shrink-0 `}
                   style={{
                     backgroundColor: config?.secondaryColor,
                     color: config?.primaryColor,

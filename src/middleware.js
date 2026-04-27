@@ -21,7 +21,9 @@ const publicRoutes = [
   '/api/auth',
   '/register',
   '/setpassword',
-  '/forgot-password'
+  '/forgot-password',
+  '/credential',
+  '/sign-finished'
 ];
 
 export async function  middleware(request) {
@@ -60,6 +62,12 @@ export async function  middleware(request) {
 
   if (isPublicRoute) {
     console.log("Public route matched:", pathname);
+    return NextResponse.next();
+  }
+
+  // Check if this is a sign-finished, forgot-password, setpassword, or credential route with any portal prefix
+  if (pathname.includes('/sign-finished') || pathname.includes('/forgot-password') || pathname.includes('/setpassword') || pathname.includes('/credential') || pathname.includes('/register')) {
+    console.log("Portal-prefixed public route matched:", pathname);
     return NextResponse.next();
   }
 
