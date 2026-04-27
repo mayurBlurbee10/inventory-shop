@@ -285,7 +285,16 @@ export async function POST(request) {
     const { boxFiles, boxUserInfo, boxFolderInfo, boxError, ...rest } =
       userData;
 
-    const accessToken = await generateToken(rest, "168h");
+    const tokenPayload = {
+      id: user.id,
+      email: user.email,
+      role: userRole,
+      portalId: userPermission?.portalId || 'admin',
+      boxUserId: user.boxUserId,
+      folderId: userData.boxFolderId,
+    };
+
+    const accessToken = await generateToken(tokenPayload, "168h");
     await userService.setUserAccessToken(data.email, accessToken);
 
     // Create response with cookie
