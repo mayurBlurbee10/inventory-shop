@@ -133,6 +133,7 @@ export const sendSetPasswordEmail = async (
                                 } :<br /><a
                                   href="${userExist ? redirectLink : resetLink}"
                                   target="_blank"
+                                  style="word-wrap: break-word; word-break: break-all; overflow-wrap: break-word; max-width: 100%; display: inline-block;"
                                   >${userExist ? redirectLink : resetLink}</a
                                 ><br
                               /></span>

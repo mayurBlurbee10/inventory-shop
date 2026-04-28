@@ -1,13 +1,14 @@
 "use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { UserRole } from "@/config/constants";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
 import SignRequestModal from "@/components/SignRequestModal";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
+import { useSelector } from "react-redux";
 
 const ESIGN_DONE_STATUSES = ["signed", "completed", "finalizing"];
 
@@ -21,6 +22,8 @@ function TNCModal({ onClose, user, email, password, page }) {
   const [signUrl, setSignUrl] = useState("");
   const [signRequest, setSignRequest] = useState(null);
   const [isSignRequestLoading, setIsSignRequestLoading] = useState(false);
+  const completionHandledRef = useRef(false);
+    const { data: config } = useSelector((state) => state.portal);
 
   const fetchSignRequestStatus = useCallback(async (signRequestId) => {
     if (!signRequestId) return null;
@@ -39,6 +42,49 @@ function TNCModal({ onClose, user, email, password, page }) {
     return data?.data;
   }, []);
 
+  const completeTncAndRedirect = useCallback(async () => {
+    if (completionHandledRef.current) return;
+    if (!user || !user?.id) return;
+    completionHandledRef.current = true;
+    try {
+      setIsLoading(true);
+        try {
+          fetchWrapper("/api/api-logs", { method: "POST" }, "guest-login");
+        } catch (logError) {
+          console.error("Failed to create guest-login log:", logError);
+        }
+      // const response = await fetchWrapper(
+      //   `/api/users/tncAccept`,
+      //   {
+      //     method: "PUT",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       userId: user?.id,
+      //     }),
+      //   },
+      //   "accept-tnc"
+      // );
+      // if (!response.ok) {
+      //   throw new Error("Failed to update user");
+      // }
+      // const updatedData = await response.json();
+      // console.log("Update updatedData", updatedData);
+      // await fetchWrapper("/api/api-logs", { method: "POST" }, "login");
+      router.push("dashboard");
+      toast.success("Redirecting to dashboard");
+    } catch (error) {
+      console.error("Error fetching plugins:", error);
+      completionHandledRef.current = false;
+      toast.error(error?.message || "Could not finish setup. Please try again.");
+    } finally {
+      setIsLoading(false);
+      onClose();
+    }
+  // }, [user, router, onClose]);
+  }, [user, page?.ndaType, page?.fileId, router, onClose]);
+
   useEffect(() => {
     if (!isSignModalOpen || !signRequest?.id) return undefined;
     let cancelled = false;
@@ -51,7 +97,8 @@ function TNCModal({ onClose, user, email, password, page }) {
           setEsignCompleted(true);
           setIsSignModalOpen(false);
           setSignUrl("");
-          toast.success("E-sign completed. You can click Agree to continue.");
+          // toast.success("E-sign completed. Redirecting…");
+          await completeTncAndRedirect();
         }
       } catch {
         /* ignore transient poll errors */
@@ -63,125 +110,17 @@ function TNCModal({ onClose, user, email, password, page }) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [isSignModalOpen, signRequest?.id, fetchSignRequestStatus]);
+  }, [isSignModalOpen, signRequest?.id, fetchSignRequestStatus, completeTncAndRedirect]);
 
-  const portalPrefix = params?.portalid ? `/${params.portalid}` : "";
-
-  const handleClose = async () => {
-    if (!user || !user?.id) {
-      return;
-    }
-    try {
-      setIsLoading(true);
-      const response = await fetchWrapper(
-        `/api/users/tncAccept`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: user?.id,
-          }),
-        },
-        "accept-tnc"
-      );
-      if (!response.ok) {
-        throw new Error("Failed to update user");
-      }
-      const updatedData = await response.json();
-      console.log("Update updatedData", updatedData);
-      // const loginResponse = await fetchWrapper(
-      //   "/api/auth/login",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       email,
-      //       password,
-      //       portalid: params.portalid,
-      //     }),
-      //   },
-      //   "default-login"
-      // );
-
-      // if (!loginResponse.ok) {
-      //   const data = await loginResponse.json();
-      //   throw new Error(data.error || "Login failed");
-      // }
-
-      // const data = await loginResponse.json();
-      // // Store user data using auth utility
-      // const userData = data.user;
-      // // setUserData(userData);
-      // dispatch(setCurrentUser(userData))
-      // // localStorage.setItem("portal", params.portalid);
-      // localStorage.setItem("accessToken", data.accessToken);
-
-      // console.log("Redirecting to home");
-
-      // if (user.isOnboardingRequired) {
-      //   router.push(`onboarding`);
-      // } else {
-      await fetchWrapper("/api/api-logs", { method: "POST" }, "login");
-
-      // Check if user has multiple portals
-      const userPermissions = user?.permissions || [];
-      const validPermissions = userPermissions.filter(
-        (perm) => perm?.portalId && perm.portalId !== null
-      );
-
-      // If user has multiple portals, redirect to portal selection dashboard
-      if (validPermissions.length >= 1 && user?.role !== UserRole.USER) {
-        router.push(`${portalPrefix}/portals-dashboard`);
-        toast.success("Please select a portal");
-        return;
-      }
-
-      // Portal-scoped absolute paths (relative "dashboard" breaks from /[portal]/register)
-      const targetRoute =
-        user?.role === UserRole.MODERATOR
-          ? `${portalPrefix}/advisor/dashboard`
-          : `${portalPrefix}/dashboard`;
-      router.push(targetRoute || "/dashboard");
-      toast.success("Redirecting to dashboard");
-    } catch (error) {
-      console.error("Error fetching plugins:", error);
-      toast.error(error?.message || "Could not complete acceptance. Try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAcceptanceChange = async (e) => {
-    const checked = e.target.checked;
-    const isEsignNda = page?.ndaType === "esign" && page?.fileId;
-
-    if (!isEsignNda) {
-      setIsAccepted(checked);
-      return;
-    }
-
-    if (!checked) {
-      if (esignCompleted) return;
-      setIsAccepted(false);
-      setIsSignModalOpen(false);
-      setSignUrl("");
-      setSignRequest(null);
-      return;
-    }
-
+  const startEsignFromAgree = useCallback(async () => {
     if (!user?.email || !user?.id || !user?.boxUserId) {
       toast.error("Your account is missing Box or profile details required for e-sign.");
-      return;
+      return false;
     }
     if (!page?.fileId || !params?.portalid) {
       toast.error("Missing document or portal for e-sign.");
-      return;
+      return false;
     }
-
     setIsSignRequestLoading(true);
     try {
       const response = await fetchWrapper(
@@ -200,6 +139,8 @@ function TNCModal({ onClose, user, email, password, page }) {
             boxUserId: user.boxUserId,
             portal: params.portalid,
             onSameDoc: false,
+            ndaFolderId: config?.ndaFolderId || null,
+            ndaSignFlag: true,
           }),
         },
         "tnc-self-esign-request",
@@ -218,17 +159,70 @@ function TNCModal({ onClose, user, email, password, page }) {
         throw new Error("No e-sign URL returned");
       }
       setSignRequest(sr);
-      setIsAccepted(true);
-      setTimeout(() => {
-        setSignUrl(embedUrl);
-        setIsSignModalOpen(true);
-        setIsSignRequestLoading(false);
-      }, 800);
+      // setTimeout(() => {
+      //   setSignUrl(embedUrl);
+      //   setIsSignModalOpen(true);
+      //   setIsSignRequestLoading(false);
+      // }, 800);
+      setSignUrl(embedUrl);
+      setIsSignModalOpen(true);
+      setIsSignRequestLoading(false);
+      return true;
     } catch (err) {
       toast.error(err.message || "E-sign could not be started");
       setIsSignRequestLoading(false);
-      setIsAccepted(false);
+      return false;
     }
+  }, [user, page?.fileId, params?.portalid]);
+
+  const handleClose = async () => {
+    const isEsignNda = page?.ndaType === "esign" && page?.fileId;
+    if (isEsignNda) {
+      if (esignCompleted) {
+        await completeTncAndRedirect();
+        return;
+      }
+      if (!signRequest?.id) {
+        await startEsignFromAgree();
+        return;
+      }
+      try {
+        const sr = await fetchSignRequestStatus(signRequest.id);
+        if (sr && ESIGN_DONE_STATUSES.includes(sr.status)) {
+          setSignRequest(sr);
+          setEsignCompleted(true);
+          await completeTncAndRedirect();
+          return;
+        }
+      } catch {
+        /* fall through */
+      }
+      return;
+    }
+
+    await completeTncAndRedirect();
+  };
+
+  const handleAcceptanceChange = (e) => {
+    const checked = e.target.checked;
+    const isEsignNda = page?.ndaType === "esign" && page?.fileId;
+
+    if (!isEsignNda) {
+      setIsAccepted(checked);
+      return;
+    }
+
+    if (!checked) {
+      if (completionHandledRef.current) return;
+      setIsAccepted(false);
+      setIsSignModalOpen(false);
+      setSignUrl("");
+      setSignRequest(null);
+      setEsignCompleted(false);
+      return;
+    }
+
+    setIsAccepted(true);
   };
 
   const handleSignModalClose = async () => {
@@ -241,12 +235,12 @@ function TNCModal({ onClose, user, email, password, page }) {
       if (sr && ESIGN_DONE_STATUSES.includes(sr.status)) {
         setSignRequest(sr);
         setEsignCompleted(true);
-        toast.success("E-sign completed. You can click Agree to continue.");
+        toast.success("E-sign completed. Redirecting…");
+        await completeTncAndRedirect();
       } else {
         setEsignCompleted(false);
         setIsAccepted(false);
         setSignRequest(null);
-        toast.info("Finish signing the document to continue, or check the box again to reopen e-sign.");
       }
     } catch {
       setEsignCompleted(false);
@@ -256,6 +250,7 @@ function TNCModal({ onClose, user, email, password, page }) {
   };
 
   useEffect(() => {
+    completionHandledRef.current = false;
     setIsAccepted(false);
     setEsignCompleted(false);
     setIsSignModalOpen(false);
@@ -271,7 +266,10 @@ function TNCModal({ onClose, user, email, password, page }) {
   const isEsignNda = page.ndaType === "esign" && page.fileId;
   const agreeDisabled =
     isLoading ||
-    (isEsignNda ? !esignCompleted : !isAccepted);
+    !isAccepted ||
+    (isEsignNda &&
+      (isSignRequestLoading ||
+        (isSignModalOpen && Boolean(signUrl))));
 
   return (
     <>
@@ -320,16 +318,16 @@ function TNCModal({ onClose, user, email, password, page }) {
             <input
               type="checkbox"
               className="form-checkbox h-4 w-4 text-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              checked={isEsignNda ? esignCompleted || isAccepted : isAccepted}
-              disabled={isEsignNda && (isSignRequestLoading || esignCompleted)}
+              checked={isAccepted}
+              disabled={isEsignNda && isSignRequestLoading}
               onChange={handleAcceptanceChange}
             />
             <p>
               {isEsignNda ? (
                 <>
-                  Check this box to start e-signing the NDA. After you finish
-                  signing.
-                  <span className="font-medium">Agree</span> to continue.
+                  Check this box to confirm you have reviewed the NDA. Click{" "}
+                  <span className="font-medium">Agree</span> to open e-sign; when
+                  signing is complete you will be redirected to the dashboard.
                 </>
               ) : (
                 <>
@@ -385,6 +383,7 @@ function TNCModal({ onClose, user, email, password, page }) {
       signUrl={signUrl}
       signRequest={signRequest}
       setSignRequest={setSignRequest}
+      ndaSignFlag={true}
     />
     </>
   );
