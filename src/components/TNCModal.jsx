@@ -24,6 +24,7 @@ function TNCModal({ onClose, user, email, password, page }) {
   const [isSignRequestLoading, setIsSignRequestLoading] = useState(false);
   const completionHandledRef = useRef(false);
     const { data: config } = useSelector((state) => state.portal);
+    const { data: pages } = useSelector((state) => state.pages);
 
   const fetchSignRequestStatus = useCallback(async (signRequestId) => {
     if (!signRequestId) return null;
@@ -72,8 +73,14 @@ function TNCModal({ onClose, user, email, password, page }) {
       // const updatedData = await response.json();
       // console.log("Update updatedData", updatedData);
       // await fetchWrapper("/api/api-logs", { method: "POST" }, "login");
-      router.push("dashboard");
-      toast.success("Redirecting to dashboard");
+       const dashboardPage = pages.find((page) => page.title === "dashboard");
+       if(dashboardPage?.isPageVisible) {
+        router.push(dashboardPage.path);
+        toast.success("Redirecting to dashboard");
+       }else{
+        router.push("shared-docs");
+        toast.success("Redirecting to shared documents");
+       }
     } catch (error) {
       console.error("Error fetching plugins:", error);
       completionHandledRef.current = false;

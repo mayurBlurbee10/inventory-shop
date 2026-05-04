@@ -63,6 +63,7 @@ function Login() {
   const { data: config } = useSelector((state) => state.portal);
   const { data: content } = useSelector((state) => state.content);
   const { data: user } = useSelector((state) => state.user);
+  const { data: pages } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
 
   const fetchPlugins = async () => {
@@ -280,8 +281,14 @@ function Login() {
         setIsTNCOpen(true);
       }
       if (!selectedNdaPage || (selectedNdaPage && userData?.isTNCAccepted)) {
-        router.push("dashboard");
+       const dashboardPage = pages.find((page) => page.title === "dashboard");
+       if(dashboardPage?.isPageVisible) {
+        router.push(dashboardPage.path);
         toast.success("Redirecting to dashboard");
+       }else{
+        router.push("shared-docs");
+        toast.success("Redirecting to shared documents");
+       }
       }
     } catch (err) {
       console.error("Login error:", err);

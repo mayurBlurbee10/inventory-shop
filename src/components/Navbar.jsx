@@ -119,27 +119,21 @@ function Navbar({ content, config, filterValue }) {
 
     if (isOpenNavbar) {
       return (
-        <Link href={href} passHref>
+        <Link href={href} passHref className="w-full block">
           <div
-            className="relative mx-2 h-full flex items-center border-b-2 transition-all justify-center"
-            style={{
-              borderBottomColor: isActive
-                ? config?.primaryColor
-                : "transparent",
-              borderBottomWidth: isActive ? "3px" : "",
-            }}
+            className={`relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg ${
+              isActive ? "bg-gray-100" : "hover:bg-gray-50"
+            }`}
             onClick={() => setIsOpenNavbar(false)}
           >
-            <button
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              className={`px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-                isActive ? "font-bold" : "text-black"
+            <span
+              className={`font-lato text-sm ${
+                isActive ? "font-bold" : "font-medium"
               }`}
-              style={isActive ? { color: config?.primaryColor } : {}}
+              style={isActive ? { color: config?.primaryColor } : { color: "#374151" }}
             >
               {title}
-            </button>
+            </span>
           </div>
         </Link>
       );
@@ -350,7 +344,10 @@ function Navbar({ content, config, filterValue }) {
     >
       <div className="w-full mx-auto px-2">
         <nav className="flex justify-between">
-          <div className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2">
+          <div 
+            onClick={() => router.push("dashboard")} 
+            className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2 cursor-pointer"
+          >
             {logo ? (
               // <img
               //   src={logo.replace("/api/upload", "/uploads")}

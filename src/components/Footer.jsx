@@ -62,7 +62,7 @@ const Footer = ({
   return (
     <footer className="">
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="w-full px-4 md:px-[15px]">
+        <div className="w-full px-4 md:px-[15px] flex justify-center">
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="col-span-1">
               <div className="mb-4">
@@ -142,8 +142,8 @@ const Footer = ({
             className="mr-2 mb-5 max-h-[60px] max-w-[150px]"
           /> */}
 
-          <div className="flex justify-between items-end flex-wrap">
-            <div>
+          <div className="flex flex-col items-center flex-wrap w-full">
+            <div className="w-full flex justify-center border-b border-gray-200 pb-[5px]">
               <div className="text-sm text-[#6c757d] font-medium font-lato">
                 <div>
                   {isFromAvailable ? (
@@ -207,10 +207,10 @@ const Footer = ({
             </div>
 
             <div>
-              <div className="md:mb-0">
+              <div className="md:mb-0 pt-[8px]">
                 <div className="flex items-end gap-1">
                   <p className="text-xs text-[#6c757d] font-medium font-lato">
-                    Powered By M Strategy Group © 2026
+                    Powered By
                   </p>
                   <span>
                       <img
