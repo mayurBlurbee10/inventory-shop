@@ -348,9 +348,9 @@ function Navbar({ content, config, filterValue }) {
             onClick={() => {
               const dashboardPage = pageData.find((page) => page.title === "dashboard");
               if (dashboardPage?.isPageVisible) {
-                router.push("dashboard");
+                router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/dashboard`);
               } else {
-                router.push("shared-docs");
+                router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/shared-docs`);
               }
             }}
             className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2 cursor-pointer"
