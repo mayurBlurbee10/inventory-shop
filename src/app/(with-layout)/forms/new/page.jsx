@@ -205,7 +205,7 @@ const ApplicationStep = ({ setActiveStep }) => {
         </div>
       </form>
 
-      <div className="flex items-center justify-between pl-10 py-10">
+      <div className="flex items-center justify-between pl-10">
         <div
           className="bg-[#17a2b8] rounded p-[6px] text-white cursor-pointer"
           onClick={() => setUserData((prev) => ({ ...prev, ...preUserData }))}

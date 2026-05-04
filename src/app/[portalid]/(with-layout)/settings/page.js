@@ -166,11 +166,11 @@ function SettingsPage() {
                   </div>
                   <span className="text-left">{label}</span>
                 </div>
-                <div>
+                {/* <div>
                   <ChevronRight
                     className={`w-4 h-4 ${isActive ? primaryColor : "#3f3f46"}`}
                   />
-                </div>
+                </div> */}
               </button>
             );
           })}

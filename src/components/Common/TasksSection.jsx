@@ -6,7 +6,7 @@ import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType, UserRole } from '@/config/constants';
 import { Dialog } from '@headlessui/react';
-import { Calendar, Check, CheckCircle, ChevronDown, ChevronUp, Edit, Ellipsis, FileText, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
+import { Calendar, Check, CheckCircle, ChevronDown, ChevronUp, Clock, Edit, Ellipsis, FileText, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
@@ -578,201 +578,109 @@ const sortedTasks =
 
   
     return (
-      <div className="relative">
-        {/* {filterVisibility("My Task Section") && ( */}
-          <>
-            <div className={`grid grid-cols-3 mb-2 items-center`}>
-              <div></div>
-              <h3 className="text-xl font-light text-center text-[#212529] font-lato">
-                My Tasks
-              </h3>
-              <div>
-                <Button
-                  iconClassName="w-5 h-5"
-                  className='text-gray-600 w-24 h-10 ml-auto'
-                  label={"Add"}
-                  icon={Plus}
-                  onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
-                />
-              </div>
+      <div className="bg-white rounded-xl border border-gray-200 max-h-[350px]">
+        {/* Header */}
+        <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
+          <h3 className="text-lg font-semibold text-gray-800 font-lato">
+            My Tasks
+          </h3>
+          <Button
+            type='Primary'
+            iconClassName="w-3 h-3"
+            label="Add"
+            icon={Plus}
+            onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
+          />
+        </div>
+
+        {/* Tasks Container */}
+        <div className="max-h-[280px] overflow-y-auto rounded-b-xl">
+          {(isChecklistLoading || isTaskUpdateLoading) ? (
+            <div className="min-h-[290px] flex items-center justify-center">
+              <LoaderSpinner size={24} className="text-blue-500" />
             </div>
+          ) : (
+            <>            
+              {sortedTasks?.length > 0 ? (
+                sortedTasks?.map((task) => (
+                 <div key={task?.id} className='py-2 hover:bg-gray-50 shadow-sm'>
+                  {/* Main task row */}
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsOpenTaskModal(true);
+                      setIsActionDropdownOpen(false);
+                      setSelectedTask(task)
+                      setTaskToUpdate(task)
+                    }}
+                    className="flex items-center gap-3 px-3 py-1 transition-colors cursor-pointer"
+                  >
 
-            <div className={`mb-7 border border-[#dee2e6] max-h-[300px] overflow-y-auto`}>
-              <table className="min-w-full divide-y divide-gray-200 overflow-y-auto ">
-              <thead className="bg-gray-50 text-sm font-lato text-[#212529]">
-                <tr>
-                  <th></th>
-                  <th className="text-start px-3 py-4">
-                    <div className="flex items-center justify-start gap-2">
-                      <span className="block">Tasks</span>
-                      <button className="flex items-center justify-center" onClick={() => toggleSort("title")}>
-                        <ChevronUp className={`h-4 w-4 ${sortConfig.key === "title" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                      </button>
-                      <button className="flex items-center justify-center" onClick={() => toggleSort("title")}>
-                        <ChevronDown className={`h-4 w-4 ${sortConfig.key === "title" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                      </button>
-                    </div>
-                  </th>
-                  <th className="text-start px-3 py-4">Status</th>
-                  <th className="text-start px-3 py-4">From</th>
-                  <th className="text-start px-3 py-4">To</th>
-                  <th className="text-start px-3 py-4">
-                    <div className="flex items-center justify-start gap-2">
-                      <span className="block">Due Date</span>
-                      <button className="flex items-center justify-center" onClick={() => toggleSort("dueDate")}>
-                        <ChevronUp className={`h-4 w-4 ${sortConfig.key === "dueDate" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                      </button>
-                      <button className="flex items-center justify-center" onClick={() => toggleSort("dueDate")}>
-                        <ChevronDown className={`h-4 w-4 ${sortConfig.key === "dueDate" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                      </button>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-                <tbody className="divide-y divide-gray-200" ref={actionDropdownRef}>
-                  {isChecklistLoading ? (
-                    <tr>
-                      <td colSpan={"6"}>
-                        <div className="min-h-[100px] flex items-center justify-center">
-                          <LoaderSpinner size={24} className="text-blue-500" />
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    <>
-                      {sortedTasks?.length > 0 ? (
-                        sortedTasks?.map((task) => (
-                          <tr key={task?.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsOpenTaskModal(true);
-                              setIsActionDropdownOpen(false);
-                              setSelectedTask(task)
-                            }}
-                            className='hover:bg-gray-100 cursor-pointer'
-                          >
-                            <td className="ps-3 py-4">
-                              <div
-                                className={`h-3 w-3 rounded-full  pulse-animation ${
-                                  task?.status === TaskStatus.PENDING
-                                    ? "bg-[#ffc107]"
-                                    : "bg-[#1ec0cb]"
-                                }`}
-                              ></div>
-                            </td>
-                            <td className="px-3 py-4 max-w-[100px]">
-                              <p className="font-lato text-[#212529] text-sm truncate">
-                                {task?.title}
-                              </p>
-                            </td>
-                            <td className="px-3 py-4">
-                              <p
-                                className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-start cursor-pointer`}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  if (task?.status === TaskStatus.COMPLETED) {
-                                    return;
-                                  }
-                                  setTaskToUpdate(task);
-                                  if (task?.type === TaskType.SIGN && user?.role !== UserRole?.MODERATOR) {
-                                    // handleOpenSignModal(task);
-                                    router.push("esignature");
-                                  } else if (task?.type === TaskType.UPLOAD ) {
-                                    setMyTaskPopupBoxContent({
-                                      title: task?.title,
-                                      actionText: task?.type,
-                                    });
-                                    setIsMyTaskPopupOpen((prev) => !prev);
-                                    setCompletedTask((prev) => ({
-                                      ...prev,
-                                      upload: true,
-                                    }));
-                                  }
-                                }}
-                              >
-                                {isSignReqLoading === task?.title ? (
-                                  <LoaderSpinner size={24} className="text-blue-500" />
-                                ) : task?.status === TaskStatus.COMPLETED ? (
-                                  <span className="italic">Completed</span>
-                                ) : (
-                                  <span>
-                                    {task?.type.charAt(0).toUpperCase() +
-                                      task?.type.slice(1)}
-                                  </span>
-                                )}
-                              </p>
-                            </td>
-                            <td className="px-3 py-4 max-w-[100px]">
-                              <p className="font-lato text-[#212529] text-sm truncate">
-                                {/* {task?.dueDate
-                                  ? new Date(task?.dueDate).toLocaleDateString(
-                                      "en-US"
-                                    )
-                                  : new Date().toLocaleDateString("en-US")} */}
-                                  {task?.createdBy?.firstName + " " + task?.createdBy?.lastName}
-                              </p>
-                            </td>
-                            <td className="px-3 py-4 max-w-[100px]">
-                              <p className="font-lato text-[#212529] text-sm truncate">
-                                  {task?.user?.firstName + " " + task?.user?.lastName}
-                              </p>
-                            </td>
-                            <td className="relative px-3 py-4 cursor-pointer text-gray-800 text-sm">
-                              {formatDate(task?.dueDate)}
-                              {/* <div onClick={() => {
-                                setIsActionDropdownOpen((prev) => (selectedTask?.id === task?.id ? !prev : true));
-                                setSelectedTask(task);
-                                }} className="p-2 rounded">
-                                <Ellipsis className="w-5 h-5 text-gray-600" />
-                              </div> */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={task?.status === TaskStatus.COMPLETED}
+                        id={`complete-${task?.id}`}
+                        disabled={task?.status === TaskStatus.COMPLETED}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          if (e.target.checked) {
+                            updateTaskStatus(task);
+                          }
+                        }}
+                      />
 
-                              {/* Dropdown Menu */}
-                              {/* {isActionDropdownOpen && selectedTask?.id === task?.id && (
-                                <div className="absolute right-10 top-10 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50 text-sm">
-                                  <div
-                                    onClick={(e) => {
-                                      e.stopPropagation(); 
-                                      setIsOpenTaskModal(true); 
-                                      setIsActionDropdownOpen(false); 
-                                    }}
-                                    className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                  >
-                                    View Details
-                                  </div>
-                                    {task?.status !== TaskStatus.COMPLETED && (
-                                      <div
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          updateTaskStatus(task);
-                                          setIsActionDropdownOpen(false);
-                                        }}
-                                        className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                      >
-                                        Mark Complete
-                                      </div>
-                                    )}
-                                </div>
-                              )} */}
-                            </td>
-                          </tr>
-                        ))
+                    </div>
+
+
+                    <div className={`flex-1 text-sm ${task?.status === TaskStatus.COMPLETED ? 'text-gray-400' : 'text-gray-800'}`}>
+                      {task?.title}
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      {task?.status === TaskStatus.COMPLETED ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Completed
+                        </span>
                       ) : (
-                        <tr className="text-center">
-                          <td colSpan="6">
-                            <p className="font-lato text-[#212529] text-sm py-4">
-                              No Tasks to Show !!!
-                            </p>
-                          </td>
-                        </tr>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          {task?.type}
+                        </span>
                       )}
-                    </>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
-        {/* )} */}
-        {isMyTaskPopupOpen && (
+                    </div>
+                  </div>
+
+                  {/* Due date row with checkbox */}
+                  <div className="px-5">
+                    <div className="flex items-center justify-between">
+                      <div className={`flex items-center gap-2 text-xs ${task?.status === TaskStatus.COMPLETED ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <Clock className="h-4 w-4" />
+                        <span>Due: {formatDate(task?.dueDate)}</span>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-14">
+                  <div className="text-gray-400 mb-4">
+                    <FileText className="h-12 w-12" />
+                  </div>
+                  <h4 className="text-gray-600 font-medium text-lg mb-1">
+                    No Tasks Yet
+                  </h4>
+                  <p className="text-gray-400 text-sm text-center">
+                    You don't have any tasks assigned right now.
+                  </p>
+                </div>
+              )}
+            </>            
+          )}
+        </div>
+         {isMyTaskPopupOpen && (
           <MyTaskPopupBox
             onClose={() => setIsMyTaskPopupOpen(false)}
             content={myTaskPopupBoxContent}

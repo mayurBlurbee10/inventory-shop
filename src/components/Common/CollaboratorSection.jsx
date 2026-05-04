@@ -49,15 +49,16 @@ const CollaboratorSection = () => {
             setCollaborators(newList);
           };
     return (
-        <div className='reletive mt-1 mb-5'>
+        <div className='relative'>
             {filterVisibility("Collaborator Section") && (
-                    <div>
-                      <div>
-                        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      {/* Header */}
+                      <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
+                        <h3 className="text-lg font-semibold text-gray-800 font-lato">
                           My Collaborators
                         </h3>
                       </div>
-                      <div className="p-4 border border-[#dee2e6]">
+                      <div className="p-4">
                       <form className="mb-3.5" onSubmit={(e) => {
                         e.preventDefault(); // Prevents form from refreshing the page
                         addCollaborator(collaborator); // Calls function only when form is submitted
@@ -114,69 +115,74 @@ const CollaboratorSection = () => {
 
                         {/* Table */}
 
-                        <div className="border overflow-y-auto max-h-[200px]">
-                          <table className="divide-y-2 divide-gray-200 overflow-auto w-full">
-                            <thead>
+                        <div className="overflow-y-auto max-h-[200px]">
+                          <table className="w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
                               <tr>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Name
                                 </th>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Email
                                 </th>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Role
                                 </th>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Actions
                                 </th>
                               </tr>
                             </thead>
 
-                            <tbody>
-                              <tr className="hover:bg-gray-300">
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="hover:bg-gray-50 transition-colors">
                                 <td className="p-3">
-                                  <p className="font-semibold font-lato text-sm text-black">
+                                  <p className="font-semibold font-lato text-sm text-gray-900">
                                     Briana Walsh
                                   </p>
                                 </td>
                                 <td className="p-3">
-                                  <p className="font-normal font-lato text-sm text-black">
+                                  <p className="font-normal font-lato text-sm text-gray-600">
                                     advisor@universalportalwealth.com
                                   </p>
                                 </td>
                                 <td className="p-3">
-                                  <p className="font-normal font-lato text-sm text-black">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     Editor
-                                  </p>
+                                  </span>
                                 </td>
                                 <td></td>
                               </tr>
                               {collaborators &&
                                 collaborators.length > 0 &&
                                 collaborators.map(({ name, email, role }) => (
-                                  <tr className="hover:bg-gray-300" key={email}>
+                                  <tr className="hover:bg-gray-50 transition-colors" key={email}>
                                     <td className="p-3">
-                                      <p className="font-semibold font-lato text-sm text-black">
+                                      <p className="font-semibold font-lato text-sm text-gray-900">
                                         {name}
                                       </p>
                                     </td>
                                     <td className="p-3">
-                                      <p className="font-normal font-lato text-sm text-black">
+                                      <p className="font-normal font-lato text-sm text-gray-600">
                                         {email}
                                       </p>
                                     </td>
                                     <td className="p-3">
-                                      <p className="font-normal font-lato text-sm text-black">
-                                        {role.charAt(0).toUpperCase() +
-                                          role.slice(1)}
-                                      </p>
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        role === 'editor' 
+                                          ? 'bg-blue-100 text-blue-800' 
+                                          : 'bg-gray-100 text-gray-800'
+                                      }`}>
+                                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                                      </span>
                                     </td>
-                                    <td
-                                      className="p-3"
-                                      onClick={() => removeCollaborator(email)}
-                                    >
-                                      <X className="text-red-600 cursor-pointer" />
+                                    <td className="p-3">
+                                      <button 
+                                        className="text-gray-400 hover:text-red-600 transition-colors"
+                                        onClick={() => removeCollaborator(email)}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </button>
                                     </td>
                                   </tr>
                                 ))}

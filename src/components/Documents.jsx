@@ -22,6 +22,8 @@ import {
   LogOut,
   Loader2,
   Search,
+  UploadIcon,
+  PlusIcon,
 } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -53,7 +55,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
-import { TaskStatus, TaskType } from "@/config/constants";
+import { TaskStatus, TaskType, UserRole } from "@/config/constants";
 import Messaging from "./Common/Messaging";
 import TasksSection from "./Common/TasksSection";
 import MessageSection from "./Common/MessageSection";
@@ -1160,289 +1162,181 @@ function Documents({
                 : "lg:col-span-3"
             }`}
           >
-            {fileType !== "loan" && (
-              <>
-                <div className={`flex flex-col justify-center ${filterVisibility("Ticker Tape") ? "gap-4" : ""}`}>
-                  {fileType !== "loan" && fileType !== "advisor" && (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="flex flex-wrap items-center gap-3 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+
+            {/* Title Section */}
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <div className={`flex flex-col justify-center w-full gap-2`}>
+                   {fileType !== "loan" && fileType !== "advisor" && (
                     <div className="flex justify-center">
                       {filterVisibility("Ticker Tape") && (
-                        <div className="w-full">
+                        <div className="w-full mb-4">
                           <TickerTape />
                         </div>
                       )}
                     </div>
                   )}
-                  <div className="flex items-center gap-10">
-                    {/* <p className="text-sm font-lato">
-                      <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
-                        Shared Documents
-                      </span>
-                      <span className="text-sm font-normal text-black font-lato block md:inline">
-                        Securely share content with your advisor and trusted
-                        collaborators
-                      </span>
-                    </p> */}
-                    <div className="w-full">
-                      <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
-                        <span className="text-sm font-normal text-black font-lato block md:inline">
-                          {
-                            // Check if content and its required properties are loaded
-                            (!content || !content.portalContent || !content.defaultContent) ? (
-                              <div className="pr-2 flex items-center mb-6">
-                                <div className="flex space-x-1">
-                                  <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce"></div>
-                                  <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                  <div className="w-1 h-1 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                </div>
-                              </div>
-                            ) : (
-                              // Content is fully loaded, now check for custom content
-                              (() => {
-                                const customContent = filterValue("Shared Docs Heading");
-                                return (customContent && customContent.trim().length > 0) ? (
-                                  <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: customContent }} suppressHydrationWarning={true} />
-                                ) : (
-                                    <div className="pr-2 flex flex-wrap items-center">
-                                      <span className="block md:inline text-xl font-light sm:text-center text-black mr-10 font-lato mb-2 md:mb-0">
-                                        Shared Documents
-                                      </span>
-                                      <span>Securely share content with your advisor and trusted collaborators</span>
-                                    </div>
-                                );
-                              })()
-                            )
-                          }
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <hr className="my-5" />
-              </>
-            )}
-            <div className="border border-solid border-[#0000001a] rounded-sm relative">
-              <div className="border-b border-solid border-[#0000001a]">
-                <div className="py-[18px] flex items-center w-full px-5 bg-gray-50 text-[#8f8f8f]">
                   <div>
-                    <Search className="w-5 h-5" />
-                  </div>
-                  <input
-                    type="search"
-                    placeholder="Search file and folders"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={
-                      "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4 text-gray-700"
+                  <h4 className="text-lg font-bold text-gray-800 flex items-center gap-3">
+
+                    {
+                      !content ||
+                        !content.portalContent ||
+                        !content.defaultContent ? (
+                        <div className="flex items-center space-x-2 p-2">
+                          <div className="w-2 h-2 bg-gray-200 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-200 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                          <div className="w-2 h-2 bg-gray-200 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        </div>
+                      ) : (
+                        (() => {
+                          const customContent = filterValue("Data Room Heading");
+                          return customContent && customContent.trim().length > 0 ? (
+                            <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: customContent }} suppressHydrationWarning={true} />
+                          ) : (
+                            <span>Shared Documents</span>
+                          );
+                        })()
+                      )
                     }
-                  />
-
-                  <div>
-                    <div className="flex items-center gap-3">
-                      {fileType !== "loan" && (
-                        <>
-                          {/* Card view button */}
-                          <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200 ${
-                              view === "grid" ? "hidden" : "visible"
-                            }`}
-                            onClick={() => {
-                              setView("grid");
-                              // setIsOpenOptionDrawer(false);
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              height="24"
-                              fill="currentColor"
-                            >
-                              <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
-                            </svg>
-                          </button>
-
-                          {/* List view button */}
-                          <button
-                            className={`hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200  ${
-                              view === "list" ? "hidden" : "visible"
-                            }`}
-                            onClick={() => {
-                              setView("list");
-                              // setIsOpenOptionDrawer(false);
-                            }}
-                          >
-                            <AlignJustify />
-                          </button>
-                        </>
-                      )}
-
-                      {/* Upload items */}
-                      <div className="relative" ref={dropdownRef}>
-                        <button
-                          className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
-                          onClick={() => {
-                            setIsOpenNewFolderDrawer((prev) => !prev);
-                          }}
-                        >
-                          <Plus />
-                        </button>
-
-                        {isOpenNewFolderDrawer && (
-                          <div className="absolute top-[50px] z-20 right-0 w-48 bg-white shadow-md p-3 rounded-md">
-                            <ul>
-                              <li>
-                                <button
-                                  className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                  onClick={() => {
-                                    setIsOpenNewFolderDrawer(false); // Close the drawer
-                                    setIsOpenUploadArea((prev) => !prev); // Toggle upload area
-                                  }}
-                                >
-                                  Upload
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="p-3 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300"
-                                  onClick={() => {
-                                    setIsOpenNewFolderDrawer(false); // Close the drawer
-                                    setIsNewFolderModalOpen((prev) => !prev);
-                                  }}
-                                >
-                                  New Folder
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                  </h4>
+                  <div className="text-sm text-gray-600">Securely share content with your advisor and trusted collaborators</div>
                   </div>
-                  
-
-                  {/* {searchQuery.length > 0 && (
-                          <div
-                            onClick={handelClearSearch}
-                            className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer"
-                          >
-                            <X className="h-5 w-5 text-[#3c4043]" />
-                          </div>
-                        )} */}
-
-                  {/* Suggestions */}
-                  {/* {suggestions.length > 0 && (
-                        <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
-                          {suggestions.map((item, index) => (
-                            <li
-                              onClick={() => {
-                                handleSuggestionClick(item);
-                              }}
-                              key={item.id}
-                              className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${suggestions.length - 1 === index
-                                ? "rounded-bl-[30px] rounded-br-[30px]"
-                                : ""
-                                }`}
-                            >
-                              <span className="mr-2">
-                                {item.type === "folder" ? (
-                                  <Folder className="h-5 w-5 text-[#3c4043]" />
-                                ) : (
-                                  <File className="h-5 w-5 text-[#3c4043]" />
-                                )}
-                              </span>
-                              <span className="text-gray-700 font-medium">
-                                {item.name}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )} */}
-
-                  {suggestions.length > 0 && (
-                    <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
-                      {suggestions.map((item, index) => (
-                        <li
-                          onClick={() => {
-                            handleSuggestionClick(item);
-                          }}
-                          key={item.id}
-                          className={`flex items-center px-4 py-2 hover:bg-gray-100 transition relative ${item.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
-                        >
-                          <span className="mr-2">
-                            {item.type === "folder" ? (
-                              <Folder className="h-5 w-5 text-[#3c4043]" />
-                            ) : (
-                              <File className="h-5 w-5 text-[#3c4043]" />
-                            )}
-                          </span>
-                          <span className="text-gray-700 font-medium">
-                            {item.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
               </div>
+            </div>
 
-              {fileType !== "loan" && (
-                <div>
-                  <div
-                    className={`bg-indigo-50 rounded-[50px] text-gray-600 py-1 mt-3
-                          ${isToolbarVisible ? "opacity-1" : "hidden"}
-                          `}
+            {/* Search and Actions */}
+            <div className="flex flex-col gap-3 w-full md:flex-row lg:items-center lg:gap-2">
+              {/* Search Bar */}
+              <div className={`relative flex-1 min-w-[200px] order-1 lg:order-1 max-w-full`}>
+                <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                  <Search className="w-4 h-4 text-gray-400" />
+                </div>
+                <input
+                  type="search"
+                  placeholder="Search files and folders..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2.5 w-full bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              {/* Controls Container */}
+              <div className="flex flex-wrap items-center gap-2 order-2 lg:order-2">
+                {/* View Toggle */}
+                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setView("list")}
+                    className={`p-2 rounded-md transition-all duration-200 ${view === "list" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
+                    title="List view"
                   >
-                    <div className="flex items-center gap-3">
-                      <button
-                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
-                        onClick={clearBulkItem}
-                      >
-                        <X className="size-5" />
-                      </button>
-                      <p className="text-sm font-medium mr-4 text-[#444746]">
-                        {selectedBulkItems.length} item(s) selected
-                      </p>
-                      <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                    <AlignJustify className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setView("grid")}
+                    className={`p-2 rounded-md transition-all duration-200 ${view === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
+                    title="Grid view"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                      <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                
+                {/* Upload/New Folder Buttons */}
+               
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                      type="Primary"
+                        onClick={() => {
+                          setIsOpenNewFolderDrawer(false);
+                          setIsOpenUploadArea(true);
+                        }}
+                        label='Upload Files'
+                        icon={UploadIcon}
+                      />
+                      <Button
+                        type="Primary"
+                        onClick={() => {
+                          setIsOpenNewFolderDrawer(false);
+                          setIsNewFolderModalOpen(true);
+                        }}
+                        icon={PlusIcon}
+                        label='New Folder'
+                      />
+                    </div>
+                
+
+              </div>
+            </div>
+
+          </div>
+                          
+              {fileType !== "loan" && selectedBulkItems.length > 0 && (
+            <div>
+              <div
+                className={`bg-accent text-gray-800 py-1 mt-3
+                          ${isToolbarVisible ? "opacity-1" : "hidden"
+                          }`}
+              >
+                <div className="flex items-center gap-3">
+                  <button
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
+                    onClick={clearBulkItem}
+                  >
+                    <X className="size-5" />
+                  </button>
+                  <p className="text-sm font-medium mr-4 text-gray-800">
+                    {selectedBulkItems.length} item(s) selected
+                  </p>
+                  <button
+                    className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
                           fileType === "shared" ? "hidden" : "hover:bg-gray-200"
                         } outline-none`}
-                        onClick={() =>
-                          selectedBulkItems.length > 0 &&
-                          handelToolbarMoveClick()
-                        }
-                        disabled={fileType === "shared"}
-                      >
-                        <FolderInput className="size-5" />
-                      </button>
-                      <button
+                    onClick={() =>
+                      selectedBulkItems.length > 0 &&
+                      handelToolbarMoveClick()
+                    }
+                    disabled={fileType === "shared"}
+                  >
+                    <FolderInput className="size-5" />
+                  </button>
+                  <button
                         className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
                           fileType === "shared" ? "hidden" : "hover:bg-gray-200"
                         } outline-none`}
                         onClick={
                           () =>
                             selectedBulkItems.length > 0 && handleBulkDownload()
-                          // console.log("selectedBulkItems", selectedBulkItems)
                         }
                         disabled={fileType === "shared"}
                       >
-                        <Download className="size-5" />
+                        {isBulkDownloading ? (
+                          <LoaderSpinner className="text-gray-500" size={16}/>
+                        ) : (
+                          <Download className="size-5" />
+                        )}
                       </button>
-                      <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
+                   {user?.role !== UserRole.USER && <button
+                    className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
                           fileType === "shared" ? "hidden" : "hover:bg-gray-200"
                         } outline-none`}
-                        onClick={() =>
-                          selectedBulkItems.length > 0 &&
-                          setIsDeleteModalOpen(true)
-                        }
-                        disabled={fileType === "shared"}
-                      >
-                        <Trash2 className="size-5" />
-                      </button>
-                    </div>
-                  </div>
+                    onClick={() =>
+                      selectedBulkItems.length > 0 &&
+                      setIsDeleteModalOpen(true)
+                    }
+                    disabled={fileType === "shared"}
+                  >
+                    <Trash2 className="size-5" />
+                  </button>}
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
               {/* breadcrumbs */}
               <div className="px-5 border-b break-words flex justify-between">
@@ -1782,8 +1676,8 @@ function Documents({
           {/* right panel */}
 
           {fileType !== "loan" && fileType !== "advisor" && (
-            <div className="col-span-5 lg:col-span-2 pt-[22px]">
-              <div>
+            <div className="col-span-5 lg:col-span-2">
+              <div className="flex flex-col gap-4">
                 {/* Tasks */}
                 {filterVisibility("My Task Section") && (
                     // <>
@@ -2005,13 +1899,14 @@ function Documents({
 
                 {/* Collaborators */}
                 {filterVisibility("Collaborator Section") && (
-                    <div className="mb-5">
-                      <div>
-                        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      {/* Header */}
+                      <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
+                        <h3 className="text-lg font-semibold text-gray-800 font-lato">
                           My Collaborators
                         </h3>
                       </div>
-                      <div className="p-4 border border-[#dee2e6]">
+                      <div className="p-4">
                       <form className="mb-3.5" onSubmit={(e) => {
                         e.preventDefault(); 
                         addCollaborator(collaborator); 
@@ -2058,69 +1953,78 @@ function Documents({
                         </form>
 
                        
-                        <div className="border overflow-auto">
-                          <table className="divide-y-2 divide-gray-200 overflow-auto border-t">
-                            <thead>
+                        <div className="overflow-auto">
+                          <table className="w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
                               <tr>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Name
                                 </th>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Email
                                 </th>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Role
                                 </th>
-                                <th className="text-sm text-black font-medium font-lato p-3 text-start">
+                                <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                   Actions
                                 </th>
                               </tr>
                             </thead>
 
-                            <tbody>
-                              <tr className="hover:bg-gray-300">
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              <tr className="hover:bg-gray-50 transition-colors">
                                 <td className="p-3">
-                                  <p className="font-semibold font-lato text-sm text-black">
+                                  <p className="font-semibold font-lato text-sm text-gray-900">
                                     Erica Smith
                                   </p>
                                 </td>
                                 <td className="p-3">
-                                  <p className="font-normal font-lato text-sm text-black">
+                                  <p className="font-normal font-lato text-sm text-gray-600">
                                     advisor@wealthportal.com
                                   </p>
                                 </td>
                                 <td className="p-3">
-                                  <p className="font-normal font-lato text-sm text-black">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     Editor
-                                  </p>
+                                  </span>
                                 </td>
-                                <td></td>
+                                <td className="p-3">
+                                  <button className="text-gray-400 hover:text-red-600 transition-colors">
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </td>
                               </tr>
                               {collaborators &&
                                 collaborators.length > 0 &&
                                 collaborators.map(({ name, email, role }) => (
-                                  <tr className="hover:bg-gray-300" key={email}>
+                                  <tr className="hover:bg-gray-50 transition-colors" key={email}>
                                     <td className="p-3">
-                                      <p className="font-semibold font-lato text-sm text-black">
+                                      <p className="font-semibold font-lato text-sm text-gray-900">
                                         {name}
                                       </p>
                                     </td>
                                     <td className="p-3">
-                                      <p className="font-normal font-lato text-sm text-black">
+                                      <p className="font-normal font-lato text-sm text-gray-600">
                                         {email}
                                       </p>
                                     </td>
                                     <td className="p-3">
-                                      <p className="font-normal font-lato text-sm text-black">
-                                        {role.charAt(0).toUpperCase() +
-                                          role.slice(1)}
-                                      </p>
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        role === 'editor' 
+                                          ? 'bg-blue-100 text-blue-800' 
+                                          : 'bg-gray-100 text-gray-800'
+                                      }`}>
+                                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                                      </span>
                                     </td>
-                                    <td
-                                      className="p-3"
-                                      onClick={() => removeCollaborator(email)}
-                                    >
-                                      <X className="text-red-600 cursor-pointer" />
+                                    <td className="p-3">
+                                      <button 
+                                        className="text-gray-400 hover:text-red-600 transition-colors"
+                                        onClick={() => removeCollaborator(email)}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </button>
                                     </td>
                                   </tr>
                                 ))}

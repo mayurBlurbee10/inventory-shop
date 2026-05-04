@@ -78,17 +78,20 @@ console.log("loanData", loanData);
 
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
-      <div className="m-1 mx-4">
-        <div className="border-b border-[#dee2e6] pt-4 sm:pt-12 pb-5 flex justify-between sm:items-center flex-col md:flex-row gap-3">
-          <div className="text-sm font-lato">
-            <span className="block md:inline text-black text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
-              Custom Forms
-            </span>
-            <span className="block md:inline text-black">
-              Create new forms and collect new data from customers, partners and employees and route as required.
-            </span>
+      <div>
+        <div className="flex justify-between bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6 mt-12">
+          <div className="flex flex-wrap items-center gap-3 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex-1">
+              <div className="flex flex-col">
+                <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                  Custom Forms
+                </h3>
+                <div className="text-sm text-gray-600">
+                  Create new forms and collect new data from customers, partners and employees and route as required.
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
           {/* {loanData?.length === 3 ? (
             <div
               className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl cursor-pointer font-lato"
@@ -99,15 +102,15 @@ console.log("loanData", loanData);
             </div>
         ) : (  */}
           <div
-            className={`flex items-center justify-between cursor-pointer bg-[#f8f9fa] border border-transparent hover:border-[#dee2e6] p-3 max-w-48 rounded-md relative ${isLoanOptionOpen && "bg-[#dadcdd]"
+            className={`flex items-center justify-between cursor-pointer bg-[#f8f9fa] border border-transparent hover:border-[#dee2e6] m-3 p-3 max-w-48 rounded-md relative ${isLoanOptionOpen && "bg-[#dadcdd]"
               }`}
             onClick={() => setIsLoanOptionOpen((prev) => !prev)}
           >
             <div className="flex items-center gap-2 font-lato">
-              <Plus className="font-bold" />
-              Create New
+              <Plus className="h-4 w-4" />
+              <span className="font-medium">Create New</span>
             </div>
-            <ChevronDown className="fill-black " />
+            <ChevronDown className="h-4 w-4 fill-black" />
             {isLoanOptionOpen && (
               <div ref={newLoanDropdownRef} className="flex flex-col border border-[#dee2e6] bg-white  w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer font-lato z-[50]">
                 <div onClick={() => router.push(`forms/new?type=mortgage`)}>
@@ -134,70 +137,86 @@ console.log("loanData", loanData);
               <RotateCw className="h-4 w-4" />
             </div>
           </div>
-          <div className="border w-full">
-            <div className="py-[18px] flex items-center w-full px-5 bg-gray-50 text-[#8f8f8f]">
-              <div>
-                <Search className="w-5 h-5" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <Search className="w-4 h-4 text-gray-400" />
               </div>
               <input
                 type="search"
-                placeholder="Search file and folders"
+                placeholder="Search forms..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={
-                  "relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4 text-gray-700"
-                }
+                className="pl-10 pr-4 py-2.5 w-full bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
               />
             </div>
-          <table className=" border-[#dee2e6] text-sm font-lato w-full">
-            <thead className="border-t">
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-6">
+          <table className="w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="p-3">Forms</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Forms</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Name</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Type</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
-            <tbody className="border-t">
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredLoanData?.length > 0 ?
                 filteredLoanData?.map(({ id, icon, name, type, status }) => (
-                  <tr key={id} className=" border-b text-center">
-                    <td className="py-5 flex items-center justify-center">
-                      {/* <Icon className="size-8" /> */}
-                      {icon === "CarFront" && <CarFront className="size-8" />}
-                      {icon === "Home" && <Home className="size-8" />}
-                      {icon === "User" && <User className="size-8" />}
+                  <tr key={id} className="hover:bg-gray-50 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-center">
+                        {icon === "CarFront" && <CarFront className="size-8 text-gray-600" />}
+                        {icon === "Home" && <Home className="size-8 text-gray-600" />}
+                        {icon === "User" && <User className="size-8 text-gray-600" />}
+                      </div>
                     </td>
-                    <td className="py-5 px-2">{name}</td>
-                    <td>{type}</td>
-                    <td
-                      className={`${status === "Fully Paid" && "text-green-600"
-                        } ${status === "Active" && "text-[#17a2b8]"} ${status === "Processing" && "text-[#ffc107]"
-                        }`}
-                    >
-                      {status}
+                    <td className="py-3 px-4 font-medium text-gray-900">{name}</td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        type === 'mortgage' ? 'bg-blue-100 text-blue-800' :
+                        type === 'auto' ? 'bg-green-100 text-green-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                        {type}
+                      </span>
                     </td>
-                    <td
-                      className="text-blue-500 cursor-pointer"
-                      onClick={() => router.push(`forms/details/${id}`)}
-                    >
-                      Details
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        status === 'Fully Paid' ? 'bg-green-100 text-green-800' :
+                        status === 'Active' ? 'bg-blue-100 text-blue-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline transition-colors"
+                        onClick={() => router.push(`forms/details/${id}`)}
+                      >
+                        View Details
+                      </button>
                     </td>
                   </tr>
                 )): (
                     <tr>
-                      <td colSpan="5" className="text-center text-gray-500 py-4">
-                        No form found
+                      <td colSpan="5" className="text-center text-gray-500 py-8">
+                        <div className="flex flex-col items-center">
+                          <p className="text-md">No forms found</p>
+                        </div>
                       </td>
                     </tr>
                 )}
             </tbody>
           </table>
-          </div>
         </div>
       </div>
-    </div>
+   
   );
 }
 

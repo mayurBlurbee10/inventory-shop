@@ -68,16 +68,21 @@ function LoansPage() {
   };
 
   return (
-    <div className="bg-white rounded-lg flex flex-col relative w-full h-[80vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
+    <div className="bg-white rounded-lg flex flex-col relative w-full min-h-screen lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div>
-        <div className="border-b border-[#dee2e6] pt-12 pb-5">
-          <p className="text-sm font-lato mt-1">
-            <span className="text-xl font-light text-center text-[#212529] mr-10 font-lato">
-              Loan Origination
-            </span>
-            Securely execute a loan origination workflow, including application,
-            document ingestion, and eSignature.
-          </p>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mt-12 mb-6">
+          <div className="flex flex-wrap items-center gap-3 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex-1">
+              <div className="flex flex-col">
+                <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                  Loan Origination
+                </h3>
+                <div className="text-sm text-gray-600">
+                  Securely execute a loan origination workflow, including application, document ingestion, and eSignature.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex flex-col pt-8">
           <div className="pb-5">
@@ -88,39 +93,58 @@ function LoansPage() {
               <RotateCw className="h-4 w-4" />
             </div>
           </div>
-          <table className="border border-[#dee2e6] text-sm">
-            <thead>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <table className="w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="p-5">My Loans</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">My Loans</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Name</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Type</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                <th className="p-3 text-left text-sm font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200">
               {loanData &&
                 loanData?.map(({ id, icon: Icon, name, type, status }) => (
-                  <tr key={id} className="border border-[#dee2e6] text-center">
-                    <td className="py-5 flex items-center justify-center">
-                      <Icon className="size-8" />
+                  <tr key={id} className="hover:bg-gray-50 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-center">
+                        <Icon className="size-8 text-gray-600" />
+                      </div>
                     </td>
-                    <td className="py-5 px-2">{name}</td>
-                    <td>{type}</td>
-                    <td
-                      className={`${
-                        status === "Fully Paid" && "text-green-600"
-                      } ${status === "Active" && "text-[#17a2b8]"} ${
-                        status === "Processing" && "text-[#ffc107]"
-                      }`}
-                    >
-                      {status}
+                    <td className="py-3 px-4 font-medium text-gray-900">{name}</td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        type === 'mortgage' ? 'bg-blue-100 text-blue-800' :
+                        type === 'auto' ? 'bg-green-100 text-green-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                        {type}
+                      </span>
                     </td>
-                    <td className="text-blue-500 cursor-pointer" onClick={() => router.push(`/forms/details/${id}`)}>Details</td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        status === 'Fully Paid' ? 'bg-green-100 text-green-800' :
+                        status === 'Active' ? 'bg-blue-100 text-blue-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline transition-colors"
+                        onClick={() => router.push(`/forms/details/${id}`)}
+                      >
+                        View Details
+                      </button>
+                    </td>
                   </tr>
                 ))}
             </tbody>
           </table>
+        </div>
         </div>
         {newLoan ? (
           <div

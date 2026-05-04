@@ -725,7 +725,7 @@ function Navbar({ content, config, filterValue }) {
                                           <OptionIcon className="w-4 h-4" />
                                           {optionLabel}
                                         </span>
-                                        <ChevronRight className="w-4 h-4" />
+                                        {/* <ChevronRight className="w-4 h-4" /> */}
                                       </button>
                                     );
                                   })}

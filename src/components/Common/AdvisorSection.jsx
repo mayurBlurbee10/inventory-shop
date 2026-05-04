@@ -6,21 +6,21 @@ const AdvisorSection = ({
   role = "Senior Financial Advisor",
 }) => {
   return (
-    <div className="mb-7">
-      <div>
-        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-5">
+    <div className="bg-white rounded-xl border border-gray-200">
+
+      {/* Header */}
+      <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
+        <h3 className="text-lg font-semibold text-gray-800 font-lato">
           {title}
         </h3>
       </div>
 
-      <div className="border border-[#dee2e6] shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex items-start gap-6 p-4 ">
-          <div className="max-w-[150px] w-full h-[100px] p-1 border border-[#dee2e6] ">
-            {/* <a className="p-1 rounded-sm cursor-pointer flex items-center border border-[#dee2e6]">
-              <img src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" />
-            </a> */}
+      {/* Content */}
+      <div className="p-4">
+        <div className="flex items-start gap-6">
+          <div className="max-w-[150px] w-full h-[100px] p-1 border border-gray-200 rounded-lg">
             <div
-              className={`size-20 w-full h-full p-1 text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 bg-gray-700`}
+              className={`size-20 w-full h-full p-1 text-[25px] flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 bg-gray-700 rounded-lg`}
             >
               {userName?.charAt(0)?.toUpperCase() || "U"}
             </div>

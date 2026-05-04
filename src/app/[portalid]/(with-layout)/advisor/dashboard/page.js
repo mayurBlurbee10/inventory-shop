@@ -229,20 +229,21 @@ export default function AdvisorViewDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-10 w-full">
                 <div className="flex flex-col w-full">
                     {filterVisibility("Your Clients Section") && (
-                        <div >
-                            <div className="w-full flex justify-center items-center mt-1">
-                                <h3 className="text-xl font-light font-lato text-black mb-4">
+                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            {/* Header */}
+                            <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
+                                <h3 className="text-lg font-semibold text-gray-800 font-lato">
                                     Your Clients
                                 </h3>
                             </div>
-                            <div className="max-w-[1200px] mx-auto flex justify-center flex-wrap gap-5 text-black">
+                            <div className="max-w-[1200px] mx-auto">
                                 {
                                     !isLoading && sortedClients.length > 0 &&
-                                    <div className="overflow-x-auto border max-h-[300px] overflow-y-auto w-full">
-                                        <table className="w-full bg-white border-collapse">
-                                            <thead className="sticky top-0 bg-gray-50 w-full">
+                                    <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
+                                        <table className="w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50 sticky top-0">
                                                 <tr>
-                                                    <th className="p-4 border-b text-left text-sm">
+                                                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
                                                         <div className="flex items-center justify-start gap-2">
                                                             <span className="block">Name</span>
                                                             <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
@@ -253,7 +254,7 @@ export default function AdvisorViewDashboard() {
                                                             </button>
                                                         </div>
                                                     </th>
-                                                    <th className="p-4 border-b text-left text-sm">
+                                                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
                                                         <div className="flex items-center justify-start gap-2">
                                                             <span className="block">Email</span>
                                                             <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
@@ -264,21 +265,25 @@ export default function AdvisorViewDashboard() {
                                                             </button>
                                                         </div>
                                                     </th>
-                                                    <th className="p-4 border-b text-left text-sm">Phone</th>
+                                                    <th className="p-4 text-left text-sm font-semibold text-gray-700">Phone</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
+                                            <tbody className="bg-white divide-y divide-gray-200">
                                                 {sortedClients.map((user) => (
-                                                    <tr key={user?.id} className="hover:bg-gray-100 transition-colors">
-                                                        <td className="py-2 px-4 border-b text-blue-600 text-sm">
-                                                            <Link href={`shared-docs?userId=${user?.boxUserId}`} passHref>
+                                                    <tr key={user?.id} className="hover:bg-gray-50 transition-colors">
+                                                        <td className="py-3 px-4 text-sm">
+                                                            <Link 
+                                                                href={`shared-docs?userId=${user?.boxUserId}`} 
+                                                                passHref
+                                                                className="text-blue-600 hover:text-blue-800 font-medium"
+                                                            >
                                                                 {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                                                             </Link>
                                                         </td>
-                                                        <td className="p-4 border-b text-sm">
+                                                        <td className="p-4 text-sm text-gray-600">
                                                            {user?.email}
                                                         </td>
-                                                        <td className="p-4 border-b text-sm">
+                                                        <td className="p-4 text-sm text-gray-600">
                                                             {user?.phoneNo}
                                                         </td>
                                                     </tr>
@@ -289,7 +294,9 @@ export default function AdvisorViewDashboard() {
                                 }
                                 {
                                     isLoading && (
-                                        <LoadingSpinner />
+                                        <div className="flex justify-center py-8">
+                                            <LoadingSpinner />
+                                        </div>
                                     )
                                 }
                             </div>
@@ -298,8 +305,8 @@ export default function AdvisorViewDashboard() {
                     {filterVisibility("Activity Section") && (
                         <div className="bg-white w-full mx-auto mt-8">
                             {/* Title Section */}
-                            <div className="grid grid-cols-1">
-                                <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+                            <div className="flex items-center justify-between bg-white p-3">
+                                <h3 className="text-lg font-semibold text-gray-800 font-lato">
                                     Activities
                                 </h3>
                             </div>
@@ -342,7 +349,7 @@ export default function AdvisorViewDashboard() {
                         </div>
                     )}
                 </div>
-                <div className="w-full">
+                <div className="w-full flex flex-col gap-4">
                     {filterVisibility("My Task Section") && (
                         <TasksSection />
                     )}

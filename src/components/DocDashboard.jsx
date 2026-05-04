@@ -281,7 +281,11 @@ export default function DocDashboard() {
                           filterValue("Dashboard Heading")?.length > 0 ? (
                             <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true}/>
                           ) : (
-                            <div className="pr-2 flex items-center">{`Hello, ${`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}!`}</div>
+                            <div className="flex items-center justify-between bg-white p-3">
+                                <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                                   {`Hello, ${`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}!`}
+                                </h3>
+                            </div>
                           )
                         }
                       </div>
@@ -295,7 +299,7 @@ export default function DocDashboard() {
             <div className="mt-3 flex flex-col items-center">
               {filterVisibility("Chart Section") && (
                 <>
-                  <h3 className="text-xl font-light font-lato text-center text-black mb-4">
+                  <h3 className="text-xl font-semibold text-gray-800 font-lato mb-4">
                     Summary
                   </h3>
 
@@ -316,7 +320,7 @@ export default function DocDashboard() {
                 )}
             </div>
           </div>
-          <div className="col-span-5 md:col-span-2">
+          <div className="col-span-5 md:col-span-2 flex flex-col gap-4">
           {filterVisibility("My Task Section") && (
             <TasksSection />
           )}

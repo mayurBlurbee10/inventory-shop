@@ -908,125 +908,99 @@ useEffect(() => {
 }, [router])
 
   return (
-    <div className="relative text-gray-700">
+    <div className="bg-white rounded-xl border border-gray-200 max-h-[350px]">
+
       {/* Header */}
-      <div className="grid grid-cols-3 items-center">
-        <div></div>
-        <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
+      <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
+        <h3 className="text-lg font-semibold text-gray-800 font-lato">
           Messaging
         </h3>
         <Button
           label={"New"}
           icon={Plus}
           onClick={() => setIsOpenNewMessageModal((prev) => !prev)}
-          type={"Secondary"}
-          className="mb-2 w-24 h-10 ml-auto"
+          type={"Primary"}
+          className="text-sm"
         />
       </div>
 
       {/* Messages List */}
-      {loading ? (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <div className="overflow-x-auto overflow-y-auto w-full">
-          <div className="border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr className="bg-gray-100 text-sm text-gray-700">
-                    <th className="p-4 text-left font-semibold">
-                      <div className="flex items-center justify-start gap-2">
-                        <span className="block">Date</span>
-                        <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
-                          <ChevronUp className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "asc" ?  "text-black" : "text-gray-400"}`}  />
-                        </button>
-                        <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
-                          <ChevronDown className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "desc" ?  "text-black" : "text-gray-400"}`}  />
-                        </button>
-                      </div>
-                    </th>
-                    <th className="p-4 text-left font-semibold">
-                      <div className="flex items-center justify-start gap-2">
-                        <span className="block">Contact</span>
-                      </div>
-                    </th>
-                    <th className="p-4 text-left font-semibold">
-                      <div className="flex items-center justify-start gap-2">
-                        <span className="block">Subject</span>
-                      </div>
-                    </th>
-                    <th className="p-4 text-left font-semibold">
-                      <div className="flex items-center justify-start gap-2">
-                        <span className="block">Type</span>
-                        <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
-                          <ChevronUp className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                        </button>
-                        <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
-                          <ChevronDown className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                        </button>
-                      </div>
-                    </th>
-                </tr>
-              </thead>
-              <tbody className="overflow-y-auto">
-                {!messages || messages.length === 0 ? (
-                  // <tr>
-                  //   <td colSpan={'4'} >
-                  //   {isMessagesLoading ? 
-                  //   <div className="spinner"/> 
-                  //   : <p className="font-lato text-[#212529] text-sm py-4">
-                  //       No Messages to Show !!!
-                  //     </p>}
-                  //   </td>
-                  // </tr>
-                    <tr>
-                      <td colSpan={"6"}>
-                        <div className="min-h-[100px] flex items-center justify-center">
-                          {isMessagesLoading
-                            ? <LoaderSpinner size={28} className="text-blue-500" />
-                            : <p className="font-lato text-[#212529] text-sm py-4">
-                              No Messages to Show !!!
-                            </p>}
-                        </div>
-                      </td>
-                    </tr>
-                ) : (
-                  sortedMessages.slice(-5).reverse().map((row, index) => (
-                    <tr
-                      key={index}
-                      className={`border-t last:border-b hover:bg-gray-50 text-sm cursor-pointer transition ${row?.receiver?.id === user?.id && !row?.seen
-                        ? "bg-gray-50 font-bold"
-                        : "bg-white font-normal"
-                      }`}
-                      onClick={() => handleReadMessage(row)}
-                    >
-                      <td className="p-4 whitespace-nowrap">
-                        {formatDate(row?.createdAt)}
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        {row?.receiver?.firstName + " " + row?.receiver?.lastName || "Unknown"}
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        {row?.subject || "No Subject"}
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        {row?.sender?.id === user?.id ? "Sent" :  "Received"}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      <div className="max-h-[290px] overflow-y-auto rounded-b-xl">
+        {loading ? (
+          <div className="min-h-[320px] flex items-center justify-center">
+            <LoaderSpinner className='text-gray-500'/>
           </div>
-        </div>
-      )}
+      ) : (
+          !messages || messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-14">
+              <h4 className="text-secondary font-semibold text-lg mb-1">
+                No Messages Yet
+              </h4>
+              <p className="text-gray-500 text-sm mb-5 text-center">
+                You don't have any messages right now.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {sortedMessages.slice(-5).reverse().map((row, index) => (
+                <div
+                  key={index}
+                  className={`py-3 hover:bg-gray-50 cursor-pointer transition ${
+                    row?.receiver?.id === user?.id && !row?.seen
+                      ? "bg-blue-50 border-l-4 border-l-blue-500"
+                      : "bg-white"
+                  }`}
+                  onClick={() => handleReadMessage(row)}
+                >
+                  <div className="px-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${
+                          row?.receiver?.id === user?.id && !row?.seen
+                            ? "bg-blue-500"
+                            : "bg-gray-300"
+                        }`}></div>
+                        <span className={`text-sm font-medium ${
+                          row?.receiver?.id === user?.id && !row?.seen
+                            ? "text-gray-900 font-semibold"
+                            : "text-gray-700"
+                        }`}>
+                          {row?.receiver?.firstName + " " + row?.receiver?.lastName || "Unknown"}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          row?.sender?.id === user?.id 
+                            ? "bg-green-100 text-green-700" 
+                            : "bg-blue-100 text-blue-700"
+                        }`}>
+                          {row?.sender?.id === user?.id ? "Sent" : "Received"}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {formatDate(row?.createdAt)}
+                      </span>
+                    </div>
+                    <div className="ml-5">
+                      <p className={`text-sm ${
+                        row?.receiver?.id === user?.id && !row?.seen
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-600"
+                      }`}>
+                        {getDisplayText(row?.text)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </div>
 
-      {/* New Message Button Below Table */}
+      {/* View More */}
       {messages && messages?.length > 5 && (
-        <div className="flex justify-end">
+        <div className="p-3 border-t border-gray-100">
           <div
-            className="flex items-center justify-end text-sm text-blue-500 cursor-pointer"
+            className="flex items-center justify-center text-sm text-blue-500 hover:text-blue-600 cursor-pointer font-medium"
             onClick={() => setIsOpenAllMessageSection((prev) => !prev)}
           >
             View More

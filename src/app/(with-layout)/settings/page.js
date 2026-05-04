@@ -68,9 +68,9 @@ function SettingsPage() {
                     }`} />
                     <span>{label}</span>
                   </div>
-                  <ChevronRight className={`w-4 h-4 ${
+                  {/* <ChevronRight className={`w-4 h-4 ${
                     activeTab === id ? 'text-white' : 'text-gray-700/80'
-                  }`} />
+                  }`} /> */}
                 </button>
               ))}
             </nav>

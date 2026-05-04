@@ -225,7 +225,7 @@ function Page() {
           </div>
 
         </div>
-        <div className="col-span-5 md:col-span-2">
+        <div className="col-span-5 md:col-span-2 flex flex-col gap-4">
           {filterVisibility("My Task Section") && (
             <TasksSection />
           )}

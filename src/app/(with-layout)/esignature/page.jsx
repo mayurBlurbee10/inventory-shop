@@ -108,23 +108,22 @@ function ESignature() {
   }, [router]);
 
   return (
-    <div className="bg-white rounded-lg flex relative w-full h-[80vh] max-w-[1140px] mx-auto">
+    <div className="bg-white rounded-xl border border-gray-200 flex relative w-full h-[80vh] max-w-[1140px] mx-auto mt-12">
       <div
-        className="bg-white rounded-2xl w-full xl:mr-5 pt-5 pb-3 px-4"
+        className="bg-white rounded-xl w-full xl:mr-5 pt-5 pb-3 px-4"
         onClick={() => {
           setAccountDropdown(false);
         }}
       >
-       <div className="border-b border-[#dee2e6] pt-8 pb-5">
-          <p className="text-sm font-lato mt-1 text-black">
-            <span className="block md:inline text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
+       <div className="flex items-center justify-between bg-white px-3">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 font-lato">
               E-signature
-            </span>
-            <span className="block md:inline text-black">
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
               Securely execute an eSignature workflow, including document preparation, and digital signing.
-            </span>
-          </p>
-
+            </p>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -155,7 +154,7 @@ function ESignature() {
             <LoaderSpinner size={32} className="text-blue-500" />
           </div>
         ) : (
-          <div className="mt-4 h-[calc(100vh-260px)]">
+          <div className="mt-4 h-[calc(100vh-310px)]">
             {activeTab === "pending" && (
               <div>
                 {pendingRequests?.length > 0 ? (
