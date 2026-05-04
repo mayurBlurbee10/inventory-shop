@@ -75,7 +75,7 @@ function TNCModal({ onClose, user, email, password, page }) {
       // await fetchWrapper("/api/api-logs", { method: "POST" }, "login");
        const dashboardPage = pages.find((page) => page.title === "dashboard");
        if(dashboardPage?.isPageVisible) {
-        router.push(dashboardPage.path);
+        router.push("dashboard");
         toast.success("Redirecting to dashboard");
        }else{
         router.push("shared-docs");

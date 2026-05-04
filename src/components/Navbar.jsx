@@ -345,7 +345,14 @@ function Navbar({ content, config, filterValue }) {
       <div className="w-full mx-auto px-2">
         <nav className="flex justify-between">
           <div 
-            onClick={() => router.push("dashboard")} 
+            onClick={() => {
+              const dashboardPage = pageData.find((page) => page.title === "dashboard");
+              if (dashboardPage?.isPageVisible) {
+                router.push("dashboard");
+              } else {
+                router.push("shared-docs");
+              }
+            }}
             className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2 cursor-pointer"
           >
             {logo ? (
@@ -374,7 +381,7 @@ function Navbar({ content, config, filterValue }) {
                 //   <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
                 // ) :
                 filterValue("Header Text") &&
-                filterValue("Header Text") !== "Premier Customer Portal"
+                  filterValue("Header Text") !== "Premier Customer Portal"
                   ? filterValue("Header Text")
                   : params?.portalid
               }
@@ -607,7 +614,7 @@ function Navbar({ content, config, filterValue }) {
             className="lg:hidden text-text"
             onClick={() => setIsOpenNavbar(true)}
           >
-           <Menu className="h-6 w-6 text-secondary"/>
+            <Menu className="h-6 w-6 text-secondary" />
           </button>
 
           {isOpenNavbar && (
@@ -673,11 +680,9 @@ function Navbar({ content, config, filterValue }) {
                                     ? setIsIntegrateDropdownOpen((prev) => !prev)
                                     : openManagePortalTab(id)
                                 }
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${
-                                  isActive ? "bg-gray-200" : "bg-transparent"
-                                } ${
-                                  isActive ? "" : "hover:bg-gray-100"
-                                }`}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${isActive ? "bg-gray-200" : "bg-transparent"
+                                  } ${isActive ? "" : "hover:bg-gray-100"
+                                  }`}
                                 style={{
                                   color: isActive ? primaryColor : "#3f3f46",
                                 }}
@@ -694,9 +699,8 @@ function Navbar({ content, config, filterValue }) {
                                 <div>
                                   {hasDropdown && (
                                     <ChevronDown
-                                      className={`w-4 h-4 transition-transform ${
-                                        isIntegrateDropdownOpen ? "rotate-180" : ""
-                                      }`}
+                                      className={`w-4 h-4 transition-transform ${isIntegrateDropdownOpen ? "rotate-180" : ""
+                                        }`}
                                       style={{ color: isActive ? primaryColor : "#3f3f46" }}
                                     />
                                   )}
@@ -828,9 +832,8 @@ function Navbar({ content, config, filterValue }) {
                             )}
                             {userIsAdmin && (
                               <button
-                                className={`flex items-center justify-between w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold ${
-                                  ToolsActive ? "font-semibold" : ""
-                                }`}
+                                className={`flex items-center justify-between w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold ${ToolsActive ? "font-semibold" : ""
+                                  }`}
                                 onClick={() => {
                                   setIsManagePortalView(true);
                                   setAccountDropdown(false);
