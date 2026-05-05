@@ -115,16 +115,18 @@ function ESignature() {
           setAccountDropdown(false);
         }}
       >
-       <div className="flex items-center justify-between bg-white px-3">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 font-lato">
-              E-signature
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Securely execute an eSignature workflow, including document preparation, and digital signing.
-            </p>
+       <div className="flex flex-wrap items-center gap-3 p-4 border border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex-1">
+              <div className="flex flex-col">
+                <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                  E-signature
+                </h3>
+                <div className="text-sm text-gray-600">
+                  Securely execute an eSignature workflow, including document preparation, and digital signing.
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
         {/* Tabs */}
         <div className="flex border-b pt-[20px]">

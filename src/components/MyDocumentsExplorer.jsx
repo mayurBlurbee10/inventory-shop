@@ -3,6 +3,7 @@
 import {
   ChevronDown,
   ChevronUp,
+  ChevronsUpDown,
   Copy,
   Download,
   Ellipsis,
@@ -25,7 +26,8 @@ import {
   FilePenLine,
   Pencil,
 } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
@@ -527,6 +529,15 @@ function SharedFolderExplorer({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectFileToRename, setSelectFileToRename] = useState(null);
   const [sortedFilesList, setSortedFilesList] = useState([])
+  const [columnSizing, setColumnSizing] = useState({
+    select: 44,
+    name: 320,
+    modified: 180,
+    size: 120,
+    actions: 220,
+  });
+  const [columnSizingInfo, setColumnSizingInfo] = useState({});
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const fetchPage = async () => {
     try {
       if (!params?.portalid) return;
@@ -913,26 +924,148 @@ function SharedFolderExplorer({
   //   );
   // }
 
-  useEffect(() => {
-      if (currentFilesList && currentFilesList.length > 0) {
-        sortAscending()
+  const handleSort = (columnKey) => {
+    let newDirection = 'asc';
+    
+    if (sortConfig.key === columnKey) {
+      if (sortConfig.direction === 'asc') {
+        newDirection = 'desc';
+      } else if (sortConfig.direction === 'desc') {
+        newDirection = null;
+      } else {
+        newDirection = 'asc';
       }
-  }, [currentFilesList]);
+    }
+    
+    setSortConfig({ key: newDirection ? columnKey : null, direction: newDirection });
+  };
+
+  useEffect(() => {
+    if (currentFilesList && currentFilesList.length > 0) {
+      let sortedList = [...currentFilesList];
+      
+      if (sortConfig.key && sortConfig.direction) {
+        sortedList.sort((a, b) => {
+          let aValue = a[sortConfig.key];
+          let bValue = b[sortConfig.key];
+          
+          // Handle special cases for different data types
+          if (sortConfig.key === 'name') {
+            return sortConfig.direction === 'asc' 
+              ? collator.compare(aValue, bValue)
+              : collator.compare(bValue, aValue);
+          } else if (sortConfig.key === 'size') {
+            aValue = aValue || 0;
+            bValue = bValue || 0;
+            return sortConfig.direction === 'asc' 
+              ? aValue - bValue
+              : bValue - aValue;
+          } else if (sortConfig.key === 'modified_at') {
+            aValue = new Date(aValue || 0);
+            bValue = new Date(bValue || 0);
+            return sortConfig.direction === 'asc' 
+              ? aValue - bValue
+              : bValue - aValue;
+          } else {
+            // Default string comparison
+            if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+          }
+        });
+      }
+      
+      setSortedFilesList(sortedList);
+    }
+  }, [currentFilesList, sortConfig]);
 
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
-  const sortAscending = () => {
-    const sortedList = [...currentFilesList].sort((a, b) =>
-      collator.compare(a.name, b.name)
-    );
-    setSortedFilesList(sortedList);
-  };
+  const listTableColumns = React.useMemo(() => {
+    const cols = [];
+    
+    if (!fromAdvisor && listType !== "shared") {
+      cols.push({ id: "select", size: 44, minSize: 40, maxSize: 90, enableResizing: false });
+    }
+    
+    cols.push({
+      id: "name",
+      size: 320,
+      minSize: 180,
+      maxSize: 700,
+      enableResizing: true,
+    });
 
-  const sortDescending = () => {
-    const sortedList = [...currentFilesList].sort((a, b) =>
-      collator.compare(b.name, a.name)
+    if (listType !== "loan") {
+      cols.push(
+        {
+          id: "modified",
+          size: 180,
+          minSize: 130,
+          maxSize: 320,
+          enableResizing: true,
+        },
+        { 
+          id: "size", 
+          size: 120, 
+          minSize: 90, 
+          maxSize: 220, 
+          enableResizing: true 
+        },
+        {
+          id: "actions",
+          size: 220,
+          minSize: 160,
+          maxSize: 420,
+          enableResizing: false,
+        }
+      );
+    }
+
+    return cols;
+  }, [listType, fromAdvisor]);
+
+  const listTable = useReactTable({
+    data: sortedFilesList || [],
+    columns: listTableColumns,
+    state: {
+      columnSizing,
+      columnSizingInfo,
+    },
+    onColumnSizingChange: setColumnSizing,
+    onColumnSizingInfoChange: setColumnSizingInfo,
+    columnResizeMode: "onChange",
+    enableColumnResizing: true,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const getListHeader = (columnId) =>
+    listTable.getFlatHeaders().find((header) => header.column.id === columnId);
+
+  const renderColumnResizer = (columnId, ariaLabel) => {
+    const header = getListHeader(columnId);
+    const isResizing = !!header?.column.getIsResizing();
+
+    if (!header || !header.column.getCanResize()) return null;
+
+    return (
+      <button
+        type="button"
+        className={`absolute right-0 top-0 h-full w-3 cursor-col-resize z-20 group/resizer ${
+          isResizing ? "bg-blue-100/60" : "bg-transparent"
+        }`}
+        onMouseDown={header.getResizeHandler()}
+        onTouchStart={header.getResizeHandler()}
+        onClick={(event) => event.stopPropagation()}
+        aria-label={ariaLabel}
+      >
+        <span
+          className={`block mx-auto h-full w-[2px] rounded-full ${
+            isResizing ? "bg-blue-500" : "bg-gray-300 group-hover/resizer:bg-gray-500"
+          }`}
+        />
+      </button>
     );
-    setSortedFilesList(sortedList);
   };
   
   return (
@@ -950,28 +1083,83 @@ function SharedFolderExplorer({
               </thead>
             ) : (
               <>
+                <colgroup>
+                  {!fromAdvisor && listType !== "shared" && (
+                    <col style={{ width: `${getListHeader("select")?.getSize() ?? 44}px` }} />
+                  )}
+                  <col style={{ width: `${getListHeader("name")?.getSize() ?? 320}px` }} />
+                  {listType !== "loan" && (
+                    <>
+                      <col style={{ width: `${getListHeader("modified")?.getSize() ?? 180}px` }} />
+                      <col style={{ width: `${getListHeader("size")?.getSize() ?? 120}px` }} />
+                      <col style={{ width: `${getListHeader("actions")?.getSize() ?? 220}px` }} />
+                    </>
+                  )}
+                </colgroup>
                 <thead className="custom-box-shadow">
                   <tr>
-                    {!fromAdvisor && listType !== "shared" && <th></th>}
+                    {!fromAdvisor && listType !== "shared" && (
+                      <th className="relative py-2.5">
+                        {renderColumnResizer("select", "Resize selection column")}
+                      </th>
+                    )}
 
-                    <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                      <div className="flex items-center justify-start gap-2  mx-4">
-                        <span className="block">Name</span>
-                        <button className="flex items-center justify-center" onClick={sortAscending}>
-                          <ChevronUp className="h-4 w-4" />
-                        </button>
-                        <button className="flex items-center justify-center" onClick={sortDescending}>
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
+                    <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                      <div className="flex items-center justify-start gap-2 mx-4">
+                        <span className="block cursor-pointer hover:text-gray-900" onClick={() => handleSort('name')}>Name</span>
+                        <div className="cursor-pointer" onClick={() => handleSort('name')}>
+                          {sortConfig.key === 'name' ? (
+                            sortConfig.direction === 'asc' ? (
+                              <ChevronUp className="h-4 w-4 text-black" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-black" />
+                            )
+                          ) : (
+                            <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                          )}
+                        </div>
                       </div>
+                      {renderColumnResizer("name", "Resize name column")}
                     </th>
                     {listType !== "loan" && (
                       <>
-                        <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                          <span className="block mx-4">Modified</span>
+                        <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                          <div className="flex items-center justify-start gap-2 mx-4">
+                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => handleSort('modified_at')}>Modified</span>
+                            <div className="cursor-pointer" onClick={() => handleSort('modified_at')}>
+                              {sortConfig.key === 'modified_at' ? (
+                                sortConfig.direction === 'asc' ? (
+                                  <ChevronUp className="h-4 w-4 text-black" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 text-black" />
+                                )
+                              ) : (
+                                <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                              )}
+                            </div>
+                          </div>
+                          {renderColumnResizer("modified", "Resize modified column")}
                         </th>
-                        <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                          <span className="block mx-4">Size</span>
+                        <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                          <div className="flex items-center justify-start gap-2 mx-4">
+                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => handleSort('size')}>Size</span>
+                            <div className="cursor-pointer" onClick={() => handleSort('size')}>
+                              {sortConfig.key === 'size' ? (
+                                sortConfig.direction === 'asc' ? (
+                                  <ChevronUp className="h-4 w-4 text-black" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 text-black" />
+                                )
+                              ) : (
+                                <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                              )}
+                            </div>
+                          </div>
+                          {renderColumnResizer("size", "Resize size column")}
+                        </th>
+                        <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                          <span className="sr-only">Actions</span>
+                          {renderColumnResizer("actions", "Resize actions column")}
                         </th>
                       </>
                     )}
@@ -1005,6 +1193,7 @@ function SharedFolderExplorer({
                             onClick={() =>
                               file?.type === "folder" && handleFolderClick(file)
                             }
+                            title={file?.name}
                           >
                             <div className="flex items-center justify-start gap-3">
                               {file.type === "folder" ? (
@@ -1012,7 +1201,7 @@ function SharedFolderExplorer({
                               ) : (
                                 <File className="h-5 w-5 text-[#3c4043]" />
                               )}
-                              <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
+                              <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56" title={file?.name}>
                                 {file?.name}
                               </p>
                             </div>
@@ -1256,6 +1445,7 @@ function SharedFolderExplorer({
                         <div className="flex items-center justify-between">
                           <h6
                             className="text-sm font-medium text-black font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full"
+                            title={file?.name}
                             // onClick={() =>
                             //     file?.type === "folder" && handleFolderClick(file)
                             // }

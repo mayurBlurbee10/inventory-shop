@@ -295,17 +295,18 @@ function ESignature() {
           setAccountDropdown(false);
         }}
       >
-        <div className="border-b border-[#dee2e6] sm:pt-8 pb-5">
-          <p className="text-sm font-lato mt-1 text-black">
-            <span className="block md:inline text-xl font-light sm:text-center mr-10 font-lato mb-2 md:mb-0">
-              E-signature
-            </span>
-            <span className="block md:inline text-black">
-              Securely execute an eSignature workflow, including document preparation, and digital signing.
-            </span>
-          </p>
-
-        </div>
+       <div className="flex flex-wrap items-center gap-3 p-4 border border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex-1">
+              <div className="flex flex-col">
+                <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                  E-signature
+                </h3>
+                <div className="text-sm text-gray-600">
+                  Securely execute an eSignature workflow, including document preparation, and digital signing.
+                </div>
+              </div>
+            </div>
+          </div>
         {/* Tabs */}
         <div className="border mt-[20px]">
         <div className="flex border-b p-4 bg-gray-50">

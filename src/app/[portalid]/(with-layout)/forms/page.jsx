@@ -79,7 +79,7 @@ console.log("loanData", loanData);
   return (
     <div className="bg-white rounded-lg flex flex-col relative w-full lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
       <div>
-        <div className="flex justify-between bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6 mt-12">
+        <div className="flex justify-between bg-white rounded-lg shadow-sm border border-gray-200 mb-6 mt-12 relative">
           <div className="flex flex-wrap items-center gap-3 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
             <div className="flex-1">
               <div className="flex flex-col">
@@ -101,29 +101,54 @@ console.log("loanData", loanData);
               View Application
             </div>
         ) : (  */}
-          <div
-            className={`flex items-center justify-between cursor-pointer bg-[#f8f9fa] border border-transparent hover:border-[#dee2e6] m-3 p-3 max-w-48 rounded-md relative ${isLoanOptionOpen && "bg-[#dadcdd]"
-              }`}
-            onClick={() => setIsLoanOptionOpen((prev) => !prev)}
-          >
-            <div className="flex items-center gap-2 font-lato">
-              <Plus className="h-4 w-4" />
-              <span className="font-medium">Create New</span>
-            </div>
-            <ChevronDown className="h-4 w-4 fill-black" />
-            {isLoanOptionOpen && (
-              <div ref={newLoanDropdownRef} className="flex flex-col border border-[#dee2e6] bg-white  w-48 rounded px-5 py-3 space-y-2 mt-2 absolute top-full left-0 cursor-pointer font-lato z-[50]">
-                <div onClick={() => router.push(`forms/new?type=mortgage`)}>
-                  Mortgage
+          <div className="absolute top-4 right-4 z-[60]">
+            <div className="relative">
+              <div
+                className={`flex items-center justify-between cursor-pointer bg-[#f8f9fa] border border-transparent hover:border-[#dee2e6] p-2 max-w-48 rounded-md ${isLoanOptionOpen && "bg-[#dadcdd]"
+                  }`}
+                onClick={() => setIsLoanOptionOpen((prev) => !prev)}
+              >
+                <div className="flex items-center gap-2 font-lato">
+                  <Plus className="h-4 w-4" />
+                  <span className="font-medium">Create New</span>
                 </div>
-                <div onClick={() => router.push(`forms/new?type=auto`)}>
-                  Auto
-                </div>
-                <div onClick={() => router.push(`forms/new?type=personal`)}>
-                  Personal
-                </div>
+                <ChevronDown className="h-4 w-4 fill-black" />
               </div>
-            )}
+              {isLoanOptionOpen && (
+                <div 
+                  ref={newLoanDropdownRef} 
+                  className="flex flex-col border border-[#dee2e6] bg-white w-48 rounded p-3 space-y-2 mt-2 absolute top-full right-0 cursor-pointer font-lato z-[70] shadow-lg"
+                >
+                  <div 
+                    onClick={() => {
+                      router.push(`forms/new?type=mortgage`);
+                      setIsLoanOptionOpen(false);
+                    }}
+                    className="hover:bg-gray-100 px-2 py-1 rounded"
+                  >
+                    Mortgage
+                  </div>
+                  <div 
+                    onClick={() => {
+                      router.push(`forms/new?type=auto`);
+                      setIsLoanOptionOpen(false);
+                    }}
+                    className="hover:bg-gray-100 px-2 py-1 rounded"
+                  >
+                    Auto
+                  </div>
+                  <div 
+                    onClick={() => {
+                      router.push(`forms/new?type=personal`);
+                      setIsLoanOptionOpen(false);
+                    }}
+                    className="hover:bg-gray-100 px-2 py-1 rounded"
+                  >
+                    Personal
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         {/* )} */}
         </div>

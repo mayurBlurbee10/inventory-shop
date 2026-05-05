@@ -20,7 +20,7 @@ import {
     ResponsiveContainer,
   } from "recharts";
 import { useSelector } from "react-redux";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 
@@ -165,23 +165,36 @@ export default function AdvisorViewDashboard() {
     };
 
     const sortedClients = usersList && [...usersList].sort((a, b) => {
-        if (sortConfig?.key === "name") {
-          return sortConfig?.direction === "asc" 
-            ? a?.firstName?.localeCompare(b?.firstName) 
-            : b?.firstName?.localeCompare(a?.firstName);
-        } else if (sortConfig?.key === "email"){
-            return sortConfig?.direction === "asc" 
-            ? a?.email?.localeCompare(b?.email) 
-            : b?.email?.localeCompare(a?.email);
+        if (sortConfig?.key && sortConfig?.direction) {
+            if (sortConfig?.key === "name") {
+                const aName = `${a?.firstName || ''} ${a?.lastName || ''}`.trim();
+                const bName = `${b?.firstName || ''} ${b?.lastName || ''}`.trim();
+                return sortConfig?.direction === "asc" 
+                    ? aName.localeCompare(bName) 
+                    : bName.localeCompare(aName);
+            } else if (sortConfig?.key === "email"){
+                return sortConfig?.direction === "asc" 
+                    ? a?.email?.localeCompare(b?.email) 
+                    : b?.email?.localeCompare(a?.email);
+            }
         }
         return 0;
     });
 
     const toggleSort = (key) => {
-        setSortConfig((prev) => ({
-          key,
-          direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-        }));
+        let newDirection = 'asc';
+        
+        if (sortConfig.key === key) {
+            if (sortConfig.direction === 'asc') {
+                newDirection = 'desc';
+            } else if (sortConfig.direction === 'desc') {
+                newDirection = null;
+            } else {
+                newDirection = 'asc';
+            }
+        }
+        
+        setSortConfig({ key: newDirection ? key : null, direction: newDirection });
     };
 
       useEffect(() => {
@@ -245,24 +258,34 @@ export default function AdvisorViewDashboard() {
                                                 <tr>
                                                     <th className="p-4 text-left text-sm font-semibold text-gray-700">
                                                         <div className="flex items-center justify-start gap-2">
-                                                            <span className="block">Name</span>
-                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
-                                                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                                                            </button>
-                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
-                                                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                                                            </button>
+                                                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => toggleSort("name")}>Name</span>
+                                                            <div className="cursor-pointer" onClick={() => toggleSort("name")}>
+                                                                {sortConfig.key === "name" ? (
+                                                                    sortConfig.direction === "asc" ? (
+                                                                        <ChevronUp className="h-4 w-4 text-black" />
+                                                                    ) : (
+                                                                        <ChevronDown className="h-4 w-4 text-black" />
+                                                                    )
+                                                                ) : (
+                                                                    <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </th>
                                                     <th className="p-4 text-left text-sm font-semibold text-gray-700">
                                                         <div className="flex items-center justify-start gap-2">
-                                                            <span className="block">Email</span>
-                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
-                                                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                                                            </button>
-                                                            <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
-                                                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                                                            </button>
+                                                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => toggleSort("email")}>Email</span>
+                                                            <div className="cursor-pointer" onClick={() => toggleSort("email")}>
+                                                                {sortConfig.key === "email" ? (
+                                                                    sortConfig.direction === "asc" ? (
+                                                                        <ChevronUp className="h-4 w-4 text-black" />
+                                                                    ) : (
+                                                                        <ChevronDown className="h-4 w-4 text-black" />
+                                                                    )
+                                                                ) : (
+                                                                    <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </th>
                                                     <th className="p-4 text-left text-sm font-semibold text-gray-700">Phone</th>
