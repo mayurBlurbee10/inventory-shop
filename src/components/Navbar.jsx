@@ -76,6 +76,8 @@ function Navbar({ content, config, filterValue }) {
   const [customPages, setCustomPages] = useState([]);
   const [isOpenMoreLinksDropdown, setIsOpenMoreLinksDropdown] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const navbarRef = useRef(null);
+  const [navbarHeight, setNavbarHeight] = useState(null);
 
   const { data: loanData } = useSelector((state) => state.loans);
   const { data: user } = useSelector((state) => state.user);
@@ -87,6 +89,29 @@ function Navbar({ content, config, filterValue }) {
   useEffect(() => {
     setLogo(config?.logo || null);
   }, [user, config]);
+
+  useEffect(() => {
+    if (!navbarRef.current) return;
+    const update = () => {
+      if (!navbarRef.current) return;
+      const nextHeight = navbarRef.current.getBoundingClientRect().height;
+      setNavbarHeight((prev) => (prev === nextHeight ? prev : nextHeight));
+      if (Number.isFinite(nextHeight) && nextHeight > 0) {
+        document.documentElement.style.setProperty(
+          "--navbar-height",
+          `${nextHeight}px`,
+        );
+      }
+    }; update();
+
+    const ro = new ResizeObserver(() => {
+      update();
+    });
+
+    ro.observe(navbarRef.current);
+    return () => ro.disconnect();
+  }, [config?.primaryColor, config?.accentColor, config?.secondaryColor]);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -108,42 +133,69 @@ function Navbar({ content, config, filterValue }) {
     };
   }, []);
 
-  const NavBarItem = ({ title, href, icon: Icon }) => {
+
+  const NavBarItem = ({ title, href, activeRoutes = [], icon: Icon }) => {
     if (!href) {
       console.error("href prop is required for NavBarItem.");
       return null;
     }
-    const isActive = pathname.includes(href);
+    const isActive =
+      pathname.includes(href) ||
+      activeRoutes.some((route) => pathname.includes(route));
 
-    const handleClick = (e) => {
-      e.preventDefault();
-      setIsOpenNavbar(false);
-      router.push(href);
-    };
-    const navItemTextClass = isOpenNavbar
-      ? "text-black"
-      : isActive
-        ? "font-bold text-accent"
-        : "text-header-link";
+    const [isHovered, setIsHovered] = useState(false);
+    const isActiveOrHovered = isActive || isHovered;
+
+    if (isOpenNavbar) {
+      return (
+        <Link href={href} passHref className="w-full block">
+          <div
+            className={`relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg ${isActive ? "bg-gray-100" : "hover:bg-gray-100"
+              }`}
+            onClick={() => setIsOpenNavbar(false)}
+          >
+            <span
+              className={`font-lato text-sm flex items-center ${isActive ? "font-bold" : "font-medium"
+                }`}
+              style={isActive ? { color: config?.primaryColor } : { color: "#374151" }}
+            >
+              {Icon && <Icon className="mr-2 h-4 w-4" style={{ color: isActive ? config?.primaryColor : "#374151" }} />}
+              {title}
+            </span>
+          </div>
+        </Link>
+      );
+    }
 
     return (
-      <div
-        className={`relative mx-2 h-full flex items-center rounded-lg transition-all justify-center font-normal group text-header-link ${isActive ? "font-bold" : "font-normal"
-          } hover:font-bold`}
-
+      <Link
+        href={href}
+        passHref
+        className="mr-2"
+        onClick={() => setIsOpenNavbar(false)}
       >
         <button
-          className={`flex items-center px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm hover:text-accent ${isActive ? "font-bold text-accent" : "text-header-link"
-            } ${isOpenNavbar ? navItemTextClass : ""
-            }`}
-          onClick={handleClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="flex items-center px-4 py-2 text-sm font-semibold rounded-md whitespace-nowrap hover:scale-105 transition-all duration-200"
+          style={{
+            color: isActiveOrHovered
+              ? config?.primaryColor
+              : config?.secondaryColor,
+            backgroundColor: isHovered
+              ? config?.accentColor
+              : isActive
+                ? config?.accentColor
+                : "transparent",
+          }}
         >
-          {Icon && <Icon className="h-4 w-4 mr-2" />}
+          {Icon && <Icon className="mr-2 h-4 w-4" style={{ color: isActiveOrHovered ? config?.primaryColor : config?.secondaryColor }} />}
           {title}
         </button>
-      </div>
+      </Link>
     );
   };
+
 
   const clearStoreData = () => {
     dispatch(setFileList(null));
@@ -322,7 +374,7 @@ function Navbar({ content, config, filterValue }) {
       style={{ backgroundColor: config?.primaryColor }}
     >
       <div className="w-full mx-auto px-2">
-        <nav className="flex justify-between">
+        <nav ref={navbarRef} className="flex justify-between">
           <div
             onClick={() => {
               const dashboardPage = pageData.find((page) => page.title === "dashboard");
@@ -608,7 +660,12 @@ function Navbar({ content, config, filterValue }) {
 
           {isOpenNavbar && (
             <div className="fixed top-0 right-0 sm:w-2/5 w-4/5 h-full bg-white shadow-lg z-50 transition-all">
-              <div className={`flex items-center pt-5 pr-5 ${isManagePortalView ? "justify-between pl-5" : "justify-end"}`}>
+              <div
+                style={{
+                  minHeight: "var(--navbar-height, 56px)",
+                }}
+                className={`flex items-center pr-5 ${isManagePortalView ? "justify-between pl-5" : "justify-end"}`}
+              >
                 {isManagePortalView && (
                   <button
                     type="button"
@@ -644,7 +701,7 @@ function Navbar({ content, config, filterValue }) {
                 </button>
               </div>
 
-              <div className="flex flex-col items-start h-[calc(100%-3rem)] w-full">
+              <div className="flex flex-col items-start h-[calc(100%-6rem)] w-full">
                 {isManagePortalView ? (
                   <div className="w-full h-full flex flex-col p-5">
                     <div className="flex justify-between items-center mt-2 mb-4">
@@ -728,7 +785,7 @@ function Navbar({ content, config, filterValue }) {
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-col items-start gap-2 w-full p-5">
+                    <div className="flex flex-col items-start gap-2 w-full px-5">
                       {filterPageVisibility("dashboard") && (
                         <NavBarItem
                           title="Dashboard"

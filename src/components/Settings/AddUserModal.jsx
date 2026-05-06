@@ -43,6 +43,12 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
   const [isNdaPagesLoading, setIsNdaPagesLoading] = useState(false);
   const{data:user} = useSelector((state) => state.user);
   const dispatch = useDispatch();
+
+  const roleOptions = [
+    { value: UserRole.USER, label: "User" },
+    { value: UserRole.ADMIN, label: "Admin" },
+    { value: UserRole.MODERATOR, label: "Moderator" }
+  ];
   const [initialFormData, setInitialFormData] = useState({
     id: user.id || "",
     firstName: user.firstName || "",
@@ -570,17 +576,20 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           <UserPlus className="h-4 w-4" />
           Role <span className="text-red-600">*</span>
         </label>
-        <select
-          disabled={from === 'editProfile'}
-          className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
-          value={formData.role}
-          onChange={(e) => handleFormChange("role", e.target.value)}
-          style={{ height: "2.5rem" }}
-        >
-          <option value={UserRole.USER}>User</option>
-          <option value={UserRole.ADMIN}>Admin</option>
-          <option value={UserRole.MODERATOR}>Moderator</option>
-        </select>
+        <Select
+          className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
+          classNamePrefix="Choose Role"
+          isClearable={false}
+          isSearchable={false}
+          value={roleOptions?.find(option => option.value === formData.role)}
+          onChange={(e) => {
+            handleFormChange("role", e ? e.value : null);
+          }}
+          options={roleOptions || []}
+          placeholder="Select role..."
+          isDisabled={from === "editProfile"}
+          styles={customStyles}
+        />
       </div>
       <div>
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
