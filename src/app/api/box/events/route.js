@@ -41,6 +41,18 @@ export async function GET(req) {
     const startDate = req.nextUrl.searchParams.get("startDate");
     const endDate = req.nextUrl.searchParams.get("endDate");
     const userId = req.nextUrl.searchParams.get("userId");
+    const limitParam = req.nextUrl.searchParams.get("limit");
+    const pageParam = req.nextUrl.searchParams.get("page");
+
+    const search = req.nextUrl.searchParams.get("search");
+    const sortBy = req.nextUrl.searchParams.get("sortBy") || "createdAt";
+    const sortOrder = req.nextUrl.searchParams.get("sortOrder") || "DESC";
+    const filter = req.nextUrl.searchParams.get("filter") || "all";
+
+    // Default pagination values
+    const limit = limitParam ? parseInt(limitParam, 10) : 10;
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+    const offset = (page - 1) * limit;
 
     const user = await userService.getUserById(userId);
     let userRole = "";
@@ -61,27 +73,35 @@ export async function GET(req) {
       }
     }
 
-    const portal = await portalService.getPortalByLegalName(
-      reverseSanitizeName(portalId)
+    // Determine userId based on filter and user role
+    let scopedUserId = null;
+    if (filter === "my" || userRole === "user") {
+      scopedUserId = userId;
+    }
+    
+    const totalCount = await apiLogsService.getApiLogsCount(
+      portalId,
+      startDate,
+      endDate,
+      scopedUserId,
+      search
     );
 
-    if (!portal) {
-      return NextResponse.json(
-        { error: "No report data found for this portal" },
-        { status: 404 }
-      );
-    }
-
-    // ✅ Get API logs from your system
+    // Get API logs from your system
     const internalLogs = await apiLogsService.getApiLogsDateWise(
       portalId,
       startDate,
       endDate,
-      userRole === "user" ? userId : null
+      scopedUserId,
+      limit,
+      offset,
+      search,
+      sortBy,
+      sortOrder
     );
     const boxUserId = user.boxUserId; // Ensure your DB or `user` object stores the Box user ID
     const newClient = sdk.getAppAuthClient("user", boxUserId);
-    // ✅ Get Box events for the given date range
+    // Get Box events for the given date range
     const events = await newClient.events.get({
       // stream_type: "admin_logs",
       stream_type: "all",
@@ -98,6 +118,12 @@ export async function GET(req) {
       message: "report data retrieved successfully",
       data: internalLogs,
       boxEvents: filteredEvents || [],
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+        totalCount: totalCount,
+        limit: limit,
+      },
     });
   } catch (error) {
     console.error("Error to get report data:", error.message);

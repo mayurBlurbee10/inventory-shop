@@ -83,7 +83,7 @@ const CustomizationContent = () => {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-3 lg:p-5">
+      <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto p-4 lg:p-5">
         <ContentManagementContent
           isManageRequired={true}
           onboardingStatus={user?.isOnboardingRequired}

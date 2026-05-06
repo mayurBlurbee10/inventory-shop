@@ -14,6 +14,7 @@ import {
   Activity,
   ArrowLeft,
   Bolt,
+  ChartLine,
   ChevronDown,
   ChevronRight,
   CircleEllipsisIcon,
@@ -22,6 +23,7 @@ import {
   Ellipsis,
   EllipsisVertical,
   File,
+  FilePen,
   FileText,
   Folder,
   Headset,
@@ -32,6 +34,7 @@ import {
   MessageSquare,
   Plug,
   Settings,
+  Signature,
   SquareActivity,
   UserRoundPen,
   Users,
@@ -105,67 +108,43 @@ function Navbar({ content, config, filterValue }) {
     };
   }, []);
 
-  const NavBarItem = ({ title, href, activeRoutes = [] }) => {
+  const NavBarItem = ({ title, href, icon: Icon }) => {
     if (!href) {
       console.error("href prop is required for NavBarItem.");
       return null;
     }
-    const isActive =
-      pathname.includes(href) ||
-      activeRoutes.some((route) => pathname.includes(route));
+    const isActive = pathname.includes(href);
 
-    const [isHovered, setIsHovered] = useState(false);
-    const isActiveOrHovered = isActive || isHovered;
-
-    if (isOpenNavbar) {
-      return (
-        <Link href={href} passHref className="w-full block">
-          <div
-            className={`relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg ${
-              isActive ? "bg-gray-100" : "hover:bg-gray-50"
-            }`}
-            onClick={() => setIsOpenNavbar(false)}
-          >
-            <span
-              className={`font-lato text-sm ${
-                isActive ? "font-bold" : "font-medium"
-              }`}
-              style={isActive ? { color: config?.primaryColor } : { color: "#374151" }}
-            >
-              {title}
-            </span>
-          </div>
-        </Link>
-      );
-    }
+    const handleClick = (e) => {
+      e.preventDefault();
+      setIsOpenNavbar(false);
+      router.push(href);
+    };
+    const navItemTextClass = isOpenNavbar
+      ? "text-black"
+      : isActive
+        ? "font-bold text-accent"
+        : "text-header-link";
 
     return (
-      <Link
-        href={href}
-        passHref
-        className="mr-2"
-        onClick={() => setIsOpenNavbar(false)}
+      <div
+        className={`relative mx-2 h-full flex items-center rounded-lg transition-all justify-center font-normal group text-header-link ${isActive ? "font-bold" : "font-normal"
+          } hover:font-bold`}
+
       >
         <button
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="px-4 py-2 text-sm font-semibold rounded-md whitespace-nowrap hover:scale-105 transition-all duration-200"
-          style={{
-            color: isActiveOrHovered
-              ? config?.primaryColor
-              : config?.secondaryColor,
-            backgroundColor: isHovered
-              ? config?.accentColor
-              : isActive
-                ? config?.accentColor
-                : "transparent",
-          }}
+          className={`flex items-center px-3 py-2 hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm hover:text-accent ${isActive ? "font-bold text-accent" : "text-header-link"
+            } ${isOpenNavbar ? navItemTextClass : ""
+            }`}
+          onClick={handleClick}
         >
+          {Icon && <Icon className="h-4 w-4 mr-2" />}
           {title}
         </button>
-      </Link>
+      </div>
     );
   };
+
   const clearStoreData = () => {
     dispatch(setFileList(null));
     dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
@@ -240,15 +219,15 @@ function Navbar({ content, config, filterValue }) {
       const filterPages =
         Array.isArray(data?.data) && data.data.length > 0
           ? data.data[0]?.pages?.filter(
-              (item) => item.isCustomPage === false,
-            ) || []
+            (item) => item.isCustomPage === false,
+          ) || []
           : [];
       //  setPages(filterPages);
       dispatch(
         setReduxPages(
           Array.isArray(data?.data) &&
-            data.data.length > 0 &&
-            data.data[0]?.pages,
+          data.data.length > 0 &&
+          data.data[0]?.pages,
         ),
       );
     } catch (error) {
@@ -284,20 +263,20 @@ function Navbar({ content, config, filterValue }) {
     let theme = contentItem
       ? contentItem.theme
       : {
-          fontSize: fontSize?.size,
-          color: "#000000e6",
-          fontWeight: title === "Paragraph" ? 300 : 400,
-        };
+        fontSize: fontSize?.size,
+        color: "#000000e6",
+        fontWeight: title === "Paragraph" ? 300 : 400,
+      };
     return theme;
   };
 
   const LogoImage = () => {
-    const baseSize = 100; // Set a reasonable base size (in pixels)
+    const baseSize = 90; // Set a reasonable base size (in pixels)
 
     const logoSize =
       (filterTheme("Logo")?.fontSize &&
         logoSizeRatio[filterTheme("Logo")?.fontSize]) ||
-      logoSizeRatio.medium;
+      logoSizeRatio.small;
     return (
       <div className="block min-w-16">
         <img
@@ -319,9 +298,9 @@ function Navbar({ content, config, filterValue }) {
     : params?.portalid;
   const ToolsActive = pathname.includes("/settings");
   const managePortalTabs = [
-    { id: "customization", label: "Configuration", icon: LayoutDashboardIcon },
+    { id: "configuration", label: "Configuration", icon: Settings },
     { id: "identity", label: "Identity Management", icon: Users },
-    { id: "reports", label: "Reports", icon: Activity },
+    { id: "reports", label: "Reports", icon: ChartLine },
     { id: "users", label: "User Access", icon: Users },
   ];
   const integrateOptions = [{ id: "integrate", label: "Integrate", icon: Plug }];
@@ -344,7 +323,7 @@ function Navbar({ content, config, filterValue }) {
     >
       <div className="w-full mx-auto px-2">
         <nav className="flex justify-between">
-          <div 
+          <div
             onClick={() => {
               const dashboardPage = pageData.find((page) => page.title === "dashboard");
               if (dashboardPage?.isPageVisible) {
@@ -353,7 +332,7 @@ function Navbar({ content, config, filterValue }) {
                 router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/shared-docs`);
               }
             }}
-            className="flex items-center pr-[18px] hover:scale-105 transition-all ease-in-out duration-300 py-2 cursor-pointer"
+            className="flex items-center px-[18px] py-1 flex-shrink-0"
           >
             {logo ? (
               // <img
@@ -361,7 +340,28 @@ function Navbar({ content, config, filterValue }) {
               //   alt={params.portalid}
               //   className="mr-2 max-h-[60px] max-w-[150px]"
               // />
-              <LogoImage />
+              <div
+                className="cursor-pointer"
+                onClick={() => {
+                  if (params.portalid) {
+                    const dashboardPage = pages?.find((page) => page.title === "dashboard");
+                    if (dashboardPage?.isPageVisible) {
+                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/dashboard`);
+                    } else {
+                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-docs`);
+                    }
+                  } else {
+                    const dashboardPage = pages?.find((page) => page.title === "dashboard");
+                    if (dashboardPage?.isPageVisible) {
+                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/dashboard`);
+                    } else {
+                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-docs`);
+                    }
+                  }
+                }}
+              >
+                <LogoImage />
+              </div>
             ) : (
               <div className="h-[60px] w-[150px] mr-2 bg-gray-300 animate-pulse rounded" />
             )}
@@ -392,6 +392,7 @@ function Navbar({ content, config, filterValue }) {
             {filterPageVisibility("dashboard") && (
               <NavBarItem
                 title="Dashboard"
+                icon={LayoutDashboard}
                 href={
                   params.portalid
                     ? `/${params.portalid}/dashboard`
@@ -409,6 +410,7 @@ function Navbar({ content, config, filterValue }) {
             {filterPageVisibility("shared-docs") && (
               <NavBarItem
                 title="Shared Documents"
+                icon={FileText}
                 href={
                   params.portalid
                     ? `/${params.portalid}/shared-docs`
@@ -419,6 +421,7 @@ function Navbar({ content, config, filterValue }) {
             {filterPageVisibility("esignature") && (
               <NavBarItem
                 title="Sign"
+                icon={Signature}
                 href={
                   params.portalid
                     ? `/${params.portalid}/esignature`
@@ -430,6 +433,7 @@ function Navbar({ content, config, filterValue }) {
               filterPageVisibility("advisor dashboard") && (
                 <NavBarItem
                   title="Advisor Dashboard"
+                  icon={LayoutDashboardIcon}
                   href={
                     params.portalid
                       ? `/${params.portalid}/advisor/dashboard`
@@ -445,6 +449,7 @@ function Navbar({ content, config, filterValue }) {
             {filterPageVisibility("forms") && (
               <NavBarItem
                 title="Forms"
+                icon={FilePen}
                 href={params.portalid ? `/${params.portalid}/forms` : "/forms"}
               />
             )}
@@ -483,6 +488,7 @@ function Navbar({ content, config, filterValue }) {
               customPages?.map((page) => (
                 <NavBarItem
                   key={page?.id}
+                  icon={LayoutDashboard}
                   title={
                     page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)
                   }
@@ -504,77 +510,61 @@ function Navbar({ content, config, filterValue }) {
                   />
                 )} */}
 
-            {/* Profile dropdown */}
-            <div className="flex items-center space-x-8 cursor-pointer">
+          </div>
+          {/* Profile dropdown */}
+          <div className="hidden lg:flex items-center space-x-8 cursor-pointer">
+            <div
+              ref={dropdownRef}
+              className="flex items-center space-x-3 pl-4 relative"
+              onClick={() => setAccountDropdown((prev) => !prev)}
+            >
+              {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
               <div
-                ref={dropdownRef}
-                className="flex items-center space-x-3 pl-4 border-l border-gray-100 relative"
-                onClick={() => setAccountDropdown((prev) => !prev)}
+                className={`size-10 rounded-full overflow-hidden flex items-center justify-center shadow-sm font-lato transition-transform hover:scale-105 border border-accent`}
+                style={{
+                  backgroundColor: config?.accentColor ? `${config.accentColor}3A` : '#3b82f61B',
+                }}
               >
-                {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                <div
-                  className={`size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 shrink-0 `}
-                  style={{
-                    backgroundColor: config?.secondaryColor,
-                    color: config?.primaryColor,
-                  }}
-                >
-                  {/* {
-                    isAdvisorViewOpen ? <img className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1498529605908-f357a9af7bf5?auto=format&fit=crop&w=1950&q=60&ixid=dW5zcGxhc2guY29tOzs7Ozs%3D" /> : user?.firstName?.charAt(0).toUpperCase() || "U"
-                  } */}
-                  {user?.firstName?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div className="flex flex-col text-sm xl:text-base">
-                  <span
-                    className="font-medium"
-                    style={{
-                      color: config?.secondaryColor,
-                    }}
-                  >
-                    {/* {
-                      isAdvisorViewOpen ? "Erica Smith" : `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
-                    } */}
-                    {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
-                  </span>
-                </div>
+                {user?.firstName?.charAt(0).toUpperCase() || "U"}
+              </div>
 
-                {/* DROPDOWN SECTION DONE*/}
-                {accountDropdown && (
-                  <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+              {/* DROPDOWN SECTION DONE*/}
+              {accountDropdown && (
+                <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
+                  <button
+                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                    onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
+                  >
+                    <CircleUserRound className="h-5 w-5" /> Account Info
+                  </button>
+                  {userIsAdmin && (
+                    <button
+                      onClick={() =>
+                        setIsTechSupportModalOpen((prev) => !prev)
+                      }
+                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                    >
+                      <Headset className="h-5 w-5" />
+                      Tech Support
+                    </button>
+                  )}
+                  {/* Edit button */}
+                  {userIsAdmin && (
                     <button
                       className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
+                      onClick={() =>
+                        router.push(
+                          params.portalid
+                            ? `/${params.portalid}/settings?tab=configuration`
+                            : "/settings?tab=configuration",
+                        )
+                      }
                     >
-                      <CircleUserRound className="h-5 w-5" /> Account Info
+                      <Bolt className="h-5 w-5" />
+                      Tools
                     </button>
-                    {userIsAdmin && (
-                      <button
-                        onClick={() =>
-                          setIsTechSupportModalOpen((prev) => !prev)
-                        }
-                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      >
-                        <Headset className="h-5 w-5" />
-                        Tech Support
-                      </button>
-                    )}
-                    {/* Edit button */}
-                    {userIsAdmin && (
-                      <button
-                        className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                        onClick={() =>
-                          router.push(
-                            params.portalid
-                              ? `/${params.portalid}/settings?tab=customization`
-                              : "/settings?tab=customization",
-                          )
-                        }
-                      >
-                        <Bolt className="h-5 w-5" />
-                        Tools
-                      </button>
-                    )}
-                    {/* {userIsAdmin && (
+                  )}
+                  {/* {userIsAdmin && (
                           <button
                             className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                             onClick={() =>
@@ -588,23 +578,22 @@ function Navbar({ content, config, filterValue }) {
                             <UserRoundPen className="h-5 w-5" /> Advisor View
                           </button>
                         )} */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLogout();
-                      }}
-                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                    >
-                      {logoutLoading ? (
-                        <LoaderSpinner size={24} className="text-blue-500" />
-                      ) : (
-                        <LogOut className="h-5 w-5" />
-                      )}
-                      Sign out
-                    </button>
-                  </div>
-                )}
-              </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLogout();
+                    }}
+                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                  >
+                    {logoutLoading ? (
+                      <LoaderSpinner size={24} className="text-blue-500" />
+                    ) : (
+                      <LogOut className="h-5 w-5" />
+                    )}
+                    Sign out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -631,7 +620,7 @@ function Navbar({ content, config, filterValue }) {
                   </button>
                 )}
                 <button
-                  className="text-gray-600 hover:bg-gray-100 rounded-full"
+                  className="text-gray-800 hover:bg-gray-100 rounded-full"
                   onClick={() => {
                     setIsOpenNavbar(false);
                     setAccountDropdown(false);
@@ -680,7 +669,7 @@ function Navbar({ content, config, filterValue }) {
                                     ? setIsIntegrateDropdownOpen((prev) => !prev)
                                     : openManagePortalTab(id)
                                 }
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${isActive ? "bg-gray-200" : "bg-transparent"
+                                className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${isActive ? "bg-gray-100" : "bg-transparent"
                                   } ${isActive ? "" : "hover:bg-gray-100"
                                   }`}
                                 style={{
@@ -689,7 +678,7 @@ function Navbar({ content, config, filterValue }) {
                               >
                                 <div className="flex items-center space-x-3">
                                   <Icon
-                                    className="w-5 h-5"
+                                    className="w-4 h-4"
                                     style={{
                                       color: isActive ? primaryColor : "#3f3f46",
                                     }}
@@ -743,6 +732,7 @@ function Navbar({ content, config, filterValue }) {
                       {filterPageVisibility("dashboard") && (
                         <NavBarItem
                           title="Dashboard"
+                          icon={LayoutDashboard}
                           href={
                             params.portalid
                               ? `/${params.portalid}/dashboard`
@@ -753,6 +743,7 @@ function Navbar({ content, config, filterValue }) {
                       {filterPageVisibility("shared-docs") && (
                         <NavBarItem
                           title="Shared Documents"
+                          icon={FileText}
                           href={
                             params.portalid
                               ? `/${params.portalid}/shared-docs`
@@ -763,6 +754,7 @@ function Navbar({ content, config, filterValue }) {
                       {filterPageVisibility("esignature") && (
                         <NavBarItem
                           title="Sign"
+                          icon={Signature}
                           href={
                             params.portalid
                               ? `/${params.portalid}/esignature`
@@ -770,18 +762,11 @@ function Navbar({ content, config, filterValue }) {
                           }
                         />
                       )}
-                      {filterPageVisibility("forms") && (
-                        <NavBarItem
-                          title="Forms"
-                          href={
-                            params.portalid ? `/${params.portalid}/forms` : "/forms"
-                          }
-                        />
-                      )}
                       {(userIsAdmin || userIsModerator) &&
                         filterPageVisibility("advisor dashboard") && (
                           <NavBarItem
                             title="Advisor Dashboard"
+                            icon={LayoutDashboard}
                             href={
                               params.portalid
                                 ? `/${params.portalid}/advisor/dashboard`
@@ -794,10 +779,20 @@ function Navbar({ content, config, filterValue }) {
                             ]}
                           />
                         )}
+                      {filterPageVisibility("forms") && (
+                        <NavBarItem
+                          title="Forms"
+                          icon={FilePen}
+                          href={
+                            params.portalid ? `/${params.portalid}/forms` : "/forms"
+                          }
+                        />
+                      )}
                       {customPages?.length > 0 &&
                         customPages?.map((page) => (
                           <NavBarItem
                             key={page?.id}
+                            icon={FileText}
                             title={
                               page?.title?.charAt(0).toUpperCase() +
                               page?.title?.slice(1)

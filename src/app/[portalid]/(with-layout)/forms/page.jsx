@@ -101,7 +101,7 @@ console.log("loanData", loanData);
               View Application
             </div>
         ) : (  */}
-          <div className="absolute top-4 right-4 z-[60]">
+          <div className="absolute top-4 right-4 z-[10]">
             <div className="relative">
               <div
                 className={`flex items-center justify-between cursor-pointer bg-[#f8f9fa] border border-transparent hover:border-[#dee2e6] p-2 max-w-48 rounded-md ${isLoanOptionOpen && "bg-[#dadcdd]"

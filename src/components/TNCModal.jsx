@@ -73,7 +73,7 @@ function TNCModal({ onClose, user, email, password, page }) {
       // const updatedData = await response.json();
       // console.log("Update updatedData", updatedData);
       // await fetchWrapper("/api/api-logs", { method: "POST" }, "login");
-       const dashboardPage = pages.find((page) => page.title === "dashboard");
+       const dashboardPage = pages?.find((page) => page.title === "dashboard");
        if(dashboardPage?.isPageVisible) {
         router.push("dashboard");
         toast.success("Redirecting to dashboard");

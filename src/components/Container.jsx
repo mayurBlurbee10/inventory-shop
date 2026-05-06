@@ -135,7 +135,7 @@ function Container({ children }) {
 
   return (
     <div
-      className="bg-white min-h-screen overflow-y-auto flex flex-col justify-between"
+      className="bg-white min-h-screen overflow-y-auto flex flex-col justify-between font-lato"
       suppressHydrationWarning={true}
     >
       {/* Header */}

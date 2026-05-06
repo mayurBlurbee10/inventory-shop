@@ -102,7 +102,7 @@ const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
     <div className="space-y-2">
       {userIsAdmin && (
         <button
-          onClick={() => router.push("/settings?tab=customization")}
+          onClick={() => router.push("/settings?tab=configuration")}
           className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
         >
           <Settings className="w-5 h-5" />

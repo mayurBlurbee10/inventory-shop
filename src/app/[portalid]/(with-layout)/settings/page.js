@@ -34,14 +34,16 @@ function SettingsPage() {
   const isUpdatingRef = useRef(false);
 
   const tabFromURL = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(tabFromURL || "customization");
+  const [activeTab, setActiveTab] = useState(tabFromURL || "configuration");
   const [isUserData, setIsUserData] = useState("");
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
+  const [showMorePopup, setShowMorePopup] = useState(false);
   const [colors, setColors] = useState({
     primaryColor: config.primaryColor,
     secondaryColor: config.secondaryColor,
     accentColor: config.accentColor,
   });
+  const moreMenuRef = useRef(null);
 
   useEffect(() => {
     const userData = getUserData();
@@ -53,7 +55,23 @@ function SettingsPage() {
     }
   }, [tabFromURL, activeTab]);
 
-  const handleTabClick = (tabId) => {
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target)) {
+        setShowMorePopup(false);
+      }
+    };
+
+    if (showMorePopup) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMorePopup]);
+
+  const handleTabChange = (tabId) => {
     if (tabId === activeTab) return;
 
     isUpdatingRef.current = true;
@@ -80,15 +98,15 @@ function SettingsPage() {
     if (tabId === "forms_management") {
       return shouldHighlightMyFormsTab();
     }
+    setActiveTab(tabId);
     return activeTab === tabId;
   };
 
   const tabs = [
     // { id: 'homepage_configuration', label: 'Home Page', icon: FileText },
-    { id: "customization", label: "Customization", icon: Layout },
+    { id: "configuration", label: "Configuration", icon: Layout },
     // { id: 'my_page', label: 'Pages', icon: Layout },
     // { id: 'appearance', label: 'Theme', icon: Layout },
-    { id: "users", label: "Users", icon: Users },
     // { id: 'products', label: 'Widgets', icon: ShoppingBag },
     // { id: 'content', label: 'Content', icon: FileText },
     { id: "identity", label: "Identity Management", icon: Users },
@@ -96,13 +114,18 @@ function SettingsPage() {
     // { id: 'Integrations', label: 'Integrations', icon: Plug },
     // { id: 'box', label: 'Box Settings', icon: Box }
     { id: "reports", label: "Reports", icon: ChartLine },
+    { id: "users", label: "User Access", icon: Users },
+  ];
+
+  const moreTabs = [
+    // Add any additional tabs here that should appear in the "more" dropdown
   ];
 
   const getActiveContent = () => {
     switch (activeTab) {
       // case 'homepage_configuration':
       //   return <ContentManagementContent isManageRequired="true" onboardingStatus={isUserData} colors={colors} setColors={setColors}/>;
-      case "customization":
+      case "configuration":
         return <CustomizationContent />;
       // case 'my_page':
       //   return <MyPageContent/>;
@@ -129,133 +152,159 @@ function SettingsPage() {
   };
 
   return (
-    // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg flex justify-center relative w-full min-h-[calc(100vh-180px)] lg:h-[calc(100vh-180px)]">
-      <div className="hidden lg:block w-2/5 md:w-72 border-r h-[calc(100vh-120px)] border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs">
-        <h2 className="text-xl text-gray-800 font-semibold mb-6">Tools</h2>
+      <div className="bg-gray-50 rounded-lg flex justify-center relative w-full h-[87vh]">
+      <div className="hidden lg:block w-2/5 md:w-72 border-r border-[#dee2e6] p-3 bg-gray-50 text-gray-700 max-w-xs">
+        <h2 className="text-md text-gray-800 font-semibold mb-6">
+          Tools
+        </h2>
         <nav className="space-y-1">
-          {tabs.sort((a, b) => a.label.localeCompare(b.label)).map(({ id, label, icon: Icon }) => {
-            const isActive = isTabActive(id);
-            const primaryColor = config.primaryColor;
-            const accentColor = config?.accentColor || "#ffffff";
+          {tabs.map(({ id, label, icon: Icon }) => {
+            const isActive = activeTab === id;
+            const isMoreTab = id === "more";
             return (
-              <button
-                key={id}
-                onClick={() => handleTabClick(id)}
-                className="w-full flex justify-between items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
-                style={{
-                  backgroundColor: isActive ? accentColor : "transparent",
-                  color: isActive ? primaryColor : "#3f3f46",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive)
-                    e.currentTarget.style.backgroundColor = `${accentColor}1A`;
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive)
-                    e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <div className="flex items-center space-x-3">
-                  <div>
-                    <Icon
-                      className={`w-5 h-5 ${
-                        isActive ? primaryColor : "text-gray-700/90"
-                      }`}
-                    />
+              <div key={id} className="relative" ref={isMoreTab ? moreMenuRef : null}>
+                <button
+                  onClick={() => {
+                    if (isMoreTab) {
+                      setShowMorePopup((prev) => !prev);
+                    } else {
+                      handleTabChange(id);
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ease-in-out
+          ${isActive ? "font-semibold" : "hover:bg-accent"
+                    }`}
+                  style={{
+                    backgroundColor: isActive
+                      ? config.accentColor
+                      : "transparent",
+                    
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = config.accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
+                >
+                  <div className="flex items-center space-x-3 text-black">
+                    <div>
+                      <Icon
+                        className="w-5 h-5"
+                      />
+                    </div>
+                    <span className="text-left">{label}</span>
                   </div>
-                  <span className="text-left">{label}</span>
-                </div>
-                {/* <div>
-                  <ChevronRight
-                    className={`w-4 h-4 ${isActive ? primaryColor : "#3f3f46"}`}
-                  />
-                </div> */}
-              </button>
+                  <div>
+                   {isMoreTab && <ChevronRight
+                      className="w-4 h-4"
+                      style={{
+                        color: isActive ? config.secondaryColor : "inherit",
+                      }}
+                    />}
+                  </div>
+                </button>
+
+                {isMoreTab && showMorePopup && (
+                  <div className="absolute top-0 left-full ml-3 w-72 bg-white rounded-2xl border border-gray-200 shadow-2xl p-2 z-50">
+                    {moreTabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <tab.icon className="w-5 h-5 text-gray-500" />
+                        <span className="text-sm font-medium">{tab.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
       </div>
-      {/* <div
-        className={`block lg:hidden absolute top-2 left-2 z-10 ${
-          isSideBarOpen ? "hidden" : "block"
-        }`}
-      >
-        <Menu
-          className="w-6 h-6 text-gray-800 cursor-pointer"
-          onClick={() => setIsSideBarOpen((prev) => !prev)}
-        />
-      </div> */}
-      {isSideBarOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-30"
-            onClick={() => setIsSideBarOpen(false)}
-          />
-
-          {/* Fixed Sidebar */}
-          <div className="fixed h-[calc(100vh)] z-40 top-0 left-0 flex">
-            <div className="w-56 md:w-72 border-r border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs shadow-lg">
-              <div className="flex justify-between items-center mt-2 mb-4">
-                <h2 className="text-md text-gray-800 font-semibold">Tools</h2>
-                <button onClick={() => setIsSideBarOpen(false)}>
-                  <X className="w-5 h-5 text-gray-600 hover:text-gray-800 cursor-pointer" />
-                </button>
+      {/* {isSideBarOpen && (
+        <div className="absolute z-40 top-0 left-0 h-[87vh] flex">
+          <div className="w-72 border-r border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-md text-gray-800 font-semibold">
+                Manage Portal
+              </h2>
+              <div
+                className="hover:bg-gray-100 rounded-full flex justify-start p-1 cursor-pointer"
+                onClick={() => setIsSideBarOpen(false)}
+              >
+                <X className="w-6 h-6 " />
               </div>
-              <nav className="space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
-                {tabs.sort((a, b) => a.label.localeCompare(b.label)).map(({ id, label, icon: Icon }) => {
-                  const isActive = isTabActive(id);
-                  const primaryColor = config.primaryColor;
-                  const accentColor = config?.accentColor || "#ffffff";
-                  return (
-                    <button
-                      key={id}
-                      onClick={() => handleTabClick(id)}
-                      className="w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
-                      style={{
-                        backgroundColor: isActive ? accentColor : "transparent",
-                        color: isActive ? primaryColor : "#3f3f46",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive)
-                          e.currentTarget.style.backgroundColor = `${accentColor}1A`;
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive)
-                          e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <Icon
-                            className={`w-5 h-5 ${
-                              isActive ? primaryColor : "text-gray-700/90"
-                            }`}
-                          />
-                        </div>
-                        <span className="text-left">{label}</span>
-                      </div>
-                      <div>
-                        <ChevronRight
-                          className={`w-4 h-4 ${
-                            isActive ? primaryColor : "#3f3f46"
-                          }`}
-                        />
-                      </div>
-                    </button>
-                  );
-                })}
-              </nav>
             </div>
+            {tabs.map(({ id, label, icon: Icon }) => {
+              const isActive = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => {
+                    handleTabChange(id);
+                    setIsSideBarOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ease-in-out hover:font-bold
+          ${isActive ? "font-semibold" : "text-gray-700/90 hover:bg-blue-600/10"
+                    }`}
+                  style={{
+                    backgroundColor: isActive
+                      ? config.accentColor
+                      : "transparent", // <-- your active bg color
+                    color: isActive ? config.secondaryColor : "",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.color = config.secondaryColor;
+                      e.currentTarget.style.backgroundColor =
+                        config.accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.color = ""; // reset to gray
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div>
+                      <Icon
+                        className="w-5 h-5"
+                        style={{
+                          color: isActive ? config.secondaryColor : "inherit",
+                        }}
+                      />
+                    </div>
+                    <span className="text-left">{label}</span>
+                  </div>
+                  <div>
+                    <ChevronRight
+                      className="w-4 h-4"
+                      style={{
+                        color: isActive ? config.secondaryColor : "inherit",
+                      }}
+                    />
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </>
-      )}
-      <div className="md:flex-1 min-h-[calc(100vh-120px)] overflow-auto hidden-scrollbar w-full px-6 pt-10">
+        </div>
+      )} */}
+      <div className="w-full p-6 overflow-y-auto mt-6 lg:mt-0">
         {getActiveContent()}
       </div>
+    
+
     </div>
-    // </div>
   );
 }
 
