@@ -283,7 +283,7 @@ function Login() {
       if (!selectedNdaPage || (selectedNdaPage && userData?.isTNCAccepted)) {
        const dashboardPage = pages?.find((page) => page.title === "dashboard");
        if(dashboardPage?.isPageVisible) {
-        router.push(dashboardPage.path);
+        router.push("dashboard");
         toast.success("Redirecting to dashboard");
        }else{
         router.push("shared-docs");

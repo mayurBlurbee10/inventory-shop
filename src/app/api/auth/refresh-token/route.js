@@ -76,7 +76,7 @@ export async function POST(req) {
       portalId,
     };
 
-    const newAccessToken = await generateToken(userData, "15m");
+    const newAccessToken = await generateToken(userData, "24h");
     const newRefreshToken = await generateRefreshToken();
 
     const response = NextResponse.json({

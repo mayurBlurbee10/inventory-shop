@@ -302,7 +302,7 @@ export async function POST(request) {
       folderId: userData.boxFolderId,
     };
 
-    const accessToken = await generateToken(tokenPayload, "30s");
+    const accessToken = await generateToken(tokenPayload, "24h");
     const refreshToken = await generateRefreshToken();
 
     await userService.setUserTokens(

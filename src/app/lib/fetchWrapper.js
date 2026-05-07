@@ -98,7 +98,7 @@ export const fetchWrapper = async (url, options = {}, type) => {
       try {
         await refreshAccessToken(portalId, options);
       } catch (error) {
-        let loginPath = portalId !== "admin" ? `${portalId}/login` : "/login";
+        let loginPath = portalId !== "admin" ? `/${portalId}/login` : "/login";
 
         try {
           // Use raw fetch instead of fetchWrapper to avoid infinite recursion on 401
