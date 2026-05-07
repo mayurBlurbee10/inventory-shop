@@ -69,7 +69,7 @@ function ESignature() {
     try {
       if (!userData) return;
       setIsLoading(true);
-      const response = await fetch(`/api/box/e-sign?userId=${userData?.id}`);
+      const response = await fetchWrapper(`/api/box/e-sign?userId=${userData?.id}`);
       const data = await response.json();
       if (response.ok) {
         setPendingRequests(data.data.pending);

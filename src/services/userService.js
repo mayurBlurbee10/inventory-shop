@@ -43,7 +43,7 @@ const getUsersByPortal = async (portalId) => {
     const filteredUsers = users.filter(
       (user) =>
         Array.isArray(user.permissions) &&
-        user.permissions.some((permission) => permission.portalId === portalId)
+        user.permissions.some((permission) => permission.portalId === portalId),
     );
 
     return filteredUsers;
@@ -81,7 +81,7 @@ const getUserByEmail = async (email, portalId) => {
     console.error("Error getting user by email:", error.message);
     throw new Error("Failed to get user.");
   }
-}
+};
 
 const getUserByRole = async (role, userId) => {
   const userRepository = await getRepository(Users);
@@ -97,7 +97,10 @@ const getUserByRole = async (role, userId) => {
         throw new Error(`User with ID ${userId} not found.`);
       }
 
-      if (!Array.isArray(user.groupMembersIds) || user.groupMembersIds.length === 0) {
+      if (
+        !Array.isArray(user.groupMembersIds) ||
+        user.groupMembersIds.length === 0
+      ) {
         return [];
       }
 
@@ -110,9 +113,10 @@ const getUserByRole = async (role, userId) => {
     } else if (role) {
       // Fetch users based on role in permissions
       const users = await userRepository.find(); // Fetch all users
-      const filteredUsers = users.filter((user) =>
-        Array.isArray(user.permissions) &&
-        user.permissions.some((perm) => perm.role === role)
+      const filteredUsers = users.filter(
+        (user) =>
+          Array.isArray(user.permissions) &&
+          user.permissions.some((perm) => perm.role === role),
       );
 
       return filteredUsers;
@@ -180,24 +184,6 @@ const setPasswordByResetPasswordToken = async (token, newPassword) => {
     return "Password successfully set";
   } catch (error) {
     throw new Error("Failed to set password.");
-  }
-};
-
-const setUserAccessToken = async (email, token, authStrategy) => {
-  const userRepository = await getRepository(Users);
-  try {
-    const user = await userRepository.findOne({
-      where: {
-        email,
-      },
-    });
-    user.accessToken = token;
-    if (!!authStrategy) {
-      user.authStrategy = authStrategy;
-    }
-    await userRepository.save(user);
-  } catch (error) {
-    throw new Error("Failed to get users.");
   }
 };
 
@@ -286,12 +272,16 @@ const saveSignRequest = async (userId, signRequest) => {
 };
 
 const removeSignRequest = async (user, uploadIdsFromSignTasks) => {
-  if (!user?.id || !Array.isArray(user.signRequestsId) || !Array.isArray(uploadIdsFromSignTasks)) {
+  if (
+    !user?.id ||
+    !Array.isArray(user.signRequestsId) ||
+    !Array.isArray(uploadIdsFromSignTasks)
+  ) {
     return;
   }
 
   const updatedSignIds = user.signRequestsId.filter(
-    id => !uploadIdsFromSignTasks.includes(id)
+    (id) => !uploadIdsFromSignTasks.includes(id),
   );
 
   await updateUser(user.id, {
@@ -304,9 +294,11 @@ const getPortalCreateAdminByEmail = async (email) => {
   try {
     const user = await getUserByEmail(email);
     if (user) {
-      const portal = await portalService.getPortalByPortalAdmin(user?.id)
+      const portal = await portalService.getPortalByPortalAdmin(user?.id);
       if (portal) {
-        throw new Error(`This user can't be the admin in this portal as it is already an admin in portal ${portal.legalName}`)
+        throw new Error(
+          `This user can't be the admin in this portal as it is already an admin in portal ${portal.legalName}`,
+        );
       }
       return user;
     } else {
@@ -316,7 +308,79 @@ const getPortalCreateAdminByEmail = async (email) => {
     console.error("Error getting portalCreatedAdmin:", error.message);
     throw new Error(error.message);
   }
-}
+};
+
+/**
+ * Get user by refresh token
+ * Used to validate refresh token during token refresh
+ */
+const getUserByRefreshToken = async (refreshToken) => {
+  const userRepository = await getRepository(Users);
+  try {
+    const user = await userRepository.findOne({
+      where: {
+        refreshToken,
+      },
+    });
+    return user;
+  } catch (error) {
+    throw new Error("Failed to get user by refresh token.");
+  }
+};
+
+const setUserAccessToken = async (email, token, authStrategy) => {
+  const userRepository = await getRepository(Users);
+  try {
+    const user = await userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      return;
+    }
+    user.accessToken = token;
+    if (!!authStrategy) {
+      user.authStrategy = authStrategy;
+    }
+    await userRepository.save(user);
+  } catch (error) {
+    throw new Error("Failed to get users.");
+  }
+};
+
+/**
+ * Set user access token and refresh token
+ * Used during login and token refresh
+ */
+const setUserTokens = async (
+  email,
+  accessToken,
+  refreshToken,
+  authStrategy,
+) => {
+  const userRepository = await getRepository(Users);
+  try {
+    const user = await userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      return;
+    }
+    user.accessToken = accessToken;
+    if (refreshToken !== null) {
+      user.refreshToken = refreshToken;
+    }
+    if (!!authStrategy) {
+      user.authStrategy = authStrategy;
+    }
+    await userRepository.save(user);
+  } catch (error) {
+    throw new Error("Failed to set user tokens.");
+  }
+};
 
 export default {
   createUser,
@@ -336,5 +400,7 @@ export default {
   updateUser,
   saveSignRequest,
   getPortalCreateAdminByEmail,
-  removeSignRequest
+  removeSignRequest,
+  getUserByRefreshToken,
+  setUserTokens,
 };

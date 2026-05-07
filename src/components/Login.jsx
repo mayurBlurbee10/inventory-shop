@@ -281,7 +281,7 @@ function Login() {
         setIsTNCOpen(true);
       }
       if (!selectedNdaPage || (selectedNdaPage && userData?.isTNCAccepted)) {
-       const dashboardPage = pages.find((page) => page.title === "dashboard");
+       const dashboardPage = pages?.find((page) => page.title === "dashboard");
        if(dashboardPage?.isPageVisible) {
         router.push(dashboardPage.path);
         toast.success("Redirecting to dashboard");

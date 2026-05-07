@@ -2,31 +2,32 @@ import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 
 const excludedRoutes = {
-  '/api/contentManagement': ['GET'],
-  '/api/portal': ['GET'],
-  '/api/auth/login': ['POST'],
-  '/api/box/share': ['GET'],
-  '/api/users': ['GET','POST'],
-  '/api/users/tncAccept': ['PUT'],
-  '/api/users/loginByProvider': ['POST'],
-  '/api/setPassword': ['POST','GET'],
-  '/api/plugins': ['GET'],
-  '/api/box/files/proxy-file': ['GET'],
-  '/api/users/resendInviteLink': ['POST'],
-   '/api/nda-agreements': ['GET'],
+  "/api/contentManagement": ["GET"],
+  "/api/portal": ["GET"],
+  "/api/auth/login": ["POST"],
+  "/api/box/share": ["GET"],
+  "/api/users": ["GET", "POST"],
+  "/api/users/tncAccept": ["PUT"],
+  "/api/users/loginByProvider": ["POST"],
+  "/api/setPassword": ["POST", "GET"],
+  "/api/plugins": ["GET"],
+  "/api/box/files/proxy-file": ["GET"],
+  "/api/users/resendInviteLink": ["POST"],
+  "/api/nda-agreements": ["GET"],
+  "/api/auth/refresh-token": ["POST"],
 };
 
 const publicRoutes = [
-  '/api/upload/',
-  '/api/auth',
-  '/register',
-  '/setpassword',
-  '/forgot-password',
-  '/credential',
-  '/sign-finished'
+  "/api/upload/",
+  "/api/auth",
+  "/register",
+  "/setpassword",
+  "/forgot-password",
+  "/credential",
+  "/sign-finished",
 ];
 
-export async function  middleware(request) {
+export async function middleware(request) {
   const authToken = request.cookies.get("token")?.value;
   const { pathname } = request.nextUrl;
 
@@ -37,7 +38,7 @@ export async function  middleware(request) {
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
-    (pathname.includes('.') && !pathname.startsWith('/api'));
+    (pathname.includes(".") && !pathname.startsWith("/api"));
 
   if (isStaticAssetRequest) {
     return NextResponse.next();
@@ -66,7 +67,13 @@ export async function  middleware(request) {
   }
 
   // Check if this is a sign-finished, forgot-password, setpassword, or credential route with any portal prefix
-  if (pathname.includes('/sign-finished') || pathname.includes('/forgot-password') || pathname.includes('/setpassword') || pathname.includes('/credential') || pathname.includes('/register')) {
+  if (
+    pathname.includes("/sign-finished") ||
+    pathname.includes("/forgot-password") ||
+    pathname.includes("/setpassword") ||
+    pathname.includes("/credential") ||
+    pathname.includes("/register")
+  ) {
     console.log("Portal-prefixed public route matched:", pathname);
     return NextResponse.next();
   }
@@ -75,8 +82,10 @@ export async function  middleware(request) {
   const dashboardPath = `${tenantPrefix}/dashboard`;
   const isLoginPath =
     normalizedPath === "/login" || normalizedPath === loginPath;
-  const isRegisterPath = normalizedPath === "/register" || (tenantPrefix && normalizedPath === `${tenantPrefix}/register`);
-  
+  const isRegisterPath =
+    normalizedPath === "/register" ||
+    (tenantPrefix && normalizedPath === `${tenantPrefix}/register`);
+
   console.log("Normalized path:", normalizedPath);
   console.log("Is register path:", isRegisterPath);
 
@@ -85,7 +94,7 @@ export async function  middleware(request) {
   if (authToken) {
     try {
       const secretKey = new TextEncoder().encode(
-        process.env.NEXT_PUBLIC_JWT_SECRET_KEY
+        process.env.NEXT_PUBLIC_JWT_SECRET_KEY,
       );
       const { payload: decoded } = await jwtVerify(authToken, secretKey);
       payload = decoded;
@@ -94,14 +103,14 @@ export async function  middleware(request) {
       if (pathname.startsWith("/api")) {
         return NextResponse.json(
           { error: "Unauthorized;Token verification failed" },
-          { status: 401 }
+          { status: 401 },
         );
       }
       // For non-API routes, if token is invalid, treat as not logged in
     }
   }
 
-  if (request.nextUrl.pathname.startsWith('/api')) {
+  if (request?.nextUrl?.pathname?.startsWith("/api")) {
     const method = request.method;
     const excludedMethods = excludedRoutes[pathname];
     if (excludedMethods && excludedMethods.includes(method)) {
@@ -113,8 +122,7 @@ export async function  middleware(request) {
     }
     return NextResponse.next();
   } else {
-  
-     if (isLoginPath) {
+    if (isLoginPath) {
       if (payload) {
         return NextResponse.redirect(new URL(dashboardPath, request.url));
       }
@@ -122,8 +130,18 @@ export async function  middleware(request) {
       // Always allow access to register page, regardless of auth status
       return NextResponse.next();
     } else {
-       if (!payload) {
-        return NextResponse.redirect(new URL(loginPath, request.url));
+      if (!payload) {
+        const refreshToken = request.cookies.get("refreshToken")?.value;
+
+        // Prevent loop
+        const isRefreshRoute =
+          request.nextUrl.pathname.includes("/refresh-token");
+
+        if (refreshToken && !isRefreshRoute) {
+          return NextResponse.next();
+        } else {
+          return NextResponse.redirect(new URL(loginPath, request.url));
+        }
       }
 
       // Role-based access control

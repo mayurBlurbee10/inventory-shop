@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from "react";
 import SettingsModal from "./Settings";
 import TechSupport from "./TechSupport";
 import {
-  clearUserData,
   getUserData,
   isAdmin,
   setUserData,
@@ -52,6 +51,7 @@ import { UserRole } from "@/config/constants";
 import { setPages as setReduxPages } from "@/store/services/pageService";
 import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import { clearUserStates } from "@/app/lib/userCleanupService";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -208,7 +208,7 @@ function Navbar({ content, config, filterValue }) {
     try {
       // First log the logout action
       await fetchWrapper(
-        "/api/api-logs",
+        "/api/auth/logout",
         {
           method: "POST",
           headers: {
@@ -222,15 +222,10 @@ function Navbar({ content, config, filterValue }) {
       );
 
       // Then clear user and Redux state
-      clearUserData();
-      clearStoreData();
+      clearUserStates();
 
       await signOut();
       toast.success("User signed out successfully");
-
-      // Clear auth cookie
-      document.cookie =
-        "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
       // Redirect to login
       window.location.href = params.portalid

@@ -1,12 +1,20 @@
 import "reflect-metadata";
-import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+} from "typeorm";
 import BaseTable from "./BaseTable";
 import { Portals } from "./Portals";
 import * as bcrypt from "bcrypt";
 import { IsNotEmpty, ValidateIf } from "class-validator";
 import { UserRole } from "@/config/constants";
 
-export @Entity("users")
+export
+@Entity("users")
 class Users extends BaseTable {
   @Column({ type: "nvarchar", length: 255, unique: true })
   email;
@@ -20,7 +28,7 @@ class Users extends BaseTable {
   @Column({ type: "nvarchar", length: 255, nullable: true })
   portalId;
 
-  @Column({ type: "nvarchar",length: 255, nullable: true, default: null })
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   ndaPages;
 
   @Column({ type: "simple-json", nullable: true, default: "{}" })
@@ -51,6 +59,9 @@ class Users extends BaseTable {
   @Column({ type: "nvarchar", length: "MAX", nullable: true, default: null })
   accessToken;
 
+  @Column({ type: "nvarchar", length: "MAX", nullable: true, default: null })
+  refreshToken;
+
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   resetPasswordToken;
 
@@ -68,17 +79,23 @@ class Users extends BaseTable {
   isOnboardingRequired;
 
   // Make fields optional for super_admin and required for admin/user roles
-  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER)
+  @ValidateIf(
+    (o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER,
+  )
   @IsNotEmpty()
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   title;
 
-  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER)
+  @ValidateIf(
+    (o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER,
+  )
   @IsNotEmpty()
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   boxUserId;
 
-  @ValidateIf((o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER)
+  @ValidateIf(
+    (o) => o.role !== UserRole.SUPER_ADMIN && o.role !== UserRole.MASTER,
+  )
   @IsNotEmpty()
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   folderId;

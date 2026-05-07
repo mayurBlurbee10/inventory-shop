@@ -73,8 +73,12 @@ export const logApiCall = async (req, next, type = null, userId = null, fileId =
 
   const XUserId = req.headers.get("x-user-id");
   const portalId = req.headers.get("x-portal-id");
-  const apiType = req.headers.get("x-api-type");
+  let apiType = req.headers.get("x-api-type");
   const user = userId ? userId : XUserId;
+
+  if(["undefined", "null", ""].includes(apiType)) {
+    apiType = type
+  }
 
   console.log("User, PortalId, ApiType=============>", user, portalId, apiType);
   

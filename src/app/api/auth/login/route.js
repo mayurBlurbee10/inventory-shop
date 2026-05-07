@@ -4,7 +4,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { cookies } from "next/headers";
 import { logApiCall } from "@/app/lib/api-log-middleware";
-import { generateToken } from "@/app/lib/jwt";
+import { generateRefreshToken, generateToken } from "@/app/lib/jwt";
 import * as bcrypt from "bcrypt";
 import userService from "@/services/userService";
 import { UserRole } from "@/config/constants";
@@ -42,7 +42,7 @@ try {
 
   const client = sdk.getAppAuthClient(
     "enterprise",
-    process.env.BOX_ENTERPRISE_ID
+    process.env.BOX_ENTERPRISE_ID,
   );
 
   boxService = {
@@ -52,7 +52,7 @@ try {
           "Fetching files for user:",
           userId,
           "from folder:",
-          folderId
+          folderId,
         );
 
         // Get the folder contents directly using the known folder ID
@@ -121,7 +121,9 @@ export async function POST(request) {
     let portalCreatedAdmin = null;
     if (data?.portalid && data.portalid !== "root") {
       try {
-        portalCreatedAdmin = await portalService.getPortalCreatedAdmin(data.portalid);
+        portalCreatedAdmin = await portalService.getPortalCreatedAdmin(
+          data.portalid,
+        );
       } catch (error) {
         console.warn(`Portal admin not found for portal: ${data.portalid}`);
       }
@@ -129,7 +131,7 @@ export async function POST(request) {
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials!! user not found with this email" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -138,7 +140,7 @@ export async function POST(request) {
     const userPermission =
       Array.isArray(user.permissions) &&
       user.permissions.find(
-        (permission) => permission.portalId === data?.portalid
+        (permission) => permission.portalId === data?.portalid,
       );
 
     let userRole = userPermission?.role;
@@ -158,32 +160,32 @@ export async function POST(request) {
           for (const id of userData.groupMembersIds) {
             const groupPortals = await portalService.getPortalsByUser(
               String(id).toLowerCase(),
-              true
+              true,
             );
-            console.log("groupPortal", groupPortals.portals)
+            console.log("groupPortal", groupPortals.portals);
             allPortals = [...allPortals, ...groupPortals.portals];
           }
         }
         const portals = await portalService.getPortalsByUser(
           String(user.id).toLowerCase(),
-          true
+          true,
         );
         console.log("portals", portals);
         allPortals = [...allPortals, ...portals.portals];
         // const portals = await portalService.getPortalsByUser(user.id);
         const portalOwners = allPortals.some(
-          (portal) => sanitizeName(portal.legalName) === data.portalid
+          (portal) => sanitizeName(portal.legalName) === data.portalid,
         );
         if (!portalOwners) {
           return NextResponse.json(
             { error: "This user does not have access to this portal" },
-            { status: 403 }
+            { status: 403 },
           );
         }
       } else {
         return NextResponse.json(
           { error: "This user does not have access to this portal" },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -191,21 +193,21 @@ export async function POST(request) {
     if (data.role && data.role !== userRole) {
       return NextResponse.json(
         { error: "This user does not have access to this portal" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     // check if password is correct or not
     const isPasswordCorrect = await bcrypt.compare(
       data.password,
-      user.password
+      user.password,
     );
 
     if (!isPasswordCorrect) {
       console.log("Invalid credentials for:", data.email);
       return NextResponse.json(
         { error: "Invalid credentials" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -219,13 +221,19 @@ export async function POST(request) {
     // If we have a Box service and user has Box IDs, fetch their files
     let boxData = null;
     //if you want to show user's file then use "user.folderId" and for showing portalCreatedAdmin's files then use portalCreatedAdmin's folderId
-    if (boxService && user.boxUserId && portalCreatedAdmin && portalCreatedAdmin?.folderId) {   // changed to portalCreatedAdmin's folderId
+    if (
+      boxService &&
+      user.boxUserId &&
+      portalCreatedAdmin &&
+      portalCreatedAdmin?.folderId
+    ) {
+      // changed to portalCreatedAdmin's folderId
       try {
         console.log(
           "Fetching Box data for user ID:",
           user.boxUserId,
           "folder ID:",
-          user.folderId
+          user.folderId,
         );
         boxData = await boxService.getUserFiles(user.boxUserId, user.folderId);
         console.log("Retrieved Box data:", {
@@ -248,9 +256,9 @@ export async function POST(request) {
     // Include role in the response and ensure it's properly set
     let userData = {
       id: user.id,
-      portalId: userPermission?.portalId || 'admin',
+      portalId: userPermission?.portalId || "admin",
       email: user.email,
-      firstName: user?.firstName, 
+      firstName: user?.firstName,
       lastName: user?.lastName,
       role: userRole,
       company: user.company,
@@ -289,13 +297,20 @@ export async function POST(request) {
       id: user.id,
       email: user.email,
       role: userRole,
-      portalId: userPermission?.portalId || 'admin',
+      portalId: userPermission?.portalId || "admin",
       boxUserId: user.boxUserId,
       folderId: userData.boxFolderId,
     };
 
-    const accessToken = await generateToken(tokenPayload, "168h");
-    await userService.setUserAccessToken(data.email, accessToken);
+    const accessToken = await generateToken(tokenPayload, "30s");
+    const refreshToken = await generateRefreshToken();
+
+    await userService.setUserTokens(
+      data.email,
+      accessToken,
+      refreshToken,
+      null,
+    );
 
     // Create response with cookie
     const response = NextResponse.json({
@@ -304,30 +319,41 @@ export async function POST(request) {
       accessToken,
     });
 
+    response.cookies.delete("user");
+    response.cookies.delete("token");
+    response.cookies.delete("refreshToken");
+
     // Set cookie in response headers
     response.cookies.set("user", JSON.stringify(rest), {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
     });
     response.cookies.set("token", accessToken, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 60 * 60 * 24, // 24 hr
+    });
+
+    response.cookies.set("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
     console.log("Sending response with user data:", userData);
-    await logApiCall(request, () => { }, "login", user?.id);
+    await logApiCall(request, () => {}, "login", user?.id);
     return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
       { error: "Authentication failed: " + error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
