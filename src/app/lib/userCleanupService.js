@@ -9,5 +9,5 @@ export const clearUserStates = () => {
   clearUserData();
 
   // Reset redux store
-  store.dispatch({ type: resetApp });
+  store.dispatch(resetApp());
 };
