@@ -1315,11 +1315,11 @@ function Documents({
                         }
                         disabled={fileType === "shared"}
                       >
-                        {isBulkDownloading ? (
+                        {/* {isBulkDownloading ? (
                           <LoaderSpinner className="text-gray-500" size={16}/>
-                        ) : (
+                        ) : ( */}
                           <Download className="size-5" />
-                        )}
+                        {/* )} */}
                       </button>
                    {user?.role !== UserRole.USER && <button
                     className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${
