@@ -1,0 +1,162 @@
+import "reflect-metadata";
+import { connectDatabase, getConnection } from "../config/db.ts";
+import { CheckLists } from "../entities/CheckLists.ts";
+import portalService from "./portal.service.ts";
+
+const getRepository = async (entity: any) => {
+  await connectDatabase();
+  const connection = getConnection();
+  return connection.getRepository(entity);
+};
+
+const getCheckListByPortalIdSorted = async (portalId: string) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const checklists = await checkListRepository
+      .createQueryBuilder("checklist")
+      .leftJoinAndSelect("checklist.tasks", "task")
+      .leftJoinAndSelect("task.user", "user")
+      .leftJoinAndSelect("task.createdBy", "createdBy")
+      .leftJoinAndSelect("task.checklist", "checklistId")
+      .where("checklist.portalId = :portalId", { portalId })
+      .orderBy("task.createdAt", "DESC")
+      .getMany();
+    return checklists;
+  } catch (error) {
+    console.error("Error getting checklists:", (error as Error).message);
+    throw error;
+  }
+};
+
+const getCheckListByPortalId = async (portalId: string) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const checklists = await checkListRepository.find({
+      where: {
+        portalId: portalId,
+      },
+      relations: ["tasks", "tasks.user", "tasks.createdBy", "tasks.checklist"],
+    });
+    return checklists;
+  } catch (error) {
+    console.error("Error getting checklists:", (error as Error).message);
+    throw error;
+  }
+};
+
+const getCheckListById = async (checkListId: string) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const checklists = await checkListRepository.find({
+      where: {
+        id: checkListId,
+      },
+      relations: ["tasks", "tasks.user", "tasks.createdBy"],
+    });
+    return checklists && checklists.length > 0 ? checklists[0] : null;
+  } catch (error) {
+    console.error("Error getting checklist:", (error as Error).message);
+    throw error;
+  }
+};
+
+const getCheckListByName = async (checkListName: string, portalId: string) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const checklist = await checkListRepository.findOneBy({
+      name: checkListName,
+      portalId: portalId,
+    });
+    return checklist;
+  } catch (error) {
+    console.error("Error getting checklist:", (error as Error).message);
+    throw error;
+  }
+};
+
+const createCheckList = async (checklist: any) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const newCheckList = checkListRepository.create(checklist);
+    await checkListRepository.save(newCheckList);
+    return newCheckList;
+  } catch (error) {
+    throw new Error("Failed to create checklist.");
+  }
+};
+
+const updateCheckList = async (checkListId: string, updatedData: any) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const mainCheckList = await checkListRepository.findOneBy({
+      id: checkListId,
+    });
+    if (!mainCheckList) {
+      throw new Error("Checklist not found");
+    }
+    Object.assign(mainCheckList, updatedData);
+    await checkListRepository.save(mainCheckList);
+    return mainCheckList;
+  } catch (error) {
+    console.error("Error updating checklist:", (error as Error).message);
+    throw error;
+  }
+};
+
+const deleteCheckList = async (checkListId: string) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    await checkListRepository.delete(checkListId);
+    return;
+  } catch (error) {
+    throw new Error("Failed to delete checklist.");
+  }
+};
+
+const createGeneralCheckList = async (checklist: any) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    const existingChecklist = await getCheckListByName(
+      checklist?.name,
+      checklist?.portalId
+    );
+    if (!existingChecklist) {
+      const portalAdmin = await portalService.getPortalCreatedAdmin(
+        checklist?.portalId
+      );
+      const data = {
+        ...checklist,
+        createdBy: portalAdmin?.id,
+      };
+      const newCheckList = checkListRepository.create(data);
+      await checkListRepository.save(newCheckList);
+      return newCheckList;
+    }
+    return existingChecklist;
+  } catch (error) {
+    throw new Error("Failed to create checklist.");
+  }
+};
+
+const deleteAllChecklists = async (portalId: string) => {
+  const checkListRepository = await getRepository(CheckLists);
+  try {
+    await checkListRepository.delete({ portalId: portalId });
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export default {
+  getCheckListByPortalIdSorted,
+  getCheckListByPortalId,
+  getCheckListById,
+  createCheckList,
+  updateCheckList,
+  deleteCheckList,
+  getCheckListByName,
+  createGeneralCheckList,
+  deleteAllChecklists,
+};
+
