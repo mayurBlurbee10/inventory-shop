@@ -58,6 +58,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
 
       const data = await response.json();
       if (response.ok) {
+        await fetchWrapper('/api/auth/logout', { method: 'POST' }, "logout");
         setSuccess(true);
         setTimeout(() => router.push(`/${params.portalid}/login`), 2000);
       } else {

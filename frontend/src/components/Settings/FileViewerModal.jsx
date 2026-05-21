@@ -43,10 +43,13 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
         setLoading(true);
         setError("");
 
-         const requestOptions = {
-           method: "POST",
-           body: JSON.stringify({ collaborated: user?.collaborationIds, boxUserId: user?.boxUserId }),
-         };
+        const requestOptions = {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ collaborated: user?.collaborationIds, boxUserId: user?.boxUserId }),
+        };
 
         // const response = await fetchWrapper(
         //   `/api/box/files?folderId=${encodeURIComponent(user.folderId)}`,{},

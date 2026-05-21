@@ -39,16 +39,8 @@ const getMessages = async (
   try {
     const messages = await messageRepository.find({
       where: [
-        {
-          portal: { id: portalId },
-          sender: { id: senderId },
-          receiver: { id: receiverId },
-        },
-        {
-          portal: { id: portalId },
-          sender: { id: receiverId },
-          receiver: { id: senderId },
-        },
+        { portalId: portalId, sender: { id: senderId }, receiver: { id: receiverId } },
+        { portalId: portalId, sender: { id: receiverId }, receiver: { id: senderId } },
       ],
       relations: ["sender", "receiver"],
       order: { createdAt: "ASC" },
@@ -64,16 +56,8 @@ const getUserMessages = async (senderId: string, portalId: string) => {
   try {
     const messages = await messageRepository.find({
       where: [
-        {
-          portal: { id: portalId },
-          sender: { id: senderId },
-          parentMessage: IsNull(),
-        },
-        {
-          portal: { id: portalId },
-          receiver: { id: senderId },
-          parentMessage: IsNull(),
-        },
+        { portalId: portalId, sender: { id: senderId }, parentMessage: IsNull() },
+        { portalId: portalId, receiver: { id: senderId }, parentMessage: IsNull() },
       ],
       relations: ["sender", "receiver", "replies", "replies.sender"],
       order: { createdAt: "ASC" },
@@ -157,7 +141,7 @@ const deleteMessage = async (messageId: string) => {
 const deleteAllMessage = async (portalId: string) => {
   const messageRepository = await getRepository(Messages);
   try {
-    await messageRepository.delete({ portal: { id: portalId } });
+    await messageRepository.delete({ portalId: portalId });
     return;
   } catch (error) {
     throw error;

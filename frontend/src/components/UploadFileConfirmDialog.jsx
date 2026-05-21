@@ -100,10 +100,13 @@ const UploadFileConfirmDialog = ({
 
         const requestOptions = {
           method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
             items: duplicateFiles,
             destinationFolderId: destinationFolder,
-            userId : userData.boxUserId
+            userId: userData.boxUserId
           }),
         };
 
@@ -163,9 +166,9 @@ const UploadFileConfirmDialog = ({
 
                 <div
                   className="text-gray-600 mb-4"
-                  // dangerouslySetInnerHTML={{
-                  //   __html: location,
-                  // }}
+                // dangerouslySetInnerHTML={{
+                //   __html: location,
+                // }}
                 >
                   <div>
                     <div>Location: Home{path}</div>
@@ -229,11 +232,10 @@ const UploadFileConfirmDialog = ({
                 <button
                   onClick={handleReplaceFiles}
                   disabled={isReplaceLoading || isLoading}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-                    isReplaceLoading
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition ${isReplaceLoading
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                    }`}
                 >
                   {isReplaceLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
@@ -246,11 +248,10 @@ const UploadFileConfirmDialog = ({
                 <button
                   onClick={handleCreateDuplicateFiles}
                   disabled={isLoading || isReplaceLoading}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-                    isLoading
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 text-white"
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition ${isLoading
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                    }`}
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />

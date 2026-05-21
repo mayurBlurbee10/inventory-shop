@@ -569,7 +569,7 @@ const getUserByRefreshToken = async (refreshToken: string) => {
     console.error("Error in getUserByRefreshToken:", error);
     throw new Error("Failed to get user by refresh token.");
   }
-};export default {
+}; export default {
   createUser,
   getUsers,
   getUserByEmail,

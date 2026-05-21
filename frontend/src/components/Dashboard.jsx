@@ -246,7 +246,7 @@ function Dashboard({ fileType }) {
 
   const refreshFiles = async () => {
     try {
-      
+
       setIsLoading(true);
       const userData = getUserData();
       const requestOptions = {
@@ -259,6 +259,9 @@ function Dashboard({ fileType }) {
         ) {
           const requestOptions = {
             method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({ collaborated: userData.collaborationIds }),
           };
           const response = await fetchWrapper(
@@ -286,7 +289,7 @@ function Dashboard({ fileType }) {
     } catch (error) {
       console.error("Error refreshing files:", error);
     } finally {
-      setIsLoading(false);      
+      setIsLoading(false);
     }
   };
 
@@ -399,6 +402,9 @@ function Dashboard({ fileType }) {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetch-user-by-email");
@@ -480,6 +486,9 @@ function Dashboard({ fileType }) {
       try {
         const requestOptions = {
           method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(obj),
         };
         const response = await fetchWrapper(
@@ -555,6 +564,9 @@ function Dashboard({ fileType }) {
     try {
       const requestOptions = {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
       const response = await fetchWrapper(
@@ -583,6 +595,9 @@ function Dashboard({ fileType }) {
     try {
       const requestOptions = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(obj),
       };
       const response = await fetchWrapper(
@@ -682,10 +697,10 @@ function Dashboard({ fileType }) {
       .filter((item) => selectedBulkItems.includes(item.id))
       .filter((item) => item.type === 'folder');
 
-      if(unMatchedType && unMatchedType.length>0){
-        toast.error("Selected Item is Folder")
-        return;
-      }
+    if (unMatchedType && unMatchedType.length > 0) {
+      toast.error("Selected Item is Folder")
+      return;
+    }
 
 
     const selectedItemsDetails = currentFilesList
@@ -701,7 +716,7 @@ function Dashboard({ fileType }) {
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
 
-      const response = await fetch(
+      const response = await fetchWrapper(
         `/api/box/bulk/download`,
         requestOptions,
         "download"
@@ -828,10 +843,9 @@ function Dashboard({ fileType }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`relative py-3 pl-14 pr-4 w-full text-sm rounded-tl-[30px] border border-transparent rounded-tr-[30px] text-[#3c4043] bg-indigo-50 focus-visible:outline-none focus-visible:bg-white focus-visible:shadow placeholder:text-[#3c4043]
-                      ${
-                        suggestions.length === 0
-                          ? "rounded-bl-[30px] rounded-br-[30px]"
-                          : "border-t-gray-200 border-s-gray-200 border-e-gray-200"
+                      ${suggestions.length === 0
+                        ? "rounded-bl-[30px] rounded-br-[30px]"
+                        : "border-t-gray-200 border-s-gray-200 border-e-gray-200"
                       }`}
                   />
                   <div className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 left-2 h-9 w-9 rounded-full hover:bg-gray-200">
@@ -855,13 +869,11 @@ function Dashboard({ fileType }) {
                           handleSuggestionClick(item);
                         }}
                         key={item.id}
-                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition ${
-                          item.type === "folder" ? "cursor-pointer" : "cursor-default"
-                        } ${
-                          suggestions.length - 1 === index
+                        className={`flex items-center px-4 py-2 hover:bg-gray-100 transition ${item.type === "folder" ? "cursor-pointer" : "cursor-default"
+                          } ${suggestions.length - 1 === index
                             ? "rounded-bl-[30px] rounded-br-[30px]"
                             : ""
-                        }`}
+                          }`}
                       >
                         <span className="mr-2">
                           {item.type === "folder" ? (

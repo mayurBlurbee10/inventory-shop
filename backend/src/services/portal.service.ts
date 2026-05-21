@@ -3,7 +3,7 @@ import { connectDatabase, getConnection } from "../config/db.ts";
 import { Portals } from "../entities/Portals.ts";
 import userService from "./user.service.ts";
 import { sanitizeName, reverseSanitizeName } from "../utils/commonUtils.ts";
-import { ILike} from "typeorm";
+import { ILike } from "typeorm";
 const getRepository = async (entity: any) => {
   await connectDatabase();
   const connection = getConnection();
@@ -87,9 +87,11 @@ const getPortalCreatedAdmin = async (portalId: string) => {
   try {
     const portal = await portalRepository.findOne({
       where: { legalName: reverseSanitizeName(portalId) },
-      relations: ["portalCreatedAdmin"],
     });
-    return portal?.portalCreatedAdmin;
+    if (!portal) {
+      throw new Error("portal not exist");
+    }
+    return await userService.getUserById(portal?.portalCreatedAdmin);
   } catch (error) {
     throw new Error("Failed to get portal created admin.");
   }
@@ -176,7 +178,7 @@ const updatePortal = async (portalId: string, updatedData: any) => {
   }
 };
 
-const deletePortal = async (portalId:any) => {
+const deletePortal = async (portalId: any) => {
   const portalRepository = await getRepository(Portals);
   try {
     const portalExist = await portalRepository.findOneBy({ id: portalId });
@@ -364,14 +366,14 @@ const resetPortal = async (portalId: string) => {
         const uploadIdsFromSignTasks =
           checklists.length > 0
             ? checklists
-                .flatMap((checklist: any) => checklist.tasks || [])
-                .filter(
-                  (task: any) =>
-                    task.type === TaskType.SIGN &&
-                    Array.isArray(task.uploads) &&
-                    task.uploads.length > 0
-                )
-                .map((task: any) => task.uploads[0])
+              .flatMap((checklist: any) => checklist.tasks || [])
+              .filter(
+                (task: any) =>
+                  task.type === TaskType.SIGN &&
+                  Array.isArray(task.uploads) &&
+                  task.uploads.length > 0
+              )
+              .map((task: any) => task.uploads[0])
             : [];
         await (await import("./checkList.service.ts")).default.deleteAllChecklists(portalSlug);
         // keep task parity without relying on non-existent user service helper

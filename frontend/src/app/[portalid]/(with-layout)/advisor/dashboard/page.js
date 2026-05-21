@@ -18,7 +18,7 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
-  } from "recharts";
+} from "recharts";
 import { useSelector } from "react-redux";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
@@ -44,15 +44,15 @@ export default function AdvisorViewDashboard() {
     const [page, setPage] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
     const router = useRouter();
-    const { data : user } = useSelector((state) => state.user);
-    const {data : pages } = useSelector((state)=>state.pages);
+    const { data: user } = useSelector((state) => state.user);
+    const { data: pages } = useSelector((state) => state.pages);
 
     const [dayAndDate, setDayAndDate] = useState({
         day: "",
         date: "",
         month: "",
     });
-    
+
     useEffect(() => {
         const date = new Date();
         const dayIndex = date.getDay();
@@ -106,62 +106,62 @@ export default function AdvisorViewDashboard() {
 
     const fetchConfig = async () => {
         try {
-          const response = await fetchWrapper(
-            `/api/portal?portalid=${params.portalid}`,
-            {},
-            "fetch-portal"
-          );
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.error || "Failed to fetch portal");
-          }
-          setConfig(data?.data);
-          return data?.data
+            const response = await fetchWrapper(
+                `/api/portal?portalid=${params.portalid}`,
+                {},
+                "fetch-portal"
+            );
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to fetch portal");
+            }
+            setConfig(data?.data);
+            return data?.data
         } catch (error) {
-          console.log("error: ", error);
+            console.log("error: ", error);
         }
-      };
-      const generateMockData = async (year, portalId) => {
+    };
+    const generateMockData = async (year, portalId) => {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return months.map(month => ({
-          name: month,
-          apiCalls: Math.floor(Math.random() * 1000) + 100,
-          activeUsers: Math.floor(Math.random() * 100) + 50
+            name: month,
+            apiCalls: Math.floor(Math.random() * 1000) + 100,
+            activeUsers: Math.floor(Math.random() * 100) + 50
         }));
-      };
+    };
 
     const filterVisibility = (label) => {
-      if (isPageLoading) return false;
-      if (!page || !page.length) return true;
+        if (isPageLoading) return false;
+        if (!page || !page.length) return true;
 
-      const section = page.find((item) => item.label === label);
-      return section?.visible ?? false;
+        const section = page.find((item) => item.label === label);
+        return section?.visible ?? false;
     };
 
     const fetchPage = async () => {
-      try {
-        setIsPageLoading(true);
-        if (!params?.portalid) return;
-        const page = encodeURIComponent("advisor dashboard")
-        const response = await fetchWrapper(
-          `/api/pages?portalId=${params.portalid || "root"}&page=${page}`,
-          {},
-          "fetch-page"
-        );
-        const data = await response.json();
+        try {
+            setIsPageLoading(true);
+            if (!params?.portalid) return;
+            const page = encodeURIComponent("advisor dashboard")
+            const response = await fetchWrapper(
+                `/api/pages?portalId=${params.portalid || "root"}&page=${page}`,
+                {},
+                "fetch-page"
+            );
+            const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch page");
+            if (!response.ok) {
+                throw new Error("Failed to fetch page");
+            }
+
+            const pageData = data?.data?.visibility || [];
+
+            setPage(pageData);
+        } catch (error) {
+            console.log("error: ", error);
+        } finally {
+            setIsPageLoading(false);
         }
-
-        const pageData = data?.data?.visibility || [];
-
-        setPage(pageData);
-      } catch (error) {
-        console.log("error: ", error);
-      } finally {
-        setIsPageLoading(false);
-      }
     };
 
     const sortedClients = usersList && [...usersList].sort((a, b) => {
@@ -169,12 +169,12 @@ export default function AdvisorViewDashboard() {
             if (sortConfig?.key === "name") {
                 const aName = `${a?.firstName || ''} ${a?.lastName || ''}`.trim();
                 const bName = `${b?.firstName || ''} ${b?.lastName || ''}`.trim();
-                return sortConfig?.direction === "asc" 
-                    ? aName.localeCompare(bName) 
+                return sortConfig?.direction === "asc"
+                    ? aName.localeCompare(bName)
                     : bName.localeCompare(aName);
-            } else if (sortConfig?.key === "email"){
-                return sortConfig?.direction === "asc" 
-                    ? a?.email?.localeCompare(b?.email) 
+            } else if (sortConfig?.key === "email") {
+                return sortConfig?.direction === "asc"
+                    ? a?.email?.localeCompare(b?.email)
                     : b?.email?.localeCompare(a?.email);
             }
         }
@@ -183,7 +183,7 @@ export default function AdvisorViewDashboard() {
 
     const toggleSort = (key) => {
         let newDirection = 'asc';
-        
+
         if (sortConfig.key === key) {
             if (sortConfig.direction === 'asc') {
                 newDirection = 'desc';
@@ -193,38 +193,37 @@ export default function AdvisorViewDashboard() {
                 newDirection = 'asc';
             }
         }
-        
+
         setSortConfig({ key: newDirection ? key : null, direction: newDirection });
     };
 
-      useEffect(() => {
+    useEffect(() => {
         const page = pages?.find((page) => page.title === "advisor dashboard");
-        
+
         if (page && !page.isPageVisible) {
-          router.push(
-            `${
-              params?.portalid
-                ? `/${params?.portalid}/access-denied`
-                : "/access-denied"
-            }`
-          );
-           return;
+            router.push(
+                `${params?.portalid
+                    ? `/${params?.portalid}/access-denied`
+                    : "/access-denied"
+                }`
+            );
+            return;
         }
         fetchUser();
         fetchPage();
         fetchConfig().then((portal) => {
-          //   getChartData(2025, portal?.id).then((data) => setData(data));
-          generateMockData(2025, portal?.id).then((data) => setData(data));
+            //   getChartData(2025, portal?.id).then((data) => setData(data));
+            generateMockData(2025, portal?.id).then((data) => setData(data));
         });
-      }, []);
-      
-      const LoadingSpinner = () => (
-        <div className={`h-[80vh] flex items-center justify-center bg-white`}>
-          <LoaderSpinner size={32} className="text-blue-500" />
-        </div>
-      );
+    }, []);
 
-      if (isLoading || isPageLoading) return <LoadingSpinner />;
+    const LoadingSpinner = () => (
+        <div className={`h-[80vh] flex items-center justify-center bg-white`}>
+            <LoaderSpinner size={32} className="text-blue-500" />
+        </div>
+    );
+
+    if (isLoading || isPageLoading) return <LoadingSpinner />;
 
     return (
         // <Container>
@@ -295,8 +294,8 @@ export default function AdvisorViewDashboard() {
                                                 {sortedClients.map((user) => (
                                                     <tr key={user?.id} className="hover:bg-gray-50 transition-colors">
                                                         <td className="py-3 px-4 text-sm">
-                                                            <Link 
-                                                                href={`shared-docs?userId=${user?.boxUserId}`} 
+                                                            <Link
+                                                                href={`shared-docs?userId=${user?.boxUserId}`}
                                                                 passHref
                                                                 className="text-blue-600 hover:text-blue-800 font-medium"
                                                             >
@@ -304,7 +303,7 @@ export default function AdvisorViewDashboard() {
                                                             </Link>
                                                         </td>
                                                         <td className="p-4 text-sm text-gray-600">
-                                                           {user?.email}
+                                                            {user?.email}
                                                         </td>
                                                         <td className="p-4 text-sm text-gray-600">
                                                             {user?.phoneNo}
@@ -336,39 +335,39 @@ export default function AdvisorViewDashboard() {
 
                             {/* Chart Section */}
                             <div className="sm:h-[350px] h-[250px] w-full">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                          <LineChart
-                                            data={data}
-                                            margin={{
-                                              top: 5,
-                                              right: 30,
-                                              left: 20,
-                                              bottom: 5,
-                                            }}
-                                          >
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="name" />
-                                            <YAxis yAxisId="left" />
-                                            <YAxis yAxisId="right" orientation="right" />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line
-                                              yAxisId="left"
-                                              type="monotone"
-                                              dataKey="apiCalls"
-                                              stroke="#0061D5"
-                                              name="API Calls"
-                                            />
-                                            <Line
-                                              yAxisId="right"
-                                              type="monotone"
-                                              dataKey="activeUsers"
-                                              stroke="#16a34a"
-                                              name="Active Users"
-                                            />
-                                          </LineChart>
-                                        </ResponsiveContainer>
-                                      </div>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart
+                                        data={data}
+                                        margin={{
+                                            top: 5,
+                                            right: 30,
+                                            left: 20,
+                                            bottom: 5,
+                                        }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="name" />
+                                        <YAxis yAxisId="left" />
+                                        <YAxis yAxisId="right" orientation="right" />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Line
+                                            yAxisId="left"
+                                            type="monotone"
+                                            dataKey="apiCalls"
+                                            stroke="#0061D5"
+                                            name="API Calls"
+                                        />
+                                        <Line
+                                            yAxisId="right"
+                                            type="monotone"
+                                            dataKey="activeUsers"
+                                            stroke="#16a34a"
+                                            name="Active Users"
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     )}
                 </div>

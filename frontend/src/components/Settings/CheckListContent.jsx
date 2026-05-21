@@ -11,7 +11,7 @@ import { TaskStatus } from "@/config/constants";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
-const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null }) => {
+const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist = null }) => {
   const params = useParams();
   const [checkListName, setCheckListName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,12 +19,12 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
   const { data: user } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if(checklist){
+    if (checklist) {
       setCheckListName(checklist?.name)
-    }else {
+    } else {
       setCheckListName("")
     }
-  },[checklist]);
+  }, [checklist]);
 
   const handleCreateCheckList = async () => {
     try {
@@ -35,14 +35,17 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
         name: checkListName,
       }
 
-      if(isEditMode){
+      if (isEditMode) {
         payload.checklistId = checklist?.id
-      }else {
+      } else {
         payload.createdBy = user?.id;
         payload.portalId = params?.portalid;
       }
       const requestOptions = {
         method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(payload),
       };
       const response = await fetchWrapper(
@@ -115,7 +118,7 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist=null 
                 type="Primary"
                 isLoading={isLoading}
               />
-              
+
             </div>
           </div>
         </Dialog.Panel>
@@ -163,6 +166,9 @@ const CheckListContent = () => {
       setIsDeleteLoading(true);
       const requestOptions = {
         method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           checklistId: selectedCheckList?.id,
         }),
@@ -191,7 +197,7 @@ const CheckListContent = () => {
   const handleUpdateCheckList = async (checklist) => {
     try {
       const filteredCheckList = checkLists.filter((item) => item?.isActive);
-      if(filteredCheckList.length === 1 && checklist?.isActive){
+      if (filteredCheckList.length === 1 && checklist?.isActive) {
         setIsChecklistLastActive(true);
         return;
       }
@@ -204,6 +210,9 @@ const CheckListContent = () => {
       setIsUpdateLoading(checklist);
       const requestOptions = {
         method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           checklistId: checklist?.id,
           isActive: !checklist?.isActive,
@@ -233,39 +242,39 @@ const CheckListContent = () => {
     }
   };
 
-   const handleDeleteTask = async () => {
-      try {
-        setIsChecklistLastActive(false);
-        if(!selectedTask){
-          return;
-        }
-        const requestOptions = {
-          method : "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body : JSON.stringify({taskId : selectedTask?.id})
-        }
-        setIsDeleteLoading(true);
-        const response = await fetchWrapper(
-          `/api/tasks`,
-          requestOptions,
-          "delete-tasks"
-        );
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data?.error || "Something went wrong!");
-        }
-        await fetchChecklists();
-        setSelectedTask(null);
-        setIsDeleteTaskModalOpen(false);
-        toast.success("Task deleted Successfully");
-      } catch (error) {
-        toast.error(error?.message);
-      } finally {
-        setIsDeleteLoading(false);
+  const handleDeleteTask = async () => {
+    try {
+      setIsChecklistLastActive(false);
+      if (!selectedTask) {
+        return;
       }
-    };
+      const requestOptions = {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ taskId: selectedTask?.id })
+      }
+      setIsDeleteLoading(true);
+      const response = await fetchWrapper(
+        `/api/tasks`,
+        requestOptions,
+        "delete-tasks"
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Something went wrong!");
+      }
+      await fetchChecklists();
+      setSelectedTask(null);
+      setIsDeleteTaskModalOpen(false);
+      toast.success("Task deleted Successfully");
+    } catch (error) {
+      toast.error(error?.message);
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchChecklists();
@@ -353,25 +362,23 @@ const CheckListContent = () => {
                                 <Trash2 className="size-4 text-red-700" />
                               </div>
                               {isUpdateLoading?.id === checklist?.id && (
-                              <LoaderSpinner size={24} className="text-blue-500" />
+                                <LoaderSpinner size={24} className="text-blue-500" />
                               )}
                               <button
                                 type="button"
                                 onClick={() => handleUpdateCheckList(checklist)}
                                 className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out 
-                                      ${
-                                        checklist?.isActive
-                                          ? "bg-blue-600"
-                                          : "bg-gray-200"
-                                      }`}
+                                      ${checklist?.isActive
+                                    ? "bg-blue-600"
+                                    : "bg-gray-200"
+                                  }`}
                               >
                                 <span
                                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out 
-                                      ${
-                                        checklist?.isActive
-                                          ? "translate-x-5"
-                                          : "translate-x-0"
-                                      }`}
+                                      ${checklist?.isActive
+                                      ? "translate-x-5"
+                                      : "translate-x-0"
+                                    }`}
                                 />
                               </button>
                             </div>
@@ -394,7 +401,7 @@ const CheckListContent = () => {
                                   </span>
                                   {/* Action Buttons */}
                                   <div className="flex items-center gap-2">
-                                    {/* Edit Button */}                                
+                                    {/* Edit Button */}
                                     <button
                                       className="p-2 rounded-md hover:bg-blue-100 transition"
                                       onClick={() => {
@@ -419,11 +426,10 @@ const CheckListContent = () => {
                                   </div>
                                   {/* Task Status */}
                                   <span
-                                    className={`text-xs font-semibold text-right min-w-[80px] px-2 py-1 ${
-                                      task?.status === TaskStatus.COMPLETED
-                                        ? " text-green-600"
-                                        : " text-yellow-600"
-                                    }`}
+                                    className={`text-xs font-semibold text-right min-w-[80px] px-2 py-1 ${task?.status === TaskStatus.COMPLETED
+                                      ? " text-green-600"
+                                      : " text-yellow-600"
+                                      }`}
                                   >
                                     {task?.status?.charAt(0).toUpperCase() + task?.status?.slice(1)}
                                   </span>
@@ -436,7 +442,7 @@ const CheckListContent = () => {
                         </div>
                         {/* )} */}
                         <Button
-                          onClick={() => {setIsOpenAddTaskModal((prev) => !prev); setSelectedCheckList(checklist)}}
+                          onClick={() => { setIsOpenAddTaskModal((prev) => !prev); setSelectedCheckList(checklist) }}
                           label={"Add Task"}
                           icon={PlusCircle}
                           type="Secondary"
@@ -465,23 +471,23 @@ const CheckListContent = () => {
       />
       {isOpenAddTaskModal && (
         <CreateTaskPopUp
-          onClose={() => {setIsOpenAddTaskModal(false); setSelectedCheckList(null);}}
+          onClose={() => { setIsOpenAddTaskModal(false); setSelectedCheckList(null); }}
           onTaskCreated={fetchChecklists}
           allowedCheckLists={[selectedCheckList]}
         />
       )}
       {selectedCheckList && (
         <DeleteConfirmDialog
-        title={`Delete ${selectedCheckList?.name} checklist`}
-        content="Deleting this checklist will also remove all related tasks. Are you sure you want to continue?"
-        isLoading={isDeleteLoading}
-        setIsModalOpen={(isOpen) => {
-          setIsDeleteModalOpen(isOpen);
-          if (!isOpen) setSelectedCheckList(null); // Ensure reset when closing
-        }}
-        isModalOpen={isDeleteModalOpen}
-        handleDelete={handleDeleteCheckList}
-      />
+          title={`Delete ${selectedCheckList?.name} checklist`}
+          content="Deleting this checklist will also remove all related tasks. Are you sure you want to continue?"
+          isLoading={isDeleteLoading}
+          setIsModalOpen={(isOpen) => {
+            setIsDeleteModalOpen(isOpen);
+            if (!isOpen) setSelectedCheckList(null); // Ensure reset when closing
+          }}
+          isModalOpen={isDeleteModalOpen}
+          handleDelete={handleDeleteCheckList}
+        />
       )}
       {isDeleteTaskModalOpen && (
         <DeleteConfirmDialog
@@ -495,7 +501,7 @@ const CheckListContent = () => {
       )}
       {isUpdateTaskModalOpen && selectedTask !== null && (
         <CreateTaskPopUp
-          onClose={() => {setIsUpdateTaskModalOpen(false); setSelectedTask(null); setSelectedCheckList(null);}}
+          onClose={() => { setIsUpdateTaskModalOpen(false); setSelectedTask(null); setSelectedCheckList(null); }}
           user={selectedTask?.user}
           onTaskCreated={fetchChecklists}
           task={selectedTask}

@@ -701,7 +701,7 @@ export default function MyDocsPage() {
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
 
-      const response = await fetch(
+      const response = await fetchWrapper(
         `/api/box/bulk/download`,
         requestOptions,
         "download"

@@ -142,7 +142,7 @@ const bulkDownload = asyncHandler(async (req: Request, res: Response) => {
 
           const chunks: Buffer[] = [];
           await new Promise<void>((resolve, reject) => {
-            stream.on("data", (chunk:any) => {
+            stream.on("data", (chunk: any) => {
               chunks.push(chunk);
             });
 

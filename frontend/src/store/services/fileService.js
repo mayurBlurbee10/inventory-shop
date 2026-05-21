@@ -12,12 +12,12 @@ const getAllFiles = async (boxFolderId, collaborationIds) => {
   };
   const query = collaborationIds
     ? new URLSearchParams({
-        folderId: boxFolderId,
-        collaborated: JSON.stringify(collaborationIds),
-      })
+      folderId: boxFolderId,
+      collaborated: JSON.stringify(collaborationIds),
+    })
     : new URLSearchParams({
-        folderId: boxFolderId,
-      });
+      folderId: boxFolderId,
+    });
   const response = await fetchWrapper(
     `/api/box/folders?${query.toString()}`,
     requestOptions,
@@ -52,6 +52,9 @@ export const setCollaboratedFiles = (collaborationIds) => async (dispatch) => {
   try {
     const requestOptions = {
       method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ collaborated: collaborationIds }),
     };
     const response = await fetchWrapper(

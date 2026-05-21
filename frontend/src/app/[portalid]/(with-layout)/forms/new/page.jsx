@@ -182,9 +182,9 @@ const ApplicationStep = ({
             );
             const existingLoanFolder = refreshedForms
               ? findFolderWithName(
-                  refreshedForms.children || [],
-                  loanName
-                )
+                refreshedForms.children || [],
+                loanName
+              )
               : null;
             if (existingLoanFolder) {
               setLoanFolderId(existingLoanFolder.id);
@@ -477,6 +477,9 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
       setIsLoading(true);
       const requestOptions = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(obj),
       };
       const response = await fetchWrapper(
@@ -743,11 +746,11 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
                   </div>
                 </button> */}
                 <Button
-                onClick={uploadFiles}
-                disabled={isUploadLoading || files.length == 0}
-                isLoading={isUploadLoading}
-                type="Primary"
-                label="Upload"
+                  onClick={uploadFiles}
+                  disabled={isUploadLoading || files.length == 0}
+                  isLoading={isUploadLoading}
+                  type="Primary"
+                  label="Upload"
                 />
               </div>
             </div>
@@ -762,10 +765,10 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
           label="Back"
         />
         <Button
-        onClick={() => setActiveStep("loanestimate")}
-        disabled={isLoading || isUploadLoading}
-        type="Primary"
-        label="Next"
+          onClick={() => setActiveStep("loanestimate")}
+          disabled={isLoading || isUploadLoading}
+          type="Primary"
+          label="Next"
         />
       </div>
     </div>
@@ -826,7 +829,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
               },
             ],
             boxUserId: userData.boxUserId,
-            portal:  params.portalid || "root",
+            portal: params.portalid || "root",
             onSameDoc: false,
           }),
         },
@@ -922,9 +925,9 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
           Back
         </button> */}
         <Button
-        onClick={() => setActiveStep("documents")}
-        type="Secondary"
-        label="Back"
+          onClick={() => setActiveStep("documents")}
+          type="Secondary"
+          label="Back"
         />
       </div>
     </div >
@@ -998,6 +1001,9 @@ function NewLoanPage() {
       if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
         const requestOptions = {
           method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({ collaborated: userData.collaborationIds }),
         };
         const response = await fetchWrapper(

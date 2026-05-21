@@ -59,9 +59,9 @@ export default function DocDashboard() {
   const [dayAndDate, setDayAndDate] = useState("");
   const [page, setPage] = useState(null);
   const [isPageLoading, setIsPageLoading] = useState(false)
-  
-  const {data : user } = useSelector((state)=>state.user);
-  const {data : pages } = useSelector((state)=>state.pages);
+
+  const { data: user } = useSelector((state) => state.user);
+  const { data: pages } = useSelector((state) => state.pages);
   const { data: content } = useSelector((state) => state.content);
 
   const dispatch = useDispatch();
@@ -82,9 +82,8 @@ export default function DocDashboard() {
     return (
       <Link href={href} passHref>
         <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-            pathname.includes(href) ? "text-blue-500" : ""
-          }`}
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+            }`}
         >
           {title}
         </button>
@@ -96,9 +95,9 @@ export default function DocDashboard() {
   };
 
   const isAnySideSectionVisible = () => {
-    if (isPageLoading) return true; 
-    if (!page || !page?.length) return true; 
-    
+    if (isPageLoading) return true;
+    if (!page || !page?.length) return true;
+
     return page.some((item) => item.visible);
   };
 
@@ -107,7 +106,7 @@ export default function DocDashboard() {
       setIsPageLoading(true);
       if (!params?.portalid) return;
       const response = await fetchWrapper(
-        `/api/pages?portalId=${params.portalid || "root" }&page=${pathname
+        `/api/pages?portalId=${params.portalid || "root"}&page=${pathname
           .split("/")
           .pop()}`,
         {},
@@ -135,6 +134,9 @@ export default function DocDashboard() {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetch-user-by-email");
@@ -214,18 +216,18 @@ export default function DocDashboard() {
   };
 
   const filterVisibility = (label) => {
-    if (isPageLoading) return false;  
-    if (!page || !page?.length) return true;       
-    
+    if (isPageLoading) return false;
+    if (!page || !page?.length) return true;
+
     const section = page.find((item) => item.label === label);
-    return section?.visible ?? false; 
+    return section?.visible ?? false;
   };
 
   const filterLinksVisibility = (title) => {
     const page = pages?.find((page) => page.title === title);
     return page ? page.isPageVisible : true;
   };
-  
+
   useEffect(() => {
     const getOrdinalSuffix = (day) => {
       if (day > 3 && day < 21) return "th"; // Covers 11th, 12th, 13th
@@ -236,12 +238,12 @@ export default function DocDashboard() {
         default: return "th";
       }
     };
-    
+
     const today = new Date();
     const day = today.getDate();
     const weekday = today.toLocaleDateString("en-US", { weekday: "long" }); // Wednesday
     const month = today.toLocaleDateString("en-US", { month: "long" }); // April
-    
+
     const formattedDate = `${weekday}, ${month} ${day}${getOrdinalSuffix(day)}`;
     setDayAndDate(formattedDate);
   }, []);
@@ -254,8 +256,8 @@ export default function DocDashboard() {
 
   const userIsAdmin = isAdmin();
 
-  if(isPageLoading){
-  return <LoadingSpinner/>
+  if (isPageLoading) {
+    return <LoadingSpinner />
   }
 
   return (
@@ -263,7 +265,7 @@ export default function DocDashboard() {
     <div className="max-w-[1820px] mx-auto px-4">
       <div className={`${filterVisibility("Ticker Tape") ? "pt-5" : "pt-5 sm:pt-14"}`}>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
-          <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
+          <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3"}`}>
             <div className="flex flex-col justify-center gap-3">
               <div className="flex justify-center">
                 {filterVisibility("Ticker Tape") && (
@@ -279,12 +281,12 @@ export default function DocDashboard() {
                       <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
                         {
                           filterValue("Dashboard Heading")?.length > 0 ? (
-                            <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true}/>
+                            <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true} />
                           ) : (
                             <div className="flex items-center justify-between bg-white p-3">
-                                <h3 className="text-lg font-semibold text-gray-800 font-lato">
-                                   {`Hello, ${`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}!`}
-                                </h3>
+                              <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                                {`Hello, ${`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}!`}
+                              </h3>
                             </div>
                           )
                         }
@@ -304,30 +306,30 @@ export default function DocDashboard() {
                   </h3>
 
                   <div className="flex justify-center w-full">
-                      <div className="w-[96%] md:w-[80%]">
-                        <StockMarketChart />
-                        {/* <MarketOverviewChart /> */}
-                      </div>
+                    <div className="w-[96%] md:w-[80%]">
+                      <StockMarketChart />
+                      {/* <MarketOverviewChart /> */}
+                    </div>
                   </div>
                 </>
               )}
             </div>
             <div className="flex justify-center mt-5">
-                {filterVisibility("Top Stories") && (
-                  <div className="w-[96%] md:w-[80%]">
-                    <TopStories />
-                  </div>
-                )}
+              {filterVisibility("Top Stories") && (
+                <div className="w-[96%] md:w-[80%]">
+                  <TopStories />
+                </div>
+              )}
             </div>
           </div>
           <div className="col-span-5 md:col-span-2 flex flex-col gap-4">
-          {filterVisibility("My Task Section") && (
-            <TasksSection />
-          )}
-          {filterVisibility("Collaborator Section") && (
-            <CollaboratorSection />
-          )}
-          {/* {filterVisibility("Links Section") && (
+            {filterVisibility("My Task Section") && (
+              <TasksSection />
+            )}
+            {filterVisibility("Collaborator Section") && (
+              <CollaboratorSection />
+            )}
+            {/* {filterVisibility("Links Section") && (
             <div className="mt-7">
               {filterLinksVisibility("shared-docs") && (
                  <Link href="shared-docs">

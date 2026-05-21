@@ -49,7 +49,7 @@ function Container({ children }) {
     }
   };
 
-  
+
   // const getFiles = async () => {
   //   try {
   //     const userData = getUserData();
@@ -96,6 +96,9 @@ function Container({ children }) {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetch-user-by-email");

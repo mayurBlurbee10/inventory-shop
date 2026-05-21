@@ -214,7 +214,7 @@ function Login() {
 
   const handleCheckForTNC = async (e) => {
     e.preventDefault();
-    const buttonType = e.nativeEvent.submitter.innerText.toLowerCase();
+    const buttonType = e?.nativeEvent.submitter.innerText.toLowerCase();
 
     if (buttonType === "login with okta") {
       setIsLoadingOkta(true);
@@ -222,7 +222,7 @@ function Login() {
     setIsLoadingLogin(true);
     setError("");
     try {
-      handleLogin(e);
+      await handleLogin(e);
     } catch (error) {
       console.error("Error handling TNC check:", error);
     }
@@ -241,6 +241,7 @@ function Login() {
   }, []);
 
   const handleLogin = async (e) => {
+    e?.preventDefault();
     console.log("Login attempt for:", email);
 
     try {
@@ -259,8 +260,9 @@ function Login() {
         },
         "default-login"
       );
-
       const data = await response.json();
+      console.log("data===========>", data);
+
       if (!response.ok) {
         throw new Error(data.error || "Login failed");
       }
@@ -281,14 +283,14 @@ function Login() {
         setIsTNCOpen(true);
       }
       if (!selectedNdaPage || (selectedNdaPage && userData?.isTNCAccepted)) {
-       const dashboardPage = pages?.find((page) => page.title === "dashboard");
-       if(dashboardPage?.isPageVisible) {
-        router.push("dashboard");
-        toast.success("Redirecting to dashboard");
-       }else{
-        router.push("shared-docs");
-        toast.success("Redirecting to shared documents");
-       }
+        const dashboardPage = pages?.find((page) => page.title === "dashboard");
+        if (dashboardPage?.isPageVisible) {
+          router.push("dashboard");
+          toast.success("Redirecting to dashboard");
+        } else {
+          router.push("shared-docs");
+          toast.success("Redirecting to shared documents");
+        }
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -302,7 +304,7 @@ function Login() {
   const filterValue = (title) => {
     if (!content) return null;
     console.log("Content ========>", content);
-    
+
     const contentItem =
       content && content?.portalContent.find((item) => item.title === title);
     const value = contentItem ? contentItem.value : null;
@@ -311,8 +313,8 @@ function Login() {
     if (!value) {
       const defaultItem =
         content && content?.defaultContent.find((item) => item.title === title);
-        console.log("defaultItem===============>", defaultItem);
-        
+      console.log("defaultItem===============>", defaultItem);
+
       return defaultItem ? defaultItem.value : null;
     }
     return value;
@@ -339,6 +341,9 @@ function Login() {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, portalid: params?.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetch-user-by-email");
@@ -443,10 +448,10 @@ function Login() {
     let theme = contentItem
       ? contentItem.theme
       : {
-          fontSize: fontSize?.size,
-          color: "#000000",
-          fontWeight: title === "Paragraph" ? 300 : 400,
-        };
+        fontSize: fontSize?.size,
+        color: "#000000",
+        fontWeight: title === "Paragraph" ? 300 : 400,
+      };
     return theme;
   };
 

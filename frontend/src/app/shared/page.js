@@ -331,14 +331,13 @@ export default function SharedPage() {
 
     return (
       <Link href={href} passHref>
-      <button
-        className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${
-          pathname.includes(href) ? "text-blue-500" : ""
-        }`}
-      >
-        {title}
-      </button>
-    </Link>
+        <button
+          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
+            }`}
+        >
+          {title}
+        </button>
+      </Link>
     );
   };
   // const NavBarItem = ({ title, href }) => (
@@ -561,6 +560,9 @@ export default function SharedPage() {
       try {
         const requestOptions = {
           method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(obj),
         };
         const response = await fetchWrapper(
@@ -591,6 +593,9 @@ export default function SharedPage() {
     try {
       const requestOptions = {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
       const response = await fetchWrapper(
@@ -619,6 +624,9 @@ export default function SharedPage() {
     try {
       const requestOptions = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(obj),
       };
       const response = await fetchWrapper(
@@ -699,7 +707,7 @@ export default function SharedPage() {
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
 
-      const response = await fetch(
+      const response = await fetchWrapper(
         `/api/box/bulk/download`,
         requestOptions,
         "download"

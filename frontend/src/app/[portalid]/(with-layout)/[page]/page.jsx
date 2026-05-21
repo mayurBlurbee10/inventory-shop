@@ -49,8 +49,7 @@ function Page() {
     try {
       setIsLoading(true);
       const response = await fetchWrapper(
-        `/api/pages?portalId=${params?.portalid || "root"}&page=${
-          reverseSanitizeName(params?.page) || ""
+        `/api/pages?portalId=${params?.portalid || "root"}&page=${reverseSanitizeName(params?.page) || ""
         }`,
         {},
         "fetch-page"
@@ -116,6 +115,9 @@ function Page() {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetch-user-by-email");
@@ -143,9 +145,9 @@ function Page() {
   };
 
   const isAnySideSectionVisible = () => {
-    if (isLoading) return true; 
-    if (!page) return true; 
-    
+    if (isLoading) return true;
+    if (!page) return true;
+
     return page?.visibility.some((item) => item.visible);
   };
 
@@ -185,7 +187,7 @@ function Page() {
   return (
     <div className="max-w-[1820px] mx-auto px-4 pt-4 bg-white text-gray-800 font-lato">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
-        <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3" }`}>
+        <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3"}`}>
           <div>
             <div className="flex justify-center">
               {filterVisibility("Ticker Tape") && (
@@ -216,11 +218,11 @@ function Page() {
               )}
             </div>
             <div className="flex justify-center mt-5">
-                {filterVisibility("Top Stories") && (
-                  <div className="w-[96%] md:w-[80%]">
-                    <TopStories />
-                  </div>
-                )}
+              {filterVisibility("Top Stories") && (
+                <div className="w-[96%] md:w-[80%]">
+                  <TopStories />
+                </div>
+              )}
             </div>
           </div>
 

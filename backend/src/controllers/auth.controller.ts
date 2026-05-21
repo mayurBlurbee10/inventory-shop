@@ -85,9 +85,16 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     const user = await userService.getUserByEmail(data.email);
     let portalCreatedAdmin = null;
     if (data?.portalid && data.portalid !== "root") {
-      portalCreatedAdmin = await portalService.getPortalCreatedAdmin(
-        data?.portalid
-      );
+      try {
+        portalCreatedAdmin = await portalService.getPortalCreatedAdmin(
+          data?.portalid
+        );
+      } catch (adminLookupError) {
+        console.warn(
+          `Portal admin not found for portal "${data.portalid}" — continuing login without portal admin context:`,
+          (adminLookupError as Error).message
+        );
+      }
     }
 
     if (!user) {
@@ -155,7 +162,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
         error: "This user does not have access to this portal",
       });
     }
-
+    console.log("Login USER : ", user);
     // check if password is correct or not
     const isPasswordCorrect = await bcrypt.compare(
       data.password,
@@ -349,7 +356,7 @@ const register = asyncHandler(async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    await logApiCall(req, () => {}, "register", saved?.id);
+    await logApiCall(req, () => { }, "register", saved?.id);
 
     return res.status(201).json({
       success: true,
@@ -391,9 +398,9 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     try {
       const parsed = JSON.parse(userCookie);
       userId = parsed.id;
-    } catch (e) {}
+    } catch (e) { }
   }
-  await logApiCall(req, () => {}, "logout", userId);
+  await logApiCall(req, () => { }, "logout", userId);
 
   res.clearCookie("user", { path: "/" });
   res.clearCookie("token", { path: "/" });
@@ -412,7 +419,7 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
       try {
         const parsed = JSON.parse(userCookie);
         userFromCookieId = parsed.id;
-      } catch (e) {}
+      } catch (e) { }
     }
 
     const refreshTokenFromCookie = req.cookies?.refreshToken;
@@ -424,7 +431,7 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
       user = await userService.getUserByRefreshToken(refreshTokenToUse);
 
       if (user && user.refreshToken !== refreshTokenToUse) {
-        await logApiCall(req, () => {}, "logout", userFromCookieId);
+        await logApiCall(req, () => { }, "logout", userFromCookieId);
 
         res.clearCookie("user", { path: "/" });
         res.clearCookie("token", { path: "/" });
@@ -440,7 +447,7 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
         req.headers.authorization?.replace("Bearer ", "");
 
       if (!token) {
-        await logApiCall(req, () => {}, "logout", userFromCookieId);
+        await logApiCall(req, () => { }, "logout", userFromCookieId);
 
         res.clearCookie("user", { path: "/" });
         res.clearCookie("token", { path: "/" });
@@ -455,7 +462,7 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
     }
 
     if (!user) {
-      await logApiCall(req, () => {}, "logout", userFromCookieId);
+      await logApiCall(req, () => { }, "logout", userFromCookieId);
 
       res.clearCookie("user", { path: "/" });
       res.clearCookie("token", { path: "/" });

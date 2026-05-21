@@ -27,10 +27,10 @@ import { decryptMessage, encryptMessage } from "@/app/lib/crypto";
 import LoaderSpinner from "./Elements/LoaderSpinner";
 
 const formatDate = (timestamp) => {
-  if(timestamp){
+  if (timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleDateString("en-US");
-  }else {
+  } else {
     const date = new Date(Date.now());
     return date.toLocaleDateString("en-US");
   }
@@ -66,7 +66,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
     text: "",
   });
   const [isReplying, setIsReplying] = useState(false);
-  const { data : user } = useSelector((state) => state?.user);
+  const { data: user } = useSelector((state) => state?.user);
 
   const handleEditMessage = async () => {
     if (!editedMessage.text.trim() || !editedMessage.subject.trim()) {
@@ -141,7 +141,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
- 
+
 
   const handleReplyMessage = async () => {
     if (!replyMessage?.text) {
@@ -181,7 +181,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
       console.error("Error sending message:", error);
     } finally {
       setIsMessageReplyLoading(false);
-      
+
     }
   };
 
@@ -250,8 +250,8 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
               </span>
             </div>
 
-             {/* Sender */}
-             <div className="flex items-center space-x-2">
+            {/* Sender */}
+            <div className="flex items-center space-x-2">
               <span className="font-medium">Sender:</span>
               <span className="text-gray-600">
                 {message?.sender?.firstName + " " + message?.sender?.lastName || "Unknown"}
@@ -267,50 +267,50 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
             </div>
 
             <div className="space-y-5">
-                {/* Subject */}
-                <div className="flex items-center border-b pb-4">
-                    <span className="font-medium text-gray-700 mr-5">Subject:</span>
-                    {isEditing ? (
-                        <input
-                        className="flex-1 p-2 border border-gray-300 rounded-md transition bg-white"
-                        value={editedMessage?.subject}
-                        onChange={(e) =>
-                            setEditedMessage((prev) => ({
-                            ...prev,
-                            subject: e.target.value,
-                            }))
-                        }
-                        />
-                    ) : (
-                        <div className="flex-1 p-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">
-                        {message?.subject || "No Subject"}
-                        </div>
-                    )}
-                </div>
-                {/* Message Body */}
-                <div className="flex flex-col border-b pb-4">
-                    <span className="font-medium text-gray-700 mb-1">Message:</span>
-                    {isEditing ? (
-                    <textarea
-                        className="w-full p-2 border border-gray-300 rounded-md transition bg-white resize-none"
-                        rows={"8"}
-                        value={editedMessage?.text}
-                        onChange={(e) =>
-                        setEditedMessage((prev) => ({
-                            ...prev,
-                            text: e.target.value,
-                        }))
-                        }
-                    />
-                    ) : (
-                    <div className="p-3 max-h-[200px] overflow-y-auto bg-gray-100 border border-gray-300 rounded-md text-gray-700">
-                        {getDisplayText(message?.text) || "No message content."}
-                    </div>
-                    )}
-                </div>
+              {/* Subject */}
+              <div className="flex items-center border-b pb-4">
+                <span className="font-medium text-gray-700 mr-5">Subject:</span>
+                {isEditing ? (
+                  <input
+                    className="flex-1 p-2 border border-gray-300 rounded-md transition bg-white"
+                    value={editedMessage?.subject}
+                    onChange={(e) =>
+                      setEditedMessage((prev) => ({
+                        ...prev,
+                        subject: e.target.value,
+                      }))
+                    }
+                  />
+                ) : (
+                  <div className="flex-1 p-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">
+                    {message?.subject || "No Subject"}
+                  </div>
+                )}
+              </div>
+              {/* Message Body */}
+              <div className="flex flex-col border-b pb-4">
+                <span className="font-medium text-gray-700 mb-1">Message:</span>
+                {isEditing ? (
+                  <textarea
+                    className="w-full p-2 border border-gray-300 rounded-md transition bg-white resize-none"
+                    rows={"8"}
+                    value={editedMessage?.text}
+                    onChange={(e) =>
+                      setEditedMessage((prev) => ({
+                        ...prev,
+                        text: e.target.value,
+                      }))
+                    }
+                  />
+                ) : (
+                  <div className="p-3 max-h-[200px] overflow-y-auto bg-gray-100 border border-gray-300 rounded-md text-gray-700">
+                    {getDisplayText(message?.text) || "No message content."}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-          <div className={`${isReplying ? "max-h-[100px]":"max-h-[200px]"} overflow-auto px-6`}>
+          <div className={`${isReplying ? "max-h-[100px]" : "max-h-[200px]"} overflow-auto px-6`}>
             {message?.replies?.length > 0 ? (
               message.replies.map((reply) => (
                 <div key={reply.id} className="flex mt-3">
@@ -386,7 +386,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
               type="Secondary"
               disabled={isMessageUpdateLoading || isMessageReplyLoading}
             />
-             {!isReplying && !isEditing && (
+            {!isReplying && !isEditing && (
               <Button
                 onClick={() => setIsReplying(true)}
                 icon={Reply}
@@ -395,8 +395,8 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                 isLoading={isMessageReplyLoading}
                 disabled={isMessageReplyLoading}
               />
-             )}
-           {(isEditing || isReplying) && (
+            )}
+            {(isEditing || isReplying) && (
               <Button
                 onClick={isEditing ? handleEditMessage : handleReplyMessage}
                 icon={Save}
@@ -428,7 +428,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
   );
 };
 
-const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
+const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo }) => {
   const params = useParams();
   const [message, setMessage] = useState({
     subject: "",
@@ -445,8 +445,8 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
 
   const handleClose = () => {
     setMessage({
-      subject : "",
-      text : ""
+      subject: "",
+      text: ""
     })
     onClose();
     setUserID("");
@@ -533,7 +533,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
   }, []);
 
   return (
-    <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
+    <Dialog open={isOpen} onClose={() => { }} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <Dialog.Panel className="mx-auto w-full max-w-2xl rounded-lg bg-white shadow-md">
@@ -572,7 +572,7 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo}) => {
                     isLoading={isLoading}
                   />
               }
-              
+
               <div className="cursor-pointer w-full text-gray-700 text-sm px-4 py-2 border border-gray-300 rounded-md flex justify-between items-center placeholder-gray-400">
                 <input
                   type="text"
@@ -650,7 +650,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const sortedMessages = messages && [...messages].sort((a, b) => {
-    if (sortConfig.key === "createdAt"){
+    if (sortConfig.key === "createdAt") {
       const dateA = new Date(a.createdAt);
       const dateB = new Date(b.createdAt);
       return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
@@ -674,33 +674,33 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
 
   const handleReadMessage = async (message) => {
     if (message?.receiver?.id === user?.id && !message.seen) {
-    console.log("message.id:", message.id);
-    const messageData = {
-      messageId: message?.id,
-      seen: true 
-    };
-    try {
-      await fetch(`/api/messages?messageId=${message.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(messageData),
-      });
-  
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id === message.id ? { ...msg, seen: true } : msg
-        )
-      );
-      setSelectedMessage(messages.find((msg) => msg.id === message.id));
-    } catch (error) {
-      console.error("Error marking message as seen:", error);
-    }
+      console.log("message.id:", message.id);
+      const messageData = {
+        messageId: message?.id,
+        seen: true
+      };
+      try {
+        await fetchWrapper(`/api/messages?messageId=${message.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(messageData),
+        });
+
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === message.id ? { ...msg, seen: true } : msg
+          )
+        );
+        setSelectedMessage(messages.find((msg) => msg.id === message.id));
+      } catch (error) {
+        console.error("Error marking message as seen:", error);
+      }
     }
     return setSelectedMessage(messages.find((msg) => msg.id === message.id));
   };
 
   return (
-    <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
+    <Dialog open={isOpen} onClose={() => { }} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4 text-[#000000e8]">
         <Dialog.Panel className="mx-auto max-w-[90vw] w-[1200px] h-[80vh] bg-white shadow-xl rounded-lg relative">
@@ -724,42 +724,42 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
               <div className="h-[97%] overflow-y-auto hidden-scrollbar">
                 <div className="border border-gray-200 bg-white shadow-sm rounded-lg">
                   <table className="w-full text-sm font-lato shadow-md overflow-hidden rounded-lg">
-                      <thead>
-                        <tr className="bg-gray-200 text-sm text-gray-700 border-b">
-                          <th className="p-4 text-left font-semibold">
-                            <div className="flex items-center justify-start gap-2">
-                              <span className="block">Date</span>
-                              <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
-                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                              </button>
-                              <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
-                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                              </button>
-                            </div>
-                          </th>
-                          <th className="p-4 text-left font-semibold">
-                            <div className="flex items-center justify-start gap-2">
-                              <span className="block">Contact</span>
-                            </div>
-                          </th>
-                          <th className="p-4 text-left font-semibold">
-                            <div className="flex items-center justify-start gap-2">
-                              <span className="block">Subject</span>
-                            </div>
-                          </th>
-                          <th className="p-4 text-left font-semibold">
-                            <div className="flex items-center justify-start gap-2">
-                              <span className="block">Type</span>
-                              <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
-                                <ChevronUp className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                              </button>
-                              <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
-                                <ChevronDown className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                              </button>
-                            </div>
-                          </th>
-                        </tr>
-                      </thead>
+                    <thead>
+                      <tr className="bg-gray-200 text-sm text-gray-700 border-b">
+                        <th className="p-4 text-left font-semibold">
+                          <div className="flex items-center justify-start gap-2">
+                            <span className="block">Date</span>
+                            <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
+                              <ChevronUp className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                            </button>
+                            <button className="flex items-center justify-center" onClick={() => toggleSort("createdAt")}>
+                              <ChevronDown className={`h-4 w-4 ${sortConfig.key === "createdAt" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                            </button>
+                          </div>
+                        </th>
+                        <th className="p-4 text-left font-semibold">
+                          <div className="flex items-center justify-start gap-2">
+                            <span className="block">Contact</span>
+                          </div>
+                        </th>
+                        <th className="p-4 text-left font-semibold">
+                          <div className="flex items-center justify-start gap-2">
+                            <span className="block">Subject</span>
+                          </div>
+                        </th>
+                        <th className="p-4 text-left font-semibold">
+                          <div className="flex items-center justify-start gap-2">
+                            <span className="block">Type</span>
+                            <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
+                              <ChevronUp className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
+                            </button>
+                            <button className="flex items-center justify-center" onClick={() => toggleSort("type")}>
+                              <ChevronDown className={`h-4 w-4 ${sortConfig.key === "type" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
+                            </button>
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
                     <tbody className="overflow-y-auto">
                       {!messages || messages.length === 0 ? (
                         <tr className="text-center">
@@ -774,8 +774,8 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                           <tr
                             key={index}
                             className={`border-b text-gray-800 hover:bg-gray-50 transition ${row?.receiver?.id === user?.id && !row?.seen
-                                ? "bg-gray-100 font-bold"
-                                : "bg-white font-normal"
+                              ? "bg-gray-100 font-bold"
+                              : "bg-white font-normal"
                               }`}
                             onClick={() => handleReadMessage(row)}
                           >
@@ -812,7 +812,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
   );
 };
 
-const MessageSection = ({clientId}) => {
+const MessageSection = ({ clientId }) => {
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -845,7 +845,7 @@ const MessageSection = ({clientId}) => {
   }, []);
 
   const sortedMessages = messages && [...messages].sort((a, b) => {
-    if (sortConfig.key === "createdAt"){
+    if (sortConfig.key === "createdAt") {
       const dateA = new Date(a.createdAt);
       const dateB = new Date(b.createdAt);
       return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
@@ -869,43 +869,43 @@ const MessageSection = ({clientId}) => {
 
   const handleReadMessage = async (message) => {
     if (message?.receiver?.id === user?.id && !message.seen) {
-    console.log("message.id:", message.id);
-    const messageData = {
-      messageId: message?.id,
-      seen: true 
-    };
-    try {
-      await fetch(`/api/messages?messageId=${message.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(messageData),
-      });
-  
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id === message.id ? { ...msg, seen: true } : msg
-        )
-      );
-      setSelectedMessage(messages.find((msg) => msg.id === message.id));
-    } catch (error) {
-      console.error("Error marking message as seen:", error);
-    }
+      console.log("message.id:", message.id);
+      const messageData = {
+        messageId: message?.id,
+        seen: true
+      };
+      try {
+        await fetchWrapper(`/api/messages?messageId=${message.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(messageData),
+        });
+
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === message.id ? { ...msg, seen: true } : msg
+          )
+        );
+        setSelectedMessage(messages.find((msg) => msg.id === message.id));
+      } catch (error) {
+        console.error("Error marking message as seen:", error);
+      }
     }
     return setSelectedMessage(messages.find((msg) => msg.id === message.id));
   };
 
-//   const LoadingSpinner = () => (
-//     <div className="flex justify-center items-center py-8">
-//       <div className="spinner"/>
-//     </div>
-//   );
-  
-//   if(isMessagesLoading){
-//     return <LoadingSpinner/>
-// }
-useEffect(() => {
-  setMessages([])
-}, [router])
+  //   const LoadingSpinner = () => (
+  //     <div className="flex justify-center items-center py-8">
+  //       <div className="spinner"/>
+  //     </div>
+  //   );
+
+  //   if(isMessagesLoading){
+  //     return <LoadingSpinner/>
+  // }
+  useEffect(() => {
+    setMessages([])
+  }, [router])
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 max-h-[350px]">
@@ -928,9 +928,9 @@ useEffect(() => {
       <div className="max-h-[290px] overflow-y-auto rounded-b-xl">
         {loading ? (
           <div className="min-h-[320px] flex items-center justify-center">
-            <LoaderSpinner className='text-gray-500'/>
+            <LoaderSpinner className='text-gray-500' />
           </div>
-      ) : (
+        ) : (
           !messages || messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-14">
               <h4 className="text-secondary font-semibold text-lg mb-1">
@@ -945,33 +945,29 @@ useEffect(() => {
               {sortedMessages.slice(-5).reverse().map((row, index) => (
                 <div
                   key={index}
-                  className={`py-3 hover:bg-gray-50 cursor-pointer transition ${
-                    row?.receiver?.id === user?.id && !row?.seen
-                      ? "bg-blue-50 border-l-4 border-l-blue-500"
-                      : "bg-white"
-                  }`}
+                  className={`py-3 hover:bg-gray-50 cursor-pointer transition ${row?.receiver?.id === user?.id && !row?.seen
+                    ? "bg-blue-50 border-l-4 border-l-blue-500"
+                    : "bg-white"
+                    }`}
                   onClick={() => handleReadMessage(row)}
                 >
                   <div className="px-4">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          row?.receiver?.id === user?.id && !row?.seen
-                            ? "bg-blue-500"
-                            : "bg-gray-300"
-                        }`}></div>
-                        <span className={`text-sm font-medium ${
-                          row?.receiver?.id === user?.id && !row?.seen
-                            ? "text-gray-900 font-semibold"
-                            : "text-gray-700"
-                        }`}>
+                        <div className={`w-2 h-2 rounded-full ${row?.receiver?.id === user?.id && !row?.seen
+                          ? "bg-blue-500"
+                          : "bg-gray-300"
+                          }`}></div>
+                        <span className={`text-sm font-medium ${row?.receiver?.id === user?.id && !row?.seen
+                          ? "text-gray-900 font-semibold"
+                          : "text-gray-700"
+                          }`}>
                           {row?.receiver?.firstName + " " + row?.receiver?.lastName || "Unknown"}
                         </span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          row?.sender?.id === user?.id 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-blue-100 text-blue-700"
-                        }`}>
+                        <span className={`text-xs px-2 py-1 rounded-full ${row?.sender?.id === user?.id
+                          ? "bg-green-100 text-green-700"
+                          : "bg-blue-100 text-blue-700"
+                          }`}>
                           {row?.sender?.id === user?.id ? "Sent" : "Received"}
                         </span>
                       </div>
@@ -980,11 +976,10 @@ useEffect(() => {
                       </span>
                     </div>
                     <div className="ml-5">
-                      <p className={`text-sm ${
-                        row?.receiver?.id === user?.id && !row?.seen
-                          ? "text-gray-900 font-medium"
-                          : "text-gray-600"
-                      }`}>
+                      <p className={`text-sm ${row?.receiver?.id === user?.id && !row?.seen
+                        ? "text-gray-900 font-medium"
+                        : "text-gray-600"
+                        }`}>
                         {getDisplayText(row?.text)}
                       </p>
                     </div>
@@ -1024,9 +1019,9 @@ useEffect(() => {
       />
 
       {/* View All Message */}
-      <ViewAllMessage 
+      <ViewAllMessage
         isOpen={isOpenAllMessageSection}
-        onClose={() => {setIsOpenAllMessageSection(false); fetchMessages();}}
+        onClose={() => { setIsOpenAllMessageSection(false); fetchMessages(); }}
       />
     </div>
   );

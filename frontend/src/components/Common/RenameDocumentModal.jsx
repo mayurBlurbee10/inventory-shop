@@ -22,7 +22,10 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
     try {
       const requestOptions = {
         method: "PUT",
-        body: JSON.stringify({ itemId: item?.id, newName : newName, type: item?.type }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ itemId: item?.id, newName: newName, type: item?.type }),
       };
       const response = await fetchWrapper(
         "/api/box/files",
@@ -30,7 +33,7 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
         "rename-document"
       );
       const data = await response.json();
-      if(!response.ok){
+      if (!response.ok) {
         throw new Error(data?.error || "Failed to rename document")
       }
       setShowSuccess(true);
@@ -85,7 +88,7 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
                 onChange={(e) => setNewName(e.target.value)}
                 className="py-2 px-2 w-full text-black border border-gray-300 rounded-md text-sm outline-none mb-2 focus:border-blue-500 focus:ring-blue-500"
                 disabled={isLoading}
-                
+
               />
               <div className="flex items-center justify-center pt-4 gap-2">
                 <Button

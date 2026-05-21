@@ -59,6 +59,9 @@ const createSignRequest = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { fileId, signers, boxUserId, portal, onSameDoc } = req.body;
 
+    console.log("fileId, signers, boxUserId, portal, onSameDoc", fileId, signers, boxUserId, portal, onSameDoc);
+
+
     if (!fileId || !signers || !boxUserId || !portal) {
       return res.status(400).json({ error: "Missing required parameters" });
     }
@@ -88,7 +91,7 @@ const createSignRequest = asyncHandler(async (req: Request, res: Response) => {
         })),
         is_document_prepared: false,
         external_id: boxUserId,
-      } as any);
+      } as any, {});
 
       signRequests.push(signRequest);
       await Promise.all(
@@ -111,7 +114,7 @@ const createSignRequest = asyncHandler(async (req: Request, res: Response) => {
           ],
           is_document_prepared: false,
           external_id: boxUserId,
-        } as any);
+        } as any, {});
 
         signRequests.push(signRequest);
         await userService.saveSignRequest(signerId, signRequest);

@@ -179,7 +179,7 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
       dispatch(setActiveUsers(subsidiariesData?.activeUsers));
     } catch (err) {
       console.error("Error while fetching portals", err);
-    } 
+    }
   };
 
   const handleDeleteSubsidiary = async () => {
@@ -197,7 +197,7 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
         body: JSON.stringify({ id: subsidiary.id }),
       };
 
-      const response = await fetch(
+      const response = await fetchWrapper(
         `/api/portal`,
         requestOptions,
         "portal-delete"
@@ -253,7 +253,7 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
             </div>
 
             <div className="flex justify-center space-x-3">
-              <Button 
+              <Button
                 onClick={onClose}
                 type="Seconday"
                 label="Close"
@@ -272,7 +272,7 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
                   "Delete This Portal"
                 )}
               </button> */}
-              <Button 
+              <Button
                 onClick={handleDeleteSubsidiary}
                 disabled={isLoading}
                 isLoading={isLoading}

@@ -7,16 +7,17 @@ import { existingPages } from "../utils/data/existingPages.ts";
 const getPage = asyncHandler(async (req: Request, res: Response) => {
   try {
     await logApiCall(req);
-    const { pageId, pageTitle, portalId } = req.query;
+    const { pageId, page, portalId } = req.query;
+    console.log("pageId pageTitle portalId", pageId, page, portalId);
 
-    let page;
-    if (pageTitle && portalId) {
-      page = await pageService.getPageByTitle(portalId as string, pageTitle as string);
+    let portalPage;
+    if (page && portalId) {
+      portalPage = await pageService.getPageByTitle(portalId as string, page as string);
     } else {
-      page = await pageService.getPageById(pageId as string);
+      portalPage = await pageService.getPageById(pageId as string);
     }
-    console.log("page: ", page);
-    if (!page) {
+    console.log("page: ", portalPage);
+    if (!portalPage) {
       return res.status(409).json({
         error: `Page doesn't exist`,
       });
@@ -24,7 +25,7 @@ const getPage = asyncHandler(async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: `Page fetched successfully.`,
-      data: page,
+      data: portalPage,
     });
   } catch (error) {
     console.error("Error:", (error as Error).message);

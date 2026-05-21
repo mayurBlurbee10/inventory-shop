@@ -16,6 +16,9 @@ const refreshAccessToken = async (portalId, options = {}) => {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/refresh-token`,
         {
           method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
           credentials: "include",
           ...options,
           body: JSON.stringify({ portalId }),
@@ -90,56 +93,63 @@ export const fetchWrapper = async (url, options = {}, type) => {
     // console.trace();  // This prints the function call stack
     const response = await fetchWithAuth(url, options);
 
-    if (response.status !== 401) {
-      return response;
-    }
-
-    try {
-      try {
-        await refreshAccessToken(portalId, options);
-      } catch (error) {
-        let loginPath = portalId !== "admin" ? `/${portalId}/login` : "/login";
-
-        try {
-          // Use raw fetch instead of fetchWrapper to avoid infinite recursion on 401
-          const portalResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/portal?portalid=${portalId}`,
-          );
-
-          if (portalResponse.ok) {
-            const result = await portalResponse.json();
-            const portalData = result?.data;
-            // Use slug if available, fallback to sanitized legalName
-            const slug =
-              portalData?.slug ||
-              (portalData?.legalName
-                ? portalData.legalName.trim().toLowerCase().replace(/\s+/g, "-")
-                : null);
-            if (slug && slug !== "default") {
-              loginPath = `/${slug}/login`;
-            }
-          }
-        } catch (error) {
-          console.warn(
-            "Failed to fetch portal details for redirect:",
-            error.message,
-          );
-        }
-
-        localStorage.clear();
-
-        if (typeof window !== "undefined") {
-          window.location.href = loginPath;
-        }
+    if (response.status === 401) {
+      // If the request is to the login endpoint, do not attempt token refresh or redirect.
+      const isLoginRequest = url.includes('/auth/login') || url.includes('/login');
+      if (isLoginRequest) {
+        return response;
       }
 
-      // ✅ Retry request once
-      const retryResponse = await fetchWithAuth(url, options);
+      try {
+        try {
+          await refreshAccessToken(portalId, options);
+        } catch (error) {
+          let loginPath = portalId !== "admin" ? `/${portalId}/login` : "/login";
 
-      return retryResponse;
-    } catch (err) {
-      console.error("[Auth] Refresh failed");
-      return response; // fallback
+          try {
+            // Use raw fetch instead of fetchWrapper to avoid infinite recursion on 401
+            const portalResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/portal?portalid=${portalId}`,
+            );
+
+            if (portalResponse.ok) {
+              const result = await portalResponse.json();
+              const portalData = result?.data;
+              // Use slug if available, fallback to sanitized legalName
+              const slug =
+                portalData?.slug ||
+                (portalData?.legalName
+                  ? portalData.legalName.trim().toLowerCase().replace(/\s+/g, "-")
+                  : null);
+              if (slug && slug !== "default") {
+                loginPath = `/${slug}/login`;
+              }
+            }
+          } catch (error) {
+            console.warn(
+              "Failed to fetch portal details for redirect:",
+              error.message,
+            );
+          }
+
+          localStorage.clear();
+
+          if (typeof window !== "undefined") {
+            window.location.href = loginPath;
+          }
+        }
+
+        // ✅ Retry request once
+        const retryResponse = await fetchWithAuth(url, options);
+
+        return retryResponse;
+      } catch (err) {
+        console.error("[Auth] Refresh failed");
+        return response; // fallback
+      }
+    }
+    else {
+      return response;
     }
   } catch (error) {
     console.error("Fetch error:", error.message);

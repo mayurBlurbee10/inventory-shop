@@ -27,8 +27,8 @@ const WizardStep = ({ step, currentStep }) => {
         className={`
           w-8 h-8 rounded-full flex items-center justify-center border
           ${isCompleted
-              ? "bg-gray-900 border-gray-900"
-              : isActive
+            ? "bg-gray-900 border-gray-900"
+            : isActive
               ? "bg-white border-gray-900"
               : "bg-white border-gray-300"
           }
@@ -189,36 +189,36 @@ export default function OnBoardingPage() {
     if (contentLength >= 11) {
       completeOnboarding(userData.id);
     }
-     try {
-       const portalData = {
-         ...config,
-         primaryColor: colors.primaryColor,
-         secondaryColor: colors.secondaryColor,
-         accentColor: colors.accentColor,
-       };
+    try {
+      const portalData = {
+        ...config,
+        primaryColor: colors.primaryColor,
+        secondaryColor: colors.secondaryColor,
+        accentColor: colors.accentColor,
+      };
 
-       const response = await fetchWrapper(
-         "/api/portal",
-         {
-           method: "PUT",
-           headers: {
-             "Content-Type": "application/json",
-           },
-           body: JSON.stringify(portalData),
-         },
-         "update-portal"
-       );
+      const response = await fetchWrapper(
+        "/api/portal",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(portalData),
+        },
+        "update-portal"
+      );
 
-       if (!response.ok) throw new Error("Failed to update portal theme");
+      if (!response.ok) throw new Error("Failed to update portal theme");
 
-       dispatch(setPortal(params.portalid));
-       router.push(`/${params.portalid}/dashboard`);
-     } catch (error) {
-       toast.error(error.message);
-       console.log(error);
-     } finally {
-       setIsSubmitting(false);
-     }
+      dispatch(setPortal(params.portalid));
+      router.push(`/${params.portalid}/dashboard`);
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+    }
 
     setTimeout(() => {
       setErrors({});
@@ -228,6 +228,9 @@ export default function OnBoardingPage() {
   const completeOnboarding = async (id) => {
     const requestOptions = {
       method: "PUT",
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ id }),
     };
     const response = await fetchWrapper(
@@ -288,17 +291,17 @@ export default function OnBoardingPage() {
       const defaultItem = content.defaultContent.find(item => item.title === title);
       return defaultItem ? defaultItem.value : '';
     }
-    if(title === 'Logo'){
-      if(contentItem && contentItem.type === 'Image'){
+    if (title === 'Logo') {
+      if (contentItem && contentItem.type === 'Image') {
         return value.replace("/api/upload", "/uploads")
-      }else {
+      } else {
         return null
       }
     }
-    if(title === 'CoverPhoto'){
-      if(contentItem && contentItem.type === 'Image'){
+    if (title === 'CoverPhoto') {
+      if (contentItem && contentItem.type === 'Image') {
         return value.replace("/api/upload", "/uploads")
-      }else {
+      } else {
         return null
       }
     }
@@ -348,7 +351,7 @@ export default function OnBoardingPage() {
         theme: {
           fontSize: fontSize?.size,
           color: "#000000",
-          fontWeight: contentTitle==='Paragraph' ? 300 : 400,
+          fontWeight: contentTitle === 'Paragraph' ? 300 : 400,
         },
       });
       setIsDialogOpen(true);
@@ -386,62 +389,62 @@ export default function OnBoardingPage() {
 
   if (!config || !content) return <LoadingSpinner />;
 
-   const LogoImage = () => {
-      const baseSize = 100; // Set a base height
-    
-      const logoSize =
+  const LogoImage = () => {
+    const baseSize = 100; // Set a base height
+
+    const logoSize =
       (filterTheme("Logo")?.fontSize &&
         logoSizeRatio[
-          filterTheme("Logo")?.fontSize
+        filterTheme("Logo")?.fontSize
         ]) ||
       logoSizeRatio.medium;
-    
-      return (
-        <div className="block min-w-16">
+
+    return (
+      <div className="block min-w-16">
+        <img
+          src={filterContent("Logo") || config?.logo}
+          alt={params.portalid || "Default"}
+          className="object-contain"
+          style={{
+            height: `${baseSize * logoSize}px`,
+            width: "auto",
+            maxWidth: "100%",
+          }}
+        />
+      </div>
+    );
+  };
+
+  const CoverPhoto = () => {
+    const fontSizeKey =
+      content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize || "medium";
+
+    const sizeInfo = coverPhotoRatio[fontSizeKey];
+    const { width, height } = sizeInfo;
+
+    const imageUrl = filterContent("CoverPhoto") || "/no_image.jpg";
+
+    return (
+      <div
+        className="w-full h-auto sm:mx-auto mb-2"
+        style={{
+          '--cover-width': `${width / 16}rem`,
+          '--cover-height': `${height / 16}rem`,
+        }}
+      >
+        <div
+          className="w-full h-auto sm:w-[var(--cover-width)] sm:h-[var(--cover-height)]"
+        >
           <img
-            src={filterContent("Logo") || config?.logo}
+            src={imageUrl}
             alt={params.portalid || "Default"}
-            className="object-contain"
-            style={{
-              height: `${baseSize * logoSize}px`, 
-              width: "auto",                      
-              maxWidth: "100%",                   
-            }}
+            className="w-full h-full object-cover"
           />
         </div>
-      );
-    };
+      </div>
+    );
+  };
 
-    const CoverPhoto = () => {
-      const fontSizeKey =
-        content?.portalContent?.find(item => item.title === "CoverPhoto")?.fontSize || "medium";
-    
-      const sizeInfo = coverPhotoRatio[fontSizeKey];
-      const { width, height } = sizeInfo;
-    
-      const imageUrl = filterContent("CoverPhoto") || "/no_image.jpg";
-    
-      return (
-        <div
-          className="w-full h-auto sm:mx-auto mb-2"
-          style={{
-            '--cover-width': `${width / 16}rem`,
-            '--cover-height': `${height / 16}rem`,
-          }}
-        >
-          <div
-            className="w-full h-auto sm:w-[var(--cover-width)] sm:h-[var(--cover-height)]"
-          >
-            <img
-              src={imageUrl}
-              alt={params.portalid || "Default"}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      );
-    };
-    
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-12 min-h-screen">
@@ -497,7 +500,7 @@ export default function OnBoardingPage() {
       <div className="col-span-1 md:col-span-1 lg:col-span-12 h-full relative overflow-hidden bg-background flex flex-col justify-between">
         <div>
           <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.primaryColor }}>
-          {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+            {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
             <img
               // src="/default_logo_purple.png"
               src={config?.logo || "/logo.png"}
@@ -508,46 +511,46 @@ export default function OnBoardingPage() {
               {filterValue("Header Text")}
             </span>
           </a> */}
-          <div className="max-w-[1140px] w-full mx-auto ">
-            <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-              <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
-                <div
-                  className="absolute top-0 right-0 p-1 cursor-pointer"
-                  onClick={() => handleModalOpenForEdit("Logo")}
-                >
-                  <Pen className="size-4" />
-                </div>
-                <LogoImage />
-              </span>
-              {/* <img
+            <div className="max-w-[1140px] w-full mx-auto ">
+              <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+                <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
+                  <div
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("Logo")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
+                  <LogoImage />
+                </span>
+                {/* <img
                 // src="/default_logo_purple.png"
                 src={config?.logo || "/logo.png"}
                 alt={config.legalName || "Default"}
                 className="h-[52px] mr-2"
               /> */}
 
-              <span 
-                className="text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative" 
-                style={{
-                  fontSize: filterTheme("Header Text").fontSize,
-                  fontWeight: filterTheme("Header Text").fontWeight,
-                  color: filterTheme("Header Text").color
-                }}
-              >
-                <div
-                  className="absolute top-0 right-0 p-1 cursor-pointer"
-                  onClick={() => handleModalOpenForEdit("Header Text")}
+                <span
+                  className="text-[#000000e6] font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative"
+                  style={{
+                    fontSize: filterTheme("Header Text").fontSize,
+                    fontWeight: filterTheme("Header Text").fontWeight,
+                    color: filterTheme("Header Text").color
+                  }}
                 >
-                  <Pen className="size-4" />
-                </div>
-                <span className="max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px] block overflow-hidden text-ellipsis whitespace-nowrap">
-                  {filterContent("Header Text")}
+                  <div
+                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    onClick={() => handleModalOpenForEdit("Header Text")}
+                  >
+                    <Pen className="size-4" />
+                  </div>
+                  <span className="max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px] block overflow-hidden text-ellipsis whitespace-nowrap">
+                    {filterContent("Header Text")}
+                  </span>
                 </span>
-              </span>
-            </a>
-          </div> 
+              </a>
+            </div>
 
-          {/* <div className="hidden md:flex items-center gap-x-6">
+            {/* <div className="hidden md:flex items-center gap-x-6">
             <div className="flex items-center transition-transform transform hover:scale-105 ">
               <User className="w-5 h-5 text-gray-500 pb-[2px]" />
               <NavBarItem title="Individual" />
@@ -579,296 +582,296 @@ export default function OnBoardingPage() {
               </svg>
             </button>
           </div> */}
-        </nav>
-        <div className="max-w-[1140px] w-full mx-auto">
-          <div className="flex-1 flex flex-col xl:flex-row pt-12">
-            <div className="w-full md:w-full lg:w-full xl:w-4/5 flex flex-col lg:justify-between bg-secondary">
-              <div className="px-[15px]">
-                <h2 
-                  className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2" 
-                  style={{
-                    fontSize: filterTheme("Title").fontSize,
-                    fontWeight: filterTheme("Title").fontWeight,
-                    color: filterTheme("Title").color
-                  }}>
-                  <div
-                    className="absolute top-0 right-0 p-1 cursor-pointer"
-                    onClick={() => handleModalOpenForEdit("Title")}
-                  >
-                    <Pen className="size-4" />
-                  </div>
-                  {filterContent("Title")}
-                </h2>
-                <div
-                  style={{ backgroundColor: config?.primaryColor }}
-                  className="p-[1px] w-full my-2"
-                ></div>
-                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative ">
-                  <div
-                    className="absolute top-0 right-0 p-1 cursor-pointer"
-                    onClick={() => handleModalOpenForEdit("Paragraph")}
-                  >
-                    <Pen className="size-4" />
-                  </div>
-                  <p 
-                    className="font-light leading-7 font-lato mb-3 mt-5 line-clamp-3"  
+          </nav>
+          <div className="max-w-[1140px] w-full mx-auto">
+            <div className="flex-1 flex flex-col xl:flex-row pt-12">
+              <div className="w-full md:w-full lg:w-full xl:w-4/5 flex flex-col lg:justify-between bg-secondary">
+                <div className="px-[15px]">
+                  <h2
+                    className="font-light leading-tight text-text font-lato border border-dashed border-gray-400 pl-3 pr-8 py-3 relative line-clamp-2"
                     style={{
-                      fontSize: filterTheme("Paragraph").fontSize,
-                      fontWeight: filterTheme("Paragraph").fontWeight,
-                      color: filterTheme("Paragraph").color
+                      fontSize: filterTheme("Title").fontSize,
+                      fontWeight: filterTheme("Title").fontWeight,
+                      color: filterTheme("Title").color
                     }}>
-                    {filterContent("Paragraph")}
-                  </p>
-                </div>
-                <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative flex justify-center">
+                    <div
+                      className="absolute top-0 right-0 p-1 cursor-pointer"
+                      onClick={() => handleModalOpenForEdit("Title")}
+                    >
+                      <Pen className="size-4" />
+                    </div>
+                    {filterContent("Title")}
+                  </h2>
                   <div
-                    className="absolute top-0 right-0 p-1 cursor-pointer"
-                    onClick={() => handleModalOpenForEdit("CoverPhoto")}
-                  >
-                    <Pen className="size-4" />
+                    style={{ backgroundColor: config?.primaryColor }}
+                    className="p-[1px] w-full my-2"
+                  ></div>
+                  <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative ">
+                    <div
+                      className="absolute top-0 right-0 p-1 cursor-pointer"
+                      onClick={() => handleModalOpenForEdit("Paragraph")}
+                    >
+                      <Pen className="size-4" />
+                    </div>
+                    <p
+                      className="font-light leading-7 font-lato mb-3 mt-5 line-clamp-3"
+                      style={{
+                        fontSize: filterTheme("Paragraph").fontSize,
+                        fontWeight: filterTheme("Paragraph").fontWeight,
+                        color: filterTheme("Paragraph").color
+                      }}>
+                      {filterContent("Paragraph")}
+                    </p>
                   </div>
+                  <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative flex justify-center">
+                    <div
+                      className="absolute top-0 right-0 p-1 cursor-pointer"
+                      onClick={() => handleModalOpenForEdit("CoverPhoto")}
+                    >
+                      <Pen className="size-4" />
+                    </div>
 
-                  <div className="font-light leading-7 font-lato mb-3 mt-5">
-                    <CoverPhoto />
+                    <div className="font-light leading-7 font-lato mb-3 mt-5">
+                      <CoverPhoto />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right Panel - Login Form */}
-            <div className="w-full md:w-full lg:w-full xl:w-2/5 flex items-center justify-center px-[15px] mb-12">
-              <div className="w-full max-w-xl bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
-                <form>
-                  <div className="">
-                    <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
-                      <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
-                        <IdCard className="h-4 w-4" />
+              {/* Right Panel - Login Form */}
+              <div className="w-full md:w-full lg:w-full xl:w-2/5 flex items-center justify-center px-[15px] mb-12">
+                <div className="w-full max-w-xl bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
+                  <form>
+                    <div className="">
+                      <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
+                        <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                          <IdCard className="h-4 w-4" />
+                        </div>
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
+                          disabled
+                        />
                       </div>
-                      <input
-                        type="email"
-                        placeholder="Email"
-                        className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
-                        disabled
-                      />
-                    </div>
-                    <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-5 mx-5">
-                      <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
-                        <LockKeyhole className="h-4 w-4" />
+                      <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-5 mx-5">
+                        <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                          <LockKeyhole className="h-4 w-4" />
+                        </div>
+                        <input
+                          type="password"
+                          placeholder="Password"
+                          className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
+                          disabled
+                        />
                       </div>
-                      <input
-                        type="password"
-                        placeholder="Password"
-                        className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
-                        disabled
+                      <Button
+                        type="Login"
+                        label="Log In"
                       />
-                    </div>
-                    <Button
-                      type="Login"
-                      label="Log In"
-                    />
-                    <div className="w-full flex justify-center items-center">
-                      <p className="text-sm text-black mt-2 cursor-pointer">
-                        Forgot Password?
-                      </p>
-                    </div>
-                    {/* <button
+                      <div className="w-full flex justify-center items-center">
+                        <p className="text-sm text-black mt-2 cursor-pointer">
+                          Forgot Password?
+                        </p>
+                      </div>
+                      {/* <button
                       type="button"
                       className="w-full text-black py-3 border-[#808080] p-3.5 h-16 overflow-hidden rounded-b-md border uppercase text-sm group mt-1"
                     >
                       Login with Okta
                     </button> */}
-                  </div>
-                </form>
+                    </div>
+                  </form>
 
-                {/* <div className="text-center mt-4">
+                  {/* <div className="text-center mt-4">
               <button className="text-text/40 hover:text-text/60">
                 Forgot password?
               </button>
                </div> */}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* cards */}
+            {/* cards */}
 
-          <div className="grid grid-cols-1 md:grid-cols-3">
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
-              <div className="px-5 py-4">
-              <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
-                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
-                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+            <div className="grid grid-cols-1 md:grid-cols-3">
+              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
+                <div className="px-5 py-4">
+                  <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                    <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
+                      <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+                        <div
+                          className="absolute top-2 right-0 p-1 cursor-pointer"
+                          onClick={() => handleModalOpenForEdit("Card 1 Icon")}
+                        >
+                          <Pen className="size-4" />
+                        </div>
+                        {iconComponent("Card 1 Icon") || (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="28"
+                            height="28"
+                            fill="currentColor"
+                          >
+                            <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                          </svg>
+                        )}
+                      </span>
+                    </div>
+                    <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-8 py-1 relative">
                       <div
-                        className="absolute top-2 right-0 p-1 cursor-pointer"
-                        onClick={() => handleModalOpenForEdit("Card 1 Icon")}
+                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 1 Title")}
                       >
                         <Pen className="size-4" />
                       </div>
-                      {iconComponent("Card 1 Icon") || (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="28"
-                          height="28"
-                          fill="currentColor"
-                        >
-                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                        </svg>
-                      )}
+                      <div
+                        className="line-clamp-2 leading-6"
+                        style={{
+                          fontSize: filterTheme("Card 1 Title").fontSize,
+                          fontWeight: filterTheme("Card 1 Title").fontWeight,
+                          color: filterTheme("Card 1 Title").color
+                        }}>
+                        {filterContent("Card 1 Title")}
+                      </div>
                     </span>
-                  </div>
-                  <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-8 py-1 relative">
+                  </h5>
+                  <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
-                      onClick={() => handleModalOpenForEdit("Card 1 Title")}
+                      onClick={() => handleModalOpenForEdit("Card 1 Content")}
                     >
                       <Pen className="size-4" />
                     </div>
-                    <div
-                      className="line-clamp-2 leading-6"
+                    <div className="line-clamp-2"
                       style={{
-                        fontSize: filterTheme("Card 1 Title").fontSize,
-                        fontWeight: filterTheme("Card 1 Title").fontWeight,
-                        color: filterTheme("Card 1 Title").color
-                      }}>
-                      {filterContent("Card 1 Title")}
-                    </div>
+                        fontSize: filterTheme("Card 1 Content").fontSize,
+                        fontWeight: filterTheme("Card 1 Content").fontWeight,
+                        color: filterTheme("Card 1 Content").color
+                      }}>{filterContent("Card 1 Content")}</div>
                   </span>
-                </h5>
-                <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
-                  <div
-                    className="absolute top-0 right-0 p-1 cursor-pointer"
-                    onClick={() => handleModalOpenForEdit("Card 1 Content")}
-                  >
-                    <Pen className="size-4" />
-                  </div>
-                  <div className="line-clamp-2"  
-                    style={{
-                      fontSize: filterTheme("Card 1 Content").fontSize,
-                      fontWeight: filterTheme("Card 1 Content").fontWeight,
-                      color: filterTheme("Card 1 Content").color
-                    }}>{filterContent("Card 1 Content")}</div>
-                </span>
+                </div>
               </div>
-            </div>
 
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
-              <div className="px-5 py-4">
-                <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
-                  <div className="border border-dashed border-gray-400 h-10 w-12 flex items-center justify-center shrink-0">
-                    <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
+                <div className="px-5 py-4">
+                  <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                    <div className="border border-dashed border-gray-400 h-10 w-12 flex items-center justify-center shrink-0">
+                      <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+                        <div
+                          className="absolute top-2 right-0 p-1 cursor-pointer"
+                          onClick={() => handleModalOpenForEdit("Card 2 Icon")}
+                        >
+                          <Pen className="size-4" />
+                        </div>
+                        {iconComponent("Card 2 Icon") || (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="28"
+                            height="28"
+                            fill="currentColor"
+                          >
+                            <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                          </svg>
+                        )}
+                      </span>
+                    </div>
+                    <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-6 py-1 relative">
                       <div
-                        className="absolute top-2 right-0 p-1 cursor-pointer"
-                        onClick={() => handleModalOpenForEdit("Card 2 Icon")}
+                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 2 Title")}
                       >
                         <Pen className="size-4" />
                       </div>
-                      {iconComponent("Card 2 Icon") || (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="28"
-                          height="28"
-                          fill="currentColor"
-                        >
-                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                        </svg>
-                      )}
+                      <div
+                        className="line-clamp-2 leading-6"
+                        style={{
+                          fontSize: filterTheme("Card 2 Title").fontSize,
+                          fontWeight: filterTheme("Card 2 Title").fontWeight,
+                          color: filterTheme("Card 2 Title").color
+                        }}>
+                        {filterContent("Card 2 Title")}
+                      </div>
                     </span>
-                  </div>
-                  <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-6 py-1 relative">
+                  </h5>
+                  <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
-                      onClick={() => handleModalOpenForEdit("Card 2 Title")}
+                      onClick={() => handleModalOpenForEdit("Card 2 Content")}
                     >
                       <Pen className="size-4" />
                     </div>
-                    <div
-                      className="line-clamp-2 leading-6"
+                    <div className="line-clamp-2"
                       style={{
-                        fontSize: filterTheme("Card 2 Title").fontSize,
-                        fontWeight: filterTheme("Card 2 Title").fontWeight,
-                        color: filterTheme("Card 2 Title").color
-                      }}>
-                      {filterContent("Card 2 Title")}
-                    </div>
+                        fontSize: filterTheme("Card 2 Content").fontSize,
+                        fontWeight: filterTheme("Card 2 Content").fontWeight,
+                        color: filterTheme("Card 2 Content").color
+                      }}>{filterContent("Card 2 Content")}</div>
                   </span>
-                </h5>
-                <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
-                  <div
-                    className="absolute top-0 right-0 p-1 cursor-pointer"
-                    onClick={() => handleModalOpenForEdit("Card 2 Content")}
-                  >
-                    <Pen className="size-4" />
-                  </div>
-                  <div className="line-clamp-2" 
-                    style={{
-                      fontSize: filterTheme("Card 2 Content").fontSize,
-                      fontWeight: filterTheme("Card 2 Content").fontWeight,
-                      color: filterTheme("Card 2 Content").color
-                    }}>{filterContent("Card 2 Content")}</div>
-                </span>
+                </div>
               </div>
-            </div>
 
-            <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
-              <div className="px-5 py-4">
-              <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
-                  <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
-                     <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
+                <div className="px-5 py-4">
+                  <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                    <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
+                      <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+                        <div
+                          className="absolute top-2 right-0 p-1 cursor-pointer"
+                          onClick={() => handleModalOpenForEdit("Card 3 Icon")}
+                        >
+                          <Pen className="size-4" />
+                        </div>
+                        {iconComponent("Card 3 Icon") || (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="28"
+                            height="28"
+                            fill="currentColor"
+                          >
+                            <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
+                          </svg>
+                        )}
+                      </span>
+                    </div>
+                    <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-8 py-1 relative">
                       <div
-                        className="absolute top-2 right-0 p-1 cursor-pointer"
-                        onClick={() => handleModalOpenForEdit("Card 3 Icon")}
+                        className="absolute top-0 right-0 p-1 cursor-pointer"
+                        onClick={() => handleModalOpenForEdit("Card 3 Title")}
                       >
                         <Pen className="size-4" />
                       </div>
-                      {iconComponent("Card 3 Icon") || (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          width="28"
-                          height="28"
-                          fill="currentColor"
-                        >
-                          <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
-                        </svg>
-                      )}
+                      <div
+                        className="line-clamp-2 leading-6"
+                        style={{
+                          fontSize: filterTheme("Card 3 Title").fontSize,
+                          fontWeight: filterTheme("Card 3 Title").fontWeight,
+                          color: filterTheme("Card 3 Title").color
+                        }}>
+                        {filterContent("Card 3 Title")}
+                      </div>
                     </span>
-                  </div>
-                  <span className="border border-dashed border-gray-400 flex-grow pl-3 pr-8 py-1 relative">
+                  </h5>
+                  <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
-                      onClick={() => handleModalOpenForEdit("Card 3 Title")}
+                      onClick={() => handleModalOpenForEdit("Card 3 Content")}
                     >
                       <Pen className="size-4" />
                     </div>
-                    <div
-                      className="line-clamp-2 leading-6"
+                    <div className="line-clamp-2"
                       style={{
-                        fontSize: filterTheme("Card 3 Title").fontSize,
-                        fontWeight: filterTheme("Card 3 Title").fontWeight,
-                        color: filterTheme("Card 3 Title").color
-                      }}>
-                      {filterContent("Card 3 Title")}
-                    </div>
+                        fontSize: filterTheme("Card 3 Content").fontSize,
+                        fontWeight: filterTheme("Card 3 Content").fontWeight,
+                        color: filterTheme("Card 3 Content").color
+                      }}>{filterContent("Card 3 Content")}</div>
                   </span>
-                </h5>
-                <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
-                  <div
-                    className="absolute top-0 right-0 p-1 cursor-pointer"
-                    onClick={() => handleModalOpenForEdit("Card 3 Content")}
-                  >
-                    <Pen className="size-4" />
-                  </div>
-                  <div className="line-clamp-2" 
-                    style={{
-                      fontSize: filterTheme("Card 3 Content").fontSize,
-                      fontWeight: filterTheme("Card 3 Content").fontWeight,
-                      color: filterTheme("Card 3 Content").color
-                    }}>{filterContent("Card 3 Content")}</div>
-                </span>
+                </div>
               </div>
             </div>
-          </div>
             <div className="w-full flex gap-5 justify-end px-3">
               <Button
                 onClick={() => router.push("login-preview")}
@@ -883,7 +886,7 @@ export default function OnBoardingPage() {
                 type="Primary"
               />
             </div>
-        </div>
+          </div>
         </div>
         <div className="w-full ">
           <Footer
@@ -893,7 +896,7 @@ export default function OnBoardingPage() {
             handleModalOpenForEdit={handleModalOpenForEdit}
           />
         </div>
-        
+
         {isDialogOpen && (
           <AddContentModal
             contentTypes={contentTypes}

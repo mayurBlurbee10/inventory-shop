@@ -380,6 +380,9 @@ export default function AdvisorView() {
     try {
       const requestOptions = {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
       const response = await fetchWrapper(
@@ -408,6 +411,9 @@ export default function AdvisorView() {
     try {
       const requestOptions = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(obj),
       };
       const response = await fetchWrapper(
@@ -459,7 +465,7 @@ export default function AdvisorView() {
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
 
-      const response = await fetch(
+      const response = await fetchWrapper(
         `/api/box/bulk/download`,
         requestOptions,
         "download"
@@ -514,6 +520,9 @@ export default function AdvisorView() {
       try {
         const requestOptions = {
           method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(obj),
         };
         const response = await fetchWrapper(
@@ -537,31 +546,31 @@ export default function AdvisorView() {
     setIsToolbarVisible(selectedBulkItems.length > 0);
   }, [selectedBulkItems]);
 
-//   useEffect(() => {
-//     const fetchSession = async () => {
-//       const sessionData = await getSession();
-//       const userData = getUserData();
-//       setSession(sessionData);
-//       if (sessionData) {
-//         await getUserDetailsByEmail(sessionData.user.email);
-//       } else {
-//         if (!userData) {
-//           router.push("login");
-//           return;
-//         }
-//         await getUserDetailsByEmail(userData?.email);
-//       }
-//     };
-//     fetchSession().then(() => {
-//       const userData = getUserData();
-//       if (!userData) {
-//         router.push("login");
-//         return;
-//       }
-//       setUser(userData);
-//       refreshFiles();
-//     });
-//   }, [router]);
+  //   useEffect(() => {
+  //     const fetchSession = async () => {
+  //       const sessionData = await getSession();
+  //       const userData = getUserData();
+  //       setSession(sessionData);
+  //       if (sessionData) {
+  //         await getUserDetailsByEmail(sessionData.user.email);
+  //       } else {
+  //         if (!userData) {
+  //           router.push("login");
+  //           return;
+  //         }
+  //         await getUserDetailsByEmail(userData?.email);
+  //       }
+  //     };
+  //     fetchSession().then(() => {
+  //       const userData = getUserData();
+  //       if (!userData) {
+  //         router.push("login");
+  //         return;
+  //       }
+  //       setUser(userData);
+  //       refreshFiles();
+  //     });
+  //   }, [router]);
 
   const clearBulkItem = () => {
     setSelectedBulkItems([]);
@@ -572,6 +581,9 @@ export default function AdvisorView() {
       let url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
       const response = await fetchWrapper(url, body, "fetch-user-by-email");
@@ -580,7 +592,7 @@ export default function AdvisorView() {
       const userData = data.user;
       // setUserData(userData);
       dispatch(setCurrentUser(userData));
-    //   localStorage.setItem("portal", params.portalid);
+      //   localStorage.setItem("portal", params.portalid);
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);

@@ -743,7 +743,7 @@ export default function SharedDocsPage() {
         body: JSON.stringify({ items: selectedItemsDetails }),
       };
 
-      const response = await fetch(
+      const response = await fetchWrapper(
         `/api/box/bulk/download`,
         requestOptions,
         "download"

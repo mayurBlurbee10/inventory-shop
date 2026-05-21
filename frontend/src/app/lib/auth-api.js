@@ -1,9 +1,11 @@
 // API utility functions for authentication
 
+import { fetchWrapper } from "./fetchWrapper";
+
 // Registration API
 export async function registerUser(userData) {
   try {
-    const response = await fetch("/api/auth/register", {
+    const response = await fetchWrapper(`/api/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -27,7 +29,7 @@ export async function registerUser(userData) {
 // Set Password API
 export async function setUserPassword(userId, password) {
   try {
-    const response = await fetch("/api/auth/set-password", {
+    const response = await fetchWrapper(`/api/auth/set-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

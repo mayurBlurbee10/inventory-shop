@@ -61,6 +61,9 @@ const CustomizationContent = () => {
       setIsLoading(true);
       const response = await fetchWrapper("/api/reset", {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           portalId: params.portalid || "root",
         }),
@@ -96,11 +99,11 @@ const CustomizationContent = () => {
         <ProductsContent />
       </div>
       <CheckListContent />
-       <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-4 lg:p-5">
+      <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto md:p-4 lg:p-5">
         <TermsAndConditionCreation />
       </div>
       <div className="flex items-center justify-end">
-        <Button 
+        <Button
           label={"Reset"}
           icon={TimerReset}
           className="bg-red-600 text-white"
@@ -108,7 +111,7 @@ const CustomizationContent = () => {
           disabled={isLoading}
         />
       </div>
-      <DeleteConfirmDialog 
+      <DeleteConfirmDialog
         title="Reset portal data"
         content="This action will reset portal data. Do you want to continue?"
         handleDelete={handleReset}
