@@ -13,7 +13,7 @@ const refreshAccessToken = async (portalId, options = {}) => {
   refreshPromise = (async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_BASE_URL}/api/auth/refresh-token`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/refresh-token`,
         {
           method: "POST",
           credentials: "include",
@@ -41,7 +41,7 @@ const refreshAccessToken = async (portalId, options = {}) => {
 };
 
 const fetchWithAuth = async (url, options = {}) => {
-  return fetch(`${process.env.NEXT_PUBLIC_APP_BASE_URL}${url}`, {
+  return fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`, {
     ...options,
     credentials: "include",
   });
