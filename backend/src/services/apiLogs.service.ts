@@ -1,7 +1,26 @@
 import "reflect-metadata";
+import { ILike, Brackets } from "typeorm";
 import { connectDatabase, getConnection } from "../config/db.ts";
 import { ApiLogs } from "../entities/ApiLogs.ts";
 import { Between } from "typeorm";
+
+import BoxSDK from "box-node-sdk";
+
+const sdk = new BoxSDK({
+  clientID: process.env.BOX_CLIENT_ID,
+  clientSecret: process.env.BOX_CLIENT_SECRET,
+  appAuth: {
+    keyID: process.env.BOX_PUBLIC_KEY_ID,
+    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    passphrase: process.env.BOX_PASSPHRASE,
+    enterpriseID: process.env.BOX_ENTERPRISE_ID,
+  },
+});
+
+const client = sdk.getAppAuthClient(
+  "enterprise",
+  process.env.BOX_ENTERPRISE_ID
+);
 
 const createApiLogFromRequest = async (req: any) => {
   const userId = req.headers["x-user-id"] as string;
@@ -76,7 +95,7 @@ const getApiLogs = async (portalId: string, filterYear: number) => {
     const startOfRange = new Date(filterYear, currentDate.getMonth() - 11, 1);
     const endOfRange = new Date(
       filterYear,
-      currentDate.getMonth() + 1,   
+      currentDate.getMonth() + 1,
       0,
       23,
       59,
@@ -101,40 +120,111 @@ const getApiLogsDateWise = async (
   portalId: string,
   startDate?: Date,
   endDate?: Date,
-  userId?: string
+  userId?: string | null,
+  limit: number = 500,
+  offset: number = 0,
+  search?: string,
+  sortBy: string = "createdAt",
+  sortOrder: string = "DESC"
 ) => {
   await connectDatabase();
   const connection = getConnection();
   const apiLogRepository = connection.getRepository(ApiLogs);
-
   try {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const startOfRange = new Date(currentYear, currentDate.getMonth() - 11, 1);
-    const endOfRange = new Date(
-      currentYear,
-      currentDate.getMonth() + 1,
-      0,
-      23,
-      59,
-      59
-    );
+    const query = apiLogRepository.createQueryBuilder("apiLog")
+      .leftJoinAndSelect("apiLog.createdBy", "user")
+      .where("apiLog.portalId = :portalId", { portalId });
 
-    let whereCondition: any = {
-      portalId: portalId,
-      createdAt: Between(startDate || startOfRange, endDate || endOfRange),
-    };
-
-    if (userId) {
-      whereCondition.createdBy = { id: userId };
+    if (startDate && endDate) {
+      query.andWhere("apiLog.createdAt BETWEEN :startDate AND :endDate", { startDate, endDate });
     }
 
-    const apiLogs = await apiLogRepository.find({
-      where: whereCondition,
-      relations: ["createdBy"],
-    });
+    if (userId) {
+      query.andWhere("user.id = :userId", { userId });
+    }
 
-    return apiLogs;
+    if (search) {
+      query.andWhere(new Brackets(qb => {
+        qb.where("apiLog.type LIKE :search", { search: `%${search}%` })
+          .orWhere("user.firstName LIKE :search", { search: `%${search}%` })
+          .orWhere("user.lastName LIKE :search", { search: `%${search}%` })
+          .orWhere("apiLog.source LIKE :search", { search: `%${search}%` });
+      }));
+    }
+
+    // Sorting
+    let orderKey = "apiLog." + sortBy;
+    if (sortBy === "user") {
+      orderKey = "user.firstName";
+    }
+    query.orderBy(orderKey, sortOrder.toUpperCase() as "ASC" | "DESC");
+
+    const apiLogs = await query.take(limit).skip(offset).getMany();
+
+    // Resolve Box source objects similar to frontend
+    const apiLogsWithSource = await Promise.all(
+      apiLogs.map(async (apiLog: any) => {
+        if (apiLog?.source) {
+          try {
+            if (apiLog?.type?.includes("file")) {
+              const file = await client.files.get(apiLog?.source);
+              return { ...apiLog, source: file };
+            } else {
+              const folder = await client.folders.get(apiLog?.source);
+              return { ...apiLog, source: folder };
+            }
+          } catch (err: any) {
+            console.warn(
+              `Failed to fetch ${apiLog?.type} with ID ${apiLog?.source}: ${err.message}`
+            );
+            return { ...apiLog, source: null };
+          }
+        }
+        return apiLog;
+      })
+    );
+
+    return apiLogsWithSource;
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
+// Count logs for pagination with optional filters
+const getApiLogsCount = async (
+  portalId: string,
+  startDate?: Date,
+  endDate?: Date,
+  userId?: string | null,
+  search?: string
+) => {
+  await connectDatabase();
+  const connection = getConnection();
+  const apiLogRepository = connection.getRepository(ApiLogs);
+  try {
+    const query = apiLogRepository.createQueryBuilder("apiLog")
+      .leftJoinAndSelect("apiLog.createdBy", "user")
+      .where("apiLog.portalId = :portalId", { portalId });
+
+    if (startDate && endDate) {
+      query.andWhere("apiLog.createdAt BETWEEN :startDate AND :endDate", { startDate, endDate });
+    }
+
+    if (userId) {
+      query.andWhere("user.id = :userId", { userId });
+    }
+
+    if (search) {
+      query.andWhere(new Brackets(qb => {
+        qb.where("apiLog.type LIKE :search", { search: `%${search}%` })
+          .orWhere("user.firstName LIKE :search", { search: `%${search}%` })
+          .orWhere("user.lastName LIKE :search", { search: `%${search}%` })
+          .orWhere("apiLog.source LIKE :search", { search: `%${search}%` });
+      }));
+    }
+
+    const count = await query.getCount();
+    return count;
   } catch (error) {
     throw new Error((error as Error).message);
   }
@@ -145,5 +235,6 @@ export default {
   createApiLogs,
   getApiLogs,
   getApiLogsDateWise,
+  getApiLogsCount,
 };
 
