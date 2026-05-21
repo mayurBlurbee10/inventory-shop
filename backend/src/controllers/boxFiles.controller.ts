@@ -1,72 +1,25 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient, getBoxSDK, getBoxAppUserContent } from "../utils/box.ts";
-import { addCollaborator, addCollaboratorId } from "../services/box.service.ts";
+import { addCollaborator, addCollaboratorId, getCollaboration, updateCollaboratorRole } from "../services/box.service.ts";
 import { Readable } from "stream";
 import { asyncHandler } from "../utils/helper.ts";
 import fs from "fs";
 import path from "path";
-// import salesforceService from "../services/salesforce.service.ts";
-
+import { getBoxClient } from "../utils/boxClient.ts";
+import portalService from "../services/portal.service.ts";
 
 const client = getBoxClient();
-const sdk = getBoxSDK();
-
-const sanitizeFolderName = (name: string): string => {
-  return name
-    .replace(/\//g, " or ")
-    .replace(/\\/g, "")
-    .replace(/:/g, "-")
-    .replace(/\*/g, "")
-    .replace(/\?/g, "")
-    .replace(/"/g, "'")
-    .replace(/</g, "")
-    .replace(/>/g, "")
-    .replace(/\|/g, "-")
-    .trim();
-};
-
-/** Box `folders.getItems` is paginated (default limit 100). Collect all entries for accurate name checks. */
-const listAllFolderItemEntries = async (
-  folderClient: any,
-  folderId: string,
-  fields = "id,name,type",
-): Promise<any[]> => {
-  const collected: any[] = [];
-  let offset = 0;
-  const limit = 1000;
-
-  for (;;) {
-    const page = await folderClient.folders.getItems(folderId, {
-      fields,
-      limit,
-      offset,
-    });
-    const batch = page.entries ?? [];
-    collected.push(...batch);
-
-    const total = Number(page.total_count);
-    if (Number.isFinite(total) && collected.length >= total) break;
-    if (batch.length === 0) break;
-    if (batch.length < limit) break;
-
-    offset += batch.length;
-  }
-  return collected;
-};
 
 // GET /api/box/files
 const getFiles = asyncHandler(async (req: Request, res: Response) => {
   try {
     await logApiCall(req);
-    const accessToken = await (client as any)._session.getAccessToken();
     const { folderId } = req.query;
 
-    const data = await getBoxAppUserContent(
-      accessToken,
-      (folderId as string) || "0",
+    const data = await client.folders.getFolderItems(
+      folderId?.toString() || "0",
     );
-    return res.status(200).json(data.entries);
+    return res.status(200).json(data?.entries);
   } catch (error) {
     console.error("Files error:", error);
     return res.status(500).json({
@@ -189,7 +142,7 @@ export const parseAIResponse = (text: string) => {
   }
   try {
     return JSON.parse(text);
-  } catch (e) {}
+  } catch (e) { }
   try {
     const jsonMatch = text.match(/\{[\s\S]*?\}/); // non-greedy
     if (!jsonMatch) throw new Error("No JSON found");
@@ -211,9 +164,8 @@ const fallback = () => ({
 const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
   try {
     // here userId is BoxUserId
-    await logApiCall(req, () => {});
-    const accessToken = await (client as any)._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
+    await logApiCall(req, () => { });
+    const newClient = client;
 
     const files = ((req as any).files || []) as any[];
     if (!files || files.length === 0) {
@@ -227,12 +179,15 @@ const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
     const uploadedFiles: any[] = [];
     const duplicateFiles: any[] = [];
 
-    const folderItems = await newClient.folders.getItems(boxFolderId, {
-      fields: "id,name",
+    const folderItems = await newClient.folders.getFolderItems(boxFolderId, {
+      queryParams: {
+        fields: ["id", "name", "type"],
+        limit: 1000,
+      },
     });
 
     for (const file of files) {
-      const existingFile = (folderItems as any).entries.find(
+      const existingFile = (folderItems as any)?.entries?.find(
         (item: any) => item.name === file.originalname
       );
 
@@ -241,10 +196,10 @@ const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
           `File "${file.originalname}" already exists; creating copy.`,
         );
 
-        const copiedFileRes = await newClient.files.copy(
-          existingFile.id,
-          boxFolderId,
-        );
+        const copiedFileRes = await client.files.copyFile(existingFile.id, {
+          parent: { id: boxFolderId },
+        });
+
         const copiedFile = (copiedFileRes as any)?.entries?.[0] || copiedFileRes;
 
         if (!(copiedFile as any)?.id) {
@@ -263,7 +218,7 @@ const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
         uploadedFiles.push(copiedFile as any);
         await logApiCall(
           req,
-          () => {},
+          () => { },
           "file-upload-copy",
           null
         );
@@ -276,24 +231,25 @@ const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
 
       console.log("Uploading unique file:", file.originalname);
 
-      const uploadedFileRes = await newClient.files.uploadFile(
-        boxFolderId,
-        file.originalname,
-        fileStream,
-        { description: email }
-      );
+      const uploadedFileRes = await newClient.uploads.uploadFile({
+        attributes: {
+          name: file.originalname,
+          parent: { id: boxFolderId },
+        },
+        file: fileStream,
+      });
 
-      const uploadedFile = uploadedFileRes.entries[0];
+      const uploadedFile = uploadedFileRes?.entries?.[0];
 
       //Added user itself as collaborator for file with editor role
-      const collaborations = await newClient.files.getCollaborations(
-        uploadedFile.id
+      const collaborations = await newClient.listCollaborations.getFileCollaborations(
+        uploadedFile?.id!
       );
-      const isAlreadyCollaborator = collaborations.entries.some(
-        (collab: any) => collab.accessible_by && collab.accessible_by.id === userId
+      const isAlreadyCollaborator = collaborations?.entries?.some(
+        (collab: any) => collab.accessibleBy && collab.accessibleBy.id === userId
       );
       if (!isAlreadyCollaborator) {
-        await addCollaborator(uploadedFile.id, userId, "editor", "file");
+        await addCollaborator(uploadedFile?.id!, userId, "editor", "file");
       } else {
         console.log("User is already a collaborator");
       }
@@ -317,11 +273,15 @@ const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
 async function updateName(itemId: string, newName: string, type: string) {
   const isFile = type === "file";
   try {
-    const accessToken = await client._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
+    const newClient = client;
     const updatedItem = isFile
-      ? await newClient.files.update(itemId, { name: newName }) // Update File Name
-      : await newClient.folders.update(itemId, { name: newName }); // Update Folder Name
+      ? await newClient.files.updateFileById(itemId, {
+        requestBody: { name: newName },
+      }) // Update File Name
+      : await newClient.folders.updateFolderById(itemId, {
+        requestBody: { name: newName },
+      }); // Update Folder Name
+
 
     console.log(
       `Updated ${isFile ? "File" : "Folder"} Name:`,
@@ -350,11 +310,11 @@ const updateFileName = asyncHandler(async (req: Request, res: Response) => {
     const updatedItem = await updateName(itemId, newName, type);
 
     return res.status(200).json({
-      message: "File deleted successfully",
+      message: "File updated successfully",
       data: updatedItem,
     });
   } catch (error) {
-    console.error("Error deleting file:", error);
+    console.error("Error updating file:", error);
     return res.status(500).json({
       error: (error as any).response?.body?.message || (error as Error).message,
       details: (error as Error).message,
@@ -363,10 +323,9 @@ const updateFileName = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deleteBoxFile = async (fileId: string) => {
-  const accessToken = await client._session.getAccessToken();
-  const newClient = sdk.getBasicClient(accessToken);
+  const newClient = client;
 
-  await newClient.files.delete(fileId);
+  await newClient.files.deleteFileById(fileId);
 };
 
 // DELETE /api/box/files
@@ -411,9 +370,11 @@ const duplicateFiles = asyncHandler(async (req: Request, res: Response) => {
     const errors: any[] = [];
     for (const item of items) {
       try {
-        const movedFile = await client.files.copy(item.id, destinationFolderId);
-        // await addCollaborator(movedFile.id, userId, "editor", "file");
-        results.push(movedFile);
+        const copiedFile = await client.files.copyFile(item.id, {
+          parent: { id: destinationFolderId },
+        });
+        // await addCollaborator(copiedFile.id, userId, "editor", "file");
+        results.push(copiedFile);
       } catch (error) {
         console.error(`Failed to copy ${item.type} with ID ${item.id}:`, error);
         errors.push({
@@ -452,8 +413,7 @@ const getOrganizationFiles = asyncHandler(
         portalid,
       );
 
-      const accessToken = await (client as any)._session.getAccessToken();
-      const newClient = sdk.getBasicClient(accessToken);
+      const newClient = client;
 
       if (isAdvisor) {
         const userService = (await import("../services/user.service.ts"))
@@ -466,11 +426,15 @@ const getOrganizationFiles = asyncHandler(
 
         for (const user of users) {
           if ((user as any).permissions?.role === UserRole.USER) {
-            const { entries: files } = await newClient.folders.getItems(
+            const { entries: files } = await newClient.folders.getFolderItems(
               (user as any).folderId,
-              { limit: 100 },
+              {
+                queryParams: {
+                  limit: 100,
+                },
+              },
             );
-            userFiles = [...userFiles, ...files];
+            userFiles = [...userFiles, ...files || []];
           }
         }
 
@@ -485,10 +449,12 @@ const getOrganizationFiles = asyncHandler(
         });
       }
 
-      const { entries: files } = await newClient.folders.getItems(
+      const { entries: files } = await newClient.folders.getFolderItems(
         folderId as string,
         {
-          limit: 100,
+          queryParams: {
+            limit: 100,
+          },
         },
       );
 
@@ -558,9 +524,8 @@ export const replaceFiles = async (
   res: Response,
 ): Promise<void> => {
   try {
-    await logApiCall(req, () => {});
-    const accessToken = await client._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
+    await logApiCall(req, () => { });
+    const newClient = client;
 
     const files = ((req as any).files || []) as any[];
 
@@ -572,8 +537,10 @@ export const replaceFiles = async (
     }
     const uploadedFiles = [];
 
-    const folderItems = await newClient.folders.getItems(boxFolderId, {
-      fields: "id,name",
+    const folderItems = await newClient.folders.getFolderItems(boxFolderId, {
+      queryParams: {
+        fields: ["id", "name"],
+      },
     });
 
     for (const file of files) {
@@ -592,24 +559,33 @@ export const replaceFiles = async (
         const existingFileId = existingFile.id;
         console.log(`Replacing existing file: ${fileName}`);
 
-        const updatedFile = await newClient.files.uploadNewFileVersion(
+        const updatedFile = await newClient.uploads.uploadFileVersion(
           existingFileId,
-          fileStream
+          {
+            attributes: {
+              name: "",
+            },
+            file: fileStream,
+          },
         );
-        uploadedFiles.push(updatedFile.entries[0]);
+        uploadedFiles.push(updatedFile?.entries?.[0]);
+
       } else {
         console.log(`Uploading new file: ${fileName}`);
 
-        const uploadedFileRes = await newClient.files.uploadFile(
-          boxFolderId,
-          fileName,
-          fileStream,
-          { description: email }
-        );
+        const uploadedFileRes = await newClient.uploads.uploadFile({
+          attributes: {
+            name: fileName,
+            parent: {
+              id: boxFolderId,
+            },
+          },
+          file: fileStream,
+        });
 
-        const uploadedFile = uploadedFileRes.entries[0];
+        const uploadedFile = uploadedFileRes?.entries?.[0];
 
-        await addCollaborator(uploadedFile.id, userId, "editor", "file");
+        await addCollaborator(uploadedFile?.id!, userId, "editor", "file");
 
         uploadedFiles.push(uploadedFile);
       }
@@ -642,18 +618,21 @@ const getFileShare = asyncHandler(async (req: Request, res: Response) => {
     let response: any;
 
     if (isShareable === "true") {
-      response = await client.files.update(fileId as string, {
-        shared_link: {
-          access: "open",
-          permissions: {
-            can_download: true,
-            can_view: true,
+      response = await client.files.updateFileById(fileId as string, {
+        requestBody: {
+          sharedLink: {
+            access: "open",
+            permissions: {
+              canDownload: true,
+            },
           },
         },
       });
     } else {
-      response = await client.files.update(fileId as string, {
-        shared_link: undefined as any,
+      response = await client.files.updateFileById(fileId as string, {
+        requestBody: {
+          sharedLink: undefined,
+        },
       });
     }
 
@@ -691,9 +670,6 @@ const addFileCollaborator = asyncHandler(
           error: "itemId, userID, and role are required.",
         });
       }
-
-      const { addCollaborator, updateCollaboratorRole, addCollaboratorId } =
-        await import("../services/box.service.ts");
 
       let response: any;
       if (updateRole) {
@@ -739,13 +715,10 @@ const removeFileCollaborator = asyncHandler(
           error: "No collaboratorId provided",
         });
       }
-
-      const { getCollaboration, addCollaboratorId } =
-        await import("../services/box.service.ts");
       const collaboration = await getCollaboration(collaboratorId as string);
 
-      await client.collaborations.delete(collaboratorId as string);
-      await addCollaboratorId(collaboration.item.id, userId as string);
+      await client.userCollaborations.deleteCollaborationById(collaboratorId as string);
+      await addCollaboratorId(collaboration?.item?.id!, userId as string);
 
       return res.status(200).json({
         message: "Collaborator remove successfully",
@@ -774,9 +747,11 @@ const findFolderByName = async (
 
   try {
     // Get all items in the current folder
-    const folderItems = await client.folders.getItems(parentFolderId, {
-      fields: "id,name,type",
-      limit: 1000,
+    const folderItems = await client.folders.getFolderItems(parentFolderId, {
+      queryParams: {
+        fields: ["id", "name", "type"],
+        limit: 1000,
+      },
     });
 
     // First, check direct children for exact match (case-insensitive)
@@ -820,8 +795,7 @@ export const uploadEditedFile = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       await logApiCall(req);
-      const accessToken = await client._session.getAccessToken();
-      const newClient = sdk.getBasicClient(accessToken);
+      const newClient = client;
 
       const files = ((req as any).files || []) as any[];
       const {
@@ -846,9 +820,14 @@ export const uploadEditedFile = asyncHandler(
         const originalFileName = file.originalname;
 
         // Get original file info to find its parent folder
-        const originalFileInfo = await newClient.files.get(originalFileId, {
-          fields: "name,parent",
-        });
+        const originalFileInfo = await newClient.files.getFileById(
+          originalFileId,
+          {
+            queryParams: {
+              fields: ["name", "parent"],
+            },
+          },
+        );
 
         // Determine the folder to upload to (use parent folder of original file)
         const targetFolderId = originalFileInfo.parent?.id || boxFolderId;
@@ -861,11 +840,17 @@ export const uploadEditedFile = asyncHandler(
 
         // Check if edited file already exists, if so delete it first
         try {
-          const folderItems = await newClient.folders.getItems(targetFolderId, {
-            fields: "id,name,type",
-          });
+          const folderItems = await newClient.folders.getFolderItems(
+            targetFolderId,
+            {
+              queryParams: {
+                fields: ["id", "name", "type"],
+                limit: 1000,
+              },
+            },
+          );
 
-          const existingEditedFile = folderItems.entries.find(
+          const existingEditedFile = folderItems?.entries?.find(
             (item: any) =>
               item.type === "file" &&
               item.name.toLowerCase() === editedFileName.toLowerCase(),
@@ -873,7 +858,7 @@ export const uploadEditedFile = asyncHandler(
 
           if (existingEditedFile) {
             // Delete existing edited file to replace it
-            await newClient.files.delete(existingEditedFile.id);
+            await newClient.files.deleteFileById(existingEditedFile.id);
           }
         } catch (checkError) {
           console.log(
@@ -888,22 +873,23 @@ export const uploadEditedFile = asyncHandler(
         fileStream.push(null);
 
         // Upload as new file (not replacing)
-        const uploadedFileRes = await newClient.files.uploadFile(
-          targetFolderId,
-          editedFileName,
-          fileStream,
-          { description: email || `Edited version of ${originalFileName}` },
-        );
+        const uploadedFileRes = await newClient.uploads.uploadFile({
+          attributes: {
+            name: editedFileName,
+            parent: {
+              id: targetFolderId,
+            },
+          },
+          file: fileStream,
+        });
 
         // Handle both response formats (entries array or direct object)
-        const uploadedFile = uploadedFileRes.entries
-          ? uploadedFileRes.entries[0]
-          : uploadedFileRes;
+        const uploadedFile = uploadedFileRes?.entries?.[0];
 
         // Add collaborator if userId provided
         if (userId) {
           try {
-            await addCollaborator(uploadedFile.id, userId, "editor", "file");
+            await addCollaborator(uploadedFile?.id!, userId, "editor", "file");
           } catch (collabError) {
             console.log("Error adding collaborator (continuing):", collabError);
             // Continue even if collaborator add fails
@@ -941,8 +927,7 @@ const getFileByFolderAndName = asyncHandler(
         });
       }
 
-      const accessToken = await (client as any)._session.getAccessToken();
-      const newClient = sdk.getBasicClient(accessToken);
+      const newClient = client;
 
       // Determine the root folder to search in
       let rootFolderId: string;
@@ -970,13 +955,10 @@ const getFileByFolderAndName = asyncHandler(
       if (!targetFolder) {
         console.log(`Folder "${folderName}" not found. Creating it...`);
         try {
-          targetFolder = await newClient.folders.create(
-            rootFolderId,
-            folderName as string,
-            {
-              fields: "id,name,type",
-            } as any,
-          );
+          targetFolder = await newClient.folders.createFolder({
+            name: folderName as string,
+            parent: { id: rootFolderId },
+          });
           console.log(
             `Created folder "${folderName}" with ID: ${targetFolder.id}`,
           );
@@ -995,13 +977,16 @@ const getFileByFolderAndName = asyncHandler(
       console.log(`Found folder "${folderName}" with ID: ${targetFolder.id}`);
 
       // Get all items in the found folder
-      const folderItems = await newClient.folders.getItems(targetFolder.id, {
-        fields: "id,name,type",
-        limit: 1000,
-      });
+      const folderItems = await newClient.folders.getFolderItems(
+        targetFolder.id,
+        {
+          queryParams: { fields: ["id,name,type"], limit: 1000 },
+        },
+      );
+
 
       // Find the file (case-insensitive match) - prioritize original file over edited
-      let originalFile = folderItems.entries.find(
+      let originalFile = folderItems?.entries?.find(
         (entry: any) =>
           entry.type === "file" &&
           entry.name.toLowerCase() === (fileName as string).toLowerCase(),
@@ -1021,14 +1006,19 @@ const getFileByFolderAndName = asyncHandler(
           fileStream.push(null);
 
           try {
-            const uploadedFileRes = await newClient.files.uploadFile(
-              targetFolder.id,
-              fileName as string,
-              fileStream,
-            );
-            originalFile = uploadedFileRes.entries?.[0] || uploadedFileRes;
+            const uploadedFileRes = await newClient.uploads.uploadFile({
+              attributes: {
+                name: fileName as string,
+                parent: {
+                  id: targetFolder.id,
+                },
+              },
+              file: fileStream,
+            });
+            originalFile = uploadedFileRes?.entries?.[0];
+
             console.log(
-              `Successfully uploaded "${fileName}" with ID: ${originalFile.id}`,
+              `Successfully uploaded "${fileName}" with ID: ${originalFile?.id}`,
             );
           } catch (uploadError) {
             console.error(`Error uploading file "${fileName}":`, uploadError);
@@ -1050,20 +1040,20 @@ const getFileByFolderAndName = asyncHandler(
 
       if (originalFile) {
         return res.status(200).json({
-          fileId: originalFile.id,
-          fileName: originalFile.name,
+          fileId: originalFile?.id,
+          fileName: originalFile?.name,
           folderName: folderName,
-          folderId: targetFolder.id,
+          folderId: targetFolder?.id,
         });
       }
 
       // If original not found, return 404
       return res.status(404).json({
         error: `File "${fileName}" not found in folder "${folderName}"`,
-        details: `Found folder but file not found. Available files: ${folderItems.entries
-          .filter((e: any) => e.type === "file")
-          .map((e: any) => e.name)
-          .join(", ")}`,
+        details: `Found folder but file not found. Available files: ${folderItems?.entries
+          ?.filter((e: any) => e.type === "file")
+          ?.map((e: any) => e.name)
+          ?.join(", ")}`,
       });
     } catch (error) {
       console.error("Error finding or creating file/folder:", error);
@@ -1082,16 +1072,15 @@ export const getFileInfo = asyncHandler(async (req: Request, res: Response) => {
     if (!fileId) {
       return res.status(400).json({ error: "fileId is required." });
     }
-    const accessToken = await (client as any)._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
-    const fileInfo = await newClient.files.get(fileId as string, {
-      fields: "id,name,size,created_at",
+    const newClient = client;
+    const fileInfo = await newClient.files.getFileById(fileId as string, {
+      queryParams: { fields: ["id,name,size,created_at"] },
     });
     return res.status(200).json({
       fileId: fileInfo.id,
       fileName: fileInfo.name,
       size: fileInfo.size,
-      createdAt: fileInfo.created_at,
+      createdAt: fileInfo.createdAt,
     });
   } catch (error: any) {
     console.error("Error getting file info:", error);
@@ -1116,9 +1105,6 @@ export const uploadEnterpriseFile = asyncHandler(
 
       if (portalId) {
         try {
-          // Import portalService dynamically to avoid potential circular dependencies if any
-          const { default: portalService } =
-            await import("../services/portal.service.ts");
           const portal = await portalService.getPortalById(portalId);
           if (
             portal &&
@@ -1151,12 +1137,14 @@ export const uploadEnterpriseFile = asyncHandler(
       };
 
       // 1. Initial check (Same as uploadFiles flow)
-      const folderItems = await client.folders.getItems(TEMPLATE_FOLDER_ID, {
-        fields: "id,name",
-        limit: 1000,
-      });
+      const folderItems = await client.folders.getFolderItems(
+        TEMPLATE_FOLDER_ID,
+        {
+          queryParams: { fields: ["id", "name"], limit: 1000 },
+        },
+      );
 
-      const existing = folderItems.entries.find(
+      const existing = folderItems?.entries?.find(
         (f: any) => f.name === file.originalname,
       );
 
@@ -1168,27 +1156,36 @@ export const uploadEnterpriseFile = asyncHandler(
         );
         try {
           // Normal flow: try to copy (duplicate)
-          uploadedFile = await client.files.copy(
-            existing.id,
-            TEMPLATE_FOLDER_ID,
-          );
+          uploadedFile = await client.files.copyFile(existing.id, {
+            parent: {
+              id: TEMPLATE_FOLDER_ID,
+            },
+          });
         } catch (copyErr: any) {
           // Extra flow: fallback to version update on any error
           console.log("Copy failed, falling back to version update.");
-          const versioned = await client.files.uploadNewFileVersion(
+          const versioned = await client.uploads.uploadFileVersion(
             existing.id,
-            getStream(),
+            {
+              attributes: {
+                // name: newFileName!,
+                name: "", // Will take original name automatically if not set new name
+              },
+              file: getStream(),
+            },
           );
           uploadedFile = versioned.entries ? versioned.entries[0] : versioned;
         }
       } else {
         // Unique file: standard upload
         try {
-          const uploaded = await client.files.uploadFile(
-            TEMPLATE_FOLDER_ID,
-            file.originalname,
-            getStream(),
-          );
+          const uploaded = await client.uploads.uploadFile({
+            attributes: {
+              name: file.originalname,
+              parent: { id: TEMPLATE_FOLDER_ID },
+            },
+            file: getStream(),
+          });
           uploadedFile = uploaded.entries ? uploaded.entries[0] : uploaded;
         } catch (uploadErr: any) {
           // Handing 409 Conflict (e.g. if file didn't appear in first 1000 items)
@@ -1211,27 +1208,30 @@ export const uploadEnterpriseFile = asyncHandler(
             // B. Fallback: Search for the file ID specifically
             if (!existingId) {
               try {
-                const searchRes = await client.search.query(
-                  `"${file.originalname}"`,
-                  {
-                    ancestor_folder_ids: TEMPLATE_FOLDER_ID,
-                    limit: 10,
-                    fields: "id,name",
-                  },
-                );
-                const match = searchRes.entries.find(
+                const searchRes = await client.search.searchForContent({
+                  query: `"${file.originalname}"`,
+                  ancestorFolderIds: [TEMPLATE_FOLDER_ID],
+                  limit: 10,
+                  fields: ["id", "name"],
+                }) as any;
+                const match = searchRes?.entries?.find(
                   (f: any) => f.name === file.originalname,
                 );
-                if (match) existingId = match.id;
+                if (match) existingId = match?.id;
               } catch (sErr) {
                 console.error("Search fallback failed:", sErr);
               }
             }
 
             if (existingId) {
-              const versioned = await client.files.uploadNewFileVersion(
+              const versioned = await client.uploads.uploadFileVersion(
                 existingId,
-                getStream(),
+                {
+                  attributes: {
+                    name: "", // Will take original name automatically if not set new name
+                  },
+                  file: getStream(),
+                },
               );
               uploadedFile = versioned.entries
                 ? versioned.entries[0]

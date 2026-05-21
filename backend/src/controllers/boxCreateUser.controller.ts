@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
 import * as boxService from "../services/box.service.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
@@ -88,21 +88,28 @@ const bulkCreateBoxUsers = asyncHandler(
         }
 
         try {
-          const appUser = await client.enterprise.addAppUser(name, {
-            external_app_user_id: email,
-            is_platform_access_only: true,
+          const appUser = await client.users.createUser({
+            name: name,
+            externalAppUserId: email,
+            isPlatformAccessOnly: true,
           });
 
-          const folder = await client.folders.create(
-            "0",
-            `${appUser.name}'s Files`
-          );
+          const folder = await client.folders.createFolder({
+            name: `${appUser.name}'s Files`,
+            parent: { id: "0" },
+          });
 
-          await client.collaborations.createWithUserID(
-            appUser.id,
-            folder.id,
-            (client as any).collaborationRoles.EDITOR
-          );
+          await client.userCollaborations.createCollaboration({
+            item: {
+              id: folder?.id,
+              type: "folder",
+            },
+            accessibleBy: {
+              type: "user",
+              id: appUser?.id,
+            },
+            role: "editor",
+          });
 
           const newUser = {
             id: Date.now().toString(),

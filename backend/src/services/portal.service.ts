@@ -3,7 +3,8 @@ import { connectDatabase, getConnection } from "../config/db.ts";
 import { Portals } from "../entities/Portals.ts";
 import userService from "./user.service.ts";
 import { sanitizeName, reverseSanitizeName } from "../utils/commonUtils.ts";
-import { ILike } from "typeorm";
+import { ILike} from "typeorm";
+import { getBoxClient } from "../utils/boxClient.ts";
 const getRepository = async (entity: any) => {
   await connectDatabase();
   const connection = getConnection();
@@ -315,7 +316,6 @@ const resetPortal = async (portalId: string) => {
   const contentManagementService = (await import("./contentManagement.service.ts")).default;
   // applicationService and businessFormService were removed
   const userService = (await import("./user.service.ts")).default;
-  const { getBoxClient } = await import("../utils/box.ts");
   const { sanitizeName } = await import("../utils/commonUtils.ts");
 
   const portal = await getPortalById(portalId);

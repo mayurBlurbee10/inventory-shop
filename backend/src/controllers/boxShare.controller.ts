@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
@@ -15,13 +15,13 @@ const getSharedFile = asyncHandler(async (req: Request, res: Response) => {
       return res.status(400).json({ error: "File ID is required." });
     }
 
-    const fileDetails = await client.files.get(fileId as string);
+    const fileDetails = await client.files.getFileById(fileId as string);
 
     if (!fileDetails) {
       return res.status(404).json({ error: "File not found." });
     }
 
-    const isShareable = fileDetails.shared_link !== null;
+    const isShareable = fileDetails.sharedLink !== null;
 
     if (!isShareable) {
       return res.status(403).json({
@@ -29,7 +29,7 @@ const getSharedFile = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    const fileStream = await client.files.getReadStream(fileId as string);
+    const fileStream = await client.downloads.downloadFile(fileId as string);
 
     if (!fileStream) {
       return res.status(404).json({ error: "File not found." });
@@ -44,11 +44,11 @@ const getSharedFile = asyncHandler(async (req: Request, res: Response) => {
       svg: "image/svg+xml",
     };
 
-    const extension = fileDetails.name.split(".")[1];
+    const extension = fileDetails?.name?.split(".")[1];
 
     res.setHeader(
       "Content-Type",
-      mimeType[extension] || "application/octet-stream"
+      mimeType[extension!] || "application/octet-stream"
     );
     res.setHeader(
       "Content-Disposition",

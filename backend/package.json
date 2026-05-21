@@ -17,7 +17,7 @@
     "@types/pdfkit": "^0.17.4",
     "bcrypt": "^6.0.0",
     "bottleneck": "^2.19.5",
-    "box-node-sdk": "^3.7.1",
+    "box-node-sdk": "10",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

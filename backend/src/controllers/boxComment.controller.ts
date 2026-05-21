@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient, getBoxSDK } from "../utils/box.ts";
 import userService from "../services/user.service.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient, getUserBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
-const sdk = getBoxSDK();
+
 
 // GET /api/box/comment
 const getComments = asyncHandler(async (req: Request, res: Response) => {
@@ -20,14 +20,14 @@ const getComments = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    const data = await client.files.getComments(fileId as string);
+    const data = await client.comments.getFileComments(fileId as string);
 
     const comments = data.entries;
 
     console.log("comments", comments);
 
     const enrichedComments = await Promise.all(
-      comments.map(async (comment: any) => {
+      (comments || [])?.map(async (comment: any) => {
         try {
           const user = await userService.getUserByBoxUserId(
             comment.created_by.id
@@ -74,8 +74,14 @@ const createComment = asyncHandler(async (req: Request, res: Response) => {
         error: "Missing required parameters",
       });
     }
-    const newClient = sdk.getAppAuthClient("user", boxUserId);
-    const comment = await newClient.comments.create(fileId, message);
+    const newClient = getUserBoxClient(boxUserId);
+    const comment = await newClient.comments.createComment({
+      message: message,
+      item: {
+        id: fileId,
+        type: "file",
+      },
+    });
 
     return res.status(200).json({
       message: "Comment added successfully",

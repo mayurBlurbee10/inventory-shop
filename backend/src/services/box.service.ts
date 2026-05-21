@@ -1,8 +1,10 @@
-import { getBoxClient, getBoxSDK } from "../utils/box.ts";
+
+import { GetUsersQueryParams } from "box-node-sdk/lib/managers/users";
+import { getBoxClient, getUserBoxClient } from "../utils/boxClient.ts";
 import userService from "./user.service.ts";
+import { SearchResults } from "box-node-sdk/lib/schemas/searchResults";
 
 const client = getBoxClient();
-const sdk = getBoxSDK();
 
 export async function createBoxAppUser({
   userName = "Test User",
@@ -11,26 +13,31 @@ export async function createBoxAppUser({
   userName?: string;
   externalId?: string;
 }) {
-  const user = await client.enterprise.getUsers({
-    filter_term: userName,
-    fields: "id,name,login",
-  });
+  const user = await client.users.getUsers({
+    filterTerm: userName,
+    fields: ['id', 'name', 'login'],
+  } satisfies GetUsersQueryParams);
+
 
   console.log("user", user);
 
-  if (user?.entries.length > 0) {
-    const folder = await client.search.query(`"${userName}'s Files"`, {
-      type: "folder",
-      fields: "id",
-    });
+  if (user?.entries && user.entries.length > 0) {
+    const folder = await client.search.searchForContent({
+      query: `"${userName}"`,
+      type: 'folder',
+      fields: ['id'],
+    }) as SearchResults;
 
-    if (!folder?.entries.length) {
-      const newfolder = await client.folders.create("0", `${userName}'s Files`);
+    if (!folder?.entries?.length) {
+      const newFolder = await client.folders.createFolder({
+        name: `${userName}'s Files`,
+        parent: { id: "0" },
+      });
       return {
         userId: user?.entries[0].id,
         name: user?.entries[0].name,
         login: user?.entries[0].login,
-        folderId: newfolder.id,
+        folderId: newFolder?.id!,
       };
     }
 
@@ -42,21 +49,31 @@ export async function createBoxAppUser({
     };
   }
 
-  const appUser = await client.enterprise.addAppUser(userName, {
-    external_app_user_id: externalId,
-    is_platform_access_only: true,
+  const appUser = await client.users.createUser({
+    name: userName,
+    externalAppUserId: externalId,
+    isPlatformAccessOnly: true,
   });
 
   console.log("Created Box App User:", appUser);
 
-  const folder = await client.folders.create("0", `${appUser.name}'s Files`);
+  const folder = await client.folders.createFolder({
+    name: `${appUser.name}'s Files`,
+    parent: { id: "0" },
+  });
   console.log("Created folder:", folder);
 
-  await client.collaborations.createWithUserID(
-    appUser.id,
-    folder.id,
-    (client as any).collaborationRoles.EDITOR
-  );
+  await client.userCollaborations.createCollaboration({
+    item: {
+      id: folder?.id,
+      type: "folder",
+    },
+    accessibleBy: {
+      type: "user",
+      id: appUser?.id,
+    },
+    role: "editor",
+  });
   console.log("Granted folder access");
 
   return {
@@ -71,19 +88,24 @@ export async function addCollaborator(
   itemId: string,
   userID: string,
   role: string,
-  type: string
+  type: any
 ) {
-  const collaboration = await client.collaborations.create(
-    { id: userID, type: "user" },
-    itemId,
-    role as any,
-    { type: type as any }
-  );
+  const collaboration = await client.userCollaborations.createCollaboration({
+    item: {
+      id: itemId,
+      type: type,
+    },
+    accessibleBy: {
+      id: userID,
+      type: "user",
+    },
+    role: role,
+  });
   return collaboration;
 }
 
 export async function getCollaboration(collaborationId: string) {
-  const collaboration = await client.collaborations.get(collaborationId);
+  const collaboration = await client.userCollaborations.getCollaborationById(collaborationId);
   return collaboration || null;
 }
 
@@ -91,10 +113,12 @@ export async function updateCollaboratorRole(
   collaborationId: string,
   newRole: string
 ) {
-  const updatedCollaboration = await client.collaborations.update(
-    collaborationId,
-    { role: newRole as any }
-  );
+  const updatedCollaboration =
+    await client.userCollaborations.updateCollaborationById(collaborationId, {
+      requestBody: {
+        role: newRole as any,
+      },
+    });
   return updatedCollaboration;
 }
 
@@ -131,16 +155,17 @@ export async function addCollaboratorId(
 
 export async function fetchFolderCollaborators(itemId: string) {
   try {
-    const collaborations = await client.folders.getCollaborations(itemId);
-    return collaborations.entries.map((collaboration: any) => ({
+    const collaborations =
+      await client.listCollaborations.getFolderCollaborations(itemId);
+    return collaborations?.entries?.map((collaboration: any) => ({
       id: collaboration.id,
       role: collaboration.role,
-      user: collaboration.accessible_by,
+      user: collaboration.accessibleBy,
     }));
   } catch (error) {
     console.error(
       `Error fetching collaborators for item ${itemId}:`,
-      (error as Error).message
+      (error as Error).message,
     );
     return [];
   }
@@ -148,31 +173,50 @@ export async function fetchFolderCollaborators(itemId: string) {
 
 export async function fetchFileCollaborators(itemId: string) {
   try {
-    const collaborations = await client.files.getCollaborations(itemId);
-    return collaborations.entries.map((collaboration: any) => ({
+    const collaborations =
+      await client.listCollaborations.getFileCollaborations(itemId);
+    return collaborations?.entries?.map((collaboration: any) => ({
       id: collaboration.id,
       role: collaboration.role,
-      user: collaboration.accessible_by,
+      user: collaboration.accessibleBy,
     }));
   } catch (error) {
     console.error(
       `Error fetching collaborators for item ${itemId}:`,
-      (error as Error).message
+      (error as Error).message,
     );
     return [];
   }
 }
 
-export async function fetchNestedItems(folderId: string, limit: number = 100) {
+export async function fetchNestedItems(
+  folderId: string,
+  limit: number = 100,
+  boxUserId?: string,
+) {
   try {
-    const folderItems = await client.folders.getItems(folderId, {
-      fields:
-        "id,name,type,shared_link,created_at,modified_at,collaborators,size,tags",
-      limit: limit,
+    let userClient = client;
+    if (boxUserId) {
+      userClient = getUserBoxClient(boxUserId);
+    }
+    const folderItems: any = await userClient.folders.getFolderItems(folderId, {
+      queryParams: {
+        fields: [
+          "id",
+          "name",
+          "type",
+          "shared_link",
+          "created_at",
+          "modified_at",
+          "size",
+          "tags",
+        ],
+        limit: limit,
+      },
     });
 
-    const itemsWithCollaborators = await Promise.all(
-      folderItems.entries.map(async (item: any) => {
+    const itemsWithCollaborators: any = await Promise.all(
+      (folderItems?.rawData?.entries || []).map(async (item: any) => {
         const collaborators =
           item.type === "folder"
             ? await fetchFolderCollaborators(item.id)
@@ -180,20 +224,20 @@ export async function fetchNestedItems(folderId: string, limit: number = 100) {
 
         return {
           ...item,
-          collaborators,
+          collaborators: collaborators,
           children:
             item.type === "folder"
               ? await fetchNestedItems(item.id, limit)
               : [],
         };
-      })
+      }),
     );
 
     return itemsWithCollaborators;
   } catch (error) {
     console.error(
       `Error fetching items for folder ${folderId}:`,
-      (error as Error).message
+      (error as Error).message,
     );
     return [];
   }

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { getBoxClient } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
@@ -12,28 +12,22 @@ const downloadFile = asyncHandler(async (req: Request, res: Response) => {
       return res.json({ error: "File ID is required" });
     }
 
-    const file = await client.files.get(fileId as string);
+    const file = await client.files.getFileById(fileId as string);
 
-    const stream = await client.files.getReadStream(fileId as string);
+    const stream = await client.downloads.downloadFile(fileId as string);
 
-    res.setHeader(
-      "Content-Type",
-      file.file_version.content_type || "application/octet-stream"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${file.name}"`
-    );
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename="${file.name}"`);
 
-    stream.on("data", (chunk: Buffer) => {
+    stream?.on("data", (chunk: Buffer) => {
       res.write(chunk);
     });
 
-    stream.on("end", () => {
+    stream?.on("end", () => {
       res.end();
     });
 
-    stream.on("error", (err: Error) => {
+    stream?.on("error", (err: Error) => {
       console.error("Stream error:", err);
       res.status(500).json({ error: "Stream error" });
     });

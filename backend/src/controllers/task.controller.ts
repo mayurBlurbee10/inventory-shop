@@ -2,27 +2,13 @@ import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
 import taskService from "../services/task.service.ts";
 import { asyncHandler } from "../utils/helper.ts";
-import { getBoxClient } from "../utils/box.ts";
-import BoxSDK from "box-node-sdk";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
-const sdk = new BoxSDK({
-  clientID: process.env.BOX_CLIENT_ID,
-  clientSecret: process.env.BOX_CLIENT_SECRET,
-  appAuth: {
-    keyID: process.env.BOX_PUBLIC_KEY_ID,
-    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    passphrase: process.env.BOX_PASSPHRASE,
-    enterpriseID: process.env.BOX_ENTERPRISE_ID,
-  },
-});
-
 const deleteFile = async (fileId: string) => {
   if (!fileId) return;
-  const accessToken = await client._session.getAccessToken();
-  const newClient = sdk.getBasicClient(accessToken);
-  await newClient.files.delete(fileId);
+  await client.files.deleteFileById(fileId);
 };
 
 const createTask = asyncHandler(async (req: Request, res: Response) => {

@@ -1,22 +1,12 @@
 import { Request, Response } from "express";
-import BoxSDK from "box-node-sdk";
 import userService from "../services/user.service.ts";
 import portalService from "../services/portal.service.ts";
 import apiLogsService from "../services/apiLogs.service.ts";
 import { reverseSanitizeName } from "../utils/commonUtils.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
-// Initialise Box SDK
-const sdk = new BoxSDK({
-  clientID: process.env.BOX_CLIENT_ID,
-  clientSecret: process.env.BOX_CLIENT_SECRET,
-  appAuth: {
-    keyID: process.env.BOX_PUBLIC_KEY_ID,
-    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    passphrase: process.env.BOX_PASSPHRASE,
-    enterpriseID: process.env.BOX_ENTERPRISE_ID,
-  },
-});
+const client = getBoxClient();
 
 export const getEvents = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -43,7 +33,9 @@ export const getEvents = asyncHandler(async (req: Request, res: Response) => {
 
     if (userId && user) {
       const permission = Array.isArray((user as any).permissions)
-        ? (user as any).permissions.find((item: any) => item.portalId === portalId)
+        ? (user as any).permissions.find(
+          (item: any) => item.portalId === portalId
+        )
         : null;
       if (!permission) {
         const superAdmin = Array.isArray((user as any).permissions)
@@ -79,18 +71,16 @@ export const getEvents = asyncHandler(async (req: Request, res: Response) => {
       sortBy,
       sortOrder
     );
-    const boxUserId = (user as any).boxUserId;
-    const newClient = sdk.getAppAuthClient("user", boxUserId);
-    // Get Box events for the given date range
-    const events = await newClient.events.get({
-      // stream_type: "admin_logs",
-      stream_type: "all",
-      // created_after: new Date(startDate).toISOString(),
-      // created_before: new Date(endDate).toISOString(),
-      limit: 1000, // optional, default is 100
+
+    const boxUserId = (user as any)?.boxUserId;
+    const newClient = client;
+
+    const events = await newClient.events.getEvents({
+      streamType: "all",
+      limit: 1000,
     });
 
-    const filteredEvents = events.entries.filter((event: any) =>
+    const filteredEvents = events?.entries?.filter((event: any) =>
       ["ITEM_DOWNLOAD", "ITEM_PREVIEW"].includes(event.event_type)
     );
 
