@@ -10,96 +10,148 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: 'ubuntu-latest'
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Log in to Azure
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Load all secrets from Azure Key Vault
-      shell: bash
-      run: |
-        secrets=$(az keyvault secret list --vault-name mstrategy-keyvault --query "[].name" -o tsv)
-        for secret in $secrets; do
-          value=$(az keyvault secret show --vault-name mstrategy-keyvault --name "$secret" --query "value" -o tsv)
-          var_name=$(echo "$secret" | tr '-' '_' | tr '[:lower:]' '[:upper:]')
-          echo "$var_name=$value" >> $GITHUB_ENV
-        done
-
-    - name: Print secrets frontend
-      run: |
-        echo "${{ secrets.AzureAppService_ContainerUsername_6eacb970bdde47aa8dd49761d83173ea }}"
-        echo "${{ secrets.AzureAppService_ContainerPassword_bda72de990ca41f5b0de2d0e95f50bb0 }}"
-        echo "${{ secrets.AzureAppService_PublishProfile_47b10fce5352495695777a04cbfb2700 }}"
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Log in to ACR
-      uses: docker/login-action@v2
-      with:
-        registry: https://universalportaldemo.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_6eacb970bdde47aa8dd49761d83173ea }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_bda72de990ca41f5b0de2d0e95f50bb0 }}
-
-    - name: Install dependencies
-      run: |
-        if [ -f yarn.lock ]; then
-          yarn install;
-        elif [ -f package-lock.json ]; then
-          npm install --legacy-peer-deps;
-        else
-          echo "No lockfile found. Please check your dependencies.";
-          exit 1;
-        fi
-
-    - name: Build and push container image to registry
-      uses: docker/build-push-action@v3
-      with:
-        push: true
-        tags: universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_6eacb970bdde47aa8dd49761d83173ea }}/box-universalportal-wealth-app:${{ github.sha }}
-        file: ./Dockerfile
-        build-args: |
-          BOX_CLIENT_ID=${{ env.BOX_CLIENT_ID }}
-          BOX_CLIENT_SECRET=${{ env.BOX_CLIENT_SECRET }}
-          BOX_ENTERPRISE_ID=${{ env.BOX_ENTERPRISE_ID }}
-          BOX_PRIVATE_KEY=${{ env.BOX_PRIVATE_KEY }}
-          BOX_PRIVATE_KEY_PASSWORD=${{ env.BOX_PRIVATE_KEY_PASSWORD }}
-          BOX_PUBLIC_KEY_ID=${{ env.BOX_PUBLIC_KEY_ID }}
-          BOX_DEVELOPER_TOKEN=${{ env.BOX_DEVELOPER_TOKEN }}
-          BOX_PASSPHRASE=${{ env.BOX_PASSPHRASE }}
-          NEXT_PUBLIC_APP_BASE_URL=${{ env.NEXT_PUBLIC_APP_BASE_URL_UNIVERSALPORTAL_WEALTH }}
-          NEXT_PUBLIC_JWT_SECRET_KEY=${{ env.NEXT_PUBLIC_JWT_SECRET_KEY }}
-          AZURE_COMMUNICATION_CONNECTION_STRING=${{ env.AZURE_COMMUNICATION_CONNECTION_STRING }}
-          AZURE_COMMUNICATION_SENDER_EMAIL=${{ env.AZURE_COMMUNICATION_SENDER_EMAIL }}
-          NEXT_PUBLIC_OKTA_CLIENT_ID=${{ env.NEXT_PUBLIC_OKTA_CLIENT_ID }}
-          NEXT_PUBLIC_OKTA_ISSUER=${{ env.NEXT_PUBLIC_OKTA_ISSUER }}
-          NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL=${{ env.NEXTAUTH_URL_UNIVERSALPORTAL_WEALTH }}
-          AZURE_STORAGE_CONNECTION_STRING=${{ env.AZURE_STORAGE_CONNECTION_STRING }}
-          NEXT_PUBLIC_CRYPTO_SECRET_KEY=${{ env.NEXT_PUBLIC_CRYPTO_SECRET_KEY }}
-          ZENDESK_API_TOKEN=${{ env.ZENDESK_API_TOKEN }}
-          ZENDESK_ADMIN_EMAIL=${{ env.ZENDESK_ADMIN_EMAIL }}
-          ZENDESK_SUBDOMAIN_URL=${{ env.ZENDESK_SUBDOMAIN_URL }}
-
-  deploy:
+  build-and-deploy-frontend:
+    name: Build and Deploy Frontend
     runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'universalportal-wealth'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_47b10fce5352495695777a04cbfb2700 }}
-        images: 'universalportaldemo.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_6eacb970bdde47aa8dd49761d83173ea }}/box-universalportal-wealth-app:${{ github.sha }}'
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Load all secrets from Azure Key Vault
+        shell: bash
+        run: |
+          secrets=$(az keyvault secret list --vault-name mstrategy-keyvault --query "[].name" -o tsv)
+          for secret in $secrets; do
+            value=$(az keyvault secret show --vault-name mstrategy-keyvault --name "$secret" --query "value" -o tsv)
+            var_name=$(echo "$secret" | tr '-' '_' | tr '[:lower:]' '[:upper:]')
+            echo "$var_name=$value" >> $GITHUB_ENV
+          done
+
+      - name: Set up Docker Buildx and login to ACR
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ACR (Frontend)
+        uses: docker/login-action@v3
+        with:
+          registry: universalportaldemo.azurecr.io
+          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}
+          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD }}
+
+      - name: Build and push frontend container image to registry
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-app:${{ github.sha }}
+          cache-from: type=registry,ref=universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-app:buildcache
+          cache-to: type=registry,ref=universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-app:buildcache,mode=max
+          build-args: |
+            BOX_CLIENT_ID=${{ env.BOX_CLIENT_ID }}
+            BOX_CLIENT_SECRET=${{ env.BOX_CLIENT_SECRET }}
+            BOX_ENTERPRISE_ID=${{ env.BOX_ENTERPRISE_ID }}
+            BOX_PRIVATE_KEY=${{ env.BOX_PRIVATE_KEY }}
+            BOX_PRIVATE_KEY_PASSWORD=${{ env.BOX_PRIVATE_KEY_PASSWORD }}
+            BOX_PUBLIC_KEY_ID=${{ env.BOX_PUBLIC_KEY_ID }}
+            BOX_PASSPHRASE=${{ env.BOX_PASSPHRASE }}
+            NEXT_PUBLIC_APP_BASE_URL=${{ env.NEXT_PUBLIC_APP_BASE_URL_UNIVERSALPORTAL_WEALTH }}
+            NEXT_PUBLIC_JWT_SECRET_KEY=${{ env.NEXT_PUBLIC_JWT_SECRET_KEY }}
+            AZURE_COMMUNICATION_CONNECTION_STRING=${{ env.AZURE_COMMUNICATION_CONNECTION_STRING }}
+            AZURE_COMMUNICATION_SENDER_EMAIL=${{ env.AZURE_COMMUNICATION_SENDER_EMAIL }}
+            NEXT_PUBLIC_OKTA_CLIENT_ID=${{ env.NEXT_PUBLIC_OKTA_CLIENT_ID }}
+            NEXT_PUBLIC_OKTA_ISSUER=${{ env.NEXT_PUBLIC_OKTA_ISSUER }}
+            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            NEXTAUTH_URL=${{ env.NEXTAUTH_URL_UNIVERSALPORTAL_WEALTH }}
+            AZURE_STORAGE_CONNECTION_STRING=${{ env.AZURE_STORAGE_CONNECTION_STRING }}
+            NEXT_PUBLIC_BACKEND_URL=${{ env.NEXT_PUBLIC_BACKEND_URL_UNIVERSALPORTAL_WEALTH }}
+            NEXT_PUBLIC_CRYPTO_SECRET_KEY=${{ env.NEXT_PUBLIC_CRYPTO_SECRET_KEY }}
+            ZENDESK_API_TOKEN=${{ env.ZENDESK_API_TOKEN }}
+            ZENDESK_ADMIN_EMAIL=${{ env.ZENDESK_ADMIN_EMAIL }}
+            ZENDESK_SUBDOMAIN_URL=${{ env.ZENDESK_SUBDOMAIN_URL }}
+
+      - name: Deploy to Azure Web App (Frontend)
+        id: deploy-frontend
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "universalportal-wealth"
+          slot-name: "production"
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_47b10fce5352495695777a04cbfb2700 }}
+          images: "universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-app:${{ github.sha }}"
+
+  build-and-deploy-backend:
+    name: Build and Deploy Backend
+    runs-on: ubuntu-latest
+    # Run in parallel with frontend (no dependency)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Load all secrets from Azure Key Vault
+        shell: bash
+        run: |
+          secrets=$(az keyvault secret list --vault-name mstrategy-keyvault --query "[].name" -o tsv)
+          for secret in $secrets; do
+            value=$(az keyvault secret show --vault-name mstrategy-keyvault --name "$secret" --query "value" -o tsv)
+            var_name=$(echo "$secret" | tr '-' '_' | tr '[:lower:]' '[:upper:]')
+            echo "$var_name=$value" >> $GITHUB_ENV
+          done
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ACR (Backend)
+        uses: docker/login-action@v3
+        with:
+          registry: universalportaldemo.azurecr.io
+          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}
+          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-backend-app:${{ github.sha }}
+          cache-from: type=registry,ref=universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-backend-app:buildcache
+          cache-to: type=registry,ref=universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-backend-app:buildcache,mode=max
+          build-args: |
+            BOX_CLIENT_ID=${{ env.BOX_CLIENT_ID }}
+            BOX_CLIENT_SECRET=${{ env.BOX_CLIENT_SECRET }}
+            BOX_ENTERPRISE_ID=${{ env.BOX_ENTERPRISE_ID }}
+            BOX_PRIVATE_KEY=${{ env.BOX_PRIVATE_KEY }}
+            BOX_PRIVATE_KEY_PASSWORD=${{ env.BOX_PRIVATE_KEY_PASSWORD }}
+            BOX_PUBLIC_KEY_ID=${{ env.BOX_PUBLIC_KEY_ID }}
+            BOX_PASSPHRASE=${{ env.BOX_PASSPHRASE }}
+            NEXT_PUBLIC_APP_BASE_URL=${{ env.NEXT_PUBLIC_APP_BASE_URL_UNIVERSALPORTAL_WEALTH }}
+            NEXT_PUBLIC_JWT_SECRET_KEY=${{ env.NEXT_PUBLIC_JWT_SECRET_KEY }}
+            AZURE_COMMUNICATION_CONNECTION_STRING=${{ env.AZURE_COMMUNICATION_CONNECTION_STRING }}
+            AZURE_COMMUNICATION_SENDER_EMAIL=${{ env.AZURE_COMMUNICATION_SENDER_EMAIL }}
+            NEXT_PUBLIC_OKTA_CLIENT_ID=${{ env.NEXT_PUBLIC_OKTA_CLIENT_ID }}
+            NEXT_PUBLIC_OKTA_ISSUER=${{ env.NEXT_PUBLIC_OKTA_ISSUER }}
+            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            NEXTAUTH_URL=${{ env.NEXTAUTH_URL_UNIVERSALPORTAL_WEALTH }}
+            AZURE_STORAGE_CONNECTION_STRING=${{ env.AZURE_STORAGE_CONNECTION_STRING }}
+            NEXT_PUBLIC_CRYPTO_SECRET_KEY=${{ env.NEXT_PUBLIC_CRYPTO_SECRET_KEY }}
+            ZENDESK_API_TOKEN=${{ env.ZENDESK_API_TOKEN }}
+            ZENDESK_ADMIN_EMAIL=${{ env.ZENDESK_ADMIN_EMAIL }}
+            ZENDESK_SUBDOMAIN_URL=${{ env.ZENDESK_SUBDOMAIN_URL }}
+
+      - name: Deploy to Azure Web App (Backend)
+        id: deploy-backend
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "universalportal-wealth-backend"
+          slot-name: "production"
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_409479AB7F9D439CBD4FD295ADD2040F }}
+          images: "universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-backend-app:${{ github.sha }}"
