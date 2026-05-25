@@ -72,7 +72,7 @@ function Login() {
       const response = await fetchWrapper(
         `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
-        "fetch-pages"
+        "fetch-pages",
       );
       if (!response.ok) {
         throw new Error("Failed to fetch plugins");
@@ -82,14 +82,14 @@ function Login() {
       const pageData = data?.data[0]?.pages || [];
       dispatch(setPages(pageData));
       const filterPagePlugin = pageData.filter(
-        (item) => !item.isCustomPage && item.isPageVisible
+        (item) => !item.isCustomPage && item.isPageVisible,
       );
       let pageToRedirect = filterPagePlugin?.find(
-        (item) => item?.title === "dashboard"
+        (item) => item?.title === "dashboard",
       );
       if (!pageToRedirect) {
         pageToRedirect = filterPagePlugin?.find(
-          (item) => item?.title === "shared-docs"
+          (item) => item?.title === "shared-docs",
         );
         pageToRedirect.pageTitle = "shared documents";
       } else {
@@ -106,7 +106,7 @@ function Login() {
       const response = await fetchWrapper(
         `/api/nda-agreements?portalId=${params?.portalid || "root"}`,
         {},
-        "fetch-nda-agreements"
+        "fetch-nda-agreements",
       );
       if (!response.ok) {
         setNdaPages([]);
@@ -131,7 +131,7 @@ function Login() {
 
     if (userData?.ndaPages) {
       const userAssignedPage = pages.find(
-        (page) => page?.id === userData.ndaPages
+        (page) => page?.id === userData.ndaPages,
       );
       if (userAssignedPage) {
         return userAssignedPage;
@@ -150,13 +150,13 @@ function Login() {
     }
 
     const permission = user?.permissions?.find(
-      (perm) => perm.portalId === portalId
+      (perm) => perm.portalId === portalId,
     );
 
     if (!permission) {
       // setUser(null);
       const isSuperAdminPer = user?.permissions?.find(
-        (perm) => perm.role === UserRole.SUPER_ADMIN
+        (perm) => perm.role === UserRole.SUPER_ADMIN,
       );
 
       if (isSuperAdminPer) {
@@ -194,7 +194,7 @@ function Login() {
       const response = await fetchWrapper(
         `/api/users?email=${encodedEmail}`,
         {},
-        "fetch-user"
+        "fetch-user",
       );
 
       if (!response.ok) {
@@ -204,7 +204,7 @@ function Login() {
       const validatedUser = await validateUserAccess(
         data,
         config,
-        params.portalid
+        params.portalid,
       );
       return validatedUser;
     } catch (error) {
@@ -240,6 +240,14 @@ function Login() {
     fetchNdaPages();
   }, []);
 
+  const setClientTokenCookie = (accessToken) => {
+    document.cookie = `clientToken=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+  };
+
+  const clearClientTokenCookie = () => {
+    clearCookieByName("clientToken");
+  };
+
   const handleLogin = async (e) => {
     e?.preventDefault();
     console.log("Login attempt for:", email);
@@ -258,7 +266,7 @@ function Login() {
             portalid: params.portalid || "root",
           }),
         },
-        "default-login"
+        "default-login",
       );
       const data = await response.json();
       console.log("data===========>", data);
@@ -276,6 +284,7 @@ function Login() {
       console.log("Storing user data:", userData);
       // setUserData(userData);
       dispatch(setCurrentUser({ ...userData, portalId: params?.portalid }));
+      setClientTokenCookie(data.accessToken);
       setUserData({ ...userData, portalId: params?.portalid });
       // localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
@@ -342,7 +351,7 @@ function Login() {
       const body = {
         method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, portalid: params?.portalid }),
       };
@@ -352,6 +361,7 @@ function Login() {
       const userData = data.user;
       // setUserData(userData);
       dispatch(setCurrentUser(userData));
+      setClientTokenCookie(data.accessToken);
       // localStorage.setItem("portal", params?.portalid || "default");
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
@@ -448,10 +458,10 @@ function Login() {
     let theme = contentItem
       ? contentItem.theme
       : {
-        fontSize: fontSize?.size,
-        color: "#000000",
-        fontWeight: title === "Paragraph" ? 300 : 400,
-      };
+          fontSize: fontSize?.size,
+          color: "#000000",
+          fontWeight: title === "Paragraph" ? 300 : 400,
+        };
     return theme;
   };
 
@@ -614,7 +624,18 @@ function Login() {
                       </p>
                     </div>
                     <div className="w-full flex justify-center items-center text-sm mt-2 text-black cursor-pointer">
-                      <p onClick={() => router.push(`${params?.portalid ? `/${params.portalid}/register` : "/register"}`)}>Don't have an client account? <span className="text-blue-600 hover:underline">Sign up</span></p>
+                      <p
+                        onClick={() =>
+                          router.push(
+                            `${params?.portalid ? `/${params.portalid}/register` : "/register"}`,
+                          )
+                        }
+                      >
+                        Don't have an client account?{" "}
+                        <span className="text-blue-600 hover:underline">
+                          Sign up
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </form>

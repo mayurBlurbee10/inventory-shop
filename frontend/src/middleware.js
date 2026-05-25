@@ -29,6 +29,7 @@ const publicRoutes = [
 
 export async function middleware(request) {
   const authToken = request.cookies.get("token")?.value;
+  const clientToken = request.cookies.get("clientToken")?.value;
   const { pathname } = request.nextUrl;
 
   console.log("Middleware running for pathname:", pathname);
@@ -123,14 +124,14 @@ export async function middleware(request) {
     return NextResponse.next();
   } else {
     if (isLoginPath) {
-      if (payload) {
+      if (clientToken) {
         return NextResponse.redirect(new URL(dashboardPath, request.url));
       }
     } else if (isRegisterPath) {
       // Always allow access to register page, regardless of auth status
       return NextResponse.next();
     } else {
-      if (!payload) {
+      if (!clientToken) {
         const refreshToken = request.cookies.get("refreshToken")?.value;
 
         // Prevent loop
