@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
-
-const client = getBoxClient();
+import { getBoxClientAccessToken } from "../utils/boxClient.ts";
 
 // GET /api/box/preview/:fileId
 const getPreview = asyncHandler(async (req: Request, res: Response) => {
@@ -12,10 +10,10 @@ const getPreview = asyncHandler(async (req: Request, res: Response) => {
     const { fileId } = req.params;
 
     // Get the service account token
-    const accessToken = await (client as any)._session.getAccessToken();
+    const { client, accessToken } = await getBoxClientAccessToken();
 
     // Get file info
-    const file = await client.files.get(fileId);
+    const file = await client.files.getFileById(fileId);
 
     return res.status(200).json({
       accessToken,

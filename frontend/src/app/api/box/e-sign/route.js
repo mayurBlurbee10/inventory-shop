@@ -42,7 +42,7 @@ export const createESign = async (
       {
         email: signer.email,
         role: "signer",
-        embed_url_external_user_id: signer.id,
+        embedUrlExternalUserId: signer.id,
         suppress_notifications: true,
         redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
       },
@@ -86,7 +86,7 @@ export async function POST(req) {
         signers: signers.map(({ signerEmail, signerId }) => ({
           email: signerEmail,
           role: "signer",
-          embed_url_external_user_id: signerId,
+          embedUrlExternalUserId: signerId,
           suppress_notifications: true,
           redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
         })),
@@ -107,7 +107,7 @@ export async function POST(req) {
             {
               email: signerEmail,
               role: "signer",
-              embed_url_external_user_id: signerId,
+              embedUrlExternalUserId: signerId,
               suppress_notifications: true,
               redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
             },

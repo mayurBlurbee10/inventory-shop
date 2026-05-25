@@ -17,12 +17,11 @@ import checkListService from "../services/checkList.service.ts";
 import pluginService from "../services/plugin.service.ts";
 import resetService from "../services/reset.service.ts";
 import ndaAgreementService from "../services/ndaAgreement.service.ts";
-import { getBoxClient, getBoxSDK } from "../utils/box.ts";
 import { addCollaborator } from "../services/box.service.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 const client = getBoxClient();
-const sdk = getBoxSDK();
 
 async function ensurePortalsDirectory() {
   try {
@@ -42,8 +41,6 @@ const uploadSampleFiles = async (
   if (!parentFolderId) {
     return [];
   }
-  const accessToken = await (client as any)._session.getAccessToken();
-  const newClient = sdk.getBasicClient(accessToken);
 
   const demoPath = path.join(process.cwd(), "public", "demo");
   const foldersInDemo = fsSync.readdirSync(demoPath).filter((folder) =>
@@ -55,15 +52,20 @@ const uploadSampleFiles = async (
   for (const folderName of foldersInDemo) {
     const localFolderPath = path.join(demoPath, folderName);
 
-    const folderSearch = await client.search.query(folderName, {
+    const folderSearch = await client.search.searchForContent({
+      query: `"${folderName}"`,
       type: "folder",
-      fields: "id",
-      ancestor_folder_ids: parentFolderId,
-    });
+      fields: ["id", "name"],
+      ancestorFolderIds: [parentFolderId],
+    }) as any;
+
     console.log(`folder ${folderName}`, folderSearch);
     let folderId;
     if (!folderSearch.entries.length) {
-      const createdFolder = await newClient.folders.create(parentFolderId, folderName);
+      const createdFolder = await client.folders.createFolder({
+        name: folderName,
+        parent: { id: parentFolderId },
+      });
       folderId = createdFolder.id;
       uploadedFolders.push({ name: folderName, id: folderId });
     } else {
@@ -79,11 +81,12 @@ const uploadSampleFiles = async (
       const filePath = path.join(localFolderPath, fileName);
       const buffer = fsSync.readFileSync(filePath);
 
-      const fileSearch = await client.search.query(fileName, {
+      const fileSearch = await client.search.searchForContent({
+        query: `"${fileName}"`,
         type: "file",
-        fields: "id",
-        ancestor_folder_ids: folderId,
-      });
+        fields: ["id", "name"],
+        ancestorFolderIds: [folderId],
+      }) as any;
       console.log(`file ${fileName}`, fileSearch);
       let fileId;
       if (!fileSearch.entries.length) {
@@ -91,21 +94,23 @@ const uploadSampleFiles = async (
         fileStream.push(buffer);
         fileStream.push(null);
 
-        const uploadedFileRes = await newClient.files.uploadFile(
-          folderId,
-          fileName,
-          fileStream,
-          { description: email }
-        );
+        const uploadedFileRes = await client.uploads.uploadFile({
+          attributes: {
+            name: fileName,
+            parent: { id: folderId },
+          },
+          file: fileStream,
+        }) as any;
 
         fileId = uploadedFileRes.entries[0].id;
       } else {
         fileId = fileSearch.entries[0].id;
       }
 
-      const collaborations = await newClient.files.getCollaborations(fileId);
-      const isAlreadyCollaborator = collaborations.entries.some(
-        (collab: any) => collab.accessible_by && collab.accessible_by.id === userId
+      const collaborations =
+        await client.listCollaborations.getFileCollaborations(fileId);
+      const isAlreadyCollaborator = collaborations?.entries?.some(
+        (collab) => collab.accessibleBy && collab.accessibleBy.id === userId,
       );
 
       if (!isAlreadyCollaborator && userId) {
@@ -117,14 +122,18 @@ const uploadSampleFiles = async (
   // Create folders manually if not already present
   const defaultFolders = ["Loan", "Statements"];
   for (const folderName of defaultFolders) {
-    const folderSearch = await client.search.query(folderName, {
+    const folderSearch = await client.search.searchForContent({
+      query: `"${folderName}"`,
       type: "folder",
-      fields: "id",
-      ancestor_folder_ids: parentFolderId,
-    });
+      fields: ["id", "name"],
+      ancestorFolderIds: [parentFolderId],
+    }) as any;
 
     if (!folderSearch.entries.length) {
-      const createdFolder = await newClient.folders.create(parentFolderId, folderName);
+      const createdFolder = await client.folders.createFolder({
+        name: folderName,
+        parent: { id: parentFolderId },
+      }) as any;
       uploadedFolders.push({ name: folderName, id: createdFolder.id });
     } else {
       uploadedFolders.push({ name: folderName, id: folderSearch.entries[0].id });

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
@@ -11,32 +11,42 @@ function isTrashedOrNotFoundError(error: unknown) {
     err?.response?.body?.message?.toLowerCase() ||
     err?.message?.toLowerCase() ||
     "";
+  const code = err?.response?.body?.code?.toLowerCase?.() || "";
   return (
     message.includes("trashed") ||
+    message.includes("not_found") ||
+    message.includes("not found") ||
+    code === "not_found" ||
     err?.response?.body?.code === "item_not_found" ||
     err?.statusCode === 404 ||
     err?.response?.status === 404
   );
 }
 
+function normalizeBoxId(value: unknown, fallback = ""): string {
+  const normalized = String(value ?? "").trim();
+  if (/^\d+$/.test(normalized)) return normalized;
+  return fallback;
+}
+
 async function fetchCollaborators(itemId: string, type: string) {
   try {
     if (type === "folder") {
-      const collaborations = await client.folders.getCollaborations(itemId);
-      return collaborations.entries.map((collaboration: any) => ({
+      const collaborations = await client.listCollaborations.getFolderCollaborations(itemId);
+      return collaborations?.entries?.map((collaboration: any) => ({
         id: collaboration.id,
         role: collaboration.role,
-        user: collaboration.accessible_by,
+        user: collaboration.accessibleBy,
         type: collaboration.type,
-      }));
+      })) || [];
     } else {
-      const collaborations = await client.files.getCollaborations(itemId);
-      return collaborations.entries.map((collaboration: any) => ({
+      const collaborations = await client.listCollaborations.getFileCollaborations(itemId);
+      return collaborations?.entries?.map((collaboration: any) => ({
         id: collaboration.id,
         role: collaboration.role,
-        user: collaboration.accessible_by,
+        user: collaboration.accessibleBy,
         type: collaboration.type,
-      }));
+      })) || [];
     }
   } catch (error) {
     console.error(
@@ -49,14 +59,24 @@ async function fetchCollaborators(itemId: string, type: string) {
 
 async function fetchNestedItems(folderId: string, limit: number = 100): Promise<any[]> {
   try {
-    const folderItems = await client.folders.getItems(folderId, {
-      fields:
-        "id,name,type,shared_link,created_at,modified_at,collaborators,size",
-      limit: limit,
+    const folderItems: any = await client.folders.getFolderItems(folderId, {
+      queryParams: {
+        fields: [
+          "id",
+          "name",
+          "type",
+          "shared_link",
+          "created_at",
+          "modified_at",
+          "size",
+          "tags",
+        ],
+        limit: limit,
+      },
     });
 
-    const itemsWithCollaborators = await Promise.all(
-      folderItems.entries.map(async (item: any) => {
+    const itemsWithCollaborators: any = await Promise.all(
+      (folderItems?.rawData?.entries || []).map(async (item: any) => {
         const collaborators =
           item.type === "folder"
             ? await fetchFolderCollaborators(item.id)
@@ -64,10 +84,13 @@ async function fetchNestedItems(folderId: string, limit: number = 100): Promise<
 
         return {
           ...item,
-          collaborators,
-          children: item.type === "folder" ? await fetchNestedItems(item.id) : [],
+          collaborators: collaborators,
+          children:
+            item.type === "folder"
+              ? await fetchNestedItems(item.id, limit)
+              : [],
         };
-      })
+      }),
     );
 
     return itemsWithCollaborators;
@@ -79,15 +102,15 @@ async function fetchNestedItems(folderId: string, limit: number = 100): Promise<
 
 async function fetchFolderCollaborators(itemId: string) {
   try {
-    const collaborations = await client.folders.getCollaborations(itemId);
-    return collaborations.entries.map((collaboration: any) => {
+    const collaborations = await client.listCollaborations.getFolderCollaborations(itemId);
+    return collaborations?.entries?.map((collaboration: any) => {
       console.log("collaboration:", collaboration);
       return {
         id: collaboration.id,
         role: collaboration.role,
-        user: collaboration.accessible_by,
+        user: collaboration.accessibleBy,
       };
-    });
+    }) || [];
   } catch (error) {
     console.error(
       `Error fetching collaborators for item ${itemId}:`,
@@ -99,15 +122,15 @@ async function fetchFolderCollaborators(itemId: string) {
 
 async function fetchFileCollaborators(itemId: string) {
   try {
-    const collaborations = await client.files.getCollaborations(itemId);
-    return collaborations.entries.map((collaboration: any) => {
+    const collaborations = await client.listCollaborations.getFileCollaborations(itemId);
+    return collaborations?.entries?.map((collaboration: any) => {
       console.log("collaboration:", collaboration);
       return {
         id: collaboration.id,
         role: collaboration.role,
-        user: collaboration.accessible_by,
+        user: collaboration.accessibleBy,
       };
-    });
+    }) || [];
   } catch (error) {
     console.error(
       `Error fetching collaborators for item ${itemId}:`,
@@ -127,16 +150,20 @@ const createFolder = asyncHandler(async (req: Request, res: Response) => {
     const userFolderId = boxFolderId;
     console.log("Creating folder in user folder:", userFolderId);
 
-    const folder = await client.folders.create(userFolderId, name, {
-      fields: ["id", "name", "path_collection", "created_at"],
-    } as any);
+    const folder = await client.folders.createFolder({
+      name,
+      parent: { id: userFolderId },
+    });
 
     console.log("Created folder:", folder);
 
     // After creating the folder, let's verify it exists in the parent folder
-    const parentFolder = await client.folders.getItems(userFolderId, {
-      fields: "id,name,type",
+    const parentFolder = await client.folders.getFolderItems(userFolderId, {
+      queryParams: {
+        fields: ["id", "name", "type"],
+      },
     });
+
 
     console.log("Parent folder contents:", (parentFolder as any).entries);
 
@@ -156,7 +183,7 @@ const createFolder = asyncHandler(async (req: Request, res: Response) => {
 const getFolders = asyncHandler(async (req: Request, res: Response) => {
   try {
     await logApiCall(req);
-    const folderId = (req.query.folderId as string) || "0";
+    const folderId = normalizeBoxId(req.query.folderId, "0");
     const collaboratedParam = (req.query.collaborated as string) ?? "[]";
     let collaborated: any[] = [];
     try {
@@ -171,22 +198,31 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
 
     for (const element of collaborated) {
       try {
+        const elementId = normalizeBoxId(element?.folderId);
+        if (!elementId) {
+          console.warn("Skipping collaborated item with invalid folderId", {
+            folderId: element?.folderId,
+            type: element?.type,
+          });
+          continue;
+        }
+
         const collaborators = await fetchCollaborators(
-          element.folderId,
+          elementId,
           element.type
         );
 
         const currentUserCollab = collaborators.find(
           (collab: any) =>
-            collab?.item?.id === element?.folderId &&
+            collab?.item?.id === elementId &&
             collab?.user?.id === boxUserId
         );
 
         const currentUserRole = currentUserCollab?.role || element.role;
 
         if (element.type === "folder") {
-          const folder = await fetchNestedItems(element.folderId, limit);
-          const folderDetails = await client.folders.get(element.folderId);
+          const folder = await fetchNestedItems(elementId, limit);
+          const folderDetails = await client.folders.getFolderById(elementId);
           items.push({
             ...folderDetails,
             children: folder,
@@ -194,7 +230,7 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
             currentUserRole: currentUserRole,
           });
         } else {
-          const file = await client.files.get(element.folderId);
+          const file = await client.files.getFileById(elementId);
           items.push({
             ...file,
             collaborators,
@@ -203,7 +239,7 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
         }
       } catch (error) {
         if (isTrashedOrNotFoundError(error)) {
-          console.warn(`Skipping trashed item: ${element.folderId}`);
+          console.warn(`Skipping trashed/not-found item: ${element?.folderId}`);
           continue;
         }
         console.error(
@@ -228,25 +264,27 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deleteFolderContents = async (folderId: string) => {
-  const items = await client.folders.getItems(folderId, { fields: "id,type" });
+  const items = await client.folders.getFolderItems(folderId, { queryParams: { fields: ["id", "type"] } });
 
-  for (const item of items.entries as any[]) {
+  for (const item of items?.entries as any[]) {
     if (item.type === "file") {
-      await client.files.delete(item.id);
+      await client.files.deleteFileById(item.id);
     } else if (item.type === "folder") {
-      await client.folders.delete(item.id, { recursive: true });
+      await client.folders.deleteFolderById(folderId as string, {
+        queryParams: { recursive: true },
+      }) as any;
     }
   }
 };
 
 const deleteFolderById = async (folderId: string, recursive = false) => {
-  await client.folders.delete(folderId, { recursive: recursive });
+  await client.folders.deleteFolderById(folderId, { queryParams: { recursive: recursive } }) as any;
 };
 
 // DELETE /api/box/folders
 const deleteFolder = asyncHandler(async (req: Request, res: Response) => {
   try {
-    await logApiCall(req, () => {});
+    await logApiCall(req, () => { });
     const folderId = req.query.folderId as string;
 
     if (!folderId) {
@@ -274,18 +312,18 @@ const shareFolder = asyncHandler(async (req: Request, res: Response) => {
     await logApiCall(req);
     const { folderId } = req.params;
 
-    // Create a shared link for the folder
-    const shared = await client.folders.update(folderId, {
-      shared_link: {
-        access: "open",
-        permissions: {
-          can_preview: true,
-          can_download: true,
-        } as any,
+    const shared = await client.folders.updateFolderById(folderId, {
+      requestBody: {
+        sharedLink: {
+          access: "open",
+          permissions: {
+            canDownload: true,
+          },
+        },
       },
     });
 
-    return res.status(200).json({ shared_link: shared.shared_link });
+    return res.status(200).json({ shared_link: shared.sharedLink });
   } catch (error) {
     console.error("Error sharing folder:", error);
     return res.status(500).json({

@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient, getBoxSDK } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
-const sdk = getBoxSDK();
 
 // POST /api/box/bulk/copy
 const bulkCopy = asyncHandler(async (req: Request, res: Response) => {
@@ -23,10 +22,9 @@ const bulkCopy = asyncHandler(async (req: Request, res: Response) => {
     for (const item of items) {
       try {
         if (item.type === "file") {
-          const movedFile = await client.files.copy(
-            item.id,
-            destinationFolderId
-          );
+          const movedFile = await client.files.copyFile(item.id, {
+            parent: { id: destinationFolderId },
+          });
           results.push({
             id: item.id,
             type: "file",
@@ -34,10 +32,9 @@ const bulkCopy = asyncHandler(async (req: Request, res: Response) => {
             movedFile,
           });
         } else if (item.type === "folder") {
-          const movedFolder = await client.folders.copy(
-            item.id,
-            destinationFolderId
-          );
+          const movedFolder = await client.folders.copyFolder(item.id, {
+            parent: { id: destinationFolderId },
+          });
           results.push({
             id: item.id,
             type: "folder",
@@ -76,8 +73,7 @@ const bulkDelete = asyncHandler(async (req: Request, res: Response) => {
     await logApiCall(req);
     const { items } = req.body;
 
-    const accessToken = await (client as any)._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
+    const newClient = client;
 
     const results: any[] = [];
     const errors: any[] = [];
@@ -85,9 +81,9 @@ const bulkDelete = asyncHandler(async (req: Request, res: Response) => {
     for (const item of items) {
       try {
         if (item.type === "file") {
-          await newClient.files.delete(item.id);
+          await newClient.files.deleteFileById(item.id);
         } else if (item.type === "folder") {
-          await newClient.folders.delete(item.id);
+          await newClient.folders.deleteFolderById(item.id);
         } else {
           throw new Error(`Unknown item type: ${item.type}`);
         }
@@ -136,18 +132,18 @@ const bulkDownload = asyncHandler(async (req: Request, res: Response) => {
     for (const item of items) {
       try {
         if (item.type === "file") {
-          const file = await client.files.get(item.id);
+          const file = await client.files.getFileById(item.id);
 
-          const stream = await client.files.getReadStream(item.id);
+          const stream = await client.downloads.downloadFile(item.id);
 
           const chunks: Buffer[] = [];
           await new Promise<void>((resolve, reject) => {
-            stream.on("data", (chunk: any) => {
+            stream?.on("data", (chunk: any) => {
               chunks.push(chunk);
             });
 
-            stream.on("end", resolve);
-            stream.on("error", reject);
+            stream?.on("end", resolve);
+            stream?.on("error", reject);
           });
 
           const fileBuffer = Buffer.concat(chunks);
@@ -155,8 +151,7 @@ const bulkDownload = asyncHandler(async (req: Request, res: Response) => {
           results.push({
             id: item.id,
             name: item.name,
-            contentType:
-              file.file_version.content_type || "application/octet-stream",
+            contentType: "application/octet-stream",
             content: fileBuffer.toString("base64"),
           });
         } else {
@@ -205,10 +200,13 @@ const bulkMove = asyncHandler(async (req: Request, res: Response) => {
     for (const item of items) {
       try {
         if (item.type === "file") {
-          const movedFile = await client.files.move(
-            item.id,
-            destinationFolderId
-          );
+          const movedFile = await client.files.updateFileById(item.id, {
+            requestBody: {
+              parent: {
+                id: destinationFolderId,
+              },
+            },
+          });
           results.push({
             id: item.id,
             type: "file",
@@ -216,10 +214,13 @@ const bulkMove = asyncHandler(async (req: Request, res: Response) => {
             movedFile,
           });
         } else if (item.type === "folder") {
-          const movedFolder = await client.folders.move(
-            item.id,
-            destinationFolderId
-          );
+          const movedFolder = await client.folders.updateFolderById(item.id, {
+            requestBody: {
+              parent: {
+                id: destinationFolderId,
+              },
+            },
+          });
           results.push({
             id: item.id,
             type: "folder",

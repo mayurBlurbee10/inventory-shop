@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
@@ -27,9 +27,17 @@ const moveItem = asyncHandler(async (req: Request, res: Response) => {
     let response: any;
 
     if (type === "file") {
-      response = await client.files.move(itemId, destinationFolderId);
+      response = await client.files.updateFileById(itemId, {
+        requestBody: {
+          parent: { id: destinationFolderId },
+        },
+      });
     } else {
-      response = await client.folders.move(itemId, destinationFolderId);
+      response = await client.folders.updateFolderById(itemId, {
+        requestBody: {
+          parent: { id: destinationFolderId },
+        },
+      });
     }
 
     return res.status(200).json({

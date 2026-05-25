@@ -847,7 +847,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
       );
       if (currentUserReq) {
         setTimeout(() => {
-          setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+          setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
           setIsSignModalOpen(true);
           setIsLoading(false);
         }, 2500);

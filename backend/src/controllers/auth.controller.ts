@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import BoxSDK from "box-node-sdk";
 import * as bcrypt from "bcrypt";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { generateToken, generateRefreshToken, generateNanoToken } from "../utils/jwt.ts";
+import { generateToken, generateRefreshToken } from "../utils/jwt.ts";
 import { decodeJwt } from "jose";
 import userService from "../services/user.service.ts";
 import { UserRole } from "../config/constants.ts";
@@ -11,24 +10,12 @@ import { sanitizeName } from "../utils/commonUtils.ts";
 import { asyncHandler } from "../utils/helper.ts";
 import { validateAdminUser } from "../utils/data.ts";
 import authService from "../services/auth.service.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 let boxService: any = null;
 
 try {
-  const sdk = new BoxSDK({
-    clientID: process.env.BOX_CLIENT_ID,
-    clientSecret: process.env.BOX_CLIENT_SECRET,
-    appAuth: {
-      keyID: process.env.BOX_PUBLIC_KEY_ID,
-      privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      passphrase: process.env.BOX_PASSPHRASE,
-    },
-  });
-
-  const client = sdk.getAppAuthClient(
-    "enterprise",
-    process.env.BOX_ENTERPRISE_ID
-  );
+  const client = getBoxClient();
 
   boxService = {
     async getUserFiles(userId: string, folderId: string) {
@@ -39,32 +26,52 @@ try {
           "from folder:",
           folderId
         );
-        const folderItems = await client.folders.get(folderId, {
-          fields: "name,size,created_at,modified_at,path_collection",
+        const folderItems = await client.folders.getFolderById(folderId, {
+          queryParams: {
+            fields: [
+              "name",
+              "size",
+              "created_at",
+              "modified_at",
+              "path_collection",
+            ],
+          },
         });
 
         console.log("Got folder info:", {
           name: folderItems.name,
-          created: folderItems.created_at,
+          created: folderItems.createdAt,
         });
 
-        const items = await client.folders.getItems(folderId, {
-          fields:
-            "name,size,created_at,modified_at,owned_by,shared_link,extension,permissions",
-          limit: 1000,
+        const items = await client.folders.getFolderItems(folderId, {
+          queryParams: {
+            fields: [
+              "name",
+              "size",
+              "created_at",
+              "modified_at",
+              "owned_by",
+              "shared_link",
+              "extension",
+              "permissions",
+            ],
+            limit: 1000,
+          },
         });
 
-        console.log(`Found ${items.total_count} items in folder`);
+        console.log(`Found ${items.totalCount} items in folder`);
 
-        const userInfo = await client.users.get(userId, {
-          fields: "name,login,created_at,avatar_url,role",
+         const userInfo = await client.users.getUserById(userId, {
+          queryParams: {
+            fields: ["name", "login", "created_at", "avatar_url", "role"],
+          },
         });
 
         return {
           user: userInfo,
           folder: folderItems,
           files: items.entries,
-          total_count: items.total_count,
+          total_count: items.totalCount,
         };
       } catch (error) {
         console.error("Error in getUserFiles:", error);

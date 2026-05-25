@@ -63,6 +63,7 @@ export default function AdminLoginPage() {
           dispatch(setPortals([]))
           localStorage.setItem("portal", 'admin');
           localStorage.setItem('accessToken', data.accessToken);
+          
         // Store complete user data including role
         // localStorage.setItem('user', JSON.stringify({
         //   email: user.email,

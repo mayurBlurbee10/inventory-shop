@@ -111,7 +111,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       const tokenPayload = {
         document: {
           fileType: fetchedFileType,
-          key: item?.id,
+          key: `${item.id}-${Date.now()}`,
           title: item.name,
           url: fileUrl,
           permissions: { edit: true, download: true },

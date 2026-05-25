@@ -15,18 +15,15 @@ import permissionService from "../services/permission.service.ts";
 import portalService from "../services/portal.service.ts";
 import * as bcrypt from "bcrypt";
 import { asyncHandler } from "../utils/helper.ts";
-import { getBoxClient } from "../utils/box.ts";
 import { checklistFolders, FolderItem } from "../utils/data/folderStructure.ts";
-import { reverseSanitizeName } from "../utils/commonUtils.ts";
-// userApplicationService, applicationService, userPortalService were removed
 import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
 import { steps, tasks } from "../utils/data/onboarding.ts";
-// onboardingStepService, onboardingTaskService, advisorService were removed
 import taskService from "../services/task.service.ts";
 import * as boxService from "../services/box.service.ts";
 import Bottleneck from "bottleneck";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const limiter = new Bottleneck({
   minTime: 80, // 1000ms / 8 = 125ms
@@ -148,13 +145,11 @@ export const createChecklistFolders = async (
         const sanitizedFolderName = sanitizeFolderName(folderItem.title);
 
         // Create the parent folder
-        const parentFolder = await client.folders.create(
-          parentFolderId,
-          sanitizedFolderName,
-          {
-            fields: "id,name,path_collection,created_at",
-          } as any,
-        );
+        const parentFolder = await client.folders.createFolder({
+          name: sanitizedFolderName,
+          parent: { id: parentFolderId },
+        });
+
 
         console.log(
           `Created folder: ${sanitizedFolderName} with ID: ${parentFolder.id}`,
@@ -167,13 +162,10 @@ export const createChecklistFolders = async (
               // Sanitize child folder name before creating
               const sanitizedChildName = sanitizeFolderName(child.title);
 
-              const childFolder = await client.folders.create(
-                parentFolder.id,
-                sanitizedChildName,
-                {
-                  fields: "id,name,path_collection,created_at",
-                } as any,
-              );
+              const childFolder = await client.folders.createFolder({
+                name: sanitizedChildName,
+                parent: { id: parentFolder.id },
+              });
 
               console.log(
                 `Created subfolder: ${sanitizedChildName} with ID: ${childFolder.id}`,
@@ -223,11 +215,13 @@ const uploadPdfToFolder = async (
   fileStream.push(pdfBuffer);
   fileStream.push(null);
 
-  const uploadedFileRes = await client.files.uploadFile(
-    folderId,
-    `${label}.pdf`,
-    fileStream,
-  );
+  const uploadedFileRes = await client.uploads.uploadFile({
+    attributes: {
+      name: `${label}.pdf`,
+      parent: { id: folderId },
+    },
+    file: fileStream,
+  });
 
   const uploadedFile = uploadedFileRes.entries?.[0];
   console.log(`Uploaded ${fileName} with ID: ${uploadedFile?.id}`);
@@ -250,10 +244,10 @@ export const createFolderStructure = async (
     await Promise.all(
       (steps ?? []).map(async (step) => {
         // ✅ Create Step Folder
-        const stepFolder = (await limiter.schedule(() => client.folders.create(
-          userFolderId,
-          step.label,
-        ))) as any;
+        const stepFolder = (await limiter.schedule(() => client.folders.createFolder({
+          name: step.label,
+          parent: { id: userFolderId },
+        }))) as any;
 
         // onboardingStepService and onboardingTaskService were removed
         const onboardStep: any = null;
@@ -261,10 +255,10 @@ export const createFolderStructure = async (
         // ✅ Create Tasks Under Step
         await Promise.all(
           (tasks ?? []).map(async (task) => {
-            const taskFolder = (await limiter.schedule(() => client.folders.create(
-              stepFolder.id,
-              task.label,
-            ))) as any;
+            const taskFolder = (await limiter.schedule(() => client.folders.createFolder({
+              name: task.label,
+              parent: { id: stepFolder.id },
+            }))) as any;
 
             // 🔥 DOCUMENT_UPLOAD
             if (task.type === OnboardingTasksType.DOCUMENT_UPLOAD) {

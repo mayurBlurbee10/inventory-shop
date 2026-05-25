@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient, getBoxSDK } from "../utils/box.ts";
 import { asyncHandler } from "../utils/helper.ts";
 import userService from "../services/user.service.ts";
+import { getBoxClient, getUserBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
-const sdk = getBoxSDK();
 
 function isTrashedOrNotFoundError(error: unknown) {
   const err = error as any;
@@ -21,29 +20,31 @@ function isTrashedOrNotFoundError(error: unknown) {
   );
 }
 
-async function fetchCollaboratorsForItem(itemId: string, type: string) {
+export async function fetchCollaboratorsForItem(itemId: string, type: string) {
   try {
     if (type === "folder") {
-      const collaborations = await client.folders.getCollaborations(itemId);
-      return collaborations.entries.map((collaboration: any) => ({
+      const collaborations =
+        await client.listCollaborations.getFolderCollaborations(itemId);
+      return collaborations?.entries?.map((collaboration: any) => ({
         id: collaboration.id,
         role: collaboration.role,
-        user: collaboration.accessible_by,
+        user: collaboration.accessibleBy,
         type: collaboration.type,
       }));
     } else {
-      const collaborations = await client.files.getCollaborations(itemId);
-      return collaborations.entries.map((collaboration: any) => ({
+      const collaborations =
+        await client.listCollaborations.getFileCollaborations(itemId);
+      return collaborations?.entries?.map((collaboration: any) => ({
         id: collaboration.id,
         role: collaboration.role,
-        user: collaboration.accessible_by,
+        user: collaboration.accessibleBy,
         type: collaboration.type,
       }));
     }
   } catch (error) {
     console.error(
       `Error fetching collaborators for folder ${itemId}:`,
-      (error as Error).message
+      (error as Error).message,
     );
     return [];
   }
@@ -55,27 +56,39 @@ async function fetchNestedItemsForCollaboration(
 ) {
   const result: any[] = [];
   try {
-    const folderItems = await client.folders.getItems(folderId, {
-      fields:
-        "id,description,name,type,owned_by,shared_link,created_at,modified_at,collaborators,size",
-      limit: 100,
+    const folderItems = await client.folders.getFolderItems(folderId, {
+      queryParams: {
+        fields: [
+          "id",
+          "description",
+          "name",
+          "type",
+          "owned_by",
+          "shared_link",
+          "created_at",
+          "modified_at",
+          "collaborators",
+          "size",
+        ],
+        limit: 100,
+      },
     });
 
-    for (const item of folderItems.entries) {
+    for (const item of folderItems?.entries || []) {
       let collaborators: any[] = [];
       if (item.type == "folder") {
-        const folderCollabs = await client.folders.getCollaborations(item.id);
-        collaborators = folderCollabs.entries.map((collab: any) => ({
-          id: collab.id,
-          role: collab.role,
-          user: collab.accessible_by,
+        const folderCollabs = await client.listCollaborations.getFolderCollaborations(item.id);
+        collaborators = (folderCollabs?.entries || [])?.map((colla: any) => ({
+          id: colla.id,
+          role: colla.role,
+          user: colla.accessibleBy,
         }));
       } else {
-        const fileCollabs = await client.files.getCollaborations(item.id);
-        collaborators = fileCollabs.entries.map((collab: any) => ({
+        const fileCollabs = await client.listCollaborations.getFileCollaborations(item.id);
+        collaborators = (fileCollabs?.entries || [])?.map((collab: any) => ({
           id: collab.id,
           role: collab.role,
-          user: collab.accessible_by,
+          user: collab.accessibleBy,
         }));
       }
       if (item.type === "folder") {
@@ -105,15 +118,17 @@ async function fetchNestedItemsForCollaboration(
 
 async function fetchNestedFolderItems(folderId: string, limit: number = 100) {
   try {
-    const folderItems = await client.folders.getItems(folderId, {
-      fields:
-        "id,name,type,shared_link,created_at,modified_at,collaborators,size",
-      limit,
+    const folderItems = await client.folders.getFolderItems(folderId, {
+      queryParams: {
+        fields: ["id", "name", "type", "shared_link", "created_at", "modified_at", "size"],
+        limit: limit,
+      },
     });
 
-    const itemsWithCollaborators = await Promise.all(
-      folderItems.entries.map(async (item: any) => {
+    const itemsWithCollaborators: any = await Promise.all(
+      (folderItems?.entries || []).map(async (item: any) => {
         const collaborators = await fetchCollaboratorsForItem(item.id, item.type);
+
         return {
           ...item,
           collaborators,
@@ -124,7 +139,6 @@ async function fetchNestedFolderItems(folderId: string, limit: number = 100) {
         };
       })
     );
-
     return itemsWithCollaborators;
   } catch (error) {
     console.error(`Error fetching items for folder ${folderId}:`, error);
@@ -137,8 +151,10 @@ async function getChildFolderByName(
   name: string,
   userClient: any
 ) {
-  const items = await userClient.folders.getItems(parentId, {
-    fields: "name,id,type",
+  const items = await userClient.folders.getFolderItems(parentId, {
+    queryParams: {
+      fields: ["name", "id", "type"],
+    },
   });
   return items.entries.find(
     (item: any) =>
@@ -153,7 +169,12 @@ async function createFolderIfNotExists(
 ) {
   const existing = await getChildFolderByName(parentId, name, userClient);
   if (existing) return existing.id;
-  const created = await userClient.folders.create(parentId, name);
+  const created = await userClient.folders.createFolder({
+    name: name,
+    parent: {
+      id: parentId,
+    },
+  });
   return created.id;
 }
 
@@ -175,14 +196,16 @@ async function ensureFolderPath(
 
 async function listUserRootFolders(boxUserId: string) {
   try {
-    const userClient = sdk.getAppAuthClient("user", boxUserId);
+    const userClient = getUserBoxClient(boxUserId);
 
     const segments = ["RAS", "Clients"];
     const parentItem = await ensureFolderPath("0", segments, userClient);
 
-    const result = await userClient.folders.getItems(parentItem?.parentId, {
-      fields: "name,type,id,created_by",
-      limit: 100,
+    const result = await userClient.folders.getFolderItems(parentItem?.parentId, {
+      queryParams: {
+        fields: ["name", "type", "id", "created_by"],
+        limit: 100,
+      },
     });
     return { rootItems: result.entries, rasId: parentItem?.rasId };
   } catch (error) {
@@ -206,7 +229,7 @@ const getCollaborations = asyncHandler(
             element.type
           );
 
-          const currentUserCollab = collaborators.find(
+          const currentUserCollab = collaborators?.find(
             (collab: any) =>
               collab?.item?.id === element?.folderId &&
               collab?.user?.id === boxUserId
@@ -218,7 +241,7 @@ const getCollaborations = asyncHandler(
               element.folderId,
               currentUserRole
             );
-            const folderDetails = await client.folders.get(element.folderId);
+            const folderDetails = await client.folders.getFolderById(element.folderId);
             items.push({
               ...folderDetails,
               children: folder,
@@ -226,7 +249,7 @@ const getCollaborations = asyncHandler(
               currentUserRole: currentUserRole,
             });
           } else {
-            const file = await client.files.get(element.folderId);
+            const file = await client.files.getFileById(element.folderId);
             items.push({
               ...file,
               collaborators,

@@ -402,7 +402,7 @@ const TasksSection = ({ client = null }) => {
             );
             if (currentUserReq) {
                 setTimeout(() => {
-                    setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+                    setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
                     setIsSignModalOpen(true);
                     setIsSignReqLoading(null);
                 }, 2500);
@@ -440,7 +440,7 @@ const TasksSection = ({ client = null }) => {
 
             if (currentUserReq) {
                 setTimeout(() => {
-                    setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+                    setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
                     setIsSignModalOpen(true);
                     setIsSignReqLoading(null);
                 }, 2500);

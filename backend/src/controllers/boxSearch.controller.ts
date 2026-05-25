@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { searchBoxAppUserContent } from "../utils/box.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 import { asyncHandler } from "../utils/helper.ts";
 
+const client = getBoxClient();
 // GET /api/box/search
 const searchFiles = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -11,15 +12,12 @@ const searchFiles = asyncHandler(async (req: Request, res: Response) => {
     if (!authHeader) {
       return res.status(401).json({ error: "No authorization header" });
     }
-
-    const token = authHeader.split(" ")[1];
     const { q, userId } = req.query;
 
-    const data = await searchBoxAppUserContent(
-      token,
-      userId as string,
-      q as string
-    );
+    const data = await client.search.searchForContent({
+      query: q?.toString().trim(),
+      ancestorFolderIds: [userId?.toString()!],
+    });
     return res.status(200).json(data.entries);
   } catch (error) {
     console.error("Search error:", error);

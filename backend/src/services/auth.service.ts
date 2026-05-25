@@ -1,8 +1,10 @@
 import * as bcrypt from "bcrypt";
-import { getBoxClient } from "../utils/box.ts";
 import userService from "./user.service.ts";
 import { UserRole } from "../config/constants.ts";
 import { generateNanoToken, generateToken } from "../utils/jwt.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
+import { GetUsersQueryParams } from "box-node-sdk/lib/managers/users";
+import { SearchResults } from "box-node-sdk/lib/schemas/searchResults";
 
 const createHttpError = (message: string, statusCode: number) => {
   const error = new Error(message) as Error & { statusCode: number };
@@ -29,19 +31,23 @@ const createBoxAppUser = async ({
 }) => {
   const client = getBoxClient();
 
-  const user = await client.enterprise.getUsers({
-    filter_term: userName,
-    fields: "id,name,login",
-  });
+  const user = await client.users.getUsers({
+    filterTerm: userName,
+    fields: ['id', 'name', 'login'],
+  } satisfies GetUsersQueryParams);
 
-  if (user?.entries?.length > 0) {
-    const folder = await client.search.query(`"${userName}'s Files"`, {
-      type: "folder",
-      fields: "id",
-    });
+  if (user?.entries && user.entries.length > 0) {
+    const folder = await client.search.searchForContent({
+      query: `"${userName}"`,
+      type: 'folder',
+      fields: ['id'],
+    }) as SearchResults;
 
     if (!folder?.entries?.length) {
-      const newFolder = await client.folders.create("0", `${userName}'s Files`);
+      const newFolder = await client.folders.createFolder({
+        name: `${userName}'s Files`,
+        parent: { id: "0" },
+      });
       return {
         userId: user.entries[0].id,
         folderId: newFolder.id,
@@ -54,18 +60,28 @@ const createBoxAppUser = async ({
     };
   }
 
-  const appUser = await client.enterprise.addAppUser(userName, {
-    external_app_user_id: externalId,
-    is_platform_access_only: true,
+  const appUser = await client.users.createUser({
+    name: userName,
+    externalAppUserId: externalId,
+    isPlatformAccessOnly: true,
   });
 
-  const folder = await client.folders.create("0", `${appUser.name}'s Files`);
+  const folder = await client.folders.createFolder({
+    name: `${appUser.name}'s Files`,
+    parent: { id: "0" },
+  });
 
-  await client.collaborations.createWithUserID(
-    appUser.id,
-    folder.id,
-    (client as any).collaborationRoles.EDITOR
-  );
+  await client.userCollaborations.createCollaboration({
+    item: {
+      id: folder?.id,
+      type: "folder",
+    },
+    accessibleBy: {
+      type: "user",
+      id: appUser?.id,
+    },
+    role: "editor",
+  });
 
   return {
     userId: appUser.id,
@@ -96,7 +112,7 @@ const register = async (body: any) => {
   } catch (boxError) {
     throw createHttpError(
       (boxError as Error)?.message ||
-        "Could not create Box account. Please try again later.",
+      "Could not create Box account. Please try again later.",
       502
     );
   }

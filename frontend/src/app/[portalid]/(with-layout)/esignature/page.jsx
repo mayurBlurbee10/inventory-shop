@@ -33,12 +33,12 @@ const TrackStatus = ({ trackedRequests }) => {
 
       const messageData = {
         sender: user?.id,
-        receiver: signer?.embed_url_external_user_id,
+        receiver: signer?.embedUrlExternalUserId,
         portalId: params.portalid || "root",
         subject: "Sign Document",
-        text: encryptMessage(`Please sign "${signRequest?.source_files[0].name}"`),
+        text: encryptMessage(`Please sign "${signRequest?.sourceFiles[0].name}"`),
       };
-      setIsSendReminderLoading(signer?.embed_url_external_user_id);
+      setIsSendReminderLoading(signer?.embedUrlExternalUserId);
       try {
         const response = await fetchWrapper(
           "/api/messages",
@@ -74,17 +74,17 @@ const TrackStatus = ({ trackedRequests }) => {
           <tbody className="">
             {trackedRequests.map((req) => {
               const signers = req?.signers?.filter(
-                (signer) => req.sender_email !== signer.email
+                (signer) => req.senderEmail !== signer.email
               );
 
               return signers.length > 0 ? (
                 <React.Fragment key={req.id}>
                   {/* Default Row */}
-                  {req.source_files.length > 0 && (
+                  {req.sourceFiles.length > 0 && (
                   <tr className={`hover:bg-gray-50 transition ${expandedRow?.id !== req?.id && "border-b border-gray-200"}`}>
                     {/* Document Name */}
                     <td className="p-3 font-medium text-gray-900 align-middle truncate w-1/3">
-                      {req?.source_files[0]?.name}
+                      {req?.sourceFiles[0]?.name || req?.rawData?.source_files[0]?.name}
                     </td>
 
                     {/* Signers Initials */}
@@ -103,7 +103,7 @@ const TrackStatus = ({ trackedRequests }) => {
 
                     {/* Status */}
                     <td className="p-3 w-1/6">
-                      {signers.some((signer) => signer?.signer_decision === null && signer.role !== "final_copy_reader") ? (
+                      {signers.some((signer) => signer?.signerDecision === null && signer.role !== "final_copy_reader") ? (
                         <span className="text-yellow-600 font-semibold">Pending</span>
                       ) : (
                         <span className="text-green-600 font-semibold">Completed</span>
@@ -135,13 +135,13 @@ const TrackStatus = ({ trackedRequests }) => {
 
                         {/* Status */}
                         <td className="p-3 w-1/6">
-                          {signer?.signer_decision !== null ? (
+                          {signer?.signerDecision !== null ? (
                             <span className="text-green-600 font-semibold">Completed</span>
                           ) : (
                             <p className="flex items-center gap-2">
                               <span className="text-yellow-600 font-semibold">Pending</span>
                               <button title="Send Reminder" onClick={() => handleSendReminder(signer, expandedRow)}>
-                                {isSendReminderLoading === signer?.embed_url_external_user_id ? (
+                                {isSendReminderLoading === signer?.embedUrlExternalUserId ? (
                                   <LoaderSpinner size={24} className="text-blue-500" />
                                 ) : (
                                 <Bell className="text-gray-500 hover:text-gray-700 cursor-pointer size-5 ml-5" />
@@ -250,7 +250,7 @@ function ESignature() {
       (item) => item.email === user.email
     );
     if (currentUserReq) {
-      setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+      setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
       setIsSignModalOpen(true);
     }
   };
@@ -352,13 +352,13 @@ function ESignature() {
                   <ul className="overflow-y-auto">
                     {pendingRequests.map((req) => (
                       <React.Fragment key={req.id}>
-                        {req.source_files.length > 0 && (
+                        {req.sourceFiles.length > 0 && (
                           <li
                             key={req.id}
                             className="px-3 py-2 font-lato border-b flex justify-between items-center"
                           >
                             <span className="text-gray-800 font-semibold">
-                              {req?.source_files[0]?.name}
+                              {req?.sourceFiles[0]?.name || req?.rawData?.source_files[0]?.name}
                             </span>
                             <button
                               className="text-blue-500 px-4 py-2 rounded-lg hover:text-blue-600"
@@ -389,9 +389,9 @@ function ESignature() {
                         className="p-3 border-b flex items-center justify-between"
                       >
                         <span className="text-gray-800 font-semibold font-lato">
-                          {req?.sign_files.files[0]?.name}
+                          {req?.signFiles.files[0]?.name}
                         </span>
-                        <button onClick={()=>handlePreview(req?.sign_files.files[0]?.id)} className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center">
+                        <button onClick={()=>handlePreview(req?.signFiles.files[0]?.id)} className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center">
                             <Eye className="text-gray-600 size-4"/>
                           </button>
                       </li>

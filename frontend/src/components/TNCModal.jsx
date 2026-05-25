@@ -161,7 +161,7 @@ function TNCModal({ onClose, user, email, password, page }) {
         throw new Error("Invalid e-sign response");
       }
       const currentUserSigner = sr.signers?.find((s) => s.email === user.email);
-      const embedUrl = currentUserSigner?.iframeable_embed_url;
+      const embedUrl = currentUserSigner?.iframeableEmbedUrl;
       if (!embedUrl) {
         throw new Error("No e-sign URL returned");
       }

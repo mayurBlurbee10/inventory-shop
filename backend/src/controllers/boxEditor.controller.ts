@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient, getBoxSDK } from "../utils/box.ts";
 import path from "path";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
+import { Readable } from "stream";
 
 const client = getBoxClient();
-const sdk = getBoxSDK();
 
 // GET /api/box/editor
 const getEditorLink = asyncHandler(async (req: Request, res: Response) => {
@@ -19,24 +19,24 @@ const getEditorLink = asyncHandler(async (req: Request, res: Response) => {
     }
 
     // Generate a shared link with preview (view/edit) permission
-    const fileInfo = await client.files.update(fileId, {
-      shared_link: {
-        access: "open", // Anyone with the link can view
-        permissions: {
-          can_download: true
+    const fileInfo = await client.files.updateFileById(fileId as string, {
+      requestBody: {
+        sharedLink: {
+          access: "open",
+          permissions: { canDownload: true },
         },
       },
     });
 
-    if (!fileInfo.shared_link?.download_url) {
+    if (!fileInfo.sharedLink?.downloadUrl) {
       res.status(500).json({ error: "Could not generate file link." });
       return;
     }
 
-    const fileType = path.extname(fileInfo.name).replace(".", "");
+    const fileType = path.extname(fileInfo.name!).replace(".", "");
 
     res.status(200).json({
-      fileUrl: fileInfo.shared_link.download_url,
+      fileUrl: fileInfo.sharedLink.downloadUrl,
       fileType,
     });
   } catch (error: any) {
@@ -51,7 +51,7 @@ const getEditorLink = asyncHandler(async (req: Request, res: Response) => {
 // POST /api/box/editor
 const saveEditorFile = asyncHandler(async (req: Request, res: Response) => {
   try {
-    await logApiCall(req, () => {});
+    await logApiCall(req, () => { });
     const body = req.body;
 
     if (body.status !== 2 || !body.url) {
@@ -68,13 +68,18 @@ const saveEditorFile = asyncHandler(async (req: Request, res: Response) => {
     const response = await fetch(body.url);
     const fileBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(fileBuffer);
+    const stream = Readable.from(buffer);
 
-    const accessToken = await (client as any)._session.getAccessToken();
-    const newClient = sdk.getBasicClient(accessToken);
+    const newClient = client;
 
-    const updatedFile = await newClient.files.uploadNewFileVersion(
+    const updatedFile = await newClient.uploads.uploadFileVersion(
       fileId,
-      buffer
+      {
+        attributes: {
+          name: "",
+        },
+        file: stream
+      }
     );
 
     return res.status(200).json({

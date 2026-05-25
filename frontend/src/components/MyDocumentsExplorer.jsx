@@ -864,7 +864,7 @@ function SharedFolderExplorer({
       );
       if (currentUserReq) {
         setTimeout(() => {
-          setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+          setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
           setIsSignModalOpen(true);
           setIsSignLoading(false);
         }, 2500);

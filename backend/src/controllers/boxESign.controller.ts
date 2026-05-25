@@ -1,18 +1,37 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
-import { getBoxClient } from "../utils/box.ts";
 import { addCollaborator } from "../services/box.service.ts";
 import userService from "../services/user.service.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
+const getExternalId = (request: any) =>
+  request?.externalId || request?.external_id || request?.rawData?.external_id;
+
 const getSignRequestsByExternalId = async (externalId: string) => {
   try {
-    const signRequests = await client.signRequests.getAll({});
-    return (signRequests.entries || []).filter(
-      (request: any) => request.external_id === externalId
+    const signRequests = await client.signRequests.getSignRequests();
+    const matchedRequests = (signRequests.entries || []).filter(
+      (request: any) => getExternalId(request) === externalId
     );
+
+    const detailedRequests = await Promise.all(
+      matchedRequests.map(async (request: any) => {
+        try {
+          return await client.signRequests.getSignRequestById(request.id);
+        } catch (err) {
+          console.error(
+            `Failed to fetch sign request details for ${request?.id}:`,
+            (err as Error).message
+          );
+          return null;
+        }
+      })
+    );
+
+    return detailedRequests.filter((request: any) => request !== null);
   } catch (error) {
     console.error("Error fetching sign requests:", error);
     return [];
@@ -25,35 +44,47 @@ export const createESign = async (
   userBoxUserId: string,
   portal: string
 ) => {
-  const collaborations = await client.files.getCollaborations(fileId);
 
-  const collabExistForUser = collaborations.entries?.some(
-    (collab: any) => collab.accessible_by?.id === userBoxUserId
-  );
+  await ensureEditorCollaboration(fileId, userBoxUserId);
 
-  if (!collabExistForUser) {
-    await addCollaborator(fileId, userBoxUserId, "editor", "file");
-  }
-
-  const signRequest = await client.signRequests.create({
-    source_files: [{ id: fileId, type: "file" }],
+  const signRequest = await client.signRequests.createSignRequest({
+    sourceFiles: [{ id: fileId, type: "file" }],
     signers: [
       {
         email: signer.email,
         role: "signer",
-        embed_url_external_user_id: signer.id,
-        suppress_notifications: true,
-        redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+        embedUrlExternalUserId: signer.id,
+        suppressNotifications: true,
       },
     ],
-    is_document_prepared: false,
-    external_id: userBoxUserId,
+    redirectUrl: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+    isDocumentPreparationNeeded: false,
+    externalId: userBoxUserId,
   } as any);
 
   await userService.saveSignRequest(signer.id, signRequest);
   return signRequest;
 };
 
+const isAlreadyCollaboratorError = (error: any) => {
+  const code = error?.response?.body?.code;
+  const message = String(
+    error?.response?.body?.message || error?.message || ""
+  ).toLowerCase();
+  return (
+    code === "user_already_collaborator" ||
+    message.includes("already a collaborator") ||
+    message.includes("collaboration_already_exists")
+  );
+};
+const ensureEditorCollaboration = async (fileId: any, userId: any) => {
+  try {
+    await addCollaborator(fileId, userId, "editor", "file");
+  } catch (error) {
+    if (isAlreadyCollaboratorError(error)) return;
+    throw error;
+  }
+};
 // POST /api/box/e-sign
 const createSignRequest = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -67,54 +98,43 @@ const createSignRequest = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const newClient = client;
-    const collaborations = await client.files.getCollaborations(fileId);
 
-    const collabExistForUser = collaborations.entries?.some(
-      (collab: any) => collab.accessible_by?.id === boxUserId
-    );
-
-    if (!collabExistForUser) {
-      await addCollaborator(fileId, boxUserId, "editor", "file");
-    }
-
+    await ensureEditorCollaboration(fileId, boxUserId);
     let signRequests: any[] = [];
 
     if (onSameDoc) {
-      const signRequest = await newClient.signRequests.create({
-        source_files: [{ id: fileId, type: "file" }],
+      const signRequest = await newClient.signRequests.createSignRequest({
+        sourceFiles: [{ id: fileId, type: "file" }],
         signers: signers.map(({ signerEmail, signerId }: any) => ({
           email: signerEmail,
           role: "signer",
-          embed_url_external_user_id: signerId,
-          suppress_notifications: true,
-          redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+          embedUrlExternalUserId: signerId,
+          suppressNotifications: true,
         })),
-        is_document_prepared: false,
-        external_id: boxUserId,
-      } as any, {});
-
+        redirectUrl: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+        isDocumentPreparationNeeded: false as any,
+      } as any);
       signRequests.push(signRequest);
       await Promise.all(
         signers.map(({ signerId }: any) =>
-          userService.saveSignRequest(signerId, signRequest)
-        )
+          userService.saveSignRequest(signerId, signRequest),
+        ),
       );
     } else {
       for (const { signerEmail, signerId } of signers) {
-        const signRequest = await newClient.signRequests.create({
-          source_files: [{ id: fileId, type: "file" }],
+        const signRequest = await newClient.signRequests.createSignRequest({
+          sourceFiles: [{ id: fileId, type: "file" }],
           signers: [
             {
               email: signerEmail,
               role: "signer",
-              embed_url_external_user_id: signerId,
-              suppress_notifications: true,
-              redirect_url: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+              embedUrlExternalUserId: signerId,
+              suppressNotifications: true,
             },
           ],
-          is_document_prepared: false,
-          external_id: boxUserId,
-        } as any, {});
+          redirectUrl: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portal}/sign-finished`,
+          isDocumentPreparationNeeded: false as any,
+        } as any);
 
         signRequests.push(signRequest);
         await userService.saveSignRequest(signerId, signRequest);
@@ -146,9 +166,7 @@ const cancelSignRequest = asyncHandler(
           error: "Missing required parameter: signRequestId",
         });
       }
-      await client.signRequests.cancelById({
-        sign_request_id: signRequestId as string,
-      });
+      await client.signRequests.cancelSignRequest(signRequestId.toString());
       return res.status(200).json({
         message: "Sign Request Cancelled Successfully",
         signRequestId,
@@ -172,9 +190,7 @@ const getSignRequests = asyncHandler(async (req: Request, res: Response) => {
 
     if (id) {
       try {
-        const signRequest = await client.signRequests.getById({
-          sign_request_id: id as string,
-        });
+        const signRequest = await client.signRequests.getSignRequestById(id.toString());
         return res.status(200).json({
           message: "Sign Request Retrieved",
           data: signRequest,
@@ -213,9 +229,7 @@ const getSignRequests = asyncHandler(async (req: Request, res: Response) => {
       const signRequestsData = await Promise.all(
         (user as any).signRequestsId.map(async (request: string) => {
           try {
-            return await client.signRequests.getById({
-              sign_request_id: request,
-            });
+            return await client.signRequests.getSignRequestById(request);
           } catch (err) {
             console.error(
               `Failed to fetch sign request ${request}:`,
@@ -248,7 +262,7 @@ const getSignRequests = asyncHandler(async (req: Request, res: Response) => {
 
         if (
           statusMapping.pending.includes(status) &&
-          req?.source_files?.length > 0
+          req?.sourceFiles?.length > 0
         ) {
           groupedSignRequests.pending.push(req);
         } else if (statusMapping.completed.includes(status)) {
@@ -263,11 +277,13 @@ const getSignRequests = asyncHandler(async (req: Request, res: Response) => {
         data: groupedSignRequests,
       });
     }
-    const allSignRequests = await client.signRequests.getAll({});
+    const allSignRequests = await client.signRequests.getSignRequests();
     let signRequests = allSignRequests.entries || [];
     if (fileId) {
       signRequests = signRequests.filter((req: any) =>
-        req.source_files?.some((file: any) => file.id === fileId)
+        (req?.sourceFiles || req?.source_files || req?.rawData?.source_files || []).some(
+          (file: any) => file.id === fileId
+        )
       );
     }
 

@@ -89,7 +89,7 @@ function ESignature() {
       (item) => item.email === user.email
     );
     if (currentUserReq) {
-      setSelectedSignUrl(currentUserReq.iframeable_embed_url);
+      setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
       setIsSignModalOpen(true);
     }
   };
@@ -167,7 +167,7 @@ function ESignature() {
                         className="p-3 border rounded-lg shadow-sm flex justify-between items-center"
                       >
                         <span className="text-gray-800 font-semibold">
-                          {req.source_files[0].name}
+                          {req?.sourceFiles[0]?.name || req?.rawData?.source_files[0]?.name}
                         </span>
                         <button
                           className="text-blue-500 px-4 py-2 rounded-lg hover:text-blue-600"
@@ -196,9 +196,9 @@ function ESignature() {
                         className="p-3 border rounded-lg shadow-sm flex items-center justify-between"
                       >
                         <span className="text-gray-800 font-semibold">
-                          {req?.sign_files.files[0]?.name}
+                          {req?.signFiles.files[0]?.name}
                         </span>
-                        <button onClick={() => handlePreview(req?.sign_files.files[0]?.id)} className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center">
+                        <button onClick={() => handlePreview(req?.signFiles.files[0]?.id)} className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center">
                           <Eye className="text-gray-600 size-4" />
                         </button>
                       </li>
