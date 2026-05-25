@@ -2,6 +2,7 @@ const path = require("path");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: "2mb",
@@ -24,7 +25,7 @@ const nextConfig = {
   },
   // Ensure client-side navigation works properly
   pageExtensions: ["js", "jsx", "ts", "tsx"],
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.join(__dirname, "./src"),
@@ -32,6 +33,14 @@ const nextConfig = {
       "@/lib": path.join(__dirname, "./src/app/lib"),
       "@/app": path.join(__dirname, "./src/app"),
     };
+
+    // Optimize webpack for production builds
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: "deterministic",
+      };
+    }
     return config;
   },
 };
