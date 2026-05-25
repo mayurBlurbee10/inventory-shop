@@ -149,6 +149,7 @@ const DashboardHeader = ({
 export default function AdminDashboardLayout({ children }) {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
+  const {data: portal} = useSelector(state => state.portal)
 
   const router = useRouter();
 
@@ -162,12 +163,31 @@ export default function AdminDashboardLayout({ children }) {
     dispatch(setCurrentUser(null));
   };
 
-  const handleLogout = () => {
-    setAccountDropdown(false);
-    clearUserData();
-    clearStoreData();
-    router.push("login");
-  };
+    const handleLogout = async () => {
+      console.log("Logout clicked");
+      // Call backend logout endpoint to clear server-side cookies
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include', // ensure cookies are sent
+        });
+        console.log('Logout response status:', response.status);
+        if (!response.ok) {
+          const err = await response.text();
+          console.warn('Logout API failed:', err);
+        }
+      } catch (err) {
+        console.warn('Logout API call error:', err);
+      }
+      setAccountDropdown(false);
+      clearUserData();
+      // Use replace to avoid staying on a protected page after logout
+      if(portal)  {
+        router.replace(`${portal.legalName}/login`);
+      } else {
+        router.replace("/login");
+      }
+    };
   return (
     <div
       className="min-h-screen bg-gray-50"

@@ -209,12 +209,12 @@ const Footer = ({
             <div>
               <div className="md:mb-0 pt-[8px]">
                 <div className="flex items-end gap-1">
-                  <p className="text-xs text-[#6c757d] font-medium font-lato">
+                  {/* <p className="text-xs text-[#6c757d] font-medium font-lato">
                     Powered By
-                  </p>
+                  </p> */}
                   <span>
                       <img
-                        src="/mstrategy_horizontal.jpg"
+                        src="/Powered_by_Mstrategy.png"
                         alt="Company Logo"
                         className="h-6 w-15 p-1"
                       />
