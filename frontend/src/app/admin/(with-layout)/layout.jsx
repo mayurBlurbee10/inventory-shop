@@ -33,11 +33,7 @@ const SidePanel = () => {
       <nav className="space-y-4 flex-1">
         <button
           className={`flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded-lg transition-colors hover:bg-blue-600
-            ${
-              isDashboard
-                ? "bg-blue-700"
-                : "hover:bg-blue-650"
-            }`}
+            ${isDashboard ? "bg-blue-700" : "hover:bg-blue-650"}`}
           onClick={() => router.push("dashboard")}
         >
           <Layout className="w-5 h-5 mr-3" />
@@ -45,11 +41,7 @@ const SidePanel = () => {
         </button>
         <button
           className={`flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded-lg transition-colors hover:bg-blue-600
-            ${
-              isReports
-                ? "bg-blue-700"
-                : "hover:bg-blue-650"
-            }`}
+            ${isReports ? "bg-blue-700" : "hover:bg-blue-650"}`}
           onClick={() => router.push("reports")}
         >
           <FileText className="w-5 h-5 mr-3" />
@@ -58,11 +50,7 @@ const SidePanel = () => {
 
         <button
           className={`flex items-center text-white hover:text-gray-200 w-full px-4 py-2 rounded-lg transition-colors hover:bg-blue-600
-            ${
-              isUserManagement
-                ? "bg-blue-700"
-                : "hover:bg-blue-650"
-            }`}
+            ${isUserManagement ? "bg-blue-700" : "hover:bg-blue-650"}`}
           onClick={() => router.push("user-management")}
         >
           <Users className="w-5 h-5 mr-3" />
@@ -85,7 +73,7 @@ const DashboardHeader = ({
   const pathname = usePathname();
   const [currentPage, setCurrentPage] = useState("Portals");
   const { data: portals, superUsers: superUsers } = useSelector(
-    (state) => state.portal
+    (state) => state.portal,
   );
 
   useEffect(() => {
@@ -93,8 +81,8 @@ const DashboardHeader = ({
       pathname.includes("/dashboard")
         ? "Portals"
         : pathname.includes("/reports")
-        ? "Reports"
-        : "Super User"
+          ? "Reports"
+          : "Super User",
     );
   }, [pathname]);
 
@@ -125,7 +113,9 @@ const DashboardHeader = ({
             {user?.firstName?.charAt(0).toUpperCase() || "U"}
           </div>
           <div className="flex flex-col text-sm xl:text-base">
-            <span className="text-gray-900 font-medium">{`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}</span>
+            <span className="text-gray-900 font-medium">
+              {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
+            </span>
           </div>
 
           {/* DROPDOWN SECTION DONE*/}
@@ -153,6 +143,7 @@ export default function AdminDashboardLayout({ children }) {
   const router = useRouter();
 
   const { data: user } = useSelector((state) => state.user);
+  const { data: portal } = useSelector((state) => state.portal);
   const dispatch = useDispatch();
 
   const clearStoreData = () => {
@@ -162,11 +153,30 @@ export default function AdminDashboardLayout({ children }) {
     dispatch(setCurrentUser(null));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    console.log("Logout clicked");
+    // Call backend logout endpoint to clear server-side cookies
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include", // ensure cookies are sent
+      });
+      console.log("Logout response status:", response.status);
+      if (!response.ok) {
+        const err = await response.text();
+        console.warn("Logout API failed:", err);
+      }
+    } catch (err) {
+      console.warn("Logout API call error:", err);
+    }
     setAccountDropdown(false);
     clearUserData();
-    clearStoreData();
-    router.push("login");
+    // Use replace to avoid staying on a protected page after logout
+    if (portal) {
+      router.replace(`${portal.legalName}/login`);
+    } else {
+      router.replace("/login");
+    }
   };
   return (
     <div

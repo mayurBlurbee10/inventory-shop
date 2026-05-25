@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
           }
 
           // Store user data using auth utility
-          // setUserData(data.user);
+          setUserData(data.user);
           dispatch(setCurrentUser(data.user));
           dispatch(setPortals([]))
           localStorage.setItem("portal", 'admin');
