@@ -7,12 +7,31 @@ import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
+const getExternalId = (request: any) =>
+  request?.externalId || request?.external_id || request?.rawData?.external_id;
+
 const getSignRequestsByExternalId = async (externalId: string) => {
   try {
     const signRequests = await client.signRequests.getSignRequests();
-    return (signRequests.entries || []).filter(
-      (request: any) => request.externalId === externalId
+    const matchedRequests = (signRequests.entries || []).filter(
+      (request: any) => getExternalId(request) === externalId
     );
+
+    const detailedRequests = await Promise.all(
+      matchedRequests.map(async (request: any) => {
+        try {
+          return await client.signRequests.getSignRequestById(request.id);
+        } catch (err) {
+          console.error(
+            `Failed to fetch sign request details for ${request?.id}:`,
+            (err as Error).message
+          );
+          return null;
+        }
+      })
+    );
+
+    return detailedRequests.filter((request: any) => request !== null);
   } catch (error) {
     console.error("Error fetching sign requests:", error);
     return [];
@@ -25,15 +44,8 @@ export const createESign = async (
   userBoxUserId: string,
   portal: string
 ) => {
-  const collaborations = await client.listCollaborations.getCollaborations(fileId as any);
 
-  const collabExistForUser = collaborations.entries?.some(
-    (collab: any) => collab.accessibleBy?.id === userBoxUserId
-  );
-
-  if (!collabExistForUser) {
-    await addCollaborator(fileId, userBoxUserId, "editor", "file");
-  }
+  await ensureEditorCollaboration(fileId, userBoxUserId);
 
   const signRequest = await client.signRequests.createSignRequest({
     sourceFiles: [{ id: fileId, type: "file" }],
@@ -54,6 +66,25 @@ export const createESign = async (
   return signRequest;
 };
 
+const isAlreadyCollaboratorError = (error: any) => {
+  const code = error?.response?.body?.code;
+  const message = String(
+    error?.response?.body?.message || error?.message || ""
+  ).toLowerCase();
+  return (
+    code === "user_already_collaborator" ||
+    message.includes("already a collaborator") ||
+    message.includes("collaboration_already_exists")
+  );
+};
+const ensureEditorCollaboration = async (fileId: any, userId: any) => {
+  try {
+    await addCollaborator(fileId, userId, "editor", "file");
+  } catch (error) {
+    if (isAlreadyCollaboratorError(error)) return;
+    throw error;
+  }
+};
 // POST /api/box/e-sign
 const createSignRequest = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -67,16 +98,8 @@ const createSignRequest = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const newClient = client;
-    const collaborations = await client.listCollaborations.getCollaborations(fileId);
 
-    const collabExistForUser = collaborations?.entries?.some(
-      (collab: any) => collab.accessibleBy?.id === boxUserId
-    );
-
-    if (!collabExistForUser) {
-      await addCollaborator(fileId, boxUserId, "editor", "file");
-    }
-
+    await ensureEditorCollaboration(fileId, boxUserId);
     let signRequests: any[] = [];
 
     if (onSameDoc) {

@@ -11,12 +11,22 @@ function isTrashedOrNotFoundError(error: unknown) {
     err?.response?.body?.message?.toLowerCase() ||
     err?.message?.toLowerCase() ||
     "";
+  const code = err?.response?.body?.code?.toLowerCase?.() || "";
   return (
     message.includes("trashed") ||
+    message.includes("not_found") ||
+    message.includes("not found") ||
+    code === "not_found" ||
     err?.response?.body?.code === "item_not_found" ||
     err?.statusCode === 404 ||
     err?.response?.status === 404
   );
+}
+
+function normalizeBoxId(value: unknown, fallback = ""): string {
+  const normalized = String(value ?? "").trim();
+  if (/^\d+$/.test(normalized)) return normalized;
+  return fallback;
 }
 
 async function fetchCollaborators(itemId: string, type: string) {
@@ -173,7 +183,7 @@ const createFolder = asyncHandler(async (req: Request, res: Response) => {
 const getFolders = asyncHandler(async (req: Request, res: Response) => {
   try {
     await logApiCall(req);
-    const folderId = (req.query.folderId as string) || "0";
+    const folderId = normalizeBoxId(req.query.folderId, "0");
     const collaboratedParam = (req.query.collaborated as string) ?? "[]";
     let collaborated: any[] = [];
     try {
@@ -188,22 +198,31 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
 
     for (const element of collaborated) {
       try {
+        const elementId = normalizeBoxId(element?.folderId);
+        if (!elementId) {
+          console.warn("Skipping collaborated item with invalid folderId", {
+            folderId: element?.folderId,
+            type: element?.type,
+          });
+          continue;
+        }
+
         const collaborators = await fetchCollaborators(
-          element.folderId,
+          elementId,
           element.type
         );
 
         const currentUserCollab = collaborators.find(
           (collab: any) =>
-            collab?.item?.id === element?.folderId &&
+            collab?.item?.id === elementId &&
             collab?.user?.id === boxUserId
         );
 
         const currentUserRole = currentUserCollab?.role || element.role;
 
         if (element.type === "folder") {
-          const folder = await fetchNestedItems(element.folderId, limit);
-          const folderDetails = await client.folders.getFolderById(element.folderId);
+          const folder = await fetchNestedItems(elementId, limit);
+          const folderDetails = await client.folders.getFolderById(elementId);
           items.push({
             ...folderDetails,
             children: folder,
@@ -211,7 +230,7 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
             currentUserRole: currentUserRole,
           });
         } else {
-          const file = await client.files.getFileById(element.folderId);
+          const file = await client.files.getFileById(elementId);
           items.push({
             ...file,
             collaborators,
@@ -220,7 +239,7 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
         }
       } catch (error) {
         if (isTrashedOrNotFoundError(error)) {
-          console.warn(`Skipping trashed item: ${element.folderId}`);
+          console.warn(`Skipping trashed/not-found item: ${element?.folderId}`);
           continue;
         }
         console.error(

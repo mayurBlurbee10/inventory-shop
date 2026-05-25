@@ -27,10 +27,10 @@ const getComments = asyncHandler(async (req: Request, res: Response) => {
     console.log("comments", comments);
 
     const enrichedComments = await Promise.all(
-      (comments || [])?.map(async (comment: any) => {
+      (comments || [])?.map(async (comment:any) => {
         try {
           const user = await userService.getUserByBoxUserId(
-            comment.created_by.id
+            comment?.createdBy?.id!,
           );
           return {
             ...comment,

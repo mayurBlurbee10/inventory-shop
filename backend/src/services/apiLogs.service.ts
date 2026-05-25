@@ -3,24 +3,9 @@ import { ILike, Brackets } from "typeorm";
 import { connectDatabase, getConnection } from "../config/db.ts";
 import { ApiLogs } from "../entities/ApiLogs.ts";
 import { Between } from "typeorm";
+import { getBoxClient } from "../utils/boxClient.ts";
 
-import BoxSDK from "box-node-sdk";
-
-const sdk = new BoxSDK({
-  clientID: process.env.BOX_CLIENT_ID,
-  clientSecret: process.env.BOX_CLIENT_SECRET,
-  appAuth: {
-    keyID: process.env.BOX_PUBLIC_KEY_ID,
-    privateKey: process.env.BOX_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    passphrase: process.env.BOX_PASSPHRASE,
-    enterpriseID: process.env.BOX_ENTERPRISE_ID,
-  },
-});
-
-const client = sdk.getAppAuthClient(
-  "enterprise",
-  process.env.BOX_ENTERPRISE_ID
-);
+const client = getBoxClient();
 
 const createApiLogFromRequest = async (req: any) => {
   const userId = req.headers["x-user-id"] as string;
@@ -167,10 +152,10 @@ const getApiLogsDateWise = async (
         if (apiLog?.source) {
           try {
             if (apiLog?.type?.includes("file")) {
-              const file = await client.files.get(apiLog?.source);
+              const file = await client.files.getFileById(apiLog?.source);
               return { ...apiLog, source: file };
             } else {
-              const folder = await client.folders.get(apiLog?.source);
+              const folder = await client.folders.getFolderById(apiLog?.source);
               return { ...apiLog, source: folder };
             }
           } catch (err: any) {
