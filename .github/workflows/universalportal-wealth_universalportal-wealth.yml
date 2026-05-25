@@ -58,7 +58,6 @@ jobs:
             BOX_PRIVATE_KEY=${{ env.BOX_PRIVATE_KEY }}
             BOX_PRIVATE_KEY_PASSWORD=${{ env.BOX_PRIVATE_KEY_PASSWORD }}
             BOX_PUBLIC_KEY_ID=${{ env.BOX_PUBLIC_KEY_ID }}
-            BOX_DEVELOPER_TOKEN=${{ env.BOX_DEVELOPER_TOKEN }}
             BOX_PASSPHRASE=${{ env.BOX_PASSPHRASE }}
             NEXT_PUBLIC_APP_BASE_URL=${{ env.NEXT_PUBLIC_APP_BASE_URL_UNIVERSALPORTAL_WEALTH }}
             NEXT_PUBLIC_JWT_SECRET_KEY=${{ env.NEXT_PUBLIC_JWT_SECRET_KEY }}
@@ -133,7 +132,6 @@ jobs:
             BOX_PRIVATE_KEY=${{ env.BOX_PRIVATE_KEY }}
             BOX_PRIVATE_KEY_PASSWORD=${{ env.BOX_PRIVATE_KEY_PASSWORD }}
             BOX_PUBLIC_KEY_ID=${{ env.BOX_PUBLIC_KEY_ID }}
-            BOX_DEVELOPER_TOKEN=${{ env.BOX_DEVELOPER_TOKEN }}
             BOX_PASSPHRASE=${{ env.BOX_PASSPHRASE }}
             NEXT_PUBLIC_APP_BASE_URL=${{ env.NEXT_PUBLIC_APP_BASE_URL_UNIVERSALPORTAL_WEALTH }}
             NEXT_PUBLIC_JWT_SECRET_KEY=${{ env.NEXT_PUBLIC_JWT_SECRET_KEY }}
@@ -155,5 +153,5 @@ jobs:
         with:
           app-name: "universalportal-wealth-backend"
           slot-name: "production"
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5253ED75F9E5473AA87C9B2D403A5083 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_409479AB7F9D439CBD4FD295ADD2040F }}
           images: "universalportaldemo.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME }}/box-universalportal-wealth-backend-app:${{ github.sha }}"
