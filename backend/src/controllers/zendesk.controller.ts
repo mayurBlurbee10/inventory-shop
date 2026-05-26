@@ -22,7 +22,16 @@ interface BuildTicket {
   uploadTokens: string[];
   submitterName: string;
   submitterEmail: string;
+  project?: string;
 }
+
+interface AttachmentInput {
+  filename?: string;
+  contentType?: string;
+  dataBase64?: string;
+}
+
+const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 const getZendeskAuthHeaders = () => ({
   Authorization:
@@ -73,32 +82,23 @@ const validateFormData = (body: any) => {
   return { isValid: true };
 };
 
-const fileToBuffer = async (file: any) => {
-  if (file.buffer) {
-    return file.buffer;
-  }
-  return Buffer.from([]);
-};
-
-const uploadFileBufferToZendesk = async (file: any): Promise<string | null> => {
+/** Upload binary to Zendesk uploads.json (multipart), returns upload token */
+const uploadBufferToZendesk = async (
+  buffer: Buffer,
+  filename: string,
+  mimetype: string
+): Promise<string | null> => {
   try {
-    const formData = new FormData();
-    const buffer = await fileToBuffer(file);
-    formData.append(
-      "file",
-      new Blob([buffer], { type: file.mimetype || "application/octet-stream" }),
-      file.originalname
-    );
-    formData.append("filename", file.originalname);
+     const url = `${process.env.ZENDESK_SUBDOMAIN_URL}/api/v2/uploads.json?filename=${encodeURIComponent(filename)}`;
 
-    const response = await fetch(
-      `${process.env.ZENDESK_SUBDOMAIN_URL}/api/v2/uploads.json`,
-      {
-        method: "POST",
-        headers: getZendeskAuthHeaders(),
-        body: formData,
-      }
-    );
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        ...getZendeskAuthHeaders(),
+        "Content-Type": mimetype || "application/octet-stream",
+      },
+      body: new Uint8Array(buffer),
+    });
 
     const result = await response.json();
 
@@ -106,9 +106,51 @@ const uploadFileBufferToZendesk = async (file: any): Promise<string | null> => {
       return result.upload.token;
     }
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
+};
+
+const collectUploadTokensFromAttachments = async (
+  attachments: unknown
+): Promise<string[]> => {
+  if (attachments == null) {
+    return [];
+  }
+  if (!Array.isArray(attachments)) {
+    throw new Error("attachments must be an array when provided");
+  }
+
+  const tokens: string[] = [];
+
+  for (const raw of attachments) {
+    const item = raw as AttachmentInput;
+    const filename = item?.filename?.trim();
+    const dataBase64 = item?.dataBase64;
+    const contentType = item?.contentType?.trim() || "application/octet-stream";
+
+    if (!filename || !dataBase64) {
+      throw new Error("Each attachment requires filename and dataBase64");
+    }
+
+    let buffer: Buffer;
+    try {
+      buffer = Buffer.from(dataBase64, "base64");
+    } catch {
+      throw new Error(`Invalid base64 for attachment: ${filename}`);
+    }
+
+    if (buffer.length > MAX_FILE_BYTES) {
+      throw new Error(`Attachment too large: ${filename}`);
+    }
+
+    const token = await uploadBufferToZendesk(buffer, filename, contentType);
+    if (token) {
+      tokens.push(token);
+    }
+  }
+
+  return tokens;
 };
 
 const buildTicketData = ({
@@ -117,6 +159,7 @@ const buildTicketData = ({
   submitterEmail,
   uploadTokens,
   submitterName,
+  project,
 }: BuildTicket) => ({
   ticket: {
     subject,
@@ -129,14 +172,20 @@ const buildTicketData = ({
       email: submitterEmail,
     },
     tags: ["portal_submission"],
+    custom_fields: [
+      {
+        id: 49353767043988,
+        value: project
+      }
+    ]
   },
 });
 
 const createSupportTicket = asyncHandler(async (req: Request, res: Response) => {
   try {
-    const formData = req.body;
+    const body = req.body;
 
-    const validation = validateFormData(formData);
+    const validation = validateFormData(body);
     if (!validation.isValid) {
       return res.status(400).json({
         success: false,
@@ -144,18 +193,30 @@ const createSupportTicket = asyncHandler(async (req: Request, res: Response) => 
       });
     }
 
-    const subject = formData?.subject;
-    const message = formData?.message;
-    const submitterName = formData?.submitterName;
-    const submitterEmail = formData?.submitterEmail;
+    const subject = body?.subject;
+    const message = body?.message;
+    const submitterName = body?.submitterName;
+    const submitterEmail = body?.submitterEmail;
+    const project = body?.project;
 
-    const files = Array.isArray(req.files) ? ((req.files as any[]) || []) : [];
-    const uploadTokens: string[] = [];
-
-    if (files.length > 0) {
-      const uploadPromises = files.map((file) => uploadFileBufferToZendesk(file));
-      const tokens = await Promise.all(uploadPromises);
-      uploadTokens.push(...tokens.filter((token): token is string => token !== null));
+    let uploadTokens: string[] = [];
+    try {
+      const multerFiles = Array.isArray(req.files) ? (req.files as Express.Multer.File[]) : [];
+      if (multerFiles.length > 0) {
+        const tokens = await Promise.all(
+          multerFiles.map((file) =>
+            uploadBufferToZendesk(file.buffer, file.originalname, file.mimetype)
+          )
+        );
+        uploadTokens = tokens.filter((t): t is string => Boolean(t));
+      } else if (body?.attachments != null) {
+        uploadTokens = await collectUploadTokensFromAttachments(body.attachments);
+      }
+    } catch (e) {
+      return res.status(400).json({
+        success: false,
+        error: (e as Error).message,
+      });
     }
 
     const ticketData = buildTicketData({
@@ -164,6 +225,7 @@ const createSupportTicket = asyncHandler(async (req: Request, res: Response) => 
       submitterEmail,
       uploadTokens,
       submitterName,
+      project,
     } as BuildTicket);
 
     const { ticketId } = await createZendeskTicket(ticketData);

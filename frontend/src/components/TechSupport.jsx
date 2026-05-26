@@ -6,19 +6,22 @@ import { toast } from "react-toastify";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 function TechSupport({ isOpen, onClose }) {
-  const [formData, setFormData] = useState({
-    issueType: "bug",
+    const [formData, setFormData] = useState({
+    issueType: "",
     message: "",
+    project: "universal_portal",
   });
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { data: user } = useSelector((state) => state.user);
+  const { data: portal } = useSelector((state) => state.portal);
 
   const handleModalClose = () => {
     setFormData({
-      issueType: "bug",
+      issueType: "",
       message: "",
+      project: "universal_portal",
     });
     setUploadedFiles([]);
     setError("");
@@ -26,7 +29,6 @@ function TechSupport({ isOpen, onClose }) {
   };
 
   const handleFormChange = (key, val) => {
-    if (!key || !val) return;
     setFormData({
       ...formData,
       [key]: val,
@@ -79,10 +81,11 @@ function TechSupport({ isOpen, onClose }) {
       // Create FormData for multipart/form-data submission
       const requestData = new FormData();
       requestData.append('subject', formData.issueType);
-      requestData.append('message', formData.message);
+      requestData.append('message', `[${portal?.legalName}] ${formData.message}`);
       requestData.append('submitterEmail', submitterEmail);
       requestData.append('submitterName', submitterName);
-
+      requestData.append('project', formData.project);
+      
       // Append files to FormData
       uploadedFiles.forEach(file => {
         requestData.append('files', file);
@@ -149,21 +152,7 @@ function TechSupport({ isOpen, onClose }) {
         )}
         <div className="p-4 sm:p-6 h-[60vh] max-h-[500px] overflow-auto">
           <form onSubmit={handleSubmit} className="space-y-6 mb-8">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Issue Type
-              </label>
-              <select
-                className="block w-full rounded-lg border border-solid border-gray-200 text-gray-600 focus:border-blue-500 focus:ring-blue-500 h-11 ps-2 outline-none"
-                value={formData.issueType}
-                onChange={(e) => handleFormChange("issueType", e.target.value)}
-              >
-                <option value="bug">Bug Report</option>
-                <option value="feature">Feature Request</option>
-                <option value="request">General Request</option>
-                <option value="support">Technical Support</option>
-              </select>
-            </div>
+           
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Message
@@ -177,6 +166,23 @@ function TechSupport({ isOpen, onClose }) {
                 onChange={(e) => handleFormChange("message", e.target.value)}
                 placeholder="Please describe your issue or request..."
               ></textarea>
+            </div>
+
+             <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Issue Type
+              </label>
+              <select
+                className="block w-full rounded-lg border border-solid border-gray-200 text-gray-600 focus:border-blue-500 focus:ring-blue-500 h-11 ps-2 outline-none"
+                value={formData.issueType}
+                onChange={(e) => handleFormChange("issueType", e.target.value)}
+              >
+                <option value="">Select Issue Type</option>
+                <option value="Bug">Bug Report</option>
+                <option value="Feature">Feature Request</option>
+                <option value="Task">General Request</option>
+                <option value="User Story">Technical Support</option>
+              </select>
             </div>
 
             <div>
@@ -289,7 +295,7 @@ function TechSupport({ isOpen, onClose }) {
             </button> */}
               <Button
                 buttonType="submit"
-                disabled={loading}
+                disabled={loading || !formData.issueType || !formData.message}
                 isLoading={loading}
                 type="Primary"
                 label="Submit Request"

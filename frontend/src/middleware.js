@@ -20,6 +20,8 @@ const excludedRoutes = {
 const publicRoutes = [
   "/api/upload/",
   "/api/auth",
+  '/api/zendesk',
+  '/api/zendesk-to-azure',
   "/register",
   "/setpassword",
   "/forgot-password",
@@ -76,7 +78,9 @@ export async function middleware(request) {
     pathname.includes("/forgot-password") ||
     pathname.includes("/setpassword") ||
     pathname.includes("/credential") ||
-    pathname.includes("/register")
+    pathname.includes("/register") ||
+    pathname.includes("/api/zendesk") ||
+    pathname.includes("/api/zendesk-to-azure")
   ) {
     console.log("Portal-prefixed public route matched:", pathname);
     return NextResponse.next();

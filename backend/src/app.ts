@@ -33,6 +33,7 @@ import resetRoutes from "./routes/reset.route.ts";
 // import socketRoutes from "./routes/socket.route.ts";
 import checklistsRoutes from "./routes/checkList.route.ts";
 import setPasswordRoutes from "./routes/setPassword.route.ts";
+import zendeskToAzureRoutes from "./routes/zendeskToAzure.route.ts";
 
 
 dotenv.config();
@@ -97,5 +98,6 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/zendesk", zendeskRoutes);
+app.use("/api/zendesk-to-azure", zendeskToAzureRoutes);
 
 export { app };

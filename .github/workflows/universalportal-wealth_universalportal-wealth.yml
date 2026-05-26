@@ -73,6 +73,7 @@ jobs:
             ZENDESK_API_TOKEN=${{ env.ZENDESK_API_TOKEN }}
             ZENDESK_ADMIN_EMAIL=${{ env.ZENDESK_ADMIN_EMAIL }}
             ZENDESK_SUBDOMAIN_URL=${{ env.ZENDESK_SUBDOMAIN_URL }}
+            
 
       - name: Deploy to Azure Web App (Frontend)
         id: deploy-frontend
@@ -146,6 +147,9 @@ jobs:
             ZENDESK_API_TOKEN=${{ env.ZENDESK_API_TOKEN }}
             ZENDESK_ADMIN_EMAIL=${{ env.ZENDESK_ADMIN_EMAIL }}
             ZENDESK_SUBDOMAIN_URL=${{ env.ZENDESK_SUBDOMAIN_URL }}
+            ZENDESK_AZURE_CLIENT_ID=${{ env.ZENDESK_AZURE_CLIENT_ID }}
+            ZENDESK_AZURE_TENANT_ID=${{ env.ZENDESK_AZURE_TENANT_ID }}
+            ZENDESK_AZURE_CLIENT_SECRET=${{ env.ZENDESK_AZURE_CLIENT_SECRET }}
 
       - name: Deploy to Azure Web App (Backend)
         id: deploy-backend
