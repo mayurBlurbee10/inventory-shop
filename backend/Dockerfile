@@ -111,6 +111,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 # Copy public folder
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 
+# Seed runtime data directory from source defaults (if present).
+COPY --from=builder --chown=nodejs:nodejs /app/src/utils/data/. /app/data/
+
 # Set environment variables (runtime)
 ARG BOX_CLIENT_ID
 ARG BOX_CLIENT_SECRET

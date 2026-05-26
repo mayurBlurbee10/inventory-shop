@@ -5,8 +5,10 @@ import { asyncHandler } from "../utils/helper.ts";
 import path from "path";
 import { promises as fs } from "fs";
 
-const dir = path.join(process.cwd(), "src", "app", "data");
-const filePath = path.join(dir, "content-type.json");
+const runtimeDataDir = process.env.CONTENT_DATA_DIR || path.join(process.cwd(), "data");
+const legacyDataDir = path.join(process.cwd(), "src", "utils", "data");
+const filePath = path.join(runtimeDataDir, "content-type.json");
+const legacyFilePath = path.join(legacyDataDir, "content-type.json");
 
 const ensureDirectory = async (directoryPath: string) => {
   await fs.mkdir(directoryPath, { recursive: true });
@@ -163,8 +165,14 @@ const deleteContentManagement = asyncHandler(async (req: Request, res: Response)
 const getContentTypes = asyncHandler(async (req: Request, res: Response) => {
   try {
     await logApiCall(req);
-    await ensureDirectory(dir);
-    const contentTypes = await readJsonFile(filePath);
+    await ensureDirectory(runtimeDataDir);
+
+    // Keep backward compatibility with local source-tree JSON files.
+    let contentTypes = await readJsonFile(filePath);
+    if (contentTypes.length === 0 && runtimeDataDir !== legacyDataDir) {
+      contentTypes = await readJsonFile(legacyFilePath);
+    }
+
     return res.status(200).json(contentTypes);
   } catch (error) {
     console.error("Error in GET /api/content-type:", error);
