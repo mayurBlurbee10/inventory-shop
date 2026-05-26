@@ -30,6 +30,9 @@ const publicRoutes = [
 export async function middleware(request) {
   const authToken = request.cookies.get("token")?.value;
   const clientToken = request.cookies.get("clientToken")?.value;
+  const clientRefreshToken = request.cookies.get("clientRefreshToken")?.value;
+
+  const tokenToVerify = authToken || clientToken;
   const { pathname } = request.nextUrl;
 
   console.log("Middleware running for pathname:", pathname);
@@ -92,12 +95,12 @@ export async function middleware(request) {
 
   // Verify token if present
   let payload = null;
-  if (authToken) {
+  if (tokenToVerify) {
     try {
       const secretKey = new TextEncoder().encode(
         process.env.NEXT_PUBLIC_JWT_SECRET_KEY,
       );
-      const { payload: decoded } = await jwtVerify(authToken, secretKey);
+      const { payload: decoded } = await jwtVerify(tokenToVerify, secretKey);
       payload = decoded;
     } catch (error) {
       console.log("Token verification failed: " + error.message);
@@ -124,15 +127,15 @@ export async function middleware(request) {
     return NextResponse.next();
   } else {
     if (isLoginPath) {
-      if (clientToken) {
+      if (payload) {
         return NextResponse.redirect(new URL(dashboardPath, request.url));
       }
     } else if (isRegisterPath) {
       // Always allow access to register page, regardless of auth status
       return NextResponse.next();
     } else {
-      if (!clientToken) {
-        const refreshToken = request.cookies.get("refreshToken")?.value;
+      if (!payload) {
+        const refreshToken = request.cookies.get("clientRefreshToken")?.value;
 
         // Prevent loop
         const isRefreshRoute =

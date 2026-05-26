@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import SettingsModal from "./Settings";
 import TechSupport from "./TechSupport";
 import {
+  clearCookieByName,
   getUserData,
   isAdmin,
   setUserData,
@@ -196,6 +197,13 @@ function Navbar({ content, config, filterValue }) {
     );
   };
 
+  const clearClientRefreshTokenCookie = () => {
+    clearCookieByName("clientRefreshToken");
+  };
+
+  const clearClientTokenCookie = () => {
+    clearCookieByName("clientToken");
+  };
 
   const clearStoreData = () => {
     dispatch(setFileList(null));
@@ -223,6 +231,8 @@ function Navbar({ content, config, filterValue }) {
 
       // Then clear user and Redux state
       clearUserStates();
+      clearClientRefreshTokenCookie();
+      clearClientTokenCookie();
 
       await signOut();
       toast.success("User signed out successfully");

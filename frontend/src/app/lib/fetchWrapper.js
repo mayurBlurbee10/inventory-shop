@@ -4,6 +4,13 @@ import { clearUserStates } from "./userCleanupService";
 let isRefreshing = false;
 let refreshPromise = null;
 
+  const setClientTokenCookie = (accessToken) => {
+    document.cookie = `clientToken=${accessToken}; path=/; max-age=${1 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+  };
+  const setClientRefreshTokenCookie = (refreshToken) => {
+    document.cookie = `clientRefreshToken=${refreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+  };
+
 const refreshAccessToken = async (portalId, options = {}) => {
   if (isRefreshing && refreshPromise) {
     return refreshPromise;
@@ -29,7 +36,9 @@ const refreshAccessToken = async (portalId, options = {}) => {
         throw new Error("REFRESH_FAILED");
       }
 
-      const data = await res.json();
+      const data = await res.json();  
+      setClientTokenCookie(data.accessToken);
+      setClientRefreshTokenCookie(data.refreshToken);
       return data.accessToken;
     } catch (err) {
       clearUserStates();

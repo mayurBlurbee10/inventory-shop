@@ -61,7 +61,7 @@ try {
 
         console.log(`Found ${items.totalCount} items in folder`);
 
-         const userInfo = await client.users.getUserById(userId, {
+        const userInfo = await client.users.getUserById(userId, {
           queryParams: {
             fields: ["name", "login", "created_at", "avatar_url", "role"],
           },
@@ -287,6 +287,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
       success: true,
       user: userData,
       accessToken,
+      refreshToken,
     };
 
     res.clearCookie("user", { path: "/" });
@@ -296,20 +297,20 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     res.cookie("user", JSON.stringify(rest), {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
       path: "/",
     });
     res.cookie("token", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -350,15 +351,15 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
     res.cookie("user", JSON.stringify(userData), {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.cookie("token", accessToken, {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -409,9 +410,16 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
   }
   await logApiCall(req, () => { }, "logout", userId);
 
-  res.clearCookie("user", { path: "/" });
-  res.clearCookie("token", { path: "/" });
-  res.clearCookie("refreshToken", { path: "/" });
+  const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none" as const,
+    path: "/",
+  };
+
+  res.clearCookie("user", cookieOptions);
+  res.clearCookie("token", cookieOptions);
+  res.clearCookie("refreshToken", cookieOptions);
 
   return res.status(200).json({ message: "User logout successfully" });
 });
@@ -501,16 +509,16 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.cookie("token", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
@@ -518,6 +526,7 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
     });
   } catch (error) {
     res.clearCookie("token", { path: "/" });

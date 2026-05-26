@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { setUserData } from "@/app/lib/auth";
+import { clearCookieByName, setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
 import { toast } from "react-toastify";
 
@@ -241,7 +241,14 @@ function Login() {
   }, []);
 
   const setClientTokenCookie = (accessToken) => {
-    document.cookie = `clientToken=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+    document.cookie = `clientToken=${accessToken}; path=/; max-age=${1 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+  };
+  const setClientRefreshTokenCookie = (refreshToken) => {
+    document.cookie = `clientRefreshToken=${refreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+  };
+
+  const clearClientRefreshTokenCookie = () => {
+    clearCookieByName("clientRefreshToken");
   };
 
   const clearClientTokenCookie = () => {
@@ -285,6 +292,7 @@ function Login() {
       // setUserData(userData);
       dispatch(setCurrentUser({ ...userData, portalId: params?.portalid }));
       setClientTokenCookie(data.accessToken);
+      setClientRefreshTokenCookie(data.refreshToken);
       setUserData({ ...userData, portalId: params?.portalid });
       // localStorage.setItem("portal", params?.portalid);
       localStorage.setItem("accessToken", data.accessToken);
@@ -303,6 +311,8 @@ function Login() {
       }
     } catch (err) {
       console.error("Login error:", err);
+      clearClientTokenCookie();
+      clearClientRefreshTokenCookie();
       setError(err.message);
     } finally {
       setIsLoadingLogin(false);
@@ -362,10 +372,13 @@ function Login() {
       // setUserData(userData);
       dispatch(setCurrentUser(userData));
       setClientTokenCookie(data.accessToken);
+      setClientRefreshTokenCookie(data.refreshToken);
       // localStorage.setItem("portal", params?.portalid || "default");
       localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
+      clearClientTokenCookie();
+      clearClientRefreshTokenCookie();
       router.push("login");
     }
   };
