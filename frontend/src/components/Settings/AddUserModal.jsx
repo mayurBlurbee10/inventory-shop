@@ -9,6 +9,7 @@ import { UserRole } from "@/config/constants";
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
+import { setCurrentUser } from "@/store/services/userService";
 
 
 const customStyles = {
@@ -413,6 +414,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           logo: logoUrl,
         },
       };
+      dispatch(setCurrentUser(updatedUserData));
 
       // Optionally clean up formData extras
       delete updatedUserData.companyName;

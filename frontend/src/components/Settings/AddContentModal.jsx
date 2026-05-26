@@ -111,6 +111,9 @@ const AddContentModal = ({
       // Make the API request
       const requestOptions = {
         method: isEditMode ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(obj),
       };
 
