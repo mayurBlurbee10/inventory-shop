@@ -569,7 +569,13 @@ const getUserByRefreshToken = async (refreshToken: string) => {
     console.error("Error in getUserByRefreshToken:", error);
     throw new Error("Failed to get user by refresh token.");
   }
-}; export default {
+}; 
+
+const getUsersByPortalForHub = async (portalId: string) => {
+  return await getUsersByPortal(portalId);
+};
+
+export default {
   createUser,
   getUsers,
   getUserByEmail,
@@ -592,4 +598,5 @@ const getUserByRefreshToken = async (refreshToken: string) => {
   updateUserByLeadId,
   setUserTokens,
   getUserByRefreshToken,
+  getUsersByPortalForHub
 };

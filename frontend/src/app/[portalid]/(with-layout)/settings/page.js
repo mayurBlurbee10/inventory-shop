@@ -26,6 +26,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
+import PluginManagementPage from "@/components/Settings/PluginManagementPage";
 
 function SettingsPage() {
   const router = useRouter();
@@ -115,6 +116,7 @@ function SettingsPage() {
     // { id: 'box', label: 'Box Settings', icon: Box }
     { id: "reports", label: "Reports", icon: ChartLine },
     { id: "users", label: "User Access", icon: Users },
+    { id: "plugins", label: "Plugins", icon: Plug },
   ];
 
   const moreTabs = [
@@ -146,13 +148,15 @@ function SettingsPage() {
       //   return <ProductsContent />;
       case "reports":
         return <ReportsContent />;
+      case "plugins":
+        return <PluginManagementPage />;
       default:
         return null;
     }
   };
 
   return (
-      <div className="bg-gray-50 rounded-lg flex justify-center relative w-full h-[87vh]">
+    <div className="bg-gray-50 rounded-lg flex justify-center relative w-full h-[87vh]">
       <div className="hidden lg:block w-2/5 md:w-72 border-r border-[#dee2e6] p-3 bg-gray-50 text-gray-700 max-w-xs">
         <h2 className="text-md text-gray-800 font-semibold mb-6">
           Tools
@@ -178,7 +182,7 @@ function SettingsPage() {
                     backgroundColor: isActive
                       ? config.accentColor
                       : "transparent",
-                    
+
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
@@ -200,7 +204,7 @@ function SettingsPage() {
                     <span className="text-left">{label}</span>
                   </div>
                   <div>
-                   {isMoreTab && <ChevronRight
+                    {isMoreTab && <ChevronRight
                       className="w-4 h-4"
                       style={{
                         color: isActive ? config.secondaryColor : "inherit",
@@ -302,7 +306,7 @@ function SettingsPage() {
       <div className="w-full p-6 overflow-y-auto mt-6 lg:mt-0">
         {getActiveContent()}
       </div>
-    
+
 
     </div>
   );

@@ -3,8 +3,11 @@ import { connectDatabase, getConnection } from "../config/db.ts";
 import { Portals } from "../entities/Portals.ts";
 import userService from "./user.service.ts";
 import { sanitizeName, reverseSanitizeName } from "../utils/commonUtils.ts";
-import { ILike} from "typeorm";
+import { ILike } from "typeorm";
 import { getBoxClient } from "../utils/boxClient.ts";
+import { Users } from "../entities/Users.ts";
+import boxHubService from "../../Plugins/box-ai/box-ai.service.ts"
+
 const getRepository = async (entity: any) => {
   await connectDatabase();
   const connection = getConnection();
@@ -13,9 +16,17 @@ const getRepository = async (entity: any) => {
 
 const createPortal = async (data: any) => {
   const portalRepository = await getRepository(Portals);
+  const userRepository = await getRepository(Users);
   try {
     const portal = portalRepository.create(data);
     await portalRepository.save(portal);
+    const adminUser = await userRepository.findOne({
+      where: { id: data?.portalCreatedAdmin },
+      relations: []
+    });
+    if (adminUser) {
+      await boxHubService.createHubForAdmin(adminUser);
+    }
     return portal;
   } catch (error) {
     throw new Error("Failed to create portal.");

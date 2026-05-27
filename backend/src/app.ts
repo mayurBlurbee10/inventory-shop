@@ -10,6 +10,7 @@ import portalRoutes from "./routes/portal.route.ts";
 import contentManagementRoutes from "./routes/contentManagement.route.ts";
 import pageRoutes from "./routes/page.route.ts";
 import pluginRoutes from "./routes/plugin.route.ts";
+import pluginsRoutes from "../Plugins/plugins.route.ts";
 import chartRoutes from "./routes/chart.route.ts";
 import uploadRoutes from "./routes/upload.route.ts";
 import apiLogsRoutes from "./routes/apiLogs.route.ts";
@@ -34,7 +35,8 @@ import resetRoutes from "./routes/reset.route.ts";
 import checklistsRoutes from "./routes/checkList.route.ts";
 import setPasswordRoutes from "./routes/setPassword.route.ts";
 import zendeskToAzureRoutes from "./routes/zendeskToAzure.route.ts";
-
+import portalPluginConfigsRoutes from "./routes/portalPluginConfigs.route.ts";
+import inbuildPluginsRoutes from "./routes/inbuildPlugins.route.ts";
 
 dotenv.config();
 
@@ -90,6 +92,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/nda-agreements", ndaAgreementsRoutes);
 app.use("/api/pages", pageRoutes);
 app.use("/api/plugins", pluginRoutes);
+app.use("/api/plugins", pluginsRoutes);
 app.use("/api/portal", portalRoutes);
 app.use("/api/setPassword", setPasswordRoutes);
 app.use("/api/reset", resetRoutes);
@@ -99,5 +102,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/zendesk", zendeskRoutes);
 app.use("/api/zendesk-to-azure", zendeskToAzureRoutes);
+app.use("/api/portal-plugin-configs", portalPluginConfigsRoutes);
+app.use("/api/inbuild-plugins", inbuildPluginsRoutes);
 
 export { app };

@@ -53,6 +53,7 @@ import { setPages as setReduxPages } from "@/store/services/pageService";
 import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 import { clearUserStates } from "@/app/lib/userCleanupService";
+import PluginRenderer from "../../Plugins/PluginRenderer";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -570,6 +571,9 @@ function Navbar({ content, config, filterValue }) {
           </div>
           {/* Profile dropdown */}
           <div className="hidden lg:flex items-center space-x-8 cursor-pointer">
+            <div className="hidden md:block">
+              <PluginRenderer config={config} pluginKeys={['box_ai']} />
+            </div>
             <div
               ref={dropdownRef}
               className="flex items-center space-x-3 pl-4 relative"
@@ -866,6 +870,9 @@ function Navbar({ content, config, filterValue }) {
                             }
                           />
                         ))}
+                      <div className="">
+                        <PluginRenderer config={config} pluginKeys={['box_ai']} />
+                      </div>
                     </div>
                     <div className="flex items-center justify-start space-x-2 w-full mt-auto border-t border-slate-200">
                       <div ref={dropdownRef} className="w-full">

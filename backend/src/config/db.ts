@@ -11,6 +11,8 @@ import { Messages } from "../entities/Messages.ts";
 import { CheckLists } from "../entities/CheckLists.ts";
 import { NdaAgreements } from "../entities/NdaAgreements.ts";
 import { TestDb } from "../entities/TestDb.ts";
+import { InbuildPlugins } from "../entities/InbuildPlugins.ts";
+import { PortalPluginConfigs } from "../entities/PortalPluginConfigs.ts";
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ export const AppDataSource = new DataSource({
     CheckLists,
     NdaAgreements,
     TestDb,
+    InbuildPlugins,
+    PortalPluginConfigs
   ],
   logging: false,
   synchronize: true,
