@@ -35,7 +35,7 @@ COPY --from=deps /app/package.json ./package.json
 # Copy source code and config files
 COPY tsconfig.json types.d.ts ./
 COPY src ./src
-COPY plugins ./plugins
+COPY Plugins ./Plugins
 COPY public ./public
 
 # Set build arguments
