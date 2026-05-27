@@ -23,7 +23,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
 
   const handleLogout = async () => {
     clearUserData();
-    await signOut();
+    await signOut(); 
     // router.push("login");
   };
 
