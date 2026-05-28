@@ -152,16 +152,19 @@ function Navbar({ content, config, filterValue }) {
       return (
         <Link href={href} passHref className="w-full block">
           <div
-            className={`relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg ${isActive ? "bg-gray-100" : "hover:bg-gray-100"
-              }`}
+            className={`relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg `}
+            style={{ backgroundColor: isActive || isHovered ? config?.accentColor : "transparent",
+             }}
+             onMouseEnter={() => setIsHovered(true)}
+             onMouseLeave={() => setIsHovered(false)}
             onClick={() => setIsOpenNavbar(false)}
           >
             <span
               className={`font-lato text-sm flex items-center ${isActive ? "font-bold" : "font-medium"
                 }`}
-              style={isActive ? { color: config?.primaryColor } : { color: "#374151" }}
+              style={isActive || isHovered ? { color: config?.primaryColor } : { color: "#374151" }}
             >
-              {Icon && <Icon className="mr-2 h-4 w-4" style={{ color: isActive ? config?.primaryColor : "#374151" }} />}
+              {Icon && <Icon className="mr-2 h-4 w-4" style={{ color: isActive || isHovered ? config?.primaryColor : "#374151" }} />}
               {title}
             </span>
           </div>
@@ -581,9 +584,11 @@ function Navbar({ content, config, filterValue }) {
             >
               {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
               <div
-                className={`size-10 rounded-full overflow-hidden flex items-center justify-center shadow-sm font-lato transition-transform hover:scale-105 border border-accent`}
+                className={`size-10 rounded-full overflow-hidden flex items-center justify-center shadow-sm font-lato transition-transform hover:scale-105`}
                 style={{
                   backgroundColor: config?.accentColor ? `${config.accentColor}3A` : '#3b82f61B',
+                  border: `1px solid ${config?.accentColor ? config.accentColor : '#3b82f61B'}`,
+                  color: config?.secondaryColor ? config.secondaryColor : '#ffffff1b',
                 }}
               >
                 {user?.firstName?.charAt(0).toUpperCase() || "U"}
@@ -664,7 +669,7 @@ function Navbar({ content, config, filterValue }) {
             className="lg:hidden text-text"
             onClick={() => setIsOpenNavbar(true)}
           >
-            <Menu className="h-6 w-6 text-secondary" />
+            <Menu className="h-6 w-6 text-headerlink" />
           </button>
 
           {isOpenNavbar && (
@@ -929,10 +934,11 @@ function Navbar({ content, config, filterValue }) {
                           onClick={() => setAccountDropdown((prev) => !prev)}
                         >
                           <div
-                            className="shrink-0 size-10 rounded-full overflow-hidden flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105"
+                            className={`size-10 rounded-full overflow-hidden flex items-center justify-center shadow-sm font-lato transition-transform hover:scale-105`}
                             style={{
-                              backgroundColor: config?.secondaryColor,
-                              color: config?.primaryColor,
+                              backgroundColor: config?.accentColor ? `${config.accentColor}3A` : '#3b82f61B',
+                              border: `1px solid ${config?.accentColor ? config.accentColor : '#3b82f61B'}`,
+                              color: config?.secondaryColor ? config.secondaryColor : '#ffffff1b',
                             }}
                           >
                             {user?.firstName?.charAt(0).toUpperCase() || "U"}
