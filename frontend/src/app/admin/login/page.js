@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/config/constants';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
-import { setUserData } from '@/app/lib/auth';
+import { clearCookieByName, setUserData } from '@/app/lib/auth';
 import { toast } from 'react-toastify';
 import { setCurrentUser } from '@/store/services/userService';
 import { useDispatch } from 'react-redux';
@@ -29,6 +29,22 @@ export default function AdminLoginPage() {
     
   console.log('env variables', process.env)
   }, [])
+
+  const setClientTokenCookie = (accessToken) => {
+      document.cookie = `clientToken=${accessToken}; path=/; max-age=${1 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+    };
+    const setClientRefreshTokenCookie = (refreshToken) => {
+      document.cookie = `clientRefreshToken=${refreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
+    };
+  
+    const clearClientRefreshTokenCookie = () => {
+      clearCookieByName("clientRefreshToken");
+    };
+  
+    const clearClientTokenCookie = () => {
+      clearCookieByName("clientToken");
+    };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -60,6 +76,8 @@ export default function AdminLoginPage() {
           // Store user data using auth utility
           setUserData(data.user);
           dispatch(setCurrentUser(data.user));
+           setClientTokenCookie(data.accessToken);
+           setClientRefreshTokenCookie(data.refreshToken);
           dispatch(setPortals([]))
           localStorage.setItem("portal", 'admin');
           localStorage.setItem('accessToken', data.accessToken);
@@ -73,6 +91,8 @@ export default function AdminLoginPage() {
         // localStorage.setItem('portal','admin')
         router.push('/admin/dashboard');
       } catch(error) {
+        clearClientTokenCookie();
+        clearClientRefreshTokenCookie();
         setError(error.message);
       }
     } else {

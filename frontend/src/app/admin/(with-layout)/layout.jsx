@@ -1,5 +1,5 @@
 "use client";
-import { clearUserData } from "@/app/lib/auth";
+import { clearCookieByName, clearUserData } from "@/app/lib/auth";
 import {
   setActiveUsers,
   setPortals,
@@ -144,6 +144,14 @@ export default function AdminDashboardLayout({ children }) {
 
   const { data: user } = useSelector((state) => state.user);
   const { data: portal } = useSelector((state) => state.portal);
+
+    const clearClientRefreshTokenCookie = () => {
+    clearCookieByName("clientRefreshToken");
+  };
+
+  const clearClientTokenCookie = () => {
+    clearCookieByName("clientToken");
+  };
   const dispatch = useDispatch();
 
   const clearStoreData = () => {
@@ -154,8 +162,6 @@ export default function AdminDashboardLayout({ children }) {
   };
 
   const handleLogout = async () => {
-    console.log("Logout clicked");
-    // Call backend logout endpoint to clear server-side cookies
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
@@ -166,16 +172,13 @@ export default function AdminDashboardLayout({ children }) {
         const err = await response.text();
         console.warn("Logout API failed:", err);
       }
+      setAccountDropdown(false);
+      clearUserData();
+      clearClientTokenCookie();
+      clearClientRefreshTokenCookie();
+      router.replace("admin/login");
     } catch (err) {
       console.warn("Logout API call error:", err);
-    }
-    setAccountDropdown(false);
-    clearUserData();
-    // Use replace to avoid staying on a protected page after logout
-    if (portal) {
-      router.replace(`${portal.legalName}/login`);
-    } else {
-      router.replace("/login");
     }
   };
   return (
