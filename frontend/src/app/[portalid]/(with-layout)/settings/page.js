@@ -182,20 +182,23 @@ function SettingsPage() {
                     backgroundColor: isActive
                       ? config.accentColor
                       : "transparent",
+                    color:isActive ? config.primaryColor : config.secondaryColor  
 
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = config.accentColor;
+                      e.currentTarget.style.color = config.primaryColor;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = "";
+                      e.currentTarget.style.color = config.secondaryColor;
                     }
                   }}
                 >
-                  <div className="flex items-center space-x-3 text-black">
+                  <div className="flex items-center space-x-3">
                     <div>
                       <Icon
                         className="w-5 h-5"
