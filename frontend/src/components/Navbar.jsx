@@ -697,7 +697,7 @@ function Navbar({ content, config, filterValue }) {
           </button>
 
           {isOpenNavbar && (
-            <div className="fixed top-0 right-0 sm:w-2/5 w-4/5 h-full bg-white shadow-lg z-50 transition-all">
+            <div className="fixed top-0 right-0 sm:w-2/5 w-4/5 h-full bg-white shadow-lg z-50 transition-all flex flex-col">
               <div
                 style={{
                   minHeight: "var(--navbar-height, 56px)",
@@ -739,7 +739,7 @@ function Navbar({ content, config, filterValue }) {
                 </button>
               </div>
 
-              <div className="flex flex-col items-start h-[calc(100%-6rem)] w-full">
+              <div className="flex flex-col items-start w-full flex-1 min-h-0">
                 {isManagePortalView ? (
                   <div className="w-full h-full flex flex-col p-5">
                     <div className="flex justify-between items-center mt-2 mb-4">
@@ -823,7 +823,7 @@ function Navbar({ content, config, filterValue }) {
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-col items-start gap-2 w-full px-5">
+                    <div className="flex flex-col items-start gap-2 w-full px-5 flex-1 min-h-0 overflow-y-auto">
                       {filterPageVisibility("dashboard") && (
                         <NavBarItem
                           title="Dashboard"
