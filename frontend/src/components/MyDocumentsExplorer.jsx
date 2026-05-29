@@ -521,6 +521,8 @@ function SharedFolderExplorer({
   const dropdownRef = useRef(null);
   const deleteModalRef = useRef(null);
   const nestedDropdownRef = useRef(null);
+  const listContainerRef = useRef(null);
+  const gridContainerRef = useRef(null);
   const { loading: isFilesLoading } = useSelector((state) => state.files);
   const { data: user } = useSelector((state) => state.user);
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
@@ -529,6 +531,14 @@ function SharedFolderExplorer({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectFileToRename, setSelectFileToRename] = useState(null);
   const [sortedFilesList, setSortedFilesList] = useState([])
+  const [dropdownPlacement, setDropdownPlacement] = useState({
+    vertical: "bottom",
+    horizontal: "right",
+  });
+  const [gridDropdownPlacement, setGridDropdownPlacement] = useState({
+    vertical: "bottom",
+    horizontal: "right",
+  });
   const [columnSizing, setColumnSizing] = useState({
     select: 44,
     name: 320,
@@ -538,6 +548,12 @@ function SharedFolderExplorer({
   });
   const [columnSizingInfo, setColumnSizingInfo] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const submenuTriggerRef = useRef(null);
+  const [submenuPosition, setSubmenuPosition] = useState({
+    top: 0,
+    left: 0,
+  });
   const fetchPage = async () => {
     try {
       if (!params?.portalid) return;
@@ -582,6 +598,8 @@ function SharedFolderExplorer({
       setDeleteDropdown(null);
       setIsDeleteModalOpen(false);
       seFileSelectedInGrid(null);
+      submenuTriggerRef.current = null;
+      setActiveSubmenu(null);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -598,7 +616,83 @@ function SharedFolderExplorer({
     setDeleteDropdown(null);
   };
 
-  const handleDelete = (file) => {
+  const getDropdownPlacement = (
+    triggerElement,
+    containerRef,
+    menuHeight = 320,
+    menuWidth = 176
+  ) => {
+    if (!triggerElement || typeof window === "undefined") {
+      return { vertical: "bottom", horizontal: "right" };
+    }
+
+    const rect = triggerElement.getBoundingClientRect();
+    const containerRect = containerRef?.current?.getBoundingClientRect() ?? {
+      top: 0,
+      left: 0,
+      right: window.innerWidth,
+      bottom: window.innerHeight,
+    };
+
+    const spaceBelow = containerRect.bottom - rect.bottom;
+    const spaceAbove = rect.top - containerRect.top;
+    const spaceRight = containerRect.right - rect.right;
+    const spaceLeft = rect.left - containerRect.left;
+
+    const vertical =
+      spaceBelow < menuHeight && spaceAbove > spaceBelow ? "top" : "bottom";
+    const horizontal =
+      spaceRight < menuWidth && spaceLeft > spaceRight ? "left" : "right";
+
+    return { vertical, horizontal };
+  };
+
+  const getSubmenuPosition = (
+    triggerElement,
+    submenuWidth = 192,
+    submenuHeight = 170,
+    offset = 4
+  ) => {
+    if (!triggerElement || typeof window === "undefined") {
+      return { top: 0, left: 0 };
+    }
+
+    const rect = triggerElement.getBoundingClientRect();
+    const openRight = rect.right + submenuWidth + offset <= window.innerWidth - 8;
+    const preferredLeft = openRight
+      ? rect.right + offset
+      : rect.left - submenuWidth - offset;
+    const left = Math.max(
+      8,
+      Math.min(preferredLeft, window.innerWidth - submenuWidth - 8)
+    );
+    const top = Math.max(
+      8,
+      Math.min(rect.top, window.innerHeight - submenuHeight - 8)
+    );
+
+    return { top, left };
+  };
+
+  const toggleSubmenu = (file, menuType, triggerElement) => {
+    if (
+      activeSubmenu?.fileId === file?.id &&
+      activeSubmenu?.menuType === menuType
+    ) {
+      setActiveSubmenu(null);
+      submenuTriggerRef.current = null;
+      return;
+    }
+
+    submenuTriggerRef.current = triggerElement;
+    setSubmenuPosition(getSubmenuPosition(triggerElement));
+    setActiveSubmenu({
+      fileId: file?.id,
+      menuType,
+    });
+  };
+
+  const handleDelete = (file, triggerElement) => {
     if (
       listType == "shared" &&
       file.currentUserRole == "viewer" &&
@@ -606,13 +700,21 @@ function SharedFolderExplorer({
     ) {
       return;
     }
+    if (view === "list") {
+      setDropdownPlacement(
+        getDropdownPlacement(triggerElement, listContainerRef)
+      );
+    }
     setDeleteDropdown((prev) => (prev?.id === file?.id ? null : file));
   };
 
-  const handleSelect = (file) => {
+  const handleSelect = (file, triggerElement) => {
     if (view == "list") {
       return;
     }
+    setGridDropdownPlacement(
+      getDropdownPlacement(triggerElement, gridContainerRef)
+    );
     seFileSelectedInGrid((prev) => (prev?.id === file?.id ? null : file));
   };
 
@@ -1071,7 +1173,10 @@ function SharedFolderExplorer({
   return (
     <div>
       {view === "list" && (
-        <div className="min-h-[450px] max-h-[600px] overflow-x-auto custom-scrollbar">
+        <div
+          ref={listContainerRef}
+          className="min-h-[600px] max-h-[600px] overflow-x-auto custom-scrollbar"
+        >
           <table className="min-w-full divide-y divide-gray-200 overflow-auto z-10">
             {!currentFilesList || currentFilesList?.length === 0 ? (
               <thead>
@@ -1284,7 +1389,7 @@ function SharedFolderExplorer({
                                   <button
                                     className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10 ${listType === "shared" ? "hidden" : ""
                                     }`}
-                                    onClick={() => handleDelete(file)}
+                                    onClick={(e) => handleDelete(file, e.currentTarget)}
                                   >
                                     <EllipsisVertical className="h-4 w-4 text-gray-600" />
                                   </button>
@@ -1293,7 +1398,18 @@ function SharedFolderExplorer({
                                 {/* OPTION DROPDOWN DONE*/}
 
                                 {deleteDropdown?.id === file?.id && (
-                                  <div className="absolute top-8 right-0 shadow w-40 bg-white rounded-lg z-20" ref={dropdownRef}>
+                                  <div
+                                    className={`absolute shadow w-40 bg-white rounded-lg z-20 ${
+                                      dropdownPlacement.vertical === "top"
+                                        ? "bottom-9 mb-1"
+                                        : "top-9 mt-1"
+                                    } ${
+                                      dropdownPlacement.horizontal === "left"
+                                        ? "right-0"
+                                        : "left-0"
+                                    }`}
+                                    ref={dropdownRef}
+                                  >
                                     {listType !== "shared" && (
                                       <>
                                         <button
@@ -1309,20 +1425,52 @@ function SharedFolderExplorer({
                                           Move
                                         </button>
                                         {file.type === "file" && esignAvailable && (
-                                          <div className="relative group/sign text-gray-600">
-                                            <button className="group/sign hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 rounded-lg">
+                                          <div className="relative text-gray-600">
+                                            <button
+                                              className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 rounded-lg"
+                                              onClick={(event) => {
+                                                event.stopPropagation();
+                                                if (isSignLoading) return;
+                                                toggleSubmenu(
+                                                  file,
+                                                  "sign",
+                                                  event.currentTarget
+                                                );
+                                              }}
+                                              aria-expanded={
+                                                activeSubmenu?.fileId ===
+                                                  file?.id &&
+                                                activeSubmenu?.menuType ===
+                                                  "sign"
+                                              }
+                                            >
                                               <Signature className="h-4 w-4 text-gray-600" />{" "}
                                               {isSignLoading ? (
                                                 <>
-                                                  Signing <LoaderSpinner size={24} className="ml-auto text-gray-500" />
+                                                  Signing{" "}
+                                                  <LoaderSpinner
+                                                    size={16}
+                                                    className="ml-auto text-gray-500"
+                                                  />
                                                 </>
                                               ) : (
                                                 "Sign"
                                               )}
                                             </button>
-                                            <div ref={nestedDropdownRef} className="absolute top-0 right-full bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/sign:opacity-100 group-hover/sign:scale-100 w-48">
+                                            <div
+                                              ref={nestedDropdownRef}
+                                              style={submenuPosition}
+                                              className={`fixed bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out w-48 z-[1300] ${
+                                                activeSubmenu?.fileId ===
+                                                  file?.id &&
+                                                activeSubmenu?.menuType ===
+                                                  "sign"
+                                                  ? "opacity-100 scale-100"
+                                                  : "opacity-0 scale-95 pointer-events-none"
+                                              }`}
+                                            >
                                               <button
-                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-lg"
+                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-t-md"
                                                 onClick={(e) => {
                                                   e.stopPropagation();
                                                   setIsSignatureModalOpen(
@@ -1330,17 +1478,19 @@ function SharedFolderExplorer({
                                                   );
                                                   setSignatureFile(file);
                                                   setSelectedBulkItems([]);
+                                                  setActiveSubmenu(null);
                                                 }}
                                               >
-                                                <UsersRoundIcon className="h-4 w-4 mr-2" />
+                                                <UsersRoundIcon className="h-4 w-4 mr-2 shrink-0" />
                                                 Request Signature
                                               </button>
 
                                               <button
-                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-lg"
-                                                onClick={(e) =>{
+                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-b-md"
+                                                onClick={(e) => {
                                                   e.stopPropagation();
-                                                  handleSelfSign(file)
+                                                  handleSelfSign(file);
+                                                  setActiveSubmenu(null);
                                                 }}
                                               >
                                                 <UserRound className="h-4 w-4 mr-2" />
@@ -1405,7 +1555,10 @@ function SharedFolderExplorer({
       )}
 
       {view === "grid" && (
-        <div className="min-h-[450px] max-h-[600px] overflow-x-auto custom-scrollbar">
+        <div
+          ref={gridContainerRef}
+          className="min-h-[600px] max-h-[600px] overflow-x-auto custom-scrollbar"
+        >
           {!currentFilesList || currentFilesList?.length === 0 ? (
             <div className="w-full h-full flex justify-center items-center">
               <EmptyState checkLoading={loading} />
@@ -1459,7 +1612,7 @@ function SharedFolderExplorer({
                                   ? "hidden"
                                   : ""
                               }`}
-                              onClick={() => handleSelect(file)}
+                              onClick={(e) => handleSelect(file, e.currentTarget)}
                             >
                               <Ellipsis className="h-4 w-4 text-gray-600" />
                             </button>
@@ -1467,7 +1620,18 @@ function SharedFolderExplorer({
                             {/* OPTION DROPDOWN DONE*/}
 
                             {fileSelectedInGrid?.id === file?.id && (
-                              <div className="absolute top-8 right-0 sm:left-0 shadow w-40 bg-white rounded-lg z-20" ref={dropdownRef}>
+                              <div
+                                className={`absolute shadow w-40 bg-white rounded-lg z-20 ${
+                                  gridDropdownPlacement.vertical === "top"
+                                    ? "bottom-9 mb-1"
+                                    : "top-9 mt-1"
+                                } ${
+                                  gridDropdownPlacement.horizontal === "left"
+                                    ? "right-0"
+                                    : "left-0"
+                                }`}
+                                ref={dropdownRef}
+                              >
                                 {file.type === "file" && (
                                   <button
                                     className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
@@ -1533,18 +1697,46 @@ function SharedFolderExplorer({
                                 )}
                                 {listType !== "shared" &&
                                   file.type === "file" && esignAvailable && (
-                                    <div className="relative group/signGrid text-gray-600">
-                                      <button className="group/signGrid hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 ">
+                                    <div className="relative text-gray-600">
+                                      <button
+                                        className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 "
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          if (isSignLoading) return;
+                                          toggleSubmenu(
+                                            file,
+                                            "sign",
+                                            event.currentTarget
+                                          );
+                                        }}
+                                        aria-expanded={
+                                          activeSubmenu?.fileId === file?.id &&
+                                          activeSubmenu?.menuType === "sign"
+                                        }
+                                      >
                                         <Signature className="h-4 w-4 text-gray-600" />{" "}
                                         {isSignLoading ? (
                                           <>
-                                              Signing <LoaderSpinner size={24} className="ml-auto text-gray-500" />
+                                            Signing{" "}
+                                            <LoaderSpinner
+                                              size={16}
+                                              className="ml-auto text-gray-500"
+                                            />
                                           </>
                                         ) : (
                                           "Sign"
                                         )}
                                       </button>
-                                      <div ref={nestedDropdownRef} className="absolute top-0 left-full bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out opacity-0 scale-95 group-hover/signGrid:opacity-100 group-hover/signGrid:scale-100 w-48">
+                                      <div
+                                        ref={nestedDropdownRef}
+                                        style={submenuPosition}
+                                        className={`fixed bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out w-48 z-[1300] ${
+                                          activeSubmenu?.fileId === file?.id &&
+                                          activeSubmenu?.menuType === "sign"
+                                            ? "opacity-100 scale-100"
+                                            : "opacity-0 scale-95 pointer-events-none"
+                                        }`}
+                                      >
                                         <button
                                           className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-t-md"
                                           onClick={(e) => {
@@ -1554,6 +1746,7 @@ function SharedFolderExplorer({
                                             );
                                             setSignatureFile(file);
                                             setSelectedBulkItems([]);
+                                            setActiveSubmenu(null);
                                           }}
                                         >
                                           <UsersRoundIcon className="h-4 w-4 mr-2" />
@@ -1564,7 +1757,8 @@ function SharedFolderExplorer({
                                           className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-b-md"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            handleSelfSign(file)
+                                            handleSelfSign(file);
+                                            setActiveSubmenu(null);
                                           }}
                                         >
                                           <UserRound className="h-4 w-4 mr-2" />

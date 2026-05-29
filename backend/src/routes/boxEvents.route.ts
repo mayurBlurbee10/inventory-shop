@@ -5,5 +5,6 @@ import authMiddleware from "../middlewares/auth.middleware.ts";
 const router = express.Router();
 
 router.get("/", authMiddleware.verifyUserAccess, boxEventsController.getEvents);
+router.get("/export", authMiddleware.verifyUserAccess, boxEventsController.exportEvents);
 
 export default router;

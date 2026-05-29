@@ -215,11 +215,64 @@ const getApiLogsCount = async (
   }
 };
 
+const getApiLogsForExport = async (
+  portalId: string,
+  startDate?: Date,
+  endDate?: Date,
+  userId?: string | null,
+  search?: string,
+  sortBy: string = "createdAt",
+  sortOrder: string = "DESC"
+) => {
+  await connectDatabase();
+  const connection = getConnection();
+  const apiLogRepository = connection.getRepository(ApiLogs);
+  try {
+    const query = apiLogRepository
+      .createQueryBuilder("apiLog")
+      .leftJoinAndSelect("apiLog.createdBy", "user")
+      .where("apiLog.portalId = :portalId", { portalId });
+
+    if (startDate && endDate) {
+      query.andWhere("apiLog.createdAt BETWEEN :startDate AND :endDate", {
+        startDate,
+        endDate,
+      });
+    }
+
+    if (userId) {
+      query.andWhere("user.id = :userId", { userId });
+    }
+
+    if (search) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where("apiLog.type LIKE :search", { search: `%${search}%` })
+            .orWhere("user.firstName LIKE :search", { search: `%${search}%` })
+            .orWhere("user.lastName LIKE :search", { search: `%${search}%` })
+            .orWhere("apiLog.source LIKE :search", { search: `%${search}%` });
+        })
+      );
+    }
+
+    let orderKey = "apiLog." + sortBy;
+    if (sortBy === "user") {
+      orderKey = "user.firstName";
+    }
+    query.orderBy(orderKey, sortOrder.toUpperCase() as "ASC" | "DESC");
+
+    return await query.getMany();
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
 export default {
   createApiLogFromRequest,
   createApiLogs,
   getApiLogs,
   getApiLogsDateWise,
   getApiLogsCount,
+  getApiLogsForExport,
 };
 

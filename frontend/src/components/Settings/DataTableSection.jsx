@@ -281,6 +281,7 @@ const DataTableSection = () => {
   const [apiCalls, setApiCalls] = useState(0);
   const [activeUsers, setActiveUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(false)
+  const [isExportLoading, setIsExportLoading] = useState(false);
   const [dateData, setDateData] = useState({
     startDate: "",
     endDate: "",
@@ -337,16 +338,28 @@ const DataTableSection = () => {
     console.log('mockdata: ', mockdata);
   };
 
-  const handleExport = () => {
-    const exportData = data.map(log => ({
-      "Date & Time": formatTimestamp(log?.createdAt),
-      "Name": log?.type || 'N/A',
-      "User": log.createdBy?.firstName || 'N/A'
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
-    const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, 'api_logs.csv');
+  const handleExport = async () => {
+    try {
+      setIsExportLoading(true);
+      const user = getUserData();
+      let url = `/api/box/events/export?portalId=${params?.portalid}&userId=${user?.id}`;
+      if (dateData.startDate) url += `&startDate=${dateData.startDate}`;
+      if (dateData.endDate) url += `&endDate=${dateData.endDate}`;
+      if (debouncedSearchTerm) url += `&search=${encodeURIComponent(debouncedSearchTerm)}`;
+      if (sortConfig.key) url += `&sortBy=${sortConfig.key}`;
+      if (sortConfig.direction) url += `&sortOrder=${sortConfig.direction}`;
+      if (filter) url += `&filter=${filter}`;
+
+      const response = await fetchWrapper(url, { method: "GET" }, "get-api-logs");
+      if (!response.ok) throw new Error("Export failed");
+
+      const blob = await response.blob();
+      saveAs(blob, "api_logs_export.csv");
+    } catch (error) {
+      console.error("Export error:", error.message);
+    } finally {
+      setIsExportLoading(false);
+    }
   };
 
   const handlePageChange = (newPage) => {
@@ -495,7 +508,8 @@ const DataTableSection = () => {
             type={"Primary"}
             className='ml-auto'
             icon={ArrowDownToLine}
-            disabled={isLoading}
+            disabled={isLoading || isExportLoading}
+            isLoading={isExportLoading}
           />
         </div>
       </div>
