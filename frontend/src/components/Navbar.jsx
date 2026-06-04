@@ -626,7 +626,7 @@ function Navbar({ content, config, filterValue }) {
                     }}
                     onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
                   >
-                    <Bell className="h-5 w-5" /> Notifications
+                    <Bell className="h-5 w-5" /> Preferences
                   </button>
                   {userIsAdmin && (
                     <button
@@ -936,7 +936,7 @@ function Navbar({ content, config, filterValue }) {
                               onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
                             >
                               <Bell className="h-4 w-4" />
-                              Notifications
+                              Preferences
                             </button>
                             {userIsAdmin && (
                               <button

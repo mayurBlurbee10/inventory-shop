@@ -9,14 +9,18 @@ const getPreview = asyncHandler(async (req: Request, res: Response) => {
     await logApiCall(req);
     const { fileId } = req.params;
 
-    // Get the service account token
+    // Get the service account  
     const { client, accessToken } = await getBoxClientAccessToken();
 
     // Get file info
     const file = await client.files.getFileById(fileId);
+    const downscoped = await client.auth.downscopeToken(
+      ['base_preview', 'item_preview', 'item_download'],
+      `https://api.box.com/2.0/files/${fileId}`
+    );
 
     return res.status(200).json({
-      accessToken,
+      accessToken: downscoped.accessToken,
       fileInfo: {
         id: (file as any).id,
         name: (file as any).name,

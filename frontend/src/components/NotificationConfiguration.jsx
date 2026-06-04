@@ -123,7 +123,7 @@ const NotificationConfiguration = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b p-4 sm:p-5">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-            Notification Settings
+            Preferences
           </h2>
 
           <button
@@ -137,6 +137,9 @@ const NotificationConfiguration = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="mb-4">
+            <p className="text-gray-700 text-lg font-semibold">Notification Settings</p>
+          </div>
           {loading ? (
             <div className="flex justify-center py-10">
               <LoaderSpinner
@@ -170,12 +173,7 @@ const NotificationConfiguration = ({
                       {/* Notification Details */}
                       <div className="flex-1 min-w-0">
                         <h3
-                          className="font-semibold text-sm sm:text-base break-words line-clamp-1"
-                          style={{
-                            color:
-                              config?.primaryColor ||
-                              "#1f2937",
-                          }}
+                          className="font-semibold text-sm sm:text-base break-words line-clamp-1 text-gray-800"
                         >
                           {notifType.label}
                         </h3>
@@ -186,17 +184,7 @@ const NotificationConfiguration = ({
 
                         {notifType.category && (
                           <span
-                            className="inline-block mt-2 px-2 py-1 text-xs rounded-full break-words line-clamp-1"
-                            style={{
-                              backgroundColor:
-                                config?.accentColor
-                                  ? `${config.accentColor}20`
-                                  : "#f3f4f6",
-                              color:
-                                config?.secondaryColor ||
-                                "#4b5563",
-                            }}
-                          >
+                            className="inline-block mt-2 px-2 py-1 text-xs rounded-full break-words line-clamp-1 text-blue-500 bg-blue-100">
                             {notifType.category}
                           </span>
                         )}
@@ -243,13 +231,8 @@ const NotificationConfiguration = ({
               {/* Info Box */}
               <div
                 className="mt-6 rounded-lg p-3 sm:p-4"
-                style={{
-                  backgroundColor: config?.accentColor
-                    ? `${config.accentColor}10`
-                    : "#f8fafc",
-                }}
               >
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 bg-yellow-50 border-l-4 border-yellow-400 p-3">
                   <strong>Tip:</strong> You can manage these
                   settings at any time. We respect your
                   preferences and will only send you
