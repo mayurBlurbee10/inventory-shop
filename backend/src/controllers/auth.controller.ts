@@ -10,6 +10,7 @@ import { sanitizeName } from "../utils/commonUtils.ts";
 import { asyncHandler } from "../utils/helper.ts";
 import { validateAdminUser } from "../utils/data.ts";
 import authService from "../services/auth.service.ts";
+import notificationService from "../services/notification.service.ts";
 import { getBoxClient } from "../utils/boxClient.ts";
 
 let boxService: any = null;
@@ -316,6 +317,21 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     });
 
     console.log("Sending response with user data:", userData);
+    
+    // Send welcome login email notification (async, don't block response)
+    try {
+      notificationService.sendWelcomeLoginNotification(
+        user.id,
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+        data?.portalid || "Universal Portal"
+      ).catch((err) => {
+        console.error("Failed to send welcome login email:", err);
+      });
+    } catch (notifError) {
+      console.error("Error in notification service:", notifError);
+    }
+    
     return res.status(200).json(response);
   } catch (error) {
     console.error("Login error:", error);

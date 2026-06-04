@@ -99,6 +99,11 @@ export enum NotificationType {
   FORM_COMPLETED = "form_completed",
 }
 
+export const NotificationConfigure = {
+  WELCOME_LOGIN_EMAIL: "welcome_login_email",
+  INVITE_LINK_EMAIL: "invite_link_email",
+};
+
 export const OnboardingTasksStatus = {
   PENDING: "pending",
   COMPLETED: "completed",

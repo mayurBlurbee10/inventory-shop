@@ -6,10 +6,12 @@ import {
 } from "../utils/jwt.ts";
 import { sendSetPasswordEmail } from "../utils/email.ts";
 import userService from "../services/user.service.ts";
+import notificationService from "../services/notification.service.ts";
 import {
   UserRole,
   ApplicationStatus,
   OnboardingTasksType,
+  NotificationConfigure,
 } from "../config/constants.ts";
 import permissionService from "../services/permission.service.ts";
 import portalService from "../services/portal.service.ts";
@@ -871,14 +873,24 @@ const resendInviteLink = asyncHandler(async (req: Request, res: Response) => {
     await userService.setResetPasswordToken(user.email, token);
 
     if (user.role !== UserRole.SUPER_ADMIN && user.role !== UserRole.MASTER) {
-      sendSetPasswordEmail(
-        user.email,
-        `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-        token,
-        userPermission.portalId,
-        false,
-        "reset",
+      // Check if invite_link_email notification is enabled
+      const isEmailEnabled = await notificationService.isNotificationEnabled(
+        user.id,
+        NotificationConfigure.INVITE_LINK_EMAIL,
       );
+
+      if (isEmailEnabled) {
+        sendSetPasswordEmail(
+          user.email,
+          `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+          token,
+          userPermission.portalId,
+          false,
+          "reset",
+        );
+      } else {
+        console.log(`Invite link email disabled for user ${user.id}, skipping email send`);
+      }
     }
 
     return res.status(200).json({
@@ -997,6 +1009,78 @@ const handleLoginByProvider = asyncHandler(
   },
 );
 
+const getNotificationPreferences = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      await logApiCall(req);
+      const userId = (req as any).user?.id;
+
+      if (!userId) {
+        return res.status(401).json({
+          error: "Unauthorized",
+        });
+      }
+
+      const preferences =
+        await notificationService.getNotificationPreferences(userId);
+      const availableTypes =
+        notificationService.getAvailableNotificationTypes();
+
+      return res.status(200).json({
+        success: true,
+        preferences,
+        availableTypes,
+      });
+    } catch (error) {
+      console.error("Error getting notification preferences:", error);
+      return res.status(500).json({
+        error: "Failed to get notification preferences",
+        details: (error as Error).message,
+      });
+    }
+  }
+);
+
+const updateNotificationPreferences = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      await logApiCall(req);
+      const userId = (req as any).user?.id;
+      const { preferences } = req.body;
+
+      if (!userId) {
+        return res.status(401).json({
+          error: "Unauthorized",
+        });
+      }
+
+      if (!preferences || typeof preferences !== "object") {
+        return res.status(400).json({
+          error: "preferences object is required",
+        });
+      }
+
+      const updated =
+        await notificationService.updateNotificationPreferences(
+          userId,
+          preferences
+        );
+
+      return res.status(200).json({
+        success: true,
+        preferences: updated,
+        message: "Notification preferences updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating notification preferences:", error);
+      return res.status(500).json({
+        error: "Failed to update notification preferences",
+        details: (error as Error).message,
+      });
+    }
+  }
+);
+
 export default {
   getUsers,
   getCurrentUser,
@@ -1010,4 +1094,6 @@ export default {
   updateRole,
   resendInviteLink,
   handleLoginByProvider,
+  getNotificationPreferences,
+  updateNotificationPreferences,
 };

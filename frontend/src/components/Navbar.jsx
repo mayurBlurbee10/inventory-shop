@@ -13,6 +13,7 @@ import {
 import {
   Activity,
   ArrowLeft,
+  Bell,
   Bolt,
   ChartLine,
   ChevronDown,
@@ -54,6 +55,7 @@ import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 import { clearUserStates } from "@/app/lib/userCleanupService";
 import PluginRenderer from "../../Plugins/PluginRenderer";
+import NotificationConfiguration from "./NotificationConfiguration";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -71,6 +73,7 @@ function Navbar({ content, config, filterValue }) {
   const [isManagePortalView, setIsManagePortalView] = useState(false);
   const [isIntegrateDropdownOpen, setIsIntegrateDropdownOpen] = useState(false);
   const [isAccountInfoModalOpen, setIsAccountInfoModalOpen] = useState(false);
+  const [isNotificationConfigurationOpen, setIsNotificationConfigurationOpen] = useState(false);
   const dropdownRef = useRef(null);
   const moreLinksDropdownRef = useRef(null);
   const [logo, setLogo] = useState(null);
@@ -611,6 +614,20 @@ function Navbar({ content, config, filterValue }) {
                   >
                     <CircleUserRound className="h-5 w-5" /> Account Info
                   </button>
+                  <button
+                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
+                    onMouseEnter={ (e) =>{
+                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633',
+                      e.currentTarget.style.color = config?.primaryColor ? config.primaryColor : config.secondaryColor || '#ffffff1b'
+                      }}
+                    onMouseLeave={ (e) =>{
+                      e.currentTarget.style.backgroundColor = 'inherit'
+                      e.currentTarget.style.color = config?.secondaryColor 
+                    }}
+                    onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
+                  >
+                    <Bell className="h-5 w-5" /> Notifications
+                  </button>
                   {userIsAdmin && (
                     <button
                       onClick={() =>
@@ -914,6 +931,13 @@ function Navbar({ content, config, filterValue }) {
                               <CircleUserRound className="h-4 w-4" />
                               Account Info
                             </button>
+                            <button
+                              className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold"
+                              onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
+                            >
+                              <Bell className="h-4 w-4" />
+                              Notifications
+                            </button>
                             {userIsAdmin && (
                               <button
                                 onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
@@ -1000,6 +1024,12 @@ function Navbar({ content, config, filterValue }) {
         config={config}
         user={user}
         userIsAdmin={userIsAdmin}
+      />
+      <NotificationConfiguration
+        isOpen={isNotificationConfigurationOpen}
+        onClose={() => setIsNotificationConfigurationOpen(false)}
+        config={config}
+        user={user}
       />
     </div>
   );

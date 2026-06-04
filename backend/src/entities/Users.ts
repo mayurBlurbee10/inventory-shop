@@ -90,6 +90,9 @@ class Users extends BaseTable {
   @Column({ type: "simple-json", nullable: true, default: "[]" })
   signRequestsId!: any;
 
+  @Column({ type: "simple-json", nullable: true, default: "[]" })
+  notificationPreferences!: any;
+
   @BeforeInsert()
   async hashPassword() {
     if (this.password) {
