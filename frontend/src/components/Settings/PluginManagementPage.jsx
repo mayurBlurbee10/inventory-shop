@@ -1,7 +1,7 @@
 import React from 'react';
 import { Puzzle, Settings, Power, PowerOff, RefreshCw, Loader } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import usePlugins from 'Plugins/hooks/usePlugins';
+import usePlugins from '../../../Plugins/hooks/usePlugins';
 
 // Plugin Management Page - Admin Interface
 const PluginManagementPage = () => {
