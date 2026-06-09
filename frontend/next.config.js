@@ -21,7 +21,13 @@ const nextConfig = {
         : false,
   },
   images: {
-    domains: ["boxpartner.blob.core.windows.net"], // Add the external domain here
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "boxpartner.blob.core.windows.net",
+        pathname: "/**",
+      },
+    ],
   },
   // Ensure client-side navigation works properly
   pageExtensions: ["js", "jsx", "ts", "tsx"],

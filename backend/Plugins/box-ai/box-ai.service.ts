@@ -1,9 +1,8 @@
-import BoxSDKNode from "box-node-sdk";
 import userService from "../../src/services/user.service.js";
 import { addCollaborator } from "../../src/utils/helper.js";
 import { getBoxClient, getUserBoxClient } from "../../src/utils/boxClient.ts";
-import { AiAskModeField } from "box-node-sdk/lib/schemas/aiAsk.js";
-import { AiItemAskTypeField } from "box-node-sdk/lib/schemas/aiItemAsk.js";
+import { AiItemAskTypeField } from "box-node-sdk/lib/schemas/aiItemAsk";
+import { AiAskModeField } from "box-node-sdk/lib/schemas/aiAsk";
 
 const client = getBoxClient();
 

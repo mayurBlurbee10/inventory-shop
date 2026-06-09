@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { getBoxClient } from "./boxClient.js";
-import { CollaborationRoleField } from "box-node-sdk/lib/schemas";
+import { CollaborationRoleField } from "box-node-sdk/lib/schemas/collaboration";
 
 const client = getBoxClient();
 export const asyncHandler = (
