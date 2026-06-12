@@ -111,7 +111,7 @@ const createAzureWorkItem = async (
 
     if (attachmentSection) {
         const attachmentRegex =
-            /(.+?\.(?:pdf|png|jpe?g|gif|svg))\s-\s(https:\/\/.*?\.(?:pdf|png|jpe?g|gif|svg))/gi;
+        /(.+?\.(?:pdf|png|jpe?g|gif|svg|mp4|mov|avi|webm|mkv|m4v))\s-\s(https:\/\/\S+)/gi;
 
         let match: RegExpExecArray | null;
 
@@ -136,58 +136,76 @@ const createAzureWorkItem = async (
     const attachmentRelations: any[] = [];
     let attachedHtml = "";
 
-    for (const attachment of attachments) {
-        const fileBuffer = await downloadZendeskAttachment(
-            attachment.content_url
-        );
+   for (const attachment of attachments) {
+    const fileBuffer = await downloadZendeskAttachment(
+        attachment.content_url
+    );
 
-        if (!fileBuffer) continue;
+    if (!fileBuffer) continue;
 
-        const adoAttachmentUrl = await uploadAzureAttachment(
-            token,
-            fileBuffer,
-            attachment.file_name
-        );
+    const adoAttachmentUrl = await uploadAzureAttachment(
+        token,
+        fileBuffer,
+        attachment.file_name
+    );
 
-        if (!adoAttachmentUrl) continue;
+    if (!adoAttachmentUrl) continue;
 
-        if (attachment.file_name.match(/\.(png|jpe?g|gif|svg)$/i)) {
-            attachedHtml += `<div><img src="${adoAttachmentUrl}" /></div>`;
-        } else {
-            attachmentRelations.push({
-                op: "add",
-                path: "/relations/-",
-                value: {
-                    rel: "AttachedFile",
-                    url: adoAttachmentUrl,
-                    attributes: {
-                        comment: "Attachment from Zendesk",
-                    },
+    const isImage = /\.(png|jpe?g|gif|svg)$/i.test(
+        attachment.file_name
+    );
+
+    if (isImage) {
+        attachedHtml += `
+            <div style="margin-bottom:10px">
+                <img src="${adoAttachmentUrl}" alt="${attachment.file_name}" />
+            </div>
+        `;
+    } else {
+        attachmentRelations.push({
+            op: "add",
+            path: "/relations/-",
+            value: {
+                rel: "AttachedFile",
+                url: adoAttachmentUrl,
+                attributes: {
+                    comment: "Attachment from Zendesk",
                 },
-            });
-        }
+            },
+        });
     }
+}
 
     updatedDescription += attachedHtml;
 
     const body = [
         {
-            op: "add",
-            path: "/fields/System.Title",
-            value: `Zendesk - ${zendeskTicketId}`,
+          op: "add",
+          path: "/fields/System.Title",
+          value: `[Universal Portal] Zendesk - ${zendeskTicketId}`,
         },
+        ...(titleOp?.value?.toLowerCase() === "bug"
+          ? [
+              {
+                op: "add",
+                path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
+                value: updatedDescription,
+              },
+            ]
+          : [
+              {
+                op: "add",
+                path: "/fields/System.Description",
+                value: updatedDescription,
+              },
+            ]),
         {
-            op: "add",
-            path: "/fields/System.Description",
-            value: updatedDescription,
-        },
-        {
-            op: "add",
-            path: "/fields/System.AreaPath",
-            value: "MStrategyGroupCore\\Zendesk Support Tickets",
+          op: "add",
+          path: "/fields/System.AreaPath",
+          value: "MStrategyGroupCore\\Zendesk Support Tickets",
         },
         ...attachmentRelations,
-    ];
+      ];
 
     console.log(body, 'body----------------------------')
 

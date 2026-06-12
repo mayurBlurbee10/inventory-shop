@@ -81,7 +81,7 @@ function TechSupport({ isOpen, onClose }) {
       // Create FormData for multipart/form-data submission
       const requestData = new FormData();
       requestData.append('subject', formData.issueType);
-      requestData.append('message', `[${portal?.legalName}] ${formData.message}`);
+      requestData.append('message', `${formData.message}`);
       requestData.append('submitterEmail', submitterEmail);
       requestData.append('submitterName', submitterName);
       requestData.append('project', formData.project);
