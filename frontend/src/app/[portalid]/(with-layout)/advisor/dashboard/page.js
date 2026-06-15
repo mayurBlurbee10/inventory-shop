@@ -335,7 +335,7 @@ export default function AdvisorViewDashboard() {
 
                             {/* Chart Section */}
                             <div className="sm:h-[350px] h-[250px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height={280}>
                                     <LineChart
                                         data={data}
                                         margin={{

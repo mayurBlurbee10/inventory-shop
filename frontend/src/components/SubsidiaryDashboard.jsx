@@ -508,7 +508,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
             Usage Analytics
           </h2>
           <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={400}>
               <LineChart
                 data={data}
                 margin={{
