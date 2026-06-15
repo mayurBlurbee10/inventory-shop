@@ -295,7 +295,7 @@ const LoadingSpinner = () => (
 
 export default function SubsidiaryDashboard({ subsidiaryId }) {
   const router = useRouter();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [apiCalls, setApiCalls] = useState(0);
   const [config, setConfig] = useState(null);
   const [activeUsers, setActiveUsers] = useState(0);
@@ -396,7 +396,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
   }, [router]);
 
   useEffect(() => {
-    getChartData(2025, subsidiaryId).then((data) => setData(data));
+    getChartData(new Date().getFullYear(), subsidiaryId).then((data) => setData(data));
     apiCallThisMonth();
     fetchConfig();
   }, []);
@@ -510,7 +510,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height={400}>
               <LineChart
-                data={data}
+                data={data || []}
                 margin={{
                   top: 5,
                   right: 30,

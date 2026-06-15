@@ -38,7 +38,7 @@ export default function AdvisorViewDashboard() {
     const [usersList, setUsersList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const params = useParams();
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
     const [config, setConfig] = useState(null);
     const [isPageLoading, setIsPageLoading] = useState(false)
     const [page, setPage] = useState(null);
@@ -213,7 +213,7 @@ export default function AdvisorViewDashboard() {
         fetchPage();
         fetchConfig().then((portal) => {
             //   getChartData(2025, portal?.id).then((data) => setData(data));
-            generateMockData(2025, portal?.id).then((data) => setData(data));
+            generateMockData(new Date().getFullYear(), portal?.id).then((data) => setData(data));
         });
     }, []);
 
@@ -337,7 +337,7 @@ export default function AdvisorViewDashboard() {
                             <div className="sm:h-[350px] h-[250px] w-full">
                                 <ResponsiveContainer width="100%" height={280}>
                                     <LineChart
-                                        data={data}
+                                        data={data || []}
                                         margin={{
                                             top: 5,
                                             right: 30,
