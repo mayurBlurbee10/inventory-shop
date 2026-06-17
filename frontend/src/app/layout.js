@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import ReduxProvider from "@/components/ReduxProvider";
 import StoreProvider from "@/components/ReduxProvider";
-import { SocketProvider } from "@/context/SocketProvider";
 import Script from "next/script";
 
 const geistSans = localFont({

@@ -304,9 +304,9 @@ const ShareModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-xl relative">
-        <div className="flex sticky items-center justify-between p-4 border-b">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl w-full max-w-xl relative max-h-[90vh] overflow-y-auto hidden-scrollbar">
+        <div className="flex sticky items-center justify-between p-4 border-b bg-white top-0 z-10">
           <h3 className="text-xl font-semibold text-gray-900">
             {item?.name}
           </h3>

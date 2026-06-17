@@ -1,4 +1,3 @@
-import portalService from "@/services/portalService";
 import { notFound, redirect } from "next/navigation";
 
 function reverseSanitizeName(sanitizedName) {
