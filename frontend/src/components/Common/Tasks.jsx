@@ -3,10 +3,9 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import CreateTaskPopUp from "@/components/Common/CreateTaskPopUp";
 import Button from "@/components/Common/Elements/Button";
-import AddUserModal from "@/components/Settings/AddUserModal";
 import { TaskStatus } from "@/config/constants";
-import { PlusCircle, RotateCw } from "lucide-react";
-import { useParams, useSearchParams } from "next/navigation";
+import { PlusCircle } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoaderSpinner from "./Elements/LoaderSpinner";
 
@@ -18,11 +17,9 @@ const LoadingSpinner = () => (
 
 function Tasks({ user }) {
     const params = useParams();
-    const searchParams = useSearchParams();
     const [createTask, setCreateTask] = useState(false)
     const [tasks, setTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
-    const boxUserId = searchParams.get("userId");
     const modelClose = () => {
         setCreateTask(false);
     }

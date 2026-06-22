@@ -82,13 +82,6 @@ export default function AdminLoginPage() {
           localStorage.setItem("portal", 'admin');
           localStorage.setItem('accessToken', data.accessToken);
           
-        // Store complete user data including role
-        // localStorage.setItem('user', JSON.stringify({
-        //   email: user.email,
-        //   role: user.role,
-        //   firstName: user?.firstName, lastName: user?.lastName
-        // }));
-        // localStorage.setItem('portal','admin')
         router.push('/admin/dashboard');
       } catch(error) {
         clearClientTokenCookie();
@@ -100,10 +93,6 @@ export default function AdminLoginPage() {
       setError('Invalid email or password');
     }
     setIsLoading(false);
-  };
-
-  const navigatToSignUp = () => {
-    router.push("/admin/signup");
   };
 
   return (
@@ -163,17 +152,6 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          {/* <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0061D5] hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"/>
-            ) : (
-              'Sign In'
-            )}
-          </button> */}
           <Button
             buttonType="submit"
             disabled={isLoading}
@@ -187,14 +165,6 @@ export default function AdminLoginPage() {
             Forgot password?
           </a>
         </div>
-        {/* <div className="mt-6 text-center">
-          <div className="text-blue-600 text-sm">
-            Don't have an account?{" "}
-            <span className='cursor-pointer hover:text-blue-500' onClick={navigatToSignUp}>
-              Sign up
-            </span>
-          </div>
-        </div> */}
         {/* footer with copyright and some links */}
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>&copy; 2026 MStrategy. All rights reserved.</p>

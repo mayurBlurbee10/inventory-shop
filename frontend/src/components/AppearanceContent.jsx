@@ -14,9 +14,7 @@ const AppearanceContent = () => {
     logo: "",
     primaryColor: "#3B82F6",
     secondaryColor: "#6B7280",
-    // accentColor: "#8B5CF6",
   });
-  // const [config, setConfig] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
 
@@ -28,19 +26,6 @@ const AppearanceContent = () => {
       if (!params?.portalid) {
         return;
       }
-
-      // const response = await fetchWrapper(
-      //   `/api/portal?portalid=${params.portalid}`,
-      //   {},
-      //   "portal-config"
-      // );
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch portal");
-      // }
-
-      // const data = await response.json();
-      // const updatedData = { ...data.data };
 
       // setConfig(updatedData);
       setSelectedTheme((prev) => ({
@@ -329,43 +314,16 @@ const AppearanceContent = () => {
                 className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
               />
             </div>
-            {/* <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Accent Color
-              </label>
-              <input
-                type="color"
-                name="accentColor"
-                value={selectedTheme.accentColor}
-                onChange={handleChange}
-                className="mt-1 block w-full h-10 p-1 rounded-md border border-gray-300"
-              />
-            </div> */}
           </div>
         </div>
       </div>
       <div className="w-full flex flex-col sm:flex-row items-center sm:justify-center md:justify-end gap-1 sm:gap-1 md:gap-5">
-        {/* <button
-          type="button"
-          className="px-8 py-2 text-sm font-medium text-black border rounded-md"
-          onClick={handleResetTheme}
-        >
-          Cancel
-        </button> */}
         <Button
           onClick={handleResetTheme}
           disabled={isLoading}
           type="Secondary"
           label="Cancel"
         />
-        {/* <button
-          type="button"
-          className="px-8 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-          onClick={handleUpdateTheme}
-          disabled={isLoading}
-        >
-          {isLoading ? "Saving..." : "Save"}
-        </button> */}
         <Button
           onClick={handleUpdateTheme}
           disabled={isLoading}

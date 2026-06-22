@@ -6,49 +6,33 @@ import SettingsModal from "./Settings";
 import TechSupport from "./TechSupport";
 import {
   clearCookieByName,
-  getUserData,
-  isAdmin,
-  setUserData,
 } from "@/app/lib/auth";
 import {
-  Activity,
   ArrowLeft,
   Bell,
   Bolt,
   ChartLine,
   ChevronDown,
   ChevronRight,
-  CircleEllipsisIcon,
   CircleUserRound,
-  Database,
-  Ellipsis,
   EllipsisVertical,
-  File,
   FilePen,
   FileText,
-  Folder,
   Headset,
   LayoutDashboard,
   LayoutDashboardIcon,
   LogOut,
   Menu,
-  MessageSquare,
   Plug,
   Settings,
   Signature,
-  SquareActivity,
-  UserRoundPen,
   Users,
 } from "lucide-react";
-import { getSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import AccountInfo from "./AccountInfo";
 import { useDispatch, useSelector } from "react-redux";
-import { setFileList } from "@/store/actions/fileAction";
-import { setLoans } from "@/store/services/loanService";
-import { setPortal } from "@/store/services/portalService";
-import { setCurrentUser } from "@/store/services/userService";
 import { UserRole } from "@/config/constants";
 import { setPages as setReduxPages } from "@/store/services/pageService";
 import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
@@ -61,11 +45,8 @@ function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
-  // const [user, setUser] = useState(null);
   const [userIsAdmin, setUserIsAdmin] = useState(false);
   const [userIsModerator, setUserIsModerator] = useState(false);
-  //   const [config, setConfig] = useState(null);
-  // const [session, setSession] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [accountDropdown, setAccountDropdown] = useState(false);
@@ -83,8 +64,6 @@ function Navbar({ content, config, filterValue }) {
   const [logoutLoading, setLogoutLoading] = useState(false);
   const navbarRef = useRef(null);
   const [navbarHeight, setNavbarHeight] = useState(null);
-
-  const { data: loanData } = useSelector((state) => state.loans);
   const { data: user } = useSelector((state) => state.user);
   const { data: pageData } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
@@ -212,12 +191,6 @@ function Navbar({ content, config, filterValue }) {
     clearCookieByName("clientToken");
   };
 
-  const clearStoreData = () => {
-    dispatch(setFileList(null));
-    dispatch(setLoans(loanData?.length === 3 ? loanData.slice(1) : loanData));
-    dispatch(setPortal(null));
-    dispatch(setCurrentUser(null));
-  };
   const handleLogout = async () => {
     setLogoutLoading(true);
     try {
@@ -399,11 +372,6 @@ function Navbar({ content, config, filterValue }) {
             className="flex items-center px-[18px] py-1 flex-shrink-0"
           >
             {logo ? (
-              // <img
-              //   src={logo.replace("/api/upload", "/uploads")}
-              //   alt={params.portalid}
-              //   className="mr-2 max-h-[60px] max-w-[150px]"
-              // />
               <div
                 className="cursor-pointer"
                 onClick={() => {
@@ -441,9 +409,6 @@ function Navbar({ content, config, filterValue }) {
               }}
             >
               {
-                // content?.portalContent === undefined ? (
-                //   <span className="w-[200px] h-[70px] bg-gray-200 animate-pulse rounded block"></span>
-                // ) :
                 filterValue("Header Text") &&
                   filterValue("Header Text") !== "Premier Customer Portal"
                   ? filterValue("Header Text")
@@ -464,12 +429,6 @@ function Navbar({ content, config, filterValue }) {
                 }
               />
             )}
-            {/* <NavBarItem
-                  title="My Documents"
-                  href={
-                    params.portalid ? `/${params.portalid}/my-docs` : "/my-docs"
-                  }
-                /> */}
 
             {filterPageVisibility("shared-docs") && (
               <NavBarItem
@@ -517,37 +476,6 @@ function Navbar({ content, config, filterValue }) {
                 href={params.portalid ? `/${params.portalid}/forms` : "/forms"}
               />
             )}
-            {/* {customPages?.length > 0 && (
-                    <div className="relative text-gray-800 cursor-pointer mr-5" ref={moreLinksDropdownRef}>
-                      <div onClick={() => setIsOpenMoreLinksDropdown((prev) => !prev)}>
-                        <Ellipsis />
-                      </div>
-
-                      {isOpenMoreLinksDropdown && (
-                        <div className="absolute right-0 mt-2 max-w-60 min-w-48 bg-white shadow-lg rounded-lg border z-30 text-sm">
-                          {customPages.map((page) => (
-                            <div
-                              key={page?.id || page?.title}
-                              className="p-2 hover:bg-gray-100 flex items-center gap-2 px-3"
-                              onClick={() => {
-                                setIsOpenMoreLinksDropdown(false);
-                                router.push(
-                                  params.portalid
-                                    ? `/${params.portalid}/${sanitizeName(
-                                        page?.title
-                                      )}`
-                                    : "/loans"
-                                )
-                              }}
-                            >
-                              <File className="size-5" />
-                              {page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )} */}
             {customPages?.length > 0 &&
               customPages?.map((page) => (
                 <NavBarItem
@@ -563,17 +491,6 @@ function Navbar({ content, config, filterValue }) {
                   }
                 />
               ))}
-            {/* {userIsAdmin && (
-                  <NavBarItem
-                    title="Settings"
-                    href={
-                      params.portalid
-                        ? `/${params.portalid}/settings`
-                        : "/settings"
-                    }
-                  />
-                )} */}
-
           </div>
           {/* Profile dropdown */}
           <div className="hidden lg:flex items-center space-x-8 cursor-pointer">
@@ -671,20 +588,6 @@ function Navbar({ content, config, filterValue }) {
                       Tools
                     </button>
                   )}
-                  {/* {userIsAdmin && (
-                          <button
-                            className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                            onClick={() =>
-                              router.push(
-                                params.portalid
-                                  ? `/${params.portalid}/advisor/dashboard`
-                                  : "/advisor/dashboard"
-                              )
-                            }
-                          >
-                            <UserRoundPen className="h-5 w-5" /> Advisor View
-                          </button>
-                        )} */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

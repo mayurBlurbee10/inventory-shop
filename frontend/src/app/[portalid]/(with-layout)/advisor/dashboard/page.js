@@ -1,10 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-
-import MyTaskPopupBox from "@/components/MyTaskPopupBox";
 import Link from "next/link";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import TasksSection from "@/components/Common/TasksSection";
@@ -23,18 +21,7 @@ import { useSelector } from "react-redux";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
-
-const LoadingSpinner = () => (
-    <div className="min-h-full flex justify-center items-center py-8">
-        <LoaderSpinner size={32} className="text-blue-500" />
-    </div>
-);
-
-
 export default function AdvisorViewDashboard() {
-    const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
-    const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState('');
-    // const [user, setUser] = useState(null);
     const [usersList, setUsersList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const params = useParams();
@@ -228,16 +215,6 @@ export default function AdvisorViewDashboard() {
     return (
         // <Container>
         <div className="max-w-[1820px] mx-auto px-4">
-            {/* <div className="grid grid-cols-1 lg:grid-cols-2 pt-12 pb-4 border-b">
-                <div>
-                    <h2 className="text-xl font-light text-black font-lato">
-                        {`Hello, Erica Smith! Today is ${dayAndDate.day}, ${dayAndDate.month
-                            } ${dayAndDate.date}${dayAndDate.date === 1 ? "st" : ""}${dayAndDate.date === 2 ? "nd" : ""
-                            }${dayAndDate.date === 3 ? "rd" : ""}${dayAndDate.date !== 1 && dayAndDate.date !== 2 && dayAndDate.date !== 3 ? "th" : ""}`}
-                    </h2>
-                </div>
-            </div> */}
-
             <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-10 w-full">
                 <div className="flex flex-col w-full">
                     {filterVisibility("Your Clients Section") && (
@@ -375,79 +352,6 @@ export default function AdvisorViewDashboard() {
                     {filterVisibility("My Task Section") && (
                         <TasksSection />
                     )}
-                    {/* <div>
-                            <div className="grid grid-cols-3">
-                                <div></div>
-                                <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                                    Your Tasks
-                                </h3>
-                                <div className="flex items-center justify-end text-[#dc3545]">
-                                    <RotateCw className="h-4 w-4" />
-                                </div>
-                            </div>
-                           
-                            <div className="mb-7">
-                                <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
-                                    <tbody className="divide-y divide-gray-200 ">
-                                        <tr>
-                                            <td className="ps-3 py-4">
-                                                <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                                            </td>
-                                            <td className="px-3 py-4">
-                                                <p className="font-lato text-[#212529] text-sm">
-                                                    Investment Forms
-                                                </p>
-                                            </td>
-                                            <td className="px-3 py-4">
-                                                <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                                                    onClick={() => {
-                                                        setMyTaskPopupBoxContent({
-                                                            title: "Investment Forms",
-                                                            actionText: "Review"
-                                                        });
-                                                        setIsMyTaskPopupOpen((prev) => !prev);
-                                                    }}
-                                                >
-                                                    Review
-                                                </p>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="ps-3 py-4">
-                                                <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                                            </td>
-                                            <td className="px-3 py-4">
-                                                <p className="font-lato text-[#212529] text-sm">
-                                                    Upload lease agreements
-                                                </p>
-                                            </td>
-                                            <td className="px-3 py-4">
-                                                <p className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                                                    onClick={() => {
-                                                        setMyTaskPopupBoxContent({
-                                                            title: "Upload lease agreements",
-                                                            actionText: "Upload"
-                                                        });
-                                                        setIsMyTaskPopupOpen((prev) => !prev);
-                                                    }}
-                                                >
-                                                    Upload
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                {
-                                    isMyTaskPopupOpen && (
-                                        <MyTaskPopupBox
-                                            onClose={() => setIsMyTaskPopupOpen(false)}
-                                            content={myTaskPopupBoxContent}
-
-                                        />
-                                    )
-                                }
-                            </div>
-                    </div> */}
                     {filterVisibility("Messaging") && (
                         <MessageSection />
                     )}

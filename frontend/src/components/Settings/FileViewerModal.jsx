@@ -4,34 +4,6 @@ import FileExplorer from "../FileExplorer";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
-const processBoxFiles = (files) => {
-  if (!files) return;
-  const itemsMap = new Map();
-  const rootItems = [];
-
-  files.forEach((file) => {
-    const item = {
-      id: file.id,
-      name: file.name,
-      type: file.type || "file",
-      size: file.size,
-      created_at: file.created_at,
-      modified_at: file.modified_at,
-      children: [],
-    };
-    itemsMap.set(file.id, item);
-
-    if (!file.parent || !itemsMap.has(file.parent?.id)) {
-      rootItems.push(item);
-    } else {
-      const parent = itemsMap.get(file.parent.id);
-      parent?.children.push(item);
-    }
-  });
-
-  return rootItems;
-};
-
 const FileViewerModal = ({ isOpen, onClose, user }) => {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,11 +22,6 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
           },
           body: JSON.stringify({ collaborated: user?.collaborationIds, boxUserId: user?.boxUserId }),
         };
-
-        // const response = await fetchWrapper(
-        //   `/api/box/files?folderId=${encodeURIComponent(user.folderId)}`,{},
-        //   "fetch-file"
-        // );
 
         const response = await fetchWrapper(
           `/api/box/collaborations`,

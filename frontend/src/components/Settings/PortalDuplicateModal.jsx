@@ -1,6 +1,6 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog } from "@headlessui/react";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import React, { useState } from "react";
 import Button from "../Common/Elements/Button";
 
@@ -154,19 +154,6 @@ const PortalDuplicateModal = ({
                 label="Cancel"
                 type="Secondary"
               />
-              {/* <button
-                onClick={handleDuplicate}
-                disabled={isLoading}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-                 isLoading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-[#0061D5] hover:bg-blue-600"
-                }`}
-              >
-                {isLoading
-                  ? "Creating..."
-                  : "Create Portal"}
-              </button> */}
               <Button
                 onClick={handleDuplicate}
                 disabled={isLoading}

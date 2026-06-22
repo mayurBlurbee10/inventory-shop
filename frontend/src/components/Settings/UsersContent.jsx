@@ -163,13 +163,6 @@ const UsersContent = () => {
               Manage user accounts, roles, and permissions efficiently
             </p>
           </div>
-          {/* <button
-            onClick={() => setShowAddModal(true)}
-           className="w-full sm:w-auto flex flex-col sm:flex-row items-center justify-center px-4 py-2 text-white bg-[#2463EB] rounded-md hover:bg-[#2463EB]"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add User
-          </button> */}
           <Button
           onClick={() => setShowAddModal(true)}
           type="Primary"
@@ -177,15 +170,6 @@ const UsersContent = () => {
           icon={PlusCircle}
           />
         </div>
-        {/* <div>
-          <button
-            onClick={() => setShowUploadArea(true)}
-            className="px-4 py-2 border border-[#2463EB] text-[#2463EB] bg-white rounded-md inline-flex items-center transition-colors duration-200 hover:bg-[#2463EB] hover:text-white focus:outline-none focus:ring focus:ring-[#2463EB]/50"
-          >
-            <Import className="w-4 h-4 mr-2" />
-            Bulk Import
-          </button>
-        </div> */}
       </div>
 
       {showUploadArea && (

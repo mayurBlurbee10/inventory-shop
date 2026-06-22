@@ -9,14 +9,9 @@ import { toast } from "react-toastify";
 import {
   IdCard,
   LockKeyhole,
-  UserRound,
-  SquarePen,
-  User,
-  Building,
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { getSession, signIn } from "next-auth/react";
-import { getUserData } from "@/lib/auth";
+import { getSession } from "next-auth/react";
 import TNCModal from "./TNCModal";
 import { PluginType, UserRole } from "@/config/constants";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,10 +28,6 @@ import {
 import { setContent } from "@/store/services/contentService";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
-const NavBarItem = ({ title }) => (
-  <button className="px-1 py-2 text-gray-500 ">{title}</button>
-);
-
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <LoaderSpinner size={24} className="text-blue-500" />
@@ -46,16 +37,12 @@ const LoadingSpinner = () => (
 function Login() {
   const router = useRouter();
   const params = useParams();
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const [content, setContent] = useState(null);
-  // const [config, setConfig] = useState(null);
   const [isLoadingLogin, setIsLoadingLogin] = useState(false);
   const [isLoadingOkta, setIsLoadingOkta] = useState(false);
   const [session, setSession] = useState(null);
-  // const [user, setUser] = useState(null);
   const [isTNCOpen, setIsTNCOpen] = useState(false);
   const [tncPage, setTncPage] = useState(null);
   const [ndaPages, setNdaPages] = useState([]);
@@ -65,41 +52,6 @@ function Login() {
   const { data: user } = useSelector((state) => state.user);
   const { data: pages } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
-
-  const fetchPlugins = async () => {
-    try {
-      const encodedType = encodeURIComponent(PluginType.PAGES);
-      const response = await fetchWrapper(
-        `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
-        {},
-        "fetch-pages",
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch plugins");
-      }
-      const data = await response.json();
-
-      const pageData = data?.data[0]?.pages || [];
-      dispatch(setPages(pageData));
-      const filterPagePlugin = pageData.filter(
-        (item) => !item.isCustomPage && item.isPageVisible,
-      );
-      let pageToRedirect = filterPagePlugin?.find(
-        (item) => item?.title === "dashboard",
-      );
-      if (!pageToRedirect) {
-        pageToRedirect = filterPagePlugin?.find(
-          (item) => item?.title === "shared-docs",
-        );
-        pageToRedirect.pageTitle = "shared documents";
-      } else {
-        pageToRedirect.pageTitle = "dashboard";
-      }
-      return pageToRedirect;
-    } catch (error) {
-      console.error("Error fetching plugins:", error);
-    }
-  };
 
   const fetchNdaPages = async () => {
     try {
@@ -186,30 +138,6 @@ function Login() {
     // setUser(user);
     dispatch(setCurrentUser(user));
     return user;
-  };
-
-  const fetchUser = async () => {
-    try {
-      const encodedEmail = encodeURIComponent(email);
-      const response = await fetchWrapper(
-        `/api/users?email=${encodedEmail}`,
-        {},
-        "fetch-user",
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user");
-      }
-      const data = await response.json();
-      const validatedUser = await validateUserAccess(
-        data,
-        config,
-        params.portalid,
-      );
-      return validatedUser;
-    } catch (error) {
-      console.log("error: ", error);
-    }
   };
 
   const handleCheckForTNC = async (e) => {
@@ -339,22 +267,6 @@ function Login() {
     return value;
   };
 
-  const login = async () => {
-    try {
-      setIsLoadingOkta(true);
-      const userData = await fetchUser();
-      if (userData && tncPage && !userData?.isTNCAccepted) {
-        setIsTNCOpen(true);
-        return;
-      }
-      await signIn("okta");
-      setIsLoadingOkta(false);
-    } catch (error) {
-      console.log("error: ", error);
-    } finally {
-      setIsLoadingOkta(true);
-    }
-  };
   const getUserDetailsByEmail = async (email) => {
     try {
       let url = `/api/users/loginByProvider`;
@@ -392,12 +304,6 @@ function Login() {
       }
     };
     fetchSession().then(() => {
-      // const userData = getUserData();
-      // if (!userData) {
-      //   router.push("login");
-      //   return;
-      // }
-      // setUser(userData);
     });
   }, [router]);
 
@@ -485,25 +391,9 @@ function Login() {
           className="flex justify-between items-center bg-secondary py-2 px-2 border-b"
           style={{ backgroundColor: config?.primaryColor }}
         >
-          {/* <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
-            <img
-              // src="/default_logo_purple.png"
-              src={config?.logo || "/logo.png"}
-              alt="Wealthportal"
-              className="h-[52px] mr-2"
-            />
-            <span className="text-3xl text-[#000000e6] mb-1 font-lato">
-              {filterValue("Header Text")}
-            </span>
-          </a> */}
           <div className="max-w-[1140px] w-full mx-auto">
             <a className=" flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
               {user?.company?.logo || config?.logo ? (
-                // <img
-                //   src={config?.logo || "/logo.png"}
-                //   alt={params.portalid}
-                //   className="h-[52px] mr-2"
-                // />
                 <LogoImage />
               ) : (
                 // Skeleton for logo
@@ -549,10 +439,6 @@ function Login() {
                     {filterValue("Title")}
                     {/* Wealth Management */}
                   </h2>
-                  {/* <p className="text-2xl text-[#808080] leading-tight mb-2 font-lato">
-                  {filterValue("Paragraph")}
-                </p> */}
-                  {/* GREEN LINE */}
                   <div
                     style={{ backgroundColor: config?.primaryColor }}
                     className="p-[1px] w-full"
@@ -566,9 +452,6 @@ function Login() {
                       color: filterTheme("Paragraph").color,
                     }}
                   >
-                    {/* Financial decisions are complicated. But they don't have to
-                  be. Whether you're planning for retirement or growing your
-                  business, let us help you reach your financial goals. */}
                     {filterValue("Paragraph")}
                   </p>
                   <div className="w-full flex justify-center">
@@ -585,17 +468,6 @@ function Login() {
             {/* Right Panel - Login Form */}
             <div className="w-full md:w-full lg:w-full xl:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
               <div className="w-full max-w-xl bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
-                {/* <div className="text-center mb-8">
-                <img
-                  src="/logo2.png"
-                  alt="Wealthportal"
-                  className="h-12 w-auto mx-auto"
-                />
-                <p className="text-text/60 mt-2">
-                  Log in here to access your account
-                </p>
-              </div> */}
-
                 <form onSubmit={handleCheckForTNC}>
                   <div className="">
                     <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">

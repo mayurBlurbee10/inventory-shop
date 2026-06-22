@@ -1,5 +1,5 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { PlusCircle, X, Pencil, Trash2, Edit } from "lucide-react";
+import { X, Pencil, Trash2, Edit } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useParams, useRouter, usePathname } from "next/navigation";
@@ -52,14 +52,8 @@ const ContentManagementContent = ({
   const { data: config } = useSelector((state) => state.portal);
   const [editTarget, setEditTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-
   const [isLoadingRemoveContent, setIsLoadingRemoveContent] = useState(false);
   const { data: contentData } = useSelector((state) => state.content);
-  // const [colors, setColors] = useState({
-  //   primaryColor : config.primaryColor,
-  //   secondaryColor : config.secondaryColor,
-  //   accentColor : config.accentColor
-  // })
 
   const dispatch = useDispatch();
 
@@ -126,104 +120,6 @@ const ContentManagementContent = ({
     }
   };
 
-  // Handle form submission
-  const handleAddEditContent = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsSubmitting(true);
-
-    try {
-      let imageUrl = "";
-
-      // Handle file upload if it exists
-      if (file) {
-        const uploadData = new FormData();
-        uploadData.append("file", file);
-
-        const uploadResponse = await fetchWrapper(
-          "/api/upload",
-          {
-            method: "POST",
-            body: uploadData,
-          },
-          "content-image"
-        );
-
-        if (!uploadResponse.ok) {
-          throw new Error("Failed to upload logo");
-        }
-
-        const uploadResult = await uploadResponse.json();
-        imageUrl = uploadResult.url;
-      }
-
-
-      // Construct payload with specific cases for fontSize and links
-      const obj = imageUrl
-        ? {
-          ...newContent,
-          fontSize: newContent.fontSize, // Add fontSize here
-          portalId: params.portalid ?? "root",
-        }
-        : newContent.type === "Links"
-          ? {
-            ...newContent,
-            value: JSON.stringify(linkFields),
-            fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "root",
-          }
-          : {
-            ...newContent,
-            fontSize: newContent.fontSize, // Add fontSize here
-            portalId: params.portalid ?? "root",
-          };
-
-      console.log("newContentPayload : ", obj);
-
-      // Make the API request
-      const requestOptions = {
-        method: isEditMode ? "PUT" : "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(obj),
-      };
-
-      const apiType = isEditMode
-        ? "edit-content"
-        : "add-content";
-
-      const response = await fetchWrapper(
-        `/api/contentManagement`,
-        requestOptions,
-        apiType
-      );
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Content length is too long");
-      }
-
-      // Refresh data and close the modal
-      fetchData();
-      handleModalClose();
-
-      toast.success(
-        `${apiType === "edit-content"
-          ? "Content updated successfully"
-          : "Content added successfully"
-        }`
-      );
-    } catch (error) {
-      toast.error(error.message);
-      console.error("Error adding content:", error);
-      setError(error.message || "An unexpected error occurred");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-
   const handleModalOpenForEdit = (contentId) => {
     const contentToEdit = content.find((item) => item.id === contentId);
     const fontSize = fontSizes.find((item) => item.key === contentToEdit.title)
@@ -241,46 +137,6 @@ const ContentManagementContent = ({
       setLinkFields(
         JSON.parse(contentToEdit.value) || [{ label: "", link: "" }]
       );
-    }
-  };
-
-  const handleModalClose = () => {
-    setNewContent({
-      title: "",
-      type: "",
-      value: "",
-      fontSize: "",
-    });
-    setLinkFields([{ label: "", link: "" }]);
-    setIsEditMode(false);
-    setIsDialogOpen(false);
-    setError("");
-    setPreviewUrl("");
-    setFile(null);
-    setContentTypes(originalContentTypes);
-  };
-
-  const handleTitleChange = (e) => {
-    const selectedTitle = e.target.value;
-    if (selectedTitle === "add-new") {
-      setIsNewTitleDialogOpen(true);
-      setNewContent((prev) => ({
-        ...prev,
-        title: "",
-        type: "",
-        fontSize: "",
-      }));
-    } else {
-      const selectedType =
-        contentTypes.find((type) => type.title === selectedTitle)?.type || "";
-      setNewContent((prev) => ({
-        ...prev,
-        title: selectedTitle,
-        type: selectedType,
-        fontSize: newContent.fontSize,
-      }));
-      setPreviewUrl("");
-      setFile(null);
     }
   };
 
@@ -329,40 +185,6 @@ const ContentManagementContent = ({
     setNewTitle("");
     setNewType("");
     setIsNewTitleDialogOpen(false);
-  };
-
-  const handleValueChange = (e) => {
-    setNewContent((prev) => ({ ...prev, value: e.target.value }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
-
-  const handleLinkChange = (index, field, value) => {
-    const updatedLinks = linkFields?.map((item, idx) =>
-      idx === index ? { ...item, [field]: value } : item
-    );
-    setLinkFields(updatedLinks);
-  };
-
-  const handleRemoveLinkField = (index) => {
-    const updatedLinks = linkFields?.filter((_, idx) => idx !== index);
-    setLinkFields(updatedLinks);
-  };
-
-  const handleAddLinkField = () => {
-    if (
-      linkFields?.length < 10 &&
-      linkFields[linkFields?.length - 1].label != "" &&
-      linkFields[linkFields?.length - 1].link != ""
-    ) {
-      setLinkFields([...linkFields, { label: "", link: "" }]);
-    }
   };
 
   const addContent = () => {
@@ -437,10 +259,6 @@ const ContentManagementContent = ({
   const router = useRouter();
   const manageContentNavigate = () => {
     router.push("onboarding");
-  }
-  const handleSubmitData = () => {
-    console.log("Handle Sumbit Data");
-
   }
 
   const filterValue = (title) => {

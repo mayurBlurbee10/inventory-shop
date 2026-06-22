@@ -9,7 +9,6 @@ import {
   Mail,
   Phone,
   Briefcase,
-  Shield,
   Image,
   Building,
   UserPlus,
@@ -18,7 +17,6 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../Common/Elements/Button";
-import { useDispatch } from "react-redux";
 import Select from "react-select";
 
 const customStyles = {
@@ -124,7 +122,6 @@ function ViewProfileModal({
     setError("");
     setPhoneError("");
   };
-  const dispatch = useDispatch();
   const isFormChanged = () => {
     const keys = Object.keys(formData);
     return keys.some((key) => {
@@ -572,12 +569,6 @@ function ViewProfileModal({
               </div>
             </div>
               <div className="flex flex-wrap justify-end gap-2 sticky bottom-0 bg-white border-t p-4">
-                {/* <Button
-                  type="Secondary"
-                  onClick={handleModelClose}
-                  disabled={isLoading || isDeleteLoading}
-                  label="Cancel"
-                /> */}
                   <Button
                     onClick={() => {
                       setIsDeleteModalOpen(user);
@@ -652,20 +643,6 @@ function ViewProfileModal({
                     type="Secondary"
                     label="Close"
                   />
-                  {/* <button
-                    type="button"
-                    className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors"
-                    onClick={handleDeleteAccount}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="spinner"></div> Deleting This Account
-                      </div>
-                    ) : (
-                      "Delete This Account"
-                    )}
-                  </button> */}
 
                   <Button
                     onClick={handleDeleteAccount}

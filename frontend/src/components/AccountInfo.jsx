@@ -1,10 +1,8 @@
-import { X, Phone, FileSearch, Calculator, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
-import { signOut } from "next-auth/react";
-import { clearUserData } from "@/app/lib/auth";
 import Button from "./Common/Elements/Button";
 import AddUserModal from "./Settings/AddUserModal";
 
@@ -20,12 +18,6 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const handleLogout = async () => {
-    clearUserData();
-    await signOut(); 
-    // router.push("login");
-  };
 
   const handleSetPassword = async (e) => {
     e.preventDefault();
@@ -190,13 +182,6 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
           </div>
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row justify-start space-y-2 sm:space-y-0 sm:space-x-4">
-            {/* <button
-              type="button"
-              onClick={() => setIsChangePassModalOpen((prev) => !prev)}
-              className="px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
-            >
-              Change Password
-            </button> */}
             <Button
               onClick={() => setIsChangePassModalOpen((prev) => !prev)}
               type="Secondary"
@@ -207,12 +192,6 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
               type="Secondary"
               label="Edit Profile"
             />
-            {/* <button
-                            type="button"
-                            className="px-4 sm:px-6 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                            Forget Password
-                        </button> */}
           </div>
         </div>
       </div>
@@ -290,13 +269,6 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                   )}
 
                   <div className="w-full flex justify-center mt-2">
-                    {/* <button
-                    type="submit"
-                    className="w-full px-4 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 disabled:bg-gray-400"
-                    disabled={loading}
-                  >
-                    {loading ? "Setting..." : "Set Password"}
-                  </button> */}
                     <Button
                       buttonType="submit"
                       disabled={loading}

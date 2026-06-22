@@ -1,12 +1,10 @@
 'use client'
 import AppearanceContent from '@/components/AppearanceContent';
-import BoxSettingsContent from '@/components/Settings/BoxSettingsContent';
 import ContentManagementContent from '@/components/Settings/ContentManagementContent';
 import IdentityManagementContent from '@/components/Settings/IdentityManagementContent';
-import InvoicingContent from '@/components/Settings/InvoicingContent';
 import ProductsContent from '@/components/Settings/ProductsContent';
 import UsersContent from '@/components/Settings/UsersContent';
-import { Box, ChevronRight, FileSpreadsheet, FileText, Layout, Plug, ShoppingBag, Users } from 'lucide-react';
+import { ChevronRight, FileText, Layout, Plug, ShoppingBag, Users } from 'lucide-react';
 import React, { useState } from 'react'
 
 function SettingsPage() {
@@ -18,9 +16,7 @@ function SettingsPage() {
       { id: 'products', label: 'Widgets', icon: ShoppingBag },
       { id: 'content', label: 'Content', icon: FileText },
       { id: 'identity', label: 'Identity Management', icon: Users },
-      // { id: 'invoicing', label: 'Forms', icon: FileSpreadsheet },
       { id: 'Integrations', label: 'Integrations', icon: Plug },
-      // { id: 'box', label: 'Box Settings', icon: Box }
     ];
   
     const getActiveContent = () => {
@@ -33,10 +29,6 @@ function SettingsPage() {
           return <IdentityManagementContent />;
         case 'content':
           return <ContentManagementContent isManageRequired="true"/>;
-        // case 'invoicing':
-        //   return <InvoicingContent />;
-        // case 'box':
-        //   return <BoxSettingsContent />;
         case 'Integrations':
           return <div><h1 className='text-gray-700'>Coming Soon..</h1></div>;
         case 'products':
@@ -126,82 +118,9 @@ function SettingsPage() {
           })}
         </nav>
       </div>
-      {/* {isSideBarOpen && (
-        <div className="absolute z-40 top-0 left-0 h-[87vh] flex">
-          <div className="w-72 border-r border-[#dee2e6] p-3 bg-white text-gray-700 max-w-xs shadow-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-md text-gray-800 font-semibold">
-                Manage Portal
-              </h2>
-              <div
-                className="hover:bg-gray-100 rounded-full flex justify-start p-1 cursor-pointer"
-                onClick={() => setIsSideBarOpen(false)}
-              >
-                <X className="w-6 h-6 " />
-              </div>
-            </div>
-            {tabs.map(({ id, label, icon: Icon }) => {
-              const isActive = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  onClick={() => {
-                    handleTabChange(id);
-                    setIsSideBarOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ease-in-out hover:font-bold
-          ${isActive ? "font-semibold" : "text-gray-700/90 hover:bg-blue-600/10"
-                    }`}
-                  style={{
-                    backgroundColor: isActive
-                      ? config.accentColor
-                      : "transparent", // <-- your active bg color
-                    color: isActive ? config.secondaryColor : "",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = config.secondaryColor;
-                      e.currentTarget.style.backgroundColor =
-                        config.accentColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = ""; // reset to gray
-                      e.currentTarget.style.backgroundColor = "";
-                    }
-                  }}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div>
-                      <Icon
-                        className="w-5 h-5"
-                        style={{
-                          color: isActive ? config.secondaryColor : "inherit",
-                        }}
-                      />
-                    </div>
-                    <span className="text-left">{label}</span>
-                  </div>
-                  <div>
-                    <ChevronRight
-                      className="w-4 h-4"
-                      style={{
-                        color: isActive ? config.secondaryColor : "inherit",
-                      }}
-                    />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )} */}
       <div className="w-full p-6 overflow-y-auto mt-6 lg:mt-0">
         {getActiveContent()}
       </div>
-    
-
     </div>
     );
 }

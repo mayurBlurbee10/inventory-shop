@@ -1,21 +1,15 @@
 "use client";
-import { clearUserData, getUserData, isAdmin } from "@/app/lib/auth";
-import Header from "@/components/Header";
+import { getUserData } from "@/app/lib/auth";
 import SettingsModal from "@/components/Settings";
-import Sidepanel from "@/components/Sidepanel";
 import SignRequestModal from "@/components/SignRequestModal";
-import { Bell, ChevronDown, ChevronUp, Eye, Loader2, X } from "lucide-react";
+import { Bell, ChevronDown, ChevronUp, Eye } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { encryptMessage } from "@/app/lib/crypto";
-import { setPortal } from "@/store/services/portalService";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
-import { Dialog } from "@headlessui/react";
-import Button from "@/components/Common/Elements/Button";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
 const TrackStatus = ({ trackedRequests }) => {
@@ -170,8 +164,6 @@ const TrackStatus = ({ trackedRequests }) => {
 function ESignature() {
   const router = useRouter();
   const params = useParams();
-  // const [config, setConfig] = useState(null);
-  // const [user, setUser] = useState(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -179,16 +171,12 @@ function ESignature() {
   const [trackedRequests, setTrackedRequest] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
-  const userIsAdmin = isAdmin();
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewFileId, setPreviewFileId] = useState(false);
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
-
-  const { data: config } = useSelector((state) => state.portal);
   const { data: user } = useSelector((state) => state.user);
   const {data : pages } = useSelector((state)=>state.pages);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const page = pages?.find((page) => page.title === "esignature");
@@ -205,21 +193,6 @@ function ESignature() {
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      // const response = await fetchWrapper(
-      //   `/api/portal?portalid=${params.portalid}`,
-      //   {},
-      //   "portal-login"
-      // );
-      // const data = await response.json();
-      // if (!data.data && response.status === 404) {
-      //   router.push(`/${params.portalid}/not-found`);
-      //   return;
-      // }
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch users");
-      // }
-
-      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     }
@@ -254,19 +227,6 @@ function ESignature() {
       setIsSignModalOpen(true);
     }
   };
-
-  const handleLogout = async () => {
-    clearUserData();
-    toast.success("User signout successfully");
-    router.push("login");
-  };
-
-  // useEffect(() => {
-  //   if (!isSignModalOpen) {
-  //     const userData = getUserData();
-  //     fetchSignRequests(userData);
-  //   }
-  // }, [isSignModalOpen]);
 
   useEffect(() => {
     const userData = getUserData();

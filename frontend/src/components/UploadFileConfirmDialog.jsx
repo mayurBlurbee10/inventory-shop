@@ -166,43 +166,15 @@ const UploadFileConfirmDialog = ({
 
                 <div
                   className="text-gray-600 mb-4"
-                // dangerouslySetInnerHTML={{
-                //   __html: location,
-                // }}
                 >
                   <div>
                     <div>Location: Home{path}</div>
                     <div>Name: {[...location, ...fileLocation].join(", ")}</div>
                   </div>
-
-                  {/* <div>
-                        <div>Location: Home{path}</div>
-                        <div>Name: {[...fileLocation].join(", ")}</div>
-                      </div> */}
                 </div>
               </>
 
               <div className="flex justify-center space-x-3">
-                {/* <button
-                  onClick={() => {
-                    setLocation([]);
-                    setIsModalOpen(false);
-                  }}
-                  className={`px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md  ${
-                    isLoading
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-white cursor-pointer"
-                  }`}
-                  style={{
-                    backgroundColor: config?.secondaryColor || "#0061D5",
-                  }}
-                >
-                  {isLoading ? (
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-                  ) : (
-                    "Done"
-                  )}
-                </button> */}
                 <Button
                   onClick={() => {
                     setLocation([]);

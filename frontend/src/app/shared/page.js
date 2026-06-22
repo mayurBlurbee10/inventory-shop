@@ -1,29 +1,17 @@
 "use client";
-import Dashboard from "@/components/Dashboard";
+
 import * as React from 'react';
 import Footer from "@/components/Footer";
 import LinearProgress from '@mui/material/LinearProgress';
-import ActionButtons from "@/components/ActionButtons";
 
 import {
   AlignJustify,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  Ellipsis,
-  FileUp,
   Folder,
   File,
-  FolderRoot,
   Minus,
-  Pencil,
   Plus,
-  SquarePen,
   RotateCw,
-  Search,
   X,
-  Loader2,
-  FolderPlus,
   FolderInput,
   Download,
   Trash2,
@@ -35,8 +23,6 @@ import {
 import { useRouter, useParams, usePathname, } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { getUserData } from "@/lib/auth";
-import EmptyState from "@/components/FileExplorer/EmptyState";
-import FolderExplorer from "@/components/FolderExplorer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import SharedFolderExplorer from "@/components/MyDocumentsExplorer";
@@ -53,16 +39,11 @@ import { signOut } from "next-auth/react";
 import Link from 'next/link';
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
-import { setPortal } from "@/store/services/portalService";
-import { useDispatch, useSelector } from "react-redux";
-
-
-
+import { useSelector } from "react-redux";
 
 export default function SharedPage() {
   // return <Dashboard fileType={'my'}/>;
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
-  const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
   const [filesList, setFilesList] = useState(null);
   const [filteredFilesList, setFilteredFilesList] = useState(filesList);
@@ -78,7 +59,6 @@ export default function SharedPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [showUploadArea, setShowUploadArea] = useState(false);
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
-  const [folderName, setFolderName] = useState("");
   const fileInputRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isToolbarVisible, setIsToolbarVisible] = useState(false);
@@ -88,7 +68,6 @@ export default function SharedPage() {
   const [moveItem, setMoveItem] = useState(null);
   const [uploadedfilePath, setUpladedFilePath] = useState("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  // const [config, setConfig] = useState(null);
   const [content, setContent] = useState(null);
   const params = useParams();
   const [footerLoading, setFooterLoading] = useState(false);
@@ -97,7 +76,6 @@ export default function SharedPage() {
   const pathname = usePathname();
 
   const { data: config } = useSelector((state) => state.portal);
-  const dispatch = useDispatch()
 
 
   const handleBrowse = (event) => {
@@ -117,54 +95,6 @@ export default function SharedPage() {
     // Calculate percentage for the custom CSS variable
     const percentage = ((5 - value) / 4) * 100; // 5 should be 0%, 1 should be 100%
     e.target.style.setProperty("--value-percent", percentage);
-  };
-
-  const handleCreateFolder = async () => {
-    if (!folderName.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const userData = getUserData();
-      let obj = {
-        name: folderName,
-        boxFolderId: userData.boxFolderId,
-      };
-      console.log(selectedItem);
-      if (!!selectedItem && selectedItem.type == "folder") {
-        obj.boxFolderId = selectedItem.id;
-      }
-      const response = await fetchWrapper(
-        "/api/box/folders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(obj),
-        },
-        "create-folder"
-      );
-
-      const folderResponse = await response.json();
-
-      if (!response.ok)
-        throw new Error(folderResponse.error || "Failed to create folder");
-
-      setShowSuccess(true);
-      setFolderName("");
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setShowSuccess(false);
-        setIsModalOpen(false);
-        onFolderCreated();
-      }, 3000);
-      toast.success("Folder created successfully");
-    } catch (error) {
-      toast.error(error.message);
-      console.error("Error creating folder:", error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleFileSelect = async (event) => {
@@ -234,27 +164,6 @@ export default function SharedPage() {
       const requestOptions = {
         method: "GET",
       };
-      // if (fileType === "shared") {
-      //   if (
-      //     userData?.collaborationIds &&
-      //     userData.collaborationIds.length > 0
-      //   ) {
-      //     const requestOptions = {
-      //       method: "POST",
-      //       body: JSON.stringify({ collaborated: userData.collaborationIds }),
-      //     };
-      //     const response = await fetchWrapper(
-      //       `/api/box/collaborations`,
-      //       requestOptions,
-      //       "fetchCollaboratedFolder"
-      //     );
-      //     if (!response.ok)
-      //       throw new Error("Failed to get collaborated folder");
-      //     const data = await response.json();
-      //     const newFilesList = data?.items;
-      //     setFilesList(newFilesList);
-      //   }
-      // } else {
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData?.boxFolderId}`,
         requestOptions,
@@ -340,63 +249,6 @@ export default function SharedPage() {
       </Link>
     );
   };
-  // const NavBarItem = ({ title, href }) => (
-  //   <Link href={href} >
-  //     <button className="px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm">
-  //       {title}
-  //     </button>
-  //   </Link>
-  // );
-
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleDropdown = () => {
-    setIsOpen((prev) => !prev);
-  };
-
-  // const [inputText, setInputText] = useState("");
-  // const [searchItem, setSearchItem] = useState("");
-
-  // let inputHandler = (e) => {
-
-  //   var lowerCase = e.target.value.toLowerCase();
-
-  //   setInputText(lowerCase);
-  //   console.log(filesList)
-  //   console.log(inputText);
-
-  //     const filtered = filesList.filter(item =>
-  //       item.name.toLowerCase().includes(lowerCase) 
-  //     );
-
-  //     setSearchItem(filtered);
-
-  //     if(filtered!=''){
-  //       setFilesList(filtered);
-  //     }
-  //    else{
-
-  //      setFilesList(filesList)
-  //      console.log('filelist',filesList)
-  //    }
-
-
-  //     console.log('search:', filtered)
-  // };
-
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-
-    if (value.trim() === "") {
-      setSuggestions([]);
-      return;
-    }
-
-    const results = searchWithPaths(filesList, value);
-    setSuggestions(results);
-  };
 
   const searchWithPaths = (nodes, query, currentPath = []) => {
     const results = [];
@@ -449,13 +301,6 @@ export default function SharedPage() {
     setSuggestions([]);
   };
 
-  const handelClearSearch = () => {
-    setSearchQuery("");
-    setSuggestions([]);
-    setCurrentFilesList(filesList);
-    setPath([]);
-  };
-
   useEffect(() => {
     // If no searchQuery, reset the currentFilesList to either filesList or path's last child
     if (!searchQuery) {
@@ -496,33 +341,6 @@ export default function SharedPage() {
     // Cleanup function to clear the timer
     return () => clearTimeout(timer);
   }, [searchQuery, selectedItem, filesList, path]); // Include necessary dependencies
-
-
-  // This is Old Code and Above UseEffect is Updated
-  // useEffect(() => {
-  //   if (!searchQuery) {
-  //     setCurrentFilesList(
-  //       path.length === 0 ? filesList : path[path.length - 1].children
-  //     );
-  //     setIsSearching(false);
-  //     return;
-  //   }
-
-  //   setIsSearching(true);
-
-  //   const timer = setTimeout(() => {
-  //     const source =
-  //       path.length === 0 ? filesList : path[path.length - 1].children;
-  //     const results = source.filter((item) =>
-  //       item?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  //     );
-  //     setCurrentFilesList(results);
-  //     setIsSearching(false);
-  //   }, 300);
-
-  //   return () => clearTimeout(timer);
-  // }, [searchQuery, selectedItem]);
-
 
   const getFolderPath = (data, folderId, currentPath = "") => {
 
@@ -823,12 +641,6 @@ export default function SharedPage() {
     setContent(data);
   };
 
-  const LoadingSpinner = () => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-
   // if (!config || !content) return <LoadingSpinner />;
   const userIsAdmin = isAdmin();
 
@@ -907,57 +719,6 @@ export default function SharedPage() {
                 </div>
               </div>
 
-              {/* <div className="relative">
-                <button className="flex items-center justify-center gap-1 text-black p-2 rounded-md hover:bg-gray-100 transition-all ease-in-out duration-200" onClick={toggleDropdown}>
-                  <div
-                    className={`w-8 h-8 xl:w-10 xl:h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-105 ${userIsAdmin ? "bg-blue-600" : "bg-gray-700"
-                      }`}
-                  >
-                    {user?.firstName?.charAt(0) || "U"}
-                  </div>
-                  <div className="flex flex-col text-sm xl:text-base">
-                    <span className="text-gray-900 font-medium">{`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}</span>
-                    {userIsAdmin && (
-                      <span className="text-blue-600 text-sm font-medium">
-                        Administrator
-                      </span>
-                    )}
-                  </div>
-                  <span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="18"
-                      height="18"
-                      fill="currentColor"
-                    >
-                      <path d="M12 16L6 10H18L12 16Z"></path>
-                    </svg>
-                  </span>
-                </button>
-
-                
-                <div
-                  className={`absolute top-[50px] right-0 w-48 bg-white py-3 rounded-md border border-[#e8e8e8] ${isOpen ? 'block' : 'invisible'}`}
-                >
-                  <ul>
-                    <li>
-                      <button className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100">
-                        Advisor view
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        className="p-3 w-full text-base text-start font-lato text-[#212529] font-normal hover:bg-gray-50 transition-all ease-in-out duration-100"
-                        onClick={handleLogout}
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div> */}
-
               {/* Edit button */}
               <button className="h-5 w-5 rounded-sm text-white bg-[#17a2b8] flex items-center justify-center">
                 <svg
@@ -1016,46 +777,7 @@ export default function SharedPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className={'relative border w-full mx-4 h-9 rounded-md shadow-inner pl-4 text-sm outline-none focus:outline-1 focus:outline-blue-500 focus:outline-offset-0 pr-4'}
-
                     />
-
-                    {/* {searchQuery.length > 0 && (
-                      <div
-                        onClick={handelClearSearch}
-                        className="absolute flex items-center justify-center inset-y-1/2 -translate-y-1/2 right-2 h-9 w-9 rounded-full hover:bg-gray-200 cursor-pointer"
-                      >
-                        <X className="h-5 w-5 text-[#3c4043]" />
-                      </div>
-                    )} */}
-
-                    {/* Suggestions */}
-                    {/* {suggestions.length > 0 && (
-                    <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
-                      {suggestions.map((item, index) => (
-                        <li
-                          onClick={() => {
-                            handleSuggestionClick(item);
-                          }}
-                          key={item.id}
-                          className={`flex items-center px-4 py-2 hover:bg-gray-100 transition cursor-pointer ${suggestions.length - 1 === index
-                            ? "rounded-bl-[30px] rounded-br-[30px]"
-                            : ""
-                            }`}
-                        >
-                          <span className="mr-2">
-                            {item.type === "folder" ? (
-                              <Folder className="h-5 w-5 text-[#3c4043]" />
-                            ) : (
-                              <File className="h-5 w-5 text-[#3c4043]" />
-                            )}
-                          </span>
-                          <span className="text-gray-700 font-medium">
-                            {item.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )} */}
 
                     {suggestions.length > 0 && (
                       <ul className="bg-white rounded-md mx-auto border border-gray-200 relative py-2 top-[-15px] z-[99] left-1/2 -translate-x-1/2  rounded-bl-none rounded-br-none rounded-tl-none rounded-tr-none">
@@ -1136,18 +858,6 @@ export default function SharedPage() {
                 <div className="px-5 border-b">
                   <div className="py-3 flex items-center justify-between">
                     <div>
-                      {/* <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
-                        <button className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato">
-                          emailID
-                        </button>
-
-                        <div className="flex items-center">
-                          <ChevronRight className="h-5 w-5" />
-                          <button className="text-gray-500 transition-colors text-sm font-normal hover:text-gray-950 font-lato">
-                            Folder name
-                          </button>
-                        </div>
-                      </nav>  */}
                       <Breadcrumbs
                         path={path}
                         setPath={setPath}
@@ -1358,168 +1068,6 @@ export default function SharedPage() {
                   isOpen={isTechSupportModalOpen}
                   onClose={() => setIsTechSupportModalOpen(false)}
                 />
-
-                {/* {view === "abc" && (
-                  <div className="min-h-[450px]">
-                    <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                      {!filteredFilesList || filteredFilesList?.length === 0 ? (
-                        <thead>
-                          <tr>
-                            <th>
-                              <EmptyState />
-                            </th>
-                          </tr>
-                        </thead>
-                      ) : (
-                        <>
-                          <thead className="custom-box-shadow">
-                            <tr>
-                              <th></th>
-                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                <div className="flex items-center justify-start gap-2  mx-4">
-                                  <span className="block">Name</span>
-                                  <button className="flex items-center justify-center">
-                                    <ChevronUp className="h-4 w-4" />
-                                  </button>
-                                  <button className="flex items-center justify-center">
-                                    <ChevronDown className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </th>
-                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                <span className="block mx-4">Modified</span>
-                              </th>
-                              <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                <span className="block mx-4">Size</span>
-                              </th>
-                            </tr>
-                          </thead>
-
-                          <tbody className="w-full divide-y divide-y-gray-200">
-                           
-                          </tbody>
-                        </>
-                      )}
-                    </table>
-                  </div>
-                )} */}
-
-                {/* Table in card view */}
-                {/* {view === "abc" && (
-                  <div>
-                    <div className={`grid grid-cols-${6 - cols} gap-5`}>
-                      <div className="p-2 max-w-[356px]">
-                      <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                        <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                          <div className="max-h-24 max-w-[80px] h-full w-full">
-                            <Folder className="flex-auto h-full w-full text-blue-500" />
-                          </div>
-                        </div>
-                        <div className="py-2 px-2.5">
-                          <div className="flex items-center justify-between">
-                            <h6 className="text-sm font-medium text-black font-lato">
-                              Loans
-                            </h6>
-
-                            <div className="relative">
-                              <button
-                                className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
-                                onClick={() =>
-                                  setIsOpenOptionDrawer((prev) => !prev)
-                                }
-                              >
-                                <Ellipsis />
-                              </button>
-                              {isOpenOptionDrawer && (
-                                <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                  <ul>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Delete
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Rename
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Share
-                                      </button>
-                                    </li>
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-500 font-lato">
-                            Modified today by Wealthportal Service Account
-                          </p>
-                          <p className="text-xs text-gray-500 font-lato ">
-                            100.7 KB
-                          </p>
-                        </div>
-                      </div>
-                      <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                        <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                          <div className="max-h-24 max-w-[80px] h-full w-full">
-                            <Folder className="flex-auto h-full w-full text-blue-500" />
-                          </div>
-                        </div>
-                        <div className="py-2 px-2.5">
-                          <div className="flex items-center justify-between">
-                            <h6 className="text-sm font-medium text-black font-lato">
-                              Loans
-                            </h6>
-
-                            <div className="relative">
-                              <button
-                                className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
-                                onClick={() =>
-                                  setIsOpenOptionDrawer((prev) => !prev)
-                                }
-                              >
-                                <Ellipsis />
-                              </button>
-                              {isOpenOptionDrawer && (
-                                <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                  <ul>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Delete
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Rename
-                                      </button>
-                                    </li>
-                                    <li>
-                                      <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                        Share
-                                      </button>
-                                    </li>
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-500 font-lato">
-                            Modified today by Wealthportal Service Account
-                          </p>
-                          <p className="text-xs text-gray-500 font-lato ">
-                            100.7 KB
-                          </p>
-                        </div>
-                      </div>
-                      </div>
-                    </div>
-                  </div>
-                )} */}
-
-                {/* Create folder */}
-
 
               </div>
             </div>

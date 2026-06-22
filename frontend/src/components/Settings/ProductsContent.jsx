@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   PlusCircle,
   Workflow,
   Fingerprint,
   Code,
-  UserCircle,
   Trash2,
   Edit,
   File,
@@ -25,11 +24,6 @@ import AllTaskModal from "../Common/AllTaskModal";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 
 const options = [
-  // {
-  //   key:"pages",
-  //   label: "Pages",
-  //   value : PluginType.PAGES
-  // },
   {
     key:"t&c",
     label: "Terms and Conditions",
@@ -52,61 +46,8 @@ const ProductsContent = () => {
   const [isUpdateLoading, setIsUpdateLoading] = useState(null)
   const [isAllTaskModalOpen, setIsAllTaskModalOpen] = useState(false);
   const [defaultPageAlert, setDefaultPageAlert] = useState(false);
-  const hasFetched = useRef(false);
-
-  const { data : user } = useSelector((state) => state.user);
   const { data: allPages } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
-
-  const fetchExistingPages = async () => {
-    if (hasFetched.current) return;
-      hasFetched.current = true;
-    try {
-      setLoading(true);
-      const pluginPayload = {
-        type: PluginType.PAGES,
-        portalId: params.portalid || "root",
-        createdBy: user?.id,
-      };
-      const pluginResponse = await fetchWrapper(
-        "/api/plugins",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(pluginPayload),
-        },
-        "save-plugin"
-      );
-
-      if (!pluginResponse.ok) {
-        return;
-      }
-
-      const savedPluginData = await pluginResponse.json();
-
-      const response = await fetchWrapper(
-        "/api/pages/bulk",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            portalId: params.portalid || "root",
-            pluginId: savedPluginData?.data?.id,
-          }),
-        },
-        "fetch-page"
-      );
-
-      const data = await response.json();
-      await fetchPlugins();
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
 
   const fetchPlugins = async () => {
     try {
@@ -279,12 +220,6 @@ const ProductsContent = () => {
                 icon: <Code className="w-6 h-6 text-blue-600" />,
                 status: "Ready",
               },
-              // {
-              //   name: "Account Details",
-              //   description: "Manage user profiles and settings",
-              //   icon: <UserCircle className="w-6 h-6 text-blue-600" />,
-              //   status: "Ready",
-              // },
             ].map((widget, idx) => (
               <div
                 key={idx}
@@ -405,15 +340,6 @@ const ProductsContent = () => {
                       >
                         <Edit className="size-4 text-blue-700" />
                       </div>
-                      {/* <div
-                        className={`px-2 py-1 cursor-pointer`}
-                        onClick={() => {
-                          setIsDeleteModalOpen((prev) => !prev);
-                          setPluginSelected(plugin);
-                        }}
-                      >
-                        <Trash2 className="size-4 text-red-700" />
-                      </div> */}
                     </div>
                   </div>
                   <div className="mt-4 flex space-x-2">

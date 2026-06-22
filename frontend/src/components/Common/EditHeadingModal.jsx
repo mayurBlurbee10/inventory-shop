@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Button from './Elements/Button';
 import { Controller, useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import TextEditor from '../Plugins/RTE/TextEditor';
 import { X } from 'lucide-react';
 import { useParams } from 'next/navigation';

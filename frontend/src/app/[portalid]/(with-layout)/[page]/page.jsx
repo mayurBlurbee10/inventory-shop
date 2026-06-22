@@ -1,17 +1,11 @@
 "use client";
-import { clearUserData, getUserData, isAdmin } from "@/app/lib/auth";
+import { getUserData, isAdmin } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Header from "@/components/Header";
-import SettingsModal from "@/components/Settings";
-import Sidepanel from "@/components/Sidepanel";
-import { setUserData } from "@/lib/auth";
-import { getSession, signOut } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import "../../../../components/Plugins/RTE/tiptap-style.css";
-import TNCModal from "@/components/TNCModal";
-import { setPortal } from "@/store/services/portalService";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
 import TasksSection from "@/components/Common/TasksSection";
 import MessageSection from "@/components/Common/MessageSection";
@@ -30,19 +24,8 @@ function Page() {
   const params = useParams();
   const router = useRouter();
   const [page, setPage] = useState(null);
-  const [pages, setPages] = useState([]);
-  // const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
-  // const [config, setConfig] = useState(null);
-  const [accountDropdown, setAccountDropdown] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
-  const [showUploadArea, setShowUploadArea] = useState(false);
-  const [sidepanelDropdown, setSidepanelDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { data: config } = useSelector((state) => state.portal);
-  const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const fetchPlugins = async () => {
@@ -66,13 +49,6 @@ function Page() {
     }
   };
 
-  const handleLogout = async () => {
-    clearUserData();
-    await signOut();
-    toast.success("User signout successfully");
-    router.push("login");
-  };
-
   function reverseSanitizeName(sanitizedName) {
     let reversedName = sanitizedName.endsWith("-")
       ? sanitizedName.slice(0, -1)
@@ -90,21 +66,6 @@ function Page() {
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      // const response = await fetchWrapper(
-      //   `/api/portal?portalid=${params.portalid}`,
-      //   {},
-      //   "portal-login"
-      // );
-      // const data = await response.json();
-      // if (!data.data && response.status === 404) {
-      //   router.push(`/${params.portalid}/not-found`);
-      //   return;
-      // }
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch users");
-      // }
-
-      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     }
@@ -144,14 +105,6 @@ function Page() {
     return section?.visible ?? false;
   };
 
-  const isAnySideSectionVisible = () => {
-    if (isLoading) return true;
-    if (!page) return true;
-
-    return page?.visibility.some((item) => item.visible);
-  };
-
-
   useEffect(() => {
     const fetchSession = async () => {
       const sessionData = await getSession();
@@ -177,9 +130,6 @@ function Page() {
   }, []);
   if (isLoading) {
     return (
-      // <div className="flex justify-center py-8 h-full w-full">
-      //   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-      // </div>
       <LoadingSpinner />
     );
   }

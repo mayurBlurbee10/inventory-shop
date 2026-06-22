@@ -1,10 +1,9 @@
 "use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { UserRole } from "@/config/constants";
 import PreviewModal from "@/components/FileExplorer/PreviewModal";
 import SignRequestModal from "@/components/SignRequestModal";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
@@ -54,25 +53,6 @@ function TNCModal({ onClose, user, email, password, page }) {
         } catch (logError) {
           console.error("Failed to create guest-login log:", logError);
         }
-      // const response = await fetchWrapper(
-      //   `/api/users/tncAccept`,
-      //   {
-      //     method: "PUT",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       userId: user?.id,
-      //     }),
-      //   },
-      //   "accept-tnc"
-      // );
-      // if (!response.ok) {
-      //   throw new Error("Failed to update user");
-      // }
-      // const updatedData = await response.json();
-      // console.log("Update updatedData", updatedData);
-      // await fetchWrapper("/api/api-logs", { method: "POST" }, "login");
        const dashboardPage = pages?.find((page) => page.title === "dashboard");
        if(dashboardPage?.isPageVisible) {
         router.push("dashboard");
@@ -166,11 +146,6 @@ function TNCModal({ onClose, user, email, password, page }) {
         throw new Error("No e-sign URL returned");
       }
       setSignRequest(sr);
-      // setTimeout(() => {
-      //   setSignUrl(embedUrl);
-      //   setIsSignModalOpen(true);
-      //   setIsSignRequestLoading(false);
-      // }, 800);
       setSignUrl(embedUrl);
       setIsSignModalOpen(true);
       setIsSignRequestLoading(false);

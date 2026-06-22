@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
-import { Loader2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
 import LoaderSpinner from '../Common/Elements/LoaderSpinner';
 

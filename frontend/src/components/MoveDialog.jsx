@@ -99,65 +99,19 @@ function MoveDialog({
                   setSelectedItem={setSelectedFolder}
                   isInDialog={true}
                 />
-                {/* {folders?.map((folder) => (
-                  <button
-                    key={folder.id}
-                    onClick={() => setSelectedFolder(folder)}
-                    className={`w-full flex justify-between items-center px-4 py-2 rounded-lg text-left ${
-                      selectedFolder?.id === folder.id
-                        ? "bg-blue-100 text-blue-600"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    <span>{folder.name}</span>
-                    {selectedFolder?.id === folder.id && (
-                      <span className="text-blue-600">✔</span>
-                    )}
-                  </button>
-                ))} */}
               </div>
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex justify-end border-t px-4 py-3 space-x-2">
-            {/* <button
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-            >
-              Cancel
-            </button> */}
             <Button
               onClick={() => setIsModalOpen(false)}
               disabled={isLoading}
               type="Secondary"
               label="Cancel"
             />
-            {/* <button
-              onClick={() => {
-                handleMove(selectedFolder);
-                setIsLoading(true);
-                setTimeout(() => {
-                  setIsLoading(false);
-              }, 2000); 
-              
-              }}
-              disabled={
-                isLoading ||
-                !selectedFolder ||
-                selectedFolder?.id ==
-                  currentLocation[currentLocation.length - 1]?.id ||
-                selectedFolder?.id == item?.id
-              }
-              className="px-4 py-2 flex items-center bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <FolderInput className="w-4 h-4 mr-2" />
-              )}
-              Move
-            </button> */}
+            
             <Button
             onClick={() => {
               handleMove(selectedFolder);

@@ -2,35 +2,6 @@
 import { ArrowDownUp, ChevronLeft, Folder, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-const data = [
-  // {
-  //   id: 635789,
-  //   // icon: CarFront,
-  //   name: "Auto - 635789",
-  //   type: "Auto",
-  //   status: "Active",
-  //   complete: 75,
-  //   paid: "$40,225.00 Paid",
-  // },
-  // {
-  //   id: 990154,
-  //   // icon: User,
-  //   name: "Personal - 990154",
-  //   type: "Personal",
-  //   status: "Fully Paid",
-  //   complete: 100,
-  //   paid: "Fully Paid",
-  // },
-  // {
-  //   id: 174192,
-  //   // icon: Home,
-  //   name: "Mortgage - 174192",
-  //   type: "Mortgage	",
-  //   status: "Processing",
-  //   complete: 30,
-  //   paid: "In process",
-  // },
-];
 
 const calculatePercentage = (value, totalValue) => {
   if (totalValue === 0) {
@@ -168,14 +139,6 @@ function DetailsPage() {
               </p>
             </div>
           </div>
-          {/* <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-              <Folder />
-              <div>
-                <p className="text-sm font-normal text-black">pay-stub.pdf</p>
-                <p>Modified Wed Jan 12 2025 by Wealthportal Service Account</p>
-                <p>40.63 KB</p>
-              </div>
-            </div> */}
         </div>
       </div>
     </div>

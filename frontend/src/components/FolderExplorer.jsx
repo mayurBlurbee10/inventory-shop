@@ -6,7 +6,6 @@ import {
   EllipsisVertical,
   Eye,
   File,
-  FileIcon,
   Folder,
   Send,
   Share2,
@@ -460,29 +459,6 @@ function FolderExplorer({
     setIsShareModalOpen(true);
   };
 
-  // const handleDownload = async (fileId, fileName) => {
-  //   try {
-  //     const response = await fetchWrapper(
-  //       `/api/box/download?fileId=${fileId}`,
-  //       {},
-  //       "download"
-  //     );
-  //     if (!response.ok) throw new Error("Download failed");
-
-  //     const blob = await response.blob();
-  //     const url = window.URL.createObjectURL(blob);
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.download = fileName;
-  //     link.click();
-
-  //     window.URL.revokeObjectURL(url);
-  //     document.body.removeChild(link);
-  //   } catch (error) {
-  //     console.error("Download error:", error);
-  //   }
-  // };
-
   const handelRemoveCollaborator = async (collaborator) => {
     console.log("collaborator", collaborator);
     try {
@@ -711,14 +687,6 @@ function FolderExplorer({
                   </div>
                 </td>
 
-                {/* <td className="py-3">
-                  <div className="flex items-center justify-start gap-2">
-                    <span className="text-gray-600 text-sm">You opened</span>
-                    <span className="rounded-full bg-gray-600 h-1 w-1 block"></span>
-                    <span className="text-gray-600 text-sm">9:30 AM</span>
-                  </div>
-                </td> */}
-
                 <td className="py-3">
                   <div className="flex items-center">
                     <div>
@@ -833,13 +801,6 @@ function FolderExplorer({
                           )}
                           <button
                             className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
-                            // onClick={() => {
-                            //   if (file.type === "folder") {
-                            //     handleDeleteFolder(file?.id);
-                            //   } else {
-                            //     handleDeleteFile(file?.id);
-                            //   }
-                            // }}
                             onClick={() =>
                               setIsDeleteModalOpen((prev) => !prev)
                             }
@@ -991,13 +952,6 @@ function FolderExplorer({
           );
         })}
 
-      {/* {currentFilesList && currentFilesList?.length === 0 && (
-        <tr className="px-3">
-          <td className="col-span-4">
-            <EmptyState />
-          </td>
-        </tr>
-      )} */}
       <tr>
         <td>
           <PreviewModal

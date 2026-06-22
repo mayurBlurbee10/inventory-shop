@@ -1,31 +1,20 @@
 "use client";
 
-import Footer from "@/components/Footer";
-
-import { CircleUserRound, Settings, Headset, LogOut } from "lucide-react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Pie } from "react-chartjs-2";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { isAdmin, getUserData, clearUserData, setUserData } from "@/lib/auth";
-import { getSession, signOut } from "next-auth/react";
-import SettingsModal from "@/components/Settings";
-import TechSupport from "@/components/TechSupport";
-import Image from "next/image";
-import Navbar from "./Navbar";
-import Container from "./Container";
+import { getUserData } from "@/lib/auth";
+import { getSession } from "next-auth/react";
 import { setCurrentUser } from "@/store/services/userService";
 import { useDispatch, useSelector } from "react-redux";
 import TasksSection from "./Common/TasksSection";
-import AdvisorSection from "./Common/CollaboratorSection";
 import CollaboratorSection from "./Common/CollaboratorSection";
 import MessageSection from "./Common/MessageSection";
 import TickerTape from "./Common/charts/TickerTape";
 import TopStories from "./Common/charts/TopStories";
-import { MarketOverviewChart, StockMarketChart } from "./Common/charts/Chart";
+import { StockMarketChart } from "./Common/charts/Chart";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -43,19 +32,10 @@ export const data = {
 };
 
 export default function DocDashboard() {
-  // return <Dashboard fileType={'my'}/>;
-  // const [config, setConfig] = useState(null);
-  // const [content, setContent] = useState(null);
   const params = useParams();
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  // const [user, setUser] = useState(null);
   const router = useRouter();
   const [session, setSession] = useState(null);
-  const [accountDropdown, setAccountDropdown] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [dayAndDate, setDayAndDate] = useState("");
   const [page, setPage] = useState(null);
   const [isPageLoading, setIsPageLoading] = useState(false)
@@ -72,34 +52,6 @@ export default function DocDashboard() {
       router.push("access-denied");
     }
   }, []);
-
-  const NavBarItem = ({ title, href }) => {
-    if (!href) {
-      console.error("href prop is required for NavBarItem.");
-      return null;
-    }
-
-    return (
-      <Link href={href} passHref>
-        <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-500" : ""
-            }`}
-        >
-          {title}
-        </button>
-      </Link>
-    );
-  };
-  const toggleDropdown = () => {
-    setIsOpen((prev) => !prev);
-  };
-
-  const isAnySideSectionVisible = () => {
-    if (isPageLoading) return true;
-    if (!page || !page?.length) return true;
-
-    return page.some((item) => item.visible);
-  };
 
   const fetchPage = async () => {
     try {
@@ -195,37 +147,12 @@ export default function DocDashboard() {
     return value;
   };
 
-  // const fetchContent = async () => {
-  //   const response = await fetchWrapper(
-  //     `/api/contentManagement?portalId=${params.portalid}`,
-  //     { method: "GET" },
-  //     "fetchContentManagement"
-  //   );
-  //   const data = await response.json();
-  //   if (!response.ok) {
-  //     throw new Error(data.error || "Failed to fetch Content Management");
-  //   }
-  //   setContent(data);
-  // };
-
-  const handleLogout = async () => {
-    clearUserData();
-    await signOut();
-    toast.success("User signout successfully");
-    router.push("login");
-  };
-
   const filterVisibility = (label) => {
     if (isPageLoading) return false;
     if (!page || !page?.length) return true;
 
     const section = page.find((item) => item.label === label);
     return section?.visible ?? false;
-  };
-
-  const filterLinksVisibility = (title) => {
-    const page = pages?.find((page) => page.title === title);
-    return page ? page.isPageVisible : true;
   };
 
   useEffect(() => {
@@ -253,8 +180,6 @@ export default function DocDashboard() {
       <LoaderSpinner size={32} className="text-blue-500" />
     </div>
   );
-
-  const userIsAdmin = isAdmin();
 
   if (isPageLoading) {
     return <LoadingSpinner />
@@ -329,46 +254,6 @@ export default function DocDashboard() {
             {filterVisibility("Collaborator Section") && (
               <CollaboratorSection />
             )}
-            {/* {filterVisibility("Links Section") && (
-            <div className="mt-7">
-              {filterLinksVisibility("shared-docs") && (
-                 <Link href="shared-docs">
-                   <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                     <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                       Shared Documents
-                     </h3>
-                     <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                       Securely share content with your advisor
-                     </p>
-                   </div>
-                 </Link>
-               )}
-               {filterLinksVisibility("loans") && (
-                 <Link href="loans">
-                   <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                     <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                       Loans Origination
-                     </h3>
-                     <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                       Apply and submit documents for a loan
-                     </p>
-                   </div>
-                 </Link>
-               )}
-               {filterLinksVisibility("esignature") && (
-                 <Link href="esignature">
-                   <div className="p-4 border rounded-md mb-4 transform hover:scale-105 ease-in-out transition duration-300 cursor-pointer">
-                     <h3 className="text-xl font-light font-lato text-[#007bff] hover:text-sky-600 pl-4">
-                       E-signature
-                     </h3>
-                     <p className="font-medium text-gray-500 font-lato pt-2 pl-4 mb-4 text-sm">
-                       Digitally sign and manage agreements.
-                     </p>
-                   </div>
-                 </Link>
-               )}
-            </div>
-           )} */}
             {filterVisibility("Messaging") && (
               // <Messaging />
               <MessageSection />

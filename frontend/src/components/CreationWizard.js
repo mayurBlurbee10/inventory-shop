@@ -5,16 +5,12 @@ import {
   Check,
   ChevronRight,
   Building2,
-  Users,
   Palette,
   Box,
-  Globe,
-  Mail,
   Moon,
   Sun,
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import DialogBox from "./DialogBox";
 import Button from "./Common/Elements/Button";
 
 const WizardStep = ({ step, currentStep }) => {
@@ -809,7 +805,6 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const validateStep = () => {
     const errors = {};
 
@@ -847,12 +842,9 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
     if (validateStep()) {
       if (currentStep === 3) {
         setIsSubmitting(true);
-        // Simulate API call with 3 second delay
-        // await new Promise(resolve => setTimeout(resolve, 6000));
         onCreateSubsidiary(formData);
         setShowSuccess(true);
         setIsSubmitting(false);
-        // Close the modal after showing success for 3 seconds
         setTimeout(() => {
           setShowSuccess(false);
         }, 6000);
@@ -860,11 +852,6 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
         resetOnClose();
       } else {
         setCurrentStep(currentStep + 1);
-        // console.log('name:', formData.legalName);
-        // setDialogOpen(
-        //   (prev) => !prev
-        // )
-        // console.log('open:', dialogOpen)
       }
     }
   };
@@ -897,22 +884,6 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
   return (
     <div className="fixed inset-0 z-[70] bg-black/30 flex items-center justify-center">
       <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
-        {/* Success Message */}
-
-        {/* {showSuccess && (
-          <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
-            <div className="text-center space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                <Check className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900">
-                Portal Successfully Created
-              </h3>
-            </div>
-          </div>
-        )} */}
-
-        {/* Loading Overlay */}
         {(isSubmitting || isLoading) && (
           <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
             <div className="text-center space-y-3">

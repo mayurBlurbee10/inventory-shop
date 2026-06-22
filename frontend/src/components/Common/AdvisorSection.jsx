@@ -33,17 +33,6 @@ const AdvisorSection = ({
             <p className="font-lato text-base text-[#6c757d]">{role}</p>
           </div>
         </div>
-        {/* <div className="px-5 py-3 flex items-center justify-center bg-gray-100">
-        <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-          Meet
-        </button>
-        <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-          Call
-        </button>
-        <button className="px-2 text-sm text-[#6c757d] font-lato mx-3">
-          Chat
-        </button>
-      </div> */}
       </div>
     </div>
   );

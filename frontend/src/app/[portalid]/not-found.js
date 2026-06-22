@@ -1,10 +1,9 @@
 "use client";
 import Button from "@/components/Common/Elements/Button";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function NotFoundPage() {
   const router = useRouter();
-  const params = useParams();
 
   const handleGoBack = () => {
     router.back();
@@ -21,13 +20,6 @@ export default function NotFoundPage() {
             Oops! The portal you are looking for doesn't exist. It might have
             been moved, deleted, or the URL might be incorrect.
           </p>
-
-          {/* <button
-            className="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition-all ease-in-out duration-200"
-            onClick={handleGoBack}
-          >
-            Go Back
-          </button> */}
           <Button
              onClick={handleGoBack}
              type="Primary"

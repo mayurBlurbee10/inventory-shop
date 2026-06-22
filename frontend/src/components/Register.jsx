@@ -20,10 +20,7 @@ const Register = () => {
   const router = useRouter();
   const params = useParams();
   const dispatch = useDispatch();
-  // State for step management
   const [currentStep, setCurrentStep] = useState(1);
-
-  // State for company selection
   const [companyInput, setCompanyInput] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [filteredCompanies, setFilteredCompanies] = useState([]);

@@ -35,11 +35,6 @@ function Sidepanel({
           {/* DROPDOWN SECTION Done*/}
           {sidepanelDropdown && (
             <div className="absolute top-16 overflow-hidden left-0 max-w-52 w-full bg-white shadow py-2">
-              {/* <div className="pb-2 border-b-gray-300  border-b"> */}
-              {/* <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
-                <FilePlus className="h-5 w-5" />
-                New document
-              </button> */}
 
               <button
                 className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
@@ -55,13 +50,6 @@ function Sidepanel({
                 <Upload className="h-5 w-5" />
                 Upload
               </button>
-              {/* </div> */}
-              {/* <div className="pt-2">
-              <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
-                <Upload className="h-5 w-5" />
-                Upload
-              </button>
-            </div> */}
             </div>
           )}
 

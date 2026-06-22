@@ -1,7 +1,5 @@
-import { Dialog } from "@headlessui/react";
 import React, { useEffect, useState } from "react";
-import Button from "./Elements/Button";
-import { Edit, Loader2, Trash2, X } from "lucide-react";
+import { Edit, Trash2, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";

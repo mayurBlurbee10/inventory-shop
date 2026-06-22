@@ -1,6 +1,5 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import {
-  Calendar,
   ChevronDown,
   ChevronUp,
   Edit,
@@ -8,20 +7,16 @@ import {
   Plus,
   Reply,
   Save,
-  Tag,
-  Trash,
   Trash2,
-  User,
   X,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Button from "./Elements/Button";
 import Select from "react-select";
 import { Dialog } from "@headlessui/react";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
-import AllTaskModal from "./AllTaskModal";
 import { toast } from "react-toastify";
 import { decryptMessage, encryptMessage } from "@/app/lib/crypto";
 import LoaderSpinner from "./Elements/LoaderSpinner";
@@ -335,29 +330,6 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
           </div>
           {isReplying && (
             <div className="space-y-4 mt-5 px-6">
-              {/* {message && message?.sender?.id && (
-                <div className="w-full">
-                  <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
-                    <div className="text-sm text-[#495057]">
-                      {message?.sender?.name} ({message?.sender?.email})
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="cursor-pointer w-full text-gray-700 text-sm px-4 py-2 border border-gray-300 rounded-md flex justify-between items-center placeholder-gray-400">
-                <input
-                  type="text"
-                  value={replyMessage.subject}
-                  onChange={(e) =>
-                    setReplyMessage((prev) => ({ ...prev, subject: e.target.value }))
-                  }
-                  required
-                  placeholder="Enter Subject"
-                  className="w-full focus:outline-none cursor-pointer"
-                />
-              </div> */}
-
               <textarea
                 placeholder="Write a message..."
                 rows="10"
@@ -406,12 +378,6 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                 disabled={isMessageReplyLoading || isMessageUpdateLoading}
               />
             )}
-            {/* <NewMessageModal
-              isOpen={isReplying}
-              onClose={() => setIsReplying(false)}
-              onSubmit={handleReplyMessage}
-              sendTo={message?.sender}
-            /> */}
           </div>
 
         </Dialog.Panel>
@@ -441,7 +407,6 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: user } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
 
   const handleClose = () => {
     setMessage({
@@ -467,10 +432,6 @@ const NewMessageModal = ({ isOpen, onClose, onMessageSend, sendTo }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const filterUser = () => {
-    return users.find((u) => u?.boxUserId === userID.value);
   };
 
   const handleSendMessage = async () => {
@@ -860,13 +821,6 @@ const MessageSection = ({ clientId }) => {
     return 0;
   });
 
-  const toggleSort = (key) => {
-    setSortConfig((prev) => ({
-      key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-    }));
-  };
-
   const handleReadMessage = async (message) => {
     if (message?.receiver?.id === user?.id && !message.seen) {
       console.log("message.id:", message.id);
@@ -894,15 +848,6 @@ const MessageSection = ({ clientId }) => {
     return setSelectedMessage(messages.find((msg) => msg.id === message.id));
   };
 
-  //   const LoadingSpinner = () => (
-  //     <div className="flex justify-center items-center py-8">
-  //       <div className="spinner"/>
-  //     </div>
-  //   );
-
-  //   if(isMessagesLoading){
-  //     return <LoadingSpinner/>
-  // }
   useEffect(() => {
     setMessages([])
   }, [router])

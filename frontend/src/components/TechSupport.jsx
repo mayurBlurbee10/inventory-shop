@@ -286,13 +286,6 @@ function TechSupport({ isOpen, onClose }) {
                 type="Secondary"
                 label="Cancel"
               />
-              {/* <button
-              type="submit"
-              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
-              disabled={loading}
-            >
-              {loading ? "Submitting..." : "Submit Request"}
-            </button> */}
               <Button
                 buttonType="submit"
                 disabled={loading || !formData.issueType || !formData.message}
@@ -308,13 +301,6 @@ function TechSupport({ isOpen, onClose }) {
               Or choose one of these quick options:
             </p>
             <div className="grid grid-cols-3 gap-4">
-              {/* <button
-              onClick={() => handleActionButton('quote')}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
-            >
-              <Calculator className="h-5 w-5" />
-              <span>Get Quote</span>
-            </button> */}
               <Button
                 onClick={() => handleActionButton('quote')}
                 icon={Calculator}

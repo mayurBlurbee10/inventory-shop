@@ -9,8 +9,6 @@ import { PluginType, UserRole } from "@/config/constants";
 import { setPortals } from "@/store/actions/portalAction";
 import { setActiveUsers } from "@/store/services/portalService";
 import {
-  Dialog,
-  DialogBackdrop,
   Menu,
   MenuButton,
   MenuItem,
@@ -25,47 +23,12 @@ import { toast } from "react-toastify";
 const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
   const [isPortalDuplicateModalOpen, setIsPortalDuplicateModalOpen] =
     useState(null);
-  const [usersCount, setUsersCount] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [duplicatePortalData, setDuplicatePortalData] = useState({
     legalName: "",
     domain: "",
   });
-
-  const { data : user } = useSelector((state)=> state.user)
-
-  // const fetchUsers = async () => {
-  //   try {
-  //     if (!subsidiary) return;
-  //     const response = await fetchWrapper(
-  //       `/api/users?portalid=${sanitizeName(subsidiary?.legalName)}`,
-  //       {},
-  //       "fetch-users"
-  //     );
-  //     const data = await response.json();
-  //     if (!response.ok) {
-  //       throw new Error(data.error || "Failed to fetch users");
-  //     }
-
-  //     setUsersCount(data?.length);
-  //     console.log("active", activeUsers);
-  //     setActiveUsers((prev) => {
-  //       const updatedArray = [...prev];
-  //       const firstNullIndex = updatedArray.indexOf(null);
-  //       if (firstNullIndex !== -1) {
-  //         updatedArray[firstNullIndex] = data?.length;
-  //       }
-  //       return updatedArray;
-  //     });
-  //   } catch (error) {
-  //     console.log("error: ", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchUsers();
-  // }, []);
 
   const handleDuplicatePortal = async () => {
     try {
@@ -162,12 +125,6 @@ const SubsidiaryCard = ({ subsidiary, onSelect, refreshPortals }) => {
           </div>
         </div>
       </div>
-      {/* <DeletePortalModal
-          isOpen={portalToDelete?.id === subsidiary?.id}
-          onClose={() => setPortalToDelete(null)}
-          subsidiary={subsidiary}
-          refreshPortals={refreshPortals}
-        /> */}
       <PortalDuplicateModal
         isOpen={isPortalDuplicateModalOpen?.id === subsidiary?.id}
         onClose={() => setIsPortalDuplicateModalOpen(null)}
@@ -256,18 +213,14 @@ const SubsidiaryGrid = ({
 
 const AdminDashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
-  //   const [subsidiaries, setSubsidiaries] = useState([]);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [showCreationModal, setShowCreationModal] = useState(false);
-
   const [filteredSubsidiaries, setFilteredSubsidiaries] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
-
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [newPortalName, setNewPortalName] = useState("");
   const [newPortalId, setNewPortalId] = useState("");
-
   const { data: user } = useSelector((state) => state.user);
   const { data: subsidiaries } = useSelector((state) => state.portal);
   const dispatch = useDispatch();
@@ -386,26 +339,6 @@ const AdminDashboardPage = () => {
         createdBy: user.id,
       };
 
-      // Create Box user
-      // const boxResponse = await fetchWrapper(
-      //   "/api/box/create-user",
-      //   {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify({
-      //       userName: formData.adminEmail,
-      //       externalId: `user_${Date.now()}`,
-      //     }),
-      //   },
-      //   "create-user-box"
-      // );
-
-      // const boxData = await boxResponse.json();
-
-      // if (!boxResponse.ok) {
-      //   throw new Error(boxData.error || "Failed to create Box user");
-      // }
-
       let logoUrl = "";
 
       // Upload logo if selected
@@ -466,61 +399,6 @@ const AdminDashboardPage = () => {
       }
 
       newSubsidiary.portalCreatedAdmin = data?.data?.id
-
-      // Create end user for portal.
-      // const boxEndUserResponse = await fetchWrapper(
-      //   "/api/box/create-user",
-      //   {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify({
-      //       userName: `user_${formData.adminEmail}`,
-      //       externalId: `user_${Date.now()}`,
-      //     }),
-      //   },
-      //   "create-user-box"
-      // );
-
-      // const boxEndUserData = await boxEndUserResponse.json();
-
-      // if (!boxEndUserResponse.ok) {
-      //   throw new Error(boxEndUserData.error || "Failed to create Box end user");
-      // }
-
-      // const endUser = {
-      //   email: `user_${formData.adminEmail}`,
-      //   name: `${sanitizeName(formData.legalName)} user`,
-      //   title: formData.jobTitle,
-      //   companyName: formData.legalName,
-      //   role: UserRole.USER,
-      //   password: "000",
-      //   logo: null,
-      //   boxUserId: boxEndUserData.user.userId,
-      //   folderId: boxEndUserData.user.folderId,
-      //   portal: sanitizeName(formData.legalName) || "",
-      //   isOnboardingRequired: false,
-      //   createdBy: user.id,
-      //   permissions: {
-      //     portalId: sanitizeName(formData.legalName),
-      //     role: UserRole.USER,
-      //   },
-      //   phone: formData.phoneNumber
-      // }
-
-      // const endUserResponse = await fetchWrapper(
-      //   "/api/users",
-      //   {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify(endUser),
-      //   },
-      //   "save-user"
-      // );
-      // const endUserData = await endUserResponse.json();
-      // if (!endUserResponse.ok) {
-      //   throw new Error(endUserData.error || "Failed to create end user data");
-      // }
-
       // Create portal
       const saveResponse = await fetchWrapper(
         "/api/portal",

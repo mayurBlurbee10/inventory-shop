@@ -47,17 +47,11 @@ const PortalFooter = ({ config, filterValue }) => {
                 height={75}
                 style={{ width: "auto", height: "auto" }}
               />
-              {/* <img src={config?.logo} alt={config?.legalName} width="auto" height="auto" className='w-auto h-12'/> */}
             </div>
-            {/* <p className="mb-2">Energy and Environmental Economics, Inc. (E3)</p>
-                <p className="mb-4">Part of the Willdan Group, Inc.</p> */}
-            {/* San Francisco 415.391.5100 | Boston 617.203.7689 | New York
-              646.699.3773 */}
             <ul className="space-y-2">
               {contactInfo &&
                 contactInfo.map((item, index) => <li key={index}>{item}</li>)}
             </ul>
-            {/* <p>info@ethree.com</p> */}
           </div>
 
           {!links&& (

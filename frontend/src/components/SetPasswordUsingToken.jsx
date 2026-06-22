@@ -175,11 +175,8 @@ export default function SetPasswordUsingToken() {
         <hr className="mt-3 border-gray-200" />
         <div className="w-full p-6">
         <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
-         {/* <form className="text-gray-700"> */}
             <>
                 <div className=" text-center mb-4">
-                  {/* Welcome to the {params.portalid} Portal! Please create a password to sign in. Once completed, you will be redirected  to the {params.portalid} Portal home page. Use your email address and password to login! */}
-                  {/* <p className="text-sm text-gray-600 font-semibold py-1">Welcome to the {params.portalid} Portal!</p> */}
                   <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the Universal Portal Wealth Demo homepage.</p>
                 </div>
               <div className="mb-4">
@@ -220,13 +217,6 @@ export default function SetPasswordUsingToken() {
               {error && (
                 <p className="text-red-500 text-center text-sm">{error}</p>
               )}
-              {/* <button
-                type="submit"
-                className="w-full px-4 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 disabled:bg-gray-400"
-                disabled={loading}
-              >
-                {loading ? "Setting..." : "Set Password"}
-              </button> */}
                 <div className="w-full flex justify-center items-center">
                   <Button
                     buttonType="submit"

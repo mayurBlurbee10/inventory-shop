@@ -1,10 +1,9 @@
 "use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
-import { setPortal } from "@/store/services/portalService";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 const LoadingSpinner = () => (
@@ -22,7 +21,6 @@ export default function SharedFilePage() {
   const [fileType, setFileType] = useState("");
 
   const { data: config } = useSelector((state) => state.portal);
-  const dispatch = useDispatch()
 
   useEffect(() => {
     getSharedFile(params.fileid);
@@ -71,12 +69,6 @@ export default function SharedFilePage() {
   const fetchConfig = async () => {
     try {
       if(!params.portalid) return;
-      // const response = await fetchWrapper(`/api/portal?portalid=${params.portalid}`, {}, 'portal-login');
-      // const data = await response.json();
-      // if (!response.ok) {
-      //   throw new Error(data.error || "Failed to fetch portal config");
-      // }
-      // setConfig(data.data)
     } catch (error) {
       console.log("error: ", error);
     } finally {

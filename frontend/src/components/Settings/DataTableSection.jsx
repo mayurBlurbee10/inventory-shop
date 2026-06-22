@@ -1,21 +1,17 @@
 "use client";
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
 import Button from '@/components/Common/Elements/Button';
-import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react'
+import { useParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react'
 import {
-    Dialog,
-    DialogBackdrop,
     Menu,
     MenuButton,
     MenuItem,
     MenuItems,
   } from "@headlessui/react";
 import { ArrowDownToLine, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { getUserData } from '@/app/lib/auth';
-import { setDataRoomAvailability } from '@/store/services/pageService';
-import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import LoaderSpinner from '../Common/Elements/LoaderSpinner';
 
@@ -59,19 +55,6 @@ const getReportData = async (portalId, startDate, endDate, newPage = 1, newItems
     if (setIsLoading) setIsLoading(false);
   }
 };
-
-const handleExport = () => {
-  const exportData = data.map((log) => ({
-    "Date & Time": formatTimestamp(log?.createdAt),
-    Name: formatType(log?.type) || "N/A",
-    User: log.createdBy?.firstName + " " + log.createdBy?.lastName || "N/A",
-  }));
-  const worksheet = XLSX.utils.json_to_sheet(exportData);
-  const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
-  const blob = new Blob([csvOutput], { type: "text/csv;charset=utf-8;" });
-  saveAs(blob, "api_logs.csv");
-};
-
 
 export const PaginatedTable = ({ 
   data, 
@@ -275,9 +258,7 @@ const DataTableSection = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const params = useParams();
-  const router = useRouter();
   const [data, setData] = useState([]);
-  const [chartData, setChartData] = useState([]);
   const [apiCalls, setApiCalls] = useState(0);
   const [activeUsers, setActiveUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(false)
@@ -290,7 +271,6 @@ const DataTableSection = () => {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortConfig, setSortConfig] = useState({ key: "createdAt", direction: "desc" });
-  const { data: user } = useSelector((state) => state.user)
 
   const apiCallThisMonth = () => {
     const currentMonth = new Date().getMonth();
@@ -303,39 +283,6 @@ const DataTableSection = () => {
       setActiveUsers(res?.activeUsers);
     }
     return;
-  };
-
-  const generateMockData = async () => {
-    const apiLogNames = [
-      "User Login", "Files Preview", "File Upload", "Add Message", "Add Folder", "File Download"
-    ];
-
-    const daysCount = 4;
-    const today = new Date();
-    const last5Days = Array.from({ length: daysCount }, (_, i) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - (daysCount - 1 - i));
-      date.setHours(12, 0, 0, 0);
-      return date;
-    });
-
-    const rowsCount = 10;
-    const mockdata = Array.from({ length: rowsCount }, () => {
-      const randomDate = new Date(last5Days[Math.floor(Math.random() * last5Days.length)]);
-      randomDate.setHours(8 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60));
-      const randomApiName = apiLogNames[Math.floor(Math.random() * apiLogNames.length)];
-      return {
-        name: randomDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        userId: user?.id,
-        apiCalls: Math.floor(Math.random() * 1000) + 100,
-        activeUsers: Math.floor(Math.random() * 100) + 50,
-        type: randomApiName,
-        createdAt: randomDate.toISOString(),
-      };
-    });
-
-    setData(mockdata);
-    console.log('mockdata: ', mockdata);
   };
 
   const handleExport = async () => {
@@ -427,18 +374,7 @@ const DataTableSection = () => {
   console.log("StartDate:", dateData.startDate);
   console.log("EndDate:", dateData.endDate);
   const { startDate, endDate } = useSelector((state) => state.pages);
-  const dispatch = useDispatch();
   const handleDateChange = (key, value) => {
-    // if (key === "startDate" && endDate && new Date(value) > new Date(endDate)) {
-    //     dispatch(setDataRoomAvailability(value, "")); // Reset endDate if startDate is greater
-    // } else {
-    //     dispatch(
-    //         setDataRoomAvailability(
-    //             key === "startDate" ? value : startDate,
-    //             key === "endDate" ? value : endDate
-    //         )
-    //     );
-    // }
     if (key === "startDate") {
       setDateData((prev) => ({ ...prev, startDate: value }))
     }

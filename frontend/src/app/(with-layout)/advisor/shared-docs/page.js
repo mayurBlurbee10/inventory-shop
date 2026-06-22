@@ -1,73 +1,24 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Breadcrumbs from "@/components/Breadcrumbs";
-import {
-  AlignJustify,
-  Folder,
-  File,
-  Minus,
-  Plus,
-  X,
-  FolderInput,
-  Download,
-  Trash2,
-} from "lucide-react";
-import CreateFolder from "@/components/CreateFolder";
-import UploadArea from "@/components/UploadArea";
-import { LinearProgress } from "@mui/material";
-import SharedFolderExplorer from "@/components/MyDocumentsExplorer";
-import { getSession } from "next-auth/react";
-import { getUserData, setUserData } from "@/lib/auth";
-import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
-import MoveDialog from "@/components/MoveDialog";
-import DialogBox from "@/components/DialogBox";
+import { getUserData } from "@/lib/auth";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
 import Documents from "@/components/Documents";
-import { useDispatch, useSelector } from "react-redux";
-import { setPortal } from "@/store/services/portalService";
-import { setCurrentUser } from "@/store/services/userService";
 
 export default function AdvisorView() {
-  const [user, setUser] = useState(null);
   const [filesList, setFilesList] = useState(null);
   const [filteredFilesList, setFilteredFilesList] = useState(filesList);
-  const [searchQuery, setSearchQuery] = useState("");
-  // const [config, setConfig] = useState(null);
-  const [suggestions, setSuggestions] = useState([]);
-  const [content, setContent] = useState(null);
-  const params = useParams();
   const [path, setPath] = useState([]);
   const [selectedBulkItems, setSelectedBulkItems] = useState([]);
-  const [view, setView] = useState("list");
-  const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
-  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
-  const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const fileInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentFilesList, setCurrentFilesList] = useState(filesList);
-  const [cols, setCols] = useState(1);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-  const [moveItem, setMoveItem] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isToolbarVisible, setIsToolbarVisible] = useState(false);
-  const [session, setSession] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [uploadedfilePath, setUpladedFilePath] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [duplicateFiles, setDuplicateFiles] = useState([]);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { data: config } = useSelector((state) => state.portal);
-
-  const dispatch = useDispatch();
-
-  const router = useRouter();
 
   const [dayAndDate, setDayAndDate] = useState({
     day: "",
@@ -105,53 +56,6 @@ export default function AdvisorView() {
     setDayAndDate((prev) => ({ ...prev, month: months[monthIndex] }));
     setDayAndDate((prev) => ({ ...prev, date: date.getDate() }));
   }, []);
-  const fetchConfig = async () => {
-    try {
-      // const response = await fetchWrapper(
-      //     `/api/portal?portalid=${params.portalid || "default"}`,
-      //     {},
-      //     "portal-login"
-      // );
-      // const data = await response.json();
-      // if (!data.data && response.status === 404) {
-      //     router.push(`/${params.portalid}/not-found`);
-      //     return;
-      // }
-      // if (!response.ok) {
-      //     throw new Error(data.error || "Failed to fetch portal config");
-      // }
-      // setConfig(data.data);
-    } catch (error) {
-      console.log("error: ", error);
-    } finally {
-      // setFooterLoading(false);
-    }
-  };
-  useEffect(() => {
-    // fetchConfig();
-    // fetchContent();
-  }, []);
-
-  const fetchContent = async () => {
-    const response = await fetchWrapper(
-      `/api/contentManagement?portalId=${params.portalid || "root"}`,
-      { method: "GET" },
-      "fetch-content-management"
-    );
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to fetch Content Management");
-    }
-    setContent(data);
-  };
-
-  const handleBrowse = (event) => {
-    if (event.type === "click") {
-      fileInputRef.current?.click();
-    } else {
-      handleFileSelect(event);
-    }
-  };
 
   const refreshFiles = async () => {
     try {
@@ -206,64 +110,6 @@ export default function AdvisorView() {
     }
 
     return "";
-  };
-
-  const handleFileSelect = async (event) => {
-    const files = Array.from(event.target.files);
-    if (files.length > 0) {
-      try {
-        setIsLoading(true);
-        const uploadData = new FormData();
-        const userData = getUserData();
-        files.forEach((file) => {
-          uploadData.append("file", file);
-        });
-        if (!!selectedItem && selectedItem.type == "folder") {
-          uploadData.append("boxFolderId", selectedItem.id);
-        } else {
-          uploadData.append("boxFolderId", userData.boxFolderId);
-        }
-
-        uploadData.append("email", userData.email);
-        uploadData.append("userId", userData.boxUserId);
-
-        const requestOptions = {
-          method: "POST",
-          body: uploadData,
-        };
-
-        const response = await fetchWrapper(
-          "/api/box/files",
-          requestOptions,
-          "upload-file"
-        );
-        const data = await response.json();
-        if (!response.ok) {
-          console.log("data status", data.status);
-          throw new Error(data.error || "Failed to upload files");
-        }
-        if (data.duplicateFiles.length > 0) {
-          setDuplicateFiles(data.duplicateFiles);
-        }
-        setIsOpenUploadArea(false);
-        await refreshFiles();
-        const path = getFolderPath(
-          filesList,
-          selectedItem?.id || userData?.boxFolderId
-        );
-        let location = "";
-        if (data.files.length > 0) {
-          location = [...data.files.map((file) => file.name)];
-        }
-        setUpladedFilePath(location);
-        setIsModalOpen(true);
-      } catch (error) {
-        toast.error(error.message);
-        console.error("Error uploading files:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
   };
 
   const updatePath = (prevPath, filesList) => {
@@ -364,42 +210,6 @@ export default function AdvisorView() {
     return () => clearTimeout(timer);
   }, [searchQuery, selectedItem, filesList, path]);
 
-  const handleSuggestionClick = (item) => {
-    setSearchQuery(item.name);
-    // if(item.type !== "folder" ){
-    item.path.pop();
-    // }
-    setPath(item.path);
-    setCurrentFilesList([item]);
-    setSuggestions([]);
-  };
-  const handleBulkDelete = async () => {
-    const selectedItemsDetails = currentFilesList
-      .filter((item) => selectedBulkItems.includes(item.id))
-      .map((item) => ({ id: item.id, type: item.type }));
-    try {
-      const requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ items: selectedItemsDetails }),
-      };
-      const response = await fetchWrapper(
-        `/api/box/bulk/delete`,
-        requestOptions,
-        "bulk-delete"
-      );
-      if (!response.ok) throw new Error("Error bulk deleting files or folders");
-      toast.success(`Bulk delete operation completed successfully.`);
-      refreshFiles();
-      setSelectedBulkItems([]);
-      setIsDeleteModalOpen(false);
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
   const handleBulkMove = async (destinationFolder) => {
     const selectedItemsDetails = currentFilesList
       .filter((item) => selectedBulkItems.includes(item.id))
@@ -431,174 +241,9 @@ export default function AdvisorView() {
     }
   };
 
-  const handelToolbarMoveClick = () => {
-    const selectedItemsDetails = currentFilesList.filter(
-      (item) => selectedBulkItems[0] === item.id
-    );
-    setMoveItem(selectedItemsDetails[0]);
-    setIsMoveModalOpen(true);
-  };
-
-  const handleBulkDownload = async () => {
-    console.log("currentFileList", currentFilesList);
-    console.log("selectedFileList", selectedBulkItems);
-
-    const unMatchedType = currentFilesList
-      .filter((item) => selectedBulkItems.includes(item.id))
-      .filter((item) => item.type === "folder");
-
-    if (unMatchedType && unMatchedType.length > 0) {
-      toast.error("Selected Item is Folder");
-      return;
-    }
-
-    const selectedItemsDetails = currentFilesList
-      .filter((item) => selectedBulkItems.includes(item.id))
-      .map((item) => ({ id: item.id, type: item.type, name: item.name }));
-
-    try {
-      const requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ items: selectedItemsDetails }),
-      };
-
-      const response = await fetchWrapper(
-        `/api/box/bulk/download`,
-        requestOptions,
-        "download"
-      );
-
-      if (!response.ok) throw new Error("Download failed");
-
-      const data = await response.json();
-
-      for (const item of data.downloadItems) {
-        const { content, name, contentType } = item;
-
-        // Decode Base64 content into a Blob
-        const byteCharacters = atob(content);
-        const byteArrays = [];
-        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-          const slice = byteCharacters.slice(offset, offset + 512);
-          const byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-          }
-          byteArrays.push(new Uint8Array(byteNumbers));
-        }
-        const blob = new Blob(byteArrays, { type: contentType });
-
-        // Trigger the download
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = name;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-      }
-
-      toast.success("Files downloaded successfully");
-    } catch (error) {
-      toast.error(error.message);
-      console.error("Download error:", error);
-    }
-  };
-  const handleMove = async (folder) => {
-    if (selectedBulkItems.length > 0) {
-      handleBulkMove(folder);
-    } else {
-      const obj = {
-        itemId: moveItem.id,
-        destinationFolderId: folder.id,
-        type: moveItem.type,
-      };
-      try {
-        const requestOptions = {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(obj),
-        };
-        const response = await fetchWrapper(
-          `/api/box/move`,
-          requestOptions,
-          "move-file-or-folder"
-        );
-        if (!response.ok) throw new Error("Failed to move file or folder");
-        toast.success(
-          `${moveItem.type === "file" ? "File" : "Folder"} moved successfully.`
-        );
-        setIsMoveModalOpen(false);
-        refreshFiles();
-      } catch (error) {
-        toast.error(error.message);
-      }
-    }
-  };
-
   useEffect(() => {
     setIsToolbarVisible(selectedBulkItems.length > 0);
   }, [selectedBulkItems]);
-
-  //   useEffect(() => {
-  //     const fetchSession = async () => {
-  //       const sessionData = await getSession();
-  //       const userData = getUserData();
-  //       setSession(sessionData);
-  //       if (sessionData) {
-  //         await getUserDetailsByEmail(sessionData.user.email);
-  //       } else {
-  //         if (!userData) {
-  //           router.push("login");
-  //           return;
-  //         }
-  //         await getUserDetailsByEmail(userData?.email);
-  //       }
-  //     };
-  //     fetchSession().then(() => {
-  //       const userData = getUserData();
-  //       if (!userData) {
-  //         router.push("login");
-  //         return;
-  //       }
-  //       setUser(userData);
-  //       refreshFiles();
-  //     });
-  //   }, [router]);
-
-  const clearBulkItem = () => {
-    setSelectedBulkItems([]);
-  };
-
-  const getUserDetailsByEmail = async (email) => {
-    try {
-      let url = `/api/users/loginByProvider`;
-      const body = {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, portalid: params.portalid }),
-      };
-      const response = await fetchWrapper(url, body, "fetch-user-by-email");
-      if (!response.ok) throw new Error("Failed to get user from email");
-      const data = await response.json();
-      const userData = data.user;
-      // setUserData(userData);
-      dispatch(setCurrentUser(userData));
-      //   localStorage.setItem("portal", params.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
-    } catch (error) {
-      console.error("Failed to get user from email:", error);
-      router.push("login");
-    }
-  };
 
   return (
     // <Container>

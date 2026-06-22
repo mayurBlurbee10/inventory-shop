@@ -1,31 +1,23 @@
 "use client";
-import { defaultLoanData } from "@/app/lib/data/loan-data";
+
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import { setLoans } from "@/store/services/loanService";
 import {
-  ArrowDownUp,
   CarFront,
   ChevronDown,
-  Folder,
   Home,
-  List,
-  ListChecks,
   Plus,
   RotateCw,
   Search,
-  UploadCloud,
   User,
 } from "lucide-react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 function LoansPage() {
   const router = useRouter();
-  const params = useParams();
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
-  const [newLoan, setNewLoan] = useState(false);
   const newLoanDropdownRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { data: loanData } = useSelector((state) => state.loans);
@@ -92,15 +84,6 @@ console.log("loanData", loanData);
               </div>
             </div>
           </div>
-          {/* {loanData?.length === 3 ? (
-            <div
-              className="flex max-w-60 items-center text-[#17a2b8] gap-3 text-2xl cursor-pointer font-lato"
-              onClick={() => router.push(`forms/new?type=mortgage`)}
-            >
-              <List className="size-8" />
-              View Application
-            </div>
-        ) : (  */}
           <div className="absolute top-4 right-4 z-[10]">
             <div className="relative">
               <div
@@ -150,7 +133,6 @@ console.log("loanData", loanData);
               )}
             </div>
           </div>
-        {/* )} */}
         </div>
         </div>
         <div className="flex flex-col pt-8">

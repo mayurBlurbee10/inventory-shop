@@ -83,12 +83,6 @@ const subsidiariesData = [
 ];
 
 const generateMockData = async (year, portalId) => {
-  // const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  // return months.map(month => ({
-  //   name: month,
-  //   apiCalls: Math.floor(Math.random() * 1000) + 500,
-  //   activeUsers: Math.floor(Math.random() * 100) + 50
-  // }));
   try {
     const response = await fetchWrapper(
       `/api/chart?portalId=${portalId || "root"}&year=${year}`,
@@ -258,20 +252,6 @@ const DeletePortalModal = ({ isOpen, onClose, subsidiary }) => {
                 type="Seconday"
                 label="Close"
               />
-              {/* <button
-                type="button"
-                className="px-6 py-2.5 text-sm font-medium text-white disabled:bg-red-400 bg-red-500 border border-gray-300 rounded-lg hover:bg-red-400 transition-colors"
-                onClick={handleDeleteSubsidiary}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="spinner"></div> Deleting This Portal
-                  </div>
-                ) : (
-                  "Delete This Portal"
-                )}
-              </button> */}
               <Button
                 onClick={handleDeleteSubsidiary}
                 disabled={isLoading}
@@ -299,7 +279,6 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
   const [apiCalls, setApiCalls] = useState(0);
   const [config, setConfig] = useState(null);
   const [activeUsers, setActiveUsers] = useState(0);
-  // const [user, setUser] = useState(null);
   const [portalToDelete, setPortalToDelete] = useState(null);
 
   const { data: user } = useSelector((state) => state.user);
@@ -346,25 +325,6 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
     }
   };
 
-  // const fetchUsers = async () => {
-  //   try {
-  //     if (!config) return;
-  //     const response = await fetchWrapper(
-  //       `/api/users?portalid=${sanitizeName(config?.legalName)}`,
-  //       {},
-  //       "fetch-users"
-  //     );
-  //     const data = await response.json();
-  //     if (!response.ok) {
-  //       throw new Error(data.error || "Failed to fetch users");
-  //     }
-
-  //     setActiveUsers(data?.length);
-  //   } catch (error) {
-  //     console.log("error: ", error);
-  //   }
-  // };
-
   const fetchConfig = async () => {
     try {
       const response = await fetchWrapper(
@@ -390,9 +350,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
     if (!userData) {
       router.push("login");
       return;
-    }
-
-    // setUser(userData);
+    };
   }, [router]);
 
   useEffect(() => {
@@ -448,12 +406,6 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
         </div>
 
         {user?.id === config?.createdBy?.id && (
-          // <button
-          //   className="inline-flex items-center justify-center mt-5 px-4 py-2 text-sm font-medium text-white bg-[#e63434e8] rounded-md hover:bg-[#bd2626] disabled:opacity-50 disabled:cursor-not-allowed"
-          //   onClick={() => setPortalToDelete(config)}
-          // >
-          //   Delete Portal
-          // </button>
           <Button
             onClick={() => setPortalToDelete(config)}
             type="Delete"

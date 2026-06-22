@@ -5,8 +5,7 @@ import CompleteForms from '@/components/CompleteForms';
 import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
 import { TaskStatus, TaskType, UserRole } from '@/config/constants';
-import { Dialog } from '@headlessui/react';
-import { Calendar, Check, CheckCircle, ChevronDown, ChevronUp, Clock, Edit, Ellipsis, FileText, MoreVertical, Plus, RotateCw, Trash2, X } from 'lucide-react';
+import { Calendar, Check, CheckCircle, Clock, Edit, FileText, MoreVertical, Plus, Trash2 } from 'lucide-react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux';
@@ -258,15 +257,12 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
 const TasksSection = ({ client = null }) => {
     const [page, setPage] = useState(null);
     const params = useParams();
-    const router = useRouter();
     const pathname = usePathname();
     const actionDropdownRef = useRef();
-    const { data: user } = useSelector((state) => state.user);
     const { data: config } = useSelector((state) => state.portal);
     const [isPageLoading, setIsPageLoading] = useState(false)
     const [myTaskPopupBoxContent, setMyTaskPopupBoxContent] = useState("");
     const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
-    const [isSignReqLoading, setIsSignReqLoading] = useState(null);
     const [tasks, setTasks] = useState([]);
     const [isTaskLoading, setIsTaskLoading] = useState(false);
     const [isCompleteFormPopupOpen, setIsCompleteFormPopupOpen] = useState(false);
@@ -283,25 +279,8 @@ const TasksSection = ({ client = null }) => {
     const [checklists, setCheckLists] = useState([]);
     const [isChecklistLoading, setIsChecklistLoading] = useState(false);
     const [error, setError] = useState(null)
-    const [sortedTasksList, setSortedTasksList] = useState([])
     const [sortConfig, setSortConfig] = useState({ key: "title", direction: "asc" });
     const [showMenu, setShowMenu] = useState(false);
-    const [completedTask, setCompletedTask] = useState({
-        upload: false,
-        completeForm: false,
-        sign: false,
-        autoLoan: false,
-    });
-    const { data: filesList, loading: isFilesLoading } = useSelector(
-        (state) => state.files
-    );
-    const filterVisibility = (label) => {
-        if (isPageLoading) return false;
-        if (!page || !page.length) return true;
-
-        const section = page.find((item) => item.label === label);
-        return section?.visible ?? false;
-    };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -361,96 +340,6 @@ const TasksSection = ({ client = null }) => {
         setIsChecklistLoading(false);
       }
     };
-
-    const firstFileToSign = () => {
-        return filesList?.find((file) => file.type === "file") || null;
-    };
-
-    const handleSelfSign = async (file, taskType) => {
-        try {
-            setIsSignReqLoading(taskType);
-            const response = await fetchWrapper(
-                "/api/box/e-sign",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        fileId: file.id,
-                        signers: [
-                            {
-                                signerEmail: user.email,
-                                signerId: user.id,
-                            },
-                        ],
-                        boxUserId: user.boxUserId,
-                        portal: params.portalid,
-                        onSameDoc: false,
-                    }),
-                },
-                "self-esign-request"
-            );
-            const data = await response.json();
-            console.log("data: ", data);
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to generate e-sign request");
-            }
-            toast.success("E-sign request generated successfully.");
-            const currentUserReq = data.data[0].signers.find(
-                (item) => item.email === user.email
-            );
-            if (currentUserReq) {
-                setTimeout(() => {
-                    setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
-                    setIsSignModalOpen(true);
-                    setIsSignReqLoading(null);
-                }, 2500);
-            }
-        } catch (error) {
-            setIsSignReqLoading(null);
-        } finally {
-            setIsSignReqLoading(null);
-        }
-    };
-
-    const handleOpenSignModal = async (task) => {
-        try {
-            setIsSignReqLoading(task?.title);
-            const response = await fetchWrapper(
-                `/api/box/e-sign?id=${task?.uploads[0]}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    }
-                },
-                "get-esign-request"
-            );
-            const data = await response.json();
-            console.log("data: ", data);
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to get e-sign request");
-            }
-            setSignRequest(data?.data)
-            toast.success("E-sign request generated successfully.");
-            const currentUserReq = data?.data.signers.find(
-                (item) => item.email === user.email
-            );
-
-            if (currentUserReq) {
-                setTimeout(() => {
-                    setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
-                    setIsSignModalOpen(true);
-                    setIsSignReqLoading(null);
-                }, 2500);
-            }
-        } catch (error) {
-            setIsSignReqLoading(null);
-        } finally {
-            setIsSignReqLoading(null);
-        }
-    }
 
     const updateTaskStatus = async (task) => {
         try {
@@ -567,14 +456,6 @@ const sortedTasks =
     return 0;
   });
 
-  const toggleSort = (key) => {
-    setSortConfig((prev) => ({
-      key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-    }));
-  };
-
-  
     return (
       <div className="bg-white rounded-xl border border-gray-200 max-h-[350px]">
         {/* Header */}

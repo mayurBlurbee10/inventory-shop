@@ -138,7 +138,6 @@ const CheckListContent = () => {
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [selectedCheckList, setSelectedCheckList] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(null);
   const [isUpdateTaskModalOpen, setIsUpdateTaskModalOpen] = useState(false);
@@ -319,20 +318,6 @@ const CheckListContent = () => {
                         {/* Header Section */}
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            {/* <button
-                                onClick={() =>
-                                  setExpandedChecklist(
-                                    isExpanded ? null : checklist?.id
-                                  )
-                                }
-                                className="p-2 hover:bg-gray-100 rounded-full"
-                              >
-                                {isExpanded ? (
-                                  <ChevronUp className="w-5 h-5 text-gray-500" />
-                                ) : (
-                                  <ChevronDown className="w-5 h-5 text-gray-500" />
-                                )}
-                              </button> */}
                             <h3 className="font-semibold text-gray-800">
                               {checklist?.name}
                             </h3>

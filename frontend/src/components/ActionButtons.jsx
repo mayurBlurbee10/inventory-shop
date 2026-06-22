@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
-import { FolderPlus, Upload, Share2, X } from "lucide-react";
+import { FolderPlus, X } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { setPortal } from "@/store/services/portalService";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import Button from "./Common/Elements/Button";
 
 export default function ActionButtons({
@@ -15,13 +15,9 @@ export default function ActionButtons({
   isModalOpen,
   setIsModalOpen,
 }) {
-  // const [isModalOpen, setIsModalOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  // const [config, setConfig] = useState(null);
-
-  const { data: config } = useSelector((state) => state.portal);
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -29,17 +25,6 @@ export default function ActionButtons({
       try {
         setIsLoading(true);
         const portalId = localStorage.getItem("portal");
-
-        // const response = await fetchWrapper(
-        //   `/api/portal?portalid=${portalId || "default"}`,
-        //   {},
-        //   "portal-config"
-        // );
-        // if (!response.ok) {
-        //   throw new Error("Failed to fetch users");
-        // }
-        // const data = await response.json();
-        // setConfig(data.data);
         dispatch(setPortal(portalId || "root"))
       } catch (error) {
         console.log("error: ", error);
@@ -101,21 +86,6 @@ export default function ActionButtons({
 
   return (
     <div className="flex justify-end space-x-3 mb-4">
-      {/* <button
-        onClick={() => setIsModalOpen(true)}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#005071] rounded-md hover:bg-[#0072a3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A4C8A]"
-      >
-        <FolderPlus className="w-4 h-4 mr-2" />
-        New Folder
-      </button>
-
-      <button
-        onClick={onUploadClick}
-        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#005071] rounded-md hover:bg-[#0072a3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A4C8A]"
-      >
-        <Upload className="w-4 h-4 mr-2" />
-        Upload
-      </button> */}
 
       <Dialog
         open={isModalOpen}
@@ -146,17 +116,6 @@ export default function ActionButtons({
                   Folder successfully created!
                 </div>
                 <div className="flex justify-center space-x-3">
-                  {/* <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-secondary rounded-md hover:bg-gray-200"
-                    style={{ backgroundColor: config?.secondaryColor }}
-                  >
-                    {isLoading ? (
-                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-                    ) : (
-                      "Done"
-                    )}
-                  </button> */}
                   <Button
                     onClick={() => setIsModalOpen(false)}
                     isLoading={isLoading}
@@ -176,16 +135,6 @@ export default function ActionButtons({
                   disabled={isLoading}
                 />
                 <div className="flex justify-end space-x-3 mt-4">
-                  {/* <button
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setFolderName("");
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </button> */}
                   <Button
                     onClick={() => {
                       setIsModalOpen(false);
@@ -195,18 +144,6 @@ export default function ActionButtons({
                     type="Secondary"
                     Label="Cancel"
                   />
-                  {/* <button
-                    onClick={handleCreateFolder}
-                    disabled={isLoading || !folderName.trim()}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <FolderPlus className="w-4 h-4 mr-2" />
-                    )}
-                    Create
-                  </button> */}
                   <Button
                     onClick={handleCreateFolder}
                     disabled={isLoading || !folderName.trim()}

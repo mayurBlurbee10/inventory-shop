@@ -158,17 +158,6 @@ const PluginManagementPage = () => {
                                                     <span>Version: {plugin.version}</span>
                                                     <span>Key: {plugin.pluginKey}</span>
                                                 </div>
-
-                                                {/* {config && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Settings className="w-4 h-4 mr-2" />
-                              <span>Configuration ID: {config.id}</span>
-                              <span className="mx-2">•</span>
-                              <span>Created: {new Date(config.createdAt).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                        )} */}
                                             </div>
 
                                             <div className="ml-6">

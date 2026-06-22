@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Check, ChevronDown, ChevronRight, X, User, Mail, Phone, Briefcase, Shield, Image, UserPlus, Building } from "lucide-react";
+import { Box, Check, ChevronRight, X, User, Mail, Phone, Briefcase, Image, UserPlus, Building } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
 import { getUserData } from "@/app/lib/auth";
@@ -30,12 +30,6 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(formData?.logo || "");
-  const [companyOptions, setCompanyOptions] = useState({
-    visible: false,
-    data: [],
-    filteredData: [],
-  });
-  const [companySearched, setCompanySearched] = useState("");
   const params = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -68,28 +62,6 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
       return formData[key] !== initialFormData[key];
     });
   };
-
-  // const handleModalClose = () => {
-  //   // reset state on modal close
-  //   setFormData({
-  //     name: "",
-  //     email: "",
-  //     phone: "",
-  //     title: "",
-  //     companyName: "",
-  //     role: "user",
-  //     logo: null,
-  //   });
-  //   setCompanyOptions({
-  //     visible: false,
-  //     data: [],
-  //     filteredData: [],
-  //   });
-  //   setError("");
-  //   setPreviewUrl("");
-  //   setCompanySearched("");
-  //   onClose();
-  // };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -240,56 +212,6 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
     }
   };
 
-  const onCompanyNameSearch = (e) => {
-    const searchedText = e.target.value;
-    setCompanySearched(searchedText);
-    setTimeout(() => {
-      onApplySearchFilter(searchedText);
-    }, 1000);
-  };
-
-  const onApplySearchFilter = (searchedText, visible) => {
-    searchedText = String(searchedText).trim().toLowerCase();
-    const data =
-      companyOptions.data.length > 0
-        ? companyOptions.data
-        : users.map((x) => x.name);
-    let companyData = JSON.parse(JSON.stringify(data));
-
-    if (!!searchedText)
-      companyData = companyData.filter((x) =>
-        String(x).trim().toLowerCase().startsWith(searchedText)
-      );
-    else companyData = data;
-
-    setCompanyOptions({
-      visible: companyOptions.visible || visible,
-      data,
-      filteredData: companyData,
-    });
-  };
-
-  const toggleCompanyDropdown = () => {
-    if (!companyOptions.visible) onApplySearchFilter(companySearched, true);
-    else onCompanyNameBlur();
-  };
-
-  const onCompanyNameBlur = () => {
-    setCompanyOptions({ ...companyOptions, visible: false });
-    setCompanySearched("");
-  };
-
-  const onCompanyNameSelect = (item) => {
-    handleFormChange("companyName", item);
-    onCompanyNameBlur();
-  };
-
-  const onAddCompany = () => {
-    setCompanySearched("");
-    const data = [...companyOptions.data, companySearched];
-    setCompanyOptions({ ...companyOptions, data, filteredData: data });
-  };
-
   const handelNext = async () => {
     try {
       setIsLoading(true);
@@ -316,27 +238,6 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
     validateEmail(email);
   };
 
-  // const validatePhoneNumber = (phone) => {
-  //   if (!phone.trim()) {
-  //     setPhoneError(""); // Clear error if input is empty
-  //     return;
-  //   }
-  //   const usCanadaRegex = /^\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // US & Canada: 10 digits
-  //   const mexicoRegex = /^(\+52|52)[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}$/; // Mexico: 10-12 digits
-
-  //   if (usCanadaRegex.test(phone) || mexicoRegex.test(phone)) {
-  //     setPhoneError(""); // Valid number
-  //   } else {
-  //     setPhoneError("Enter a valid phone number");
-  //   }
-  // };
-
-  // const handlePhoneChange = (e) => {
-  //   let phone = e.target.value;
-  //   phone = phone.replace(/[^0-9\s-.+]/g, "");
-  //   handleFormChange("phone", phone);
-  //   validatePhoneNumber(phone);
-  // };
   const validateOnlyDigits = (value) => {
     return /^\d*$/.test(value); // Allows only digits and empty string
   };
@@ -522,57 +423,6 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           onChange={(e) => handleFormChange("companyName", e.target.value)}
         />
       </div>
-
-      {/* <div>
-            <label className="block text-sm font-medium text-gray-700">Company Name</label>
-            <div className="relative">
-              <button
-                type="button"
-                className={`relative w-full ${!!formData.companyName ? 'py-2' : 'py-5'} rounded border border-solid py-2 outline-none-lg text-left px-2 text-gray-700`}
-                onClick={toggleCompanyDropdown}
-              >
-                {formData.companyName}
-                <div className='absolute top-3 right-0'>
-                  <ChevronDown className="w-4 h-4 mr-2 text-[#000]" />
-                </div>
-              </button>
-              {companyOptions.visible && users && users.length > 0 && (
-                <div className="absolute w-full top-8">
-                  <div className='bg-white rounded-lg border relative'>
-                    <ul className='w-100 max-h-[120px] overflow-auto'>
-                      <li>
-                        <input
-                          type="text"
-                          placeholder='Please select or search to create a company'
-                          className="mt-1 block w-full text-gray-900 border-gray-300 border-b focus:border-blue-500 focus:ring-blue-500"
-                          value={companySearched}
-                          onChange={onCompanyNameSearch}
-                        />
-                      </li>
-                      {companyOptions.filteredData.map((item, i) =>
-                        <React.Fragment key={i}>
-                          <li className='text-[#000] hover:text-white hover:bg-blue-600 p-1' onClick={(e) => onCompanyNameSelect(item)}>
-                            {item}
-                          </li>
-                        </React.Fragment>
-                      )}
-                      {(!companyOptions.filteredData || companyOptions.filteredData.length == 0) && !!companySearched && (
-                        <>
-                          <li className='text-[#000] text-center p-1'>No data found</li>
-
-                          <li className='sticky bottom-0 flex align-items-center border-t py-2 px-1'>
-                            <button className='text-sm font-medium text-blue-600 mb-2 mr-6 ml-1 underline decoration-1 rounded-md hover:text-blue-700 disabled:opacity-55 disabled:cursor-not-allowed' onClick={onAddCompany}>+Add</button>
-                            <p className='text-gray-700'>{companySearched}</p>
-                          </li>
-                        </>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-
-          </div> */}
       <div>
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
           <UserPlus className="h-4 w-4" />
@@ -640,27 +490,12 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
       </div>
       </div>
       <div className="flex justify-end space-x-3 sticky bottom-0 bg-white border-t p-4 rounded-b-lg">
-        {/* <button
-              type="button"
-              onClick={handleModalClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              disabled={loading}
-            >
-              Cancel
-            </button> */}
         <Button
           type="Secondary"
           onClick={handleModalClose}
           disabled={loading}
           label="Cancel"
         />
-        {/* <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-              disabled={loading}
-            >
-              {loading ? "Creating..." : "Add User"}
-            </button> */}
         {
           from === "editProfile" ? (
             <Button
@@ -1096,9 +931,6 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
     }
   }, [activeStepIndex]);
 
-  const handleClose = () => {
-    onClose()
-  }
 if (!isOpen) return ;
   console.log("activeStep:", activeStep);
   const handleModalClose = () => {

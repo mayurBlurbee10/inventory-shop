@@ -26,97 +26,16 @@ import FolderExplorer from "./FolderExplorer";
 import UploadArea from "./UploadArea";
 import ActionButtons from "./ActionButtons";
 import { getSession, signOut } from "next-auth/react";
-import { setUserData } from "@/lib/auth";
 import { toast } from "react-toastify";
 import MoveDialog from "./MoveDialog";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
-import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
-const processBoxFiles = (files) => {
-  const itemsMap = new Map();
-  const rootItems = [];
-
-  files.forEach((file) => {
-    const item = {
-      id: file.id,
-      name: file.name,
-      type: file.type || "file",
-      size: file.size,
-      created_at: file.created_at,
-      modified_at: file.modified_at,
-      children: [],
-    };
-    itemsMap.set(file.id, item);
-
-    if (!file.parent || !itemsMap.has(file.parent?.id)) {
-      rootItems.push(item);
-    } else {
-      const parent = itemsMap.get(file.parent.id);
-      parent?.children.push(item);
-    }
-  });
-
-  return rootItems;
-};
-
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <LoaderSpinner size={24} className="text-blue-500" />
-  </div>
-);
-
-const AccountInfo = ({ user, userIsAdmin }) => (
-  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
-    <h3 className="text-[22px] font-medium text-gray-900 mb-5">Account Info</h3>
-    <div className="space-y-3">
-      <p className="text-gray-600 flex justify-between items-center">
-        <span className="text-gray-500">Email</span>
-        <span className="font-medium">{user?.email}</span>
-      </p>
-      {user?.boxUserId && (
-        <p className="text-gray-600 flex justify-between items-center">
-          <span className="text-gray-500">Box ID</span>
-          <span className="font-medium">{user.boxUserId}</span>
-        </p>
-      )}
-      {user?.role && (
-        <p className="text-gray-600 flex justify-between items-center">
-          <span className="text-gray-500">Role</span>
-          <span className={`font-medium ${userIsAdmin ? "text-blue-600" : ""}`}>
-            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-          </span>
-        </p>
-      )}
-    </div>
-  </div>
-);
-
-const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
-  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
-    <h3 className="text-[22px] font-medium text-gray-900 mb-5">
-      Quick Actions
-    </h3>
-    <div className="space-y-2">
-      {userIsAdmin && (
-        <button
-          onClick={() => router.push("/settings?tab=configuration")}
-          className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
-        >
-          <Settings className="w-5 h-5" />
-          <span className="font-medium">Settings</span>
-        </button>
-      )}
-      <button
-        onClick={handleLogout}
-        className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
-      >
-        <LogOut className="w-5 h-5" />
-        <span className="font-medium">Sign Out</span>
-      </button>
-    </div>
   </div>
 );
 
@@ -156,32 +75,6 @@ function Dashboard({ fileType }) {
       fileInputRef.current?.click();
     } else {
       handleFileSelect(event);
-    }
-  };
-
-  const refreshSharedFiles = async (folderId) => {
-    try {
-      setIsLoading(true);
-      const userData = getUserData();
-      if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
-        const requestOptions = {
-          method: "POST",
-          body: JSON.stringify({ collaborated: userData.collaborationIds }),
-        };
-        const response = await fetchWrapper(
-          `/api/box/collaborations`,
-          requestOptions,
-          "fetch-collaborated-folder"
-        );
-        if (!response.ok) throw new Error("Failed to get collaborated folder");
-        const data = await response.json();
-        const newFilesList = data?.items;
-        setFilesList(newFilesList);
-      }
-    } catch (error) {
-      console.error("Error get collaborated folder:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -377,21 +270,6 @@ function Dashboard({ fileType }) {
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      // const response = await fetchWrapper(
-      //   `/api/portal?portalid=${params.portalid}`,
-      //   {},
-      //   "portal-login"
-      // );
-      // const data = await response.json();
-      // if (!data.data && response.status === 404) {
-      //   router.push(`/${params.portalid}/not-found`);
-      //   return;
-      // }
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch users");
-      // }
-
-      // setConfig(data.data);
     } catch (error) {
       console.log("error: ", error);
     }
@@ -419,19 +297,6 @@ function Dashboard({ fileType }) {
       console.error("Failed to get user from email:", error);
       router.push("login");
     }
-  };
-
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-
-    if (value.trim() === "") {
-      setSuggestions([]);
-      return;
-    }
-
-    const results = searchWithPaths(filesList, value);
-    setSuggestions(results);
   };
 
   const searchWithPaths = (nodes, query, currentPath = []) => {
@@ -622,75 +487,6 @@ function Dashboard({ fileType }) {
     setMoveItem(selectedItemsDetails[0]);
     setIsMoveModalOpen(true);
   };
-
-  const handleDownload = async (fileId = "", fileName = "") => {
-    if (selectedBulkItems.length > 0) {
-      handleBulkDownload();
-    } else {
-      try {
-        const response = await fetchWrapper(
-          `/api/box/download?fileId=${fileId}`,
-          {},
-          "download"
-        );
-        if (!response.ok) throw new Error("Download failed");
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        link.click();
-
-        window.URL.revokeObjectURL(url);
-        toast.success("File dowloaded successfully");
-      } catch (error) {
-        toast.error(error.message);
-        console.error("Download error:", error);
-      }
-    }
-  };
-
-  // const handleBulkDownload = async () => {
-  //   const selectedItemsDetails = currentFilesList
-  //     .filter((item) => selectedBulkItems.includes(item.id))
-  //     .map((item) => ({ id: item.id, type: item.type, fileName: item.name }));
-  //   try {
-  //     const requestOptions = {
-  //       method: "POST",
-  //       body: JSON.stringify({ items: selectedItemsDetails }),
-  //     };
-  //     const responses = await fetchWrapper(
-  //       `/api/box/bulk/download`,
-  //       requestOptions,
-  //       "bulk-download"
-  //     );
-  //     if (!responses.ok) throw new Error("Download failed");
-  //     const data = await responses.json();
-  //     for (const response of data.downloadItems) {
-  //       const headers = response.headers;
-  //       const contentDisposition = headers.get("Content-Disposition");
-  //       if (contentDisposition) {
-  //         const match = contentDisposition.match(/filename="(.+?)"/);
-  //         if (match && match[1]) {
-  //           const fileName = match[1];
-  //           const blob = await response.blob();
-  //           const url = window.URL.createObjectURL(blob);
-  //           const link = document.createElement("a");
-  //           link.href = url;
-  //           link.download = fileName;
-  //           link.click();
-
-  //           window.URL.revokeObjectURL(url);
-  //         }
-  //       }
-  //     }
-  //     toast.success("Files dowloaded successfully");
-  //   } catch (error) {
-  //     toast.error(error.message);
-  //     console.error("Download error:", error);
-  //   }
-  // };
 
   const handleBulkDownload = async () => {
     const unMatchedType = currentFilesList
@@ -923,11 +719,6 @@ function Dashboard({ fileType }) {
                   >
                     <Download className="size-5" />
                   </button>
-                  {/* <button
-                    className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
-                  >
-                    <Download className="size-5"/>
-                  </button> */}
                   <button
                     className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 outline-none"
                     onClick={() =>
@@ -1035,10 +826,6 @@ function Dashboard({ fileType }) {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
-      {/* <TechSupport
-        isOpen={isTechSupportModalOpen}
-        onClose={() => setIsTechSupportModalOpen(false)}
-      /> */}
     </div>
   );
 }

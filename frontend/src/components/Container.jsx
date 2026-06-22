@@ -1,24 +1,19 @@
 "use client";
-import { clearUserData, getUserData, setUserData } from "@/app/lib/auth";
+import {getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { getSession, signOut } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import React, { useEffect } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
-import { setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
 import { setContent } from "@/store/services/contentService";
 
 function Container({ children }) {
   const params = useParams();
   const router = useRouter();
-  // const [user, setUser] = useState(null);
-  // const [config, setConfig] = useState(null);
-  // const [content, setContent] = useState(null);
 
   const { data: config } = useSelector((state) => state.portal);
   const { data: content } = useSelector((state) => state.content);
@@ -27,19 +22,6 @@ function Container({ children }) {
   const fetchConfig = async () => {
     try {
       if (!params?.portalid) return;
-      // const response = await fetchWrapper(
-      //   `/api/portal?portalid=${params.portalid || "default"}`,
-      //   {},
-      //   "portal-login"
-      // );
-      // const data = await response.json();
-      // if (!data.data && response.status === 404) {
-      //   router.push(`/${params.portalid}/not-found`);
-      //   return;
-      // }
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch users");
-      // }
 
       // setConfig(data.data);
       dispatch(setPortal(params.portalid))
@@ -48,31 +30,6 @@ function Container({ children }) {
       console.log("error: ", error);
     }
   };
-
-
-  // const getFiles = async () => {
-  //   try {
-  //     const userData = getUserData();
-  //     if (!userData) return;
-  //     dispatch(setFiles(userData?.boxFolderId))
-  //   } catch (error) {
-  //     console.error("Error fetching files:", error);
-  //     return [];
-  //   }
-  // };
-
-  // const fetchContent = async () => {
-  //   const response = await fetchWrapper(
-  //     `/api/contentManagement?portalId=${params.portalid}`,
-  //     { method: "GET" },
-  //     "fetchContentManagement"
-  //   );
-  //   const data = await response.json();
-  //   if (!response.ok) {
-  //     throw new Error(data.error || "Failed to fetch Content Management");
-  //   }
-  //   setContent(data);
-  // };
 
   const filterValue = (title) => {
     if (!content) return null;
@@ -128,11 +85,7 @@ function Container({ children }) {
         router.push("login");
         return;
       }
-
-      // setUser(userData);
       fetchConfig();
-      // fetchContent();
-      // getFiles()
     });
   }, [router]);
 

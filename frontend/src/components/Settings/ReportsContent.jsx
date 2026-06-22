@@ -1,28 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-import {
-  ArrowLeft,
-  Users,
-  Activity,
-  X,
-  SquareArrowOutUpRight,
-} from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
-import { Dialog, DialogBackdrop } from "@headlessui/react";
-import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 import DataTableSection from "./DataTableSection";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
@@ -36,46 +17,6 @@ const generateMockData = async (year, portalId) => {
   }));
 };
 
-const KPICard = ({ title, value, total, percentage }) => (
-  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-    <h3 className="text-sm font-medium text-gray-500 mb-2">{title}</h3>
-    <div className="flex items-end space-x-2 mb-2">
-      <span className="text-3xl font-bold text-gray-900">{value}</span>
-      <span className="text-sm text-gray-500 mb-1">/ {total}</span>
-    </div>
-    <div className="w-full bg-gray-200 rounded-full h-2.5">
-      <div
-        className="bg-blue-600 h-2.5 rounded-full"
-        style={{ width: `${percentage}%` }}
-      ></div>
-    </div>
-  </div>
-);
-
-const ActionButton = ({
-  icon: Icon,
-  children,
-  onClick,
-  variant = "primary",
-}) => (
-  <button
-    onClick={onClick}
-    className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full mb-2
-        ${
-          variant === "primary"
-            ? "bg-blue-700 text-white hover:bg-blue-800"
-            : "bg-blue-600 text-white hover:bg-blue-700"
-        }`}
-  >
-    {Icon && <Icon className="w-4 h-4 mr-2" />}
-    {children}
-  </button>
-);
-
-function sanitizeName(name) {
-  let sanitizeName = name.trim().toLowerCase().replace(/\s+/g, "-");
-  return sanitizeName.endsWith(".") ? sanitizeName.slice(0, -1) : sanitizeName;
-}
 
 const LoadingSpinner = () => (
   <div className="flex justify-center items-center py-8 min-h-[50vh]">
@@ -103,35 +44,6 @@ const ReportsContent = () => {
       setActiveUsers(res?.activeUsers);
     }
     return;
-  };
-
-  const calculatePercentage = (value, totalValue) => {
-    if (totalValue === 0) {
-      return 0;
-    }
-    return (value / totalValue) * 100;
-  };
-
-  const getChartData = async (year, portalId) => {
-    try {
-      const response = await fetchWrapper(
-        `/api/chart?portalId=${portalId || "root"}&year=${year}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-        "get-api-logs"
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Error while getting apiLogs");
-      }
-      return data;
-    } catch (error) {
-      throw new Error(error.message);
-    }
   };
 
   const fetchConfig = async () => {

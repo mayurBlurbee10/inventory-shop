@@ -287,14 +287,6 @@ const DocumentStep = ({ setActiveStep }) => {
               <p>368.28 KB</p>
             </div>
           </div>
-          {/* <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-              <Folder />
-              <div>
-                <p className="text-sm font-normal text-black">pay-stub.pdf</p>
-                <p>Modified Wed Jan 12 2025 by Wealthportal Service Account</p>
-                <p>40.63 KB</p>
-              </div>
-            </div> */}
           <div className="flex items-center justify-between p-4">
             <p>0 Selected</p>
             <div className="flex gap-2">

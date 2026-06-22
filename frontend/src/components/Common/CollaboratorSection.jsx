@@ -91,19 +91,8 @@ const CollaboratorSection = () => {
                               {/* <option>Co-Owner</option> */}
                               <option value={"editor"}>Editor</option>
                               <option value={"viewer"}>Viewer</option>
-                              {/* <option>Previewer</option>
-                          <option>Uploader</option>
-                          <option>Previewer Uploader</option>
-                          <option>Viewer Uploader</option> */}
                             </select>
 
-                            {/* <button
-                              className="py-1 px-3 bg-gray-100 rounded-md text-[#495057] border border-transparent hover:border-[#dee2e6] text-sm cursor-pointer"
-                              onClick={() => addCollaborator(collaborator)}
-                              type="button"
-                            >
-                              Invite
-                            </button> */}
                             <Button 
                             //   onClick={() => addCollaborator(collaborator)}
                               type="Secondary"

@@ -10,15 +10,11 @@ import {
   EllipsisVertical,
   Eye,
   File,
-  FileIcon,
   Folder,
   Send,
   Share2,
   Trash2,
-  UsersRound,
   X,
-  FolderPen,
-  FilePen,
   FolderInput,
   Signature,
   UserRound,
@@ -26,22 +22,18 @@ import {
   FilePenLine,
   Pencil,
 } from "lucide-react";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
 import { useParams, useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { toast } from "react-toastify";
 import EmptyState from "./FileExplorer/EmptyState";
-import CreateFolder from "./CreateFolder";
 import SendforSignatureDialog from "./SendForSignature";
 import { getUserData } from "@/app/lib/auth";
-import { UserRole } from "@/config/constants";
 import SignRequestModal from "./SignRequestModal";
-import { Menu, MenuItem, MenuItems, MenuButton } from "@headlessui/react";
 import { useSelector } from "react-redux";
 import Button from "./Common/Elements/Button";
 import Editor from "./Editor";
@@ -389,21 +381,7 @@ const ShareModal = ({
               >
                 <option value="viewer">Viewer</option>
                 <option value="editor">Editor</option>
-                {/* <option value="uploader">Uploader</option>
-                        <option value="co-owner">Co-owner</option> */}
               </select>
-              {/* <button
-                onClick={handleEmailShare}
-                disabled={!userID}
-                className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
-                                    ${userID
-                                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                    }`}
-              >
-                <Send size={16} />
-                <span>Send</span>
-              </button> */}
 
               <Button
                  onClick={handleEmailShare}
@@ -446,8 +424,6 @@ const ShareModal = ({
                         >
                           <option value="viewer">Viewer</option>
                           <option value="editor">Editor</option>
-                          {/* <option value="uploader">Uploader</option>
-                        <option value="co-owner">Co-owner</option> */}
                         </select>
                         <div className="sm:opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
@@ -501,10 +477,8 @@ function SharedFolderExplorer({
   loading,
 }) {
   const params = useParams();
-  const pathName = usePathname();
   const router = useRouter();
   const [previewFileId, setPreviewFileId] = useState("");
-  // const [user, setUser] = useState(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -731,29 +705,6 @@ function SharedFolderExplorer({
     setIsShareModalOpen(true);
   };
 
-  // const handleDownload = async (fileId, fileName) => {
-  //   try {
-  //     const response = await fetchWrapper(
-  //       `/api/box/download?fileId=${fileId}`,
-  //       {},
-  //       "download"
-  //     );
-  //     if (!response.ok) throw new Error("Download failed");
-
-  //     const blob = await response.blob();
-  //     const url = window.URL.createObjectURL(blob);
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.download = fileName;
-  //     link.click();
-
-  //     window.URL.revokeObjectURL(url);
-  //     document.body.removeChild(link);
-  //   } catch (error) {
-  //     console.error("Download error:", error);
-  //   }
-  // };
-
   const handelRemoveCollaborator = async (collaborator) => {
     console.log("collaborator", collaborator);
     try {
@@ -835,7 +786,6 @@ function SharedFolderExplorer({
   };
 
   const handleDeleteFile = async (file) => {
-    // setCurrentFilesList((prev) => prev.filter((item) => item.id !== fileId));
     setIsLoading(true);
     try {
       const filterBoxUser = (collabIds) => {
@@ -898,7 +848,6 @@ function SharedFolderExplorer({
   };
 
   const handleDeleteFolder = async (folder) => {
-    // setCurrentFilesList((prev) => prev.filter((item) => item.id !== folderId));
     setIsLoading(true);
     try {
       const response = await fetchWrapper(
@@ -977,15 +926,6 @@ function SharedFolderExplorer({
     }
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    }).format(date);
-  };
-
   function formatSize(bytes) {
     if (bytes === 0) return "0 Bytes";
 
@@ -1014,17 +954,6 @@ function SharedFolderExplorer({
     // setUser(userData);
     fetchPage();
   }, []);
-
-  // if (isLoading) {
-  //   return (
-  //     isLoading && (
-  //       <div className="flex justify-center items-center h-40">
-  //         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-  //         <p className="ml-2 text-gray-500">Loading...</p>
-  //       </div>
-  //     )
-  //   );
-  // }
 
   const handleSort = (columnKey) => {
     let newDirection = 'asc';
@@ -1599,9 +1528,6 @@ function SharedFolderExplorer({
                           <h6
                             className="text-sm font-medium text-black font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full"
                             title={file?.name}
-                            // onClick={() =>
-                            //     file?.type === "folder" && handleFolderClick(file)
-                            // }
                           >
                             {file?.name}
                           </h6>
@@ -1837,20 +1763,6 @@ function SharedFolderExplorer({
           isLoading={isLoading}
           modalRef={deleteModalRef}
         />
-
-      {/* {currentFilesList && currentFilesList?.length === 0 && (
-        <tr className="px-3">
-          <td className="col-span-4">
-            <EmptyState />
-          </td>
-        </tr>
-      )}
-            <tr>
-        <td>
-        </td>
-        <td>
-        </td>
-      </tr> */}
       <PreviewModal
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}

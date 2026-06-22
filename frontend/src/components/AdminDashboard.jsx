@@ -4,15 +4,12 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Folder,
-  Settings,
   Users,
   Layout,
   Plus,
   FileText,
-  HeadphonesIcon,
   LogOut,
   X,
-  Trash2,
   ChevronDown,
   Menu as MenuIcon,
   Copy
@@ -24,7 +21,7 @@ import { UserRole } from "@/config/constants";
 import { clearUserData, getUserData } from "@/app/lib/auth";
 import MasterUsersContent from "./Master/MasterUsersContent";
 import { toast } from "react-toastify";
-import { Dialog, DialogBackdrop, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import PortalCreatedPopup from "./PortalCreatedPopup";
 import Button from "./Common/Elements/Button";
 import PortalDuplicateModal from "./Settings/PortalDuplicateModal";
@@ -85,38 +82,6 @@ const SubsidiaryCard = ({
     tradingName: "",
     domain: "",
   });
-
-  // const fetchUsers = async () => {
-  //   try {
-  //     if (!subsidiary) return;
-  //     const response = await fetchWrapper(
-  //       `/api/users?portalid=${sanitizeName(subsidiary?.legalName)}`,
-  //       {},
-  //       "fetch-users"
-  //     );
-  //     const data = await response.json();
-  //     if (!response.ok) {
-  //       throw new Error(data.error || "Failed to fetch users");
-  //     }
-
-  //     setUsersCount(data?.length);
-  //     console.log("active", activeUsers);
-  //     setActiveUsers((prev) => {
-  //       const updatedArray = [...prev];
-  //       const firstNullIndex = updatedArray.indexOf(null);
-  //       if (firstNullIndex !== -1) {
-  //         updatedArray[firstNullIndex] = data?.length;
-  //       }
-  //       return updatedArray;
-  //     });
-  //   } catch (error) {
-  //     console.log("error: ", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchUsers();
-  // }, []);
 
   const handleDuplicatePortal = async () => {
     try {
@@ -211,13 +176,6 @@ const SubsidiaryCard = ({
           </div>
         </div>
       </div>
-      {/* <DeletePortalModal
-        isOpen={portalToDelete?.id === subsidiary?.id}
-        onClose={() => setPortalToDelete(null)}
-        subsidiary={subsidiary}
-        refreshPortals={refreshPortals}
-      /> */}
-      {/* {isPortalDuplicateModalOpen?.id === subsidiary?.id && ( */}
         <PortalDuplicateModal
           isOpen={isPortalDuplicateModalOpen?.id === subsidiary?.id}
           onClose={()=>setIsPortalDuplicateModalOpen(null)}
@@ -303,15 +261,6 @@ const DashboardHeader = ({
 
 const SubsidiaryMetrics = ({ activeUsers, currentPageCount }) => {
   console.log(activeUsers);
-  const [users, setUsers] = useState(0);
-  // useEffect(() => {
-  //   // Ensure activeUsers is an array of numbers (filtering out null or undefined)
-  //   const totalActiveUsers = activeUsers.reduce(
-  //     (acc, item) => (typeof item === "number" ? acc + item : acc),
-  //     0
-  //   );
-  //   setUsers(totalActiveUsers);
-  // }, [activeUsers]);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {[
@@ -382,12 +331,6 @@ const SubsidiaryGrid = ({
           </div>
           {visibleSubsidiaries < subsidiaries.length && (
             <div className="flex justify-center mt-6">
-              {/* <button
-                onClick={handleLoadMore}
-                className="bg-[#0061D5] text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Load More
-              </button> */}
               <Button 
                 onClick={handleLoadMore}
                 type="Primary"
@@ -648,8 +591,6 @@ export default function AdminDashboard() {
     clearUserData();
     router.push("login");
   };
-  // const recentSubsidiary =  subsidiaries[subsidiaries.length - 1].domain
-  // console.log("Last Portal:",);
 
 
   const [sidePanelOpen, setSidePanelOpen] = useState(false);

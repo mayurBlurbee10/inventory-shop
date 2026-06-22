@@ -1,5 +1,4 @@
-import { CodeXml, Pen } from "lucide-react";
-import Image from "next/image";
+import { Pen } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -27,7 +26,6 @@ const Footer = ({
     }
   };
   const contactInfo = filterValue("Footer Content")?.split("\n") || [];
-  // const links = JSON.parse(filterValue("Footer Links") || "null") || [];
   const links = (() => {
     try {
       const filteredValue = filterValue("Footer Links");
@@ -63,85 +61,6 @@ const Footer = ({
     <footer className="">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="w-full px-4 md:px-[15px] flex justify-center">
-          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="col-span-1">
-              <div className="mb-4">
-                <Image src="/logo.png" alt="E3 Logo" width={150} height={50} />
-              </div>
-              <ul className="space-y-2">
-                {contactInfo &&
-                  contactInfo.map((item, index) => <li key={index}>{item}</li>)}
-              </ul>
-              <p className="space-y-2"> {contactInfo}</p>
-              <p className="mb-2">Energy and Environmental Economics, Inc. (E3)</p>
-                  <p className="mb-4">Part of the Willdan Group, Inc.</p>
-                  <p className="mb-2">San Francisco 415.391.5100 | Boston 617.203.7689 | New York 646.699.3773</p>
-                  <p>info@ethree.com</p>
-            </div>
-
-            Navigation Links 1
-            <div className="flex justify-start md:justify-center">
-              <div>
-                <ul className="space-y-2">
-                  {links.length > 0 && links.slice(0, 5).map((item,index)=>(
-                    <li key={index}>
-                    <Link href={item.link} className="hover:underline">
-                        {item.label}
-                    </Link>
-                  </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            Navigation Links 2
-            <div className="flex justify-start md:justify-center">
-              <div>
-                <ul className="space-y-2">
-                  {links.length > 5 && links.slice(5).map((item,index)=>(
-                    <li key={index}>
-                    <Link href={item.link} className="hover:underline">
-                        {item.label}
-                    </Link>
-                  </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div> */}
-
-          {/* <div
-            className="mb-6"
-            style={{
-              maxWidth: "350px",
-              maxHeight: "60px",
-              minHeight:"40px",
-              minWidth:"50px",
-              overflow: "hidden",
-            }}
-          >
-            <Image
-              src={
-                user?.company?.logo
-                  ? user.company.logo.replace("/api/upload", "/uploads")
-                  : config?.logo || "/logo.png"
-              }
-              alt={config?.legalName || "Default Company Name"}
-              width={75}
-              height={75}
-              style={{ width: "100%", height: "auto" }}
-            />
-          </div> */}
-          {/* <img
-            src={
-              user?.company?.logo
-                ? user.company.logo.replace("/api/upload", "/uploads")
-                : config?.logo || "/logo.png"
-            }
-            alt={config?.legalName}
-            className="mr-2 mb-5 max-h-[60px] max-w-[150px]"
-          /> */}
-
           <div className="flex flex-col items-center flex-wrap w-full">
             <div className="w-full flex justify-center border-b border-gray-200 pb-[5px]">
               <div className="text-sm text-[#6c757d] font-medium font-lato">
@@ -209,9 +128,6 @@ const Footer = ({
             <div>
               <div className="md:mb-0 pt-[8px]">
                 <div className="flex items-end gap-1">
-                  {/* <p className="text-xs text-[#6c757d] font-medium font-lato">
-                    Powered By
-                  </p> */}
                   <span>
                       <img
                         src="/Powered_by_Mstrategy.png"
@@ -224,11 +140,6 @@ const Footer = ({
             </div>
           </div>
         </div>
-
-        {/* <div className="mt-8 pt-4 border-t border-white/20 text-sm">
-            <div className="text-center"></div>
-            <div className="text-center mt-2">© 2024 MStrategy Portal</div>
-          </div> */}
       </div>
     </footer>
   );

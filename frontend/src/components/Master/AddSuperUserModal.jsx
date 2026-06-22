@@ -214,22 +214,6 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
               onChange={(e) => handleFormChange("phone", e.target.value)}
             />
           </div>
-          {/* <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              className="text-gray-700 mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              value={formData.password}
-              onChange={(e) => handleFormChange("password", e.target.value)}
-            />
-          </div> */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Company Name
@@ -270,13 +254,6 @@ export default function AddSuperUserModal({ onClose, onAdd }) {
               type="Secondary"
               label="Cancel"
             />
-            {/* <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-[#0061D5] rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-              disabled={loading}
-            >
-              {loading ? "Creating..." : "Add User"}
-            </button> */}
             <Button
               buttonType="submit"
               disabled={loading}

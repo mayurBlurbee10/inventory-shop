@@ -1,39 +1,27 @@
 "use client";
-import Dashboard from "@/components/Dashboard";
 import * as React from "react";
-import Footer from "@/components/Footer";
 import LinearProgress from "@mui/material/LinearProgress";
-import ActionButtons from "@/components/ActionButtons";
 
 import {
   AlignJustify,
-  Folder,
-  File,
   Minus,
   Plus,
-  RotateCw,
   X,
   FolderInput,
   Download,
   Trash2,
-  CircleUserRound,
-  Settings,
-  Headset,
-  LogOut,
-  Loader2,
   Search,
   UploadIcon,
   PlusIcon,
 } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { getUserData, setUserData } from "@/lib/auth";
+import { getUserData } from "@/lib/auth";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import SharedFolderExplorer from "@/components/MyDocumentsExplorer";
 import UploadArea from "@/components/UploadArea";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
-import DialogBox from "@/components/DialogBox";
 import SettingsModal from "@/components/Settings";
 import MoveDialog from "@/components/MoveDialog";
 import { toast } from "react-toastify";
@@ -44,19 +32,15 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
 import TechSupport from "@/components/TechSupport";
 import CreateFolder from "./CreateFolder";
-import Navbar from "./Navbar";
-import Container from "./Container";
 import MyTaskPopupBox from "./MyTaskPopupBox";
 import UploadFileConfirmDialog from "@/components/UploadFileConfirmDialog";
 import CompleteForms from "./CompleteForms";
 import SignRequestModal from "./SignRequestModal";
-import { setPortal } from "@/store/services/portalService";
 import { useDispatch, useSelector } from "react-redux";
 import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
 import Button from "./Common/Elements/Button";
-import { TaskStatus, TaskType, UserRole } from "@/config/constants";
-import Messaging from "./Common/Messaging";
+import { TaskStatus, UserRole } from "@/config/constants";
 import TasksSection from "./Common/TasksSection";
 import MessageSection from "./Common/MessageSection";
 import AdvisorSection from "./Common/AdvisorSection";
@@ -75,10 +59,7 @@ function Documents({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenNewFolderDrawer, setIsOpenNewFolderDrawer] = useState(false);
-  const [isOpenCreateFolderModal, setIsOpenCreateFolderModal] = useState(false);
   const [isOpenUploadArea, setIsOpenUploadArea] = useState(false);
-  // const [filesList, setFilesList] = useState(null);
-  // const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [path, setPath] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -103,7 +84,6 @@ function Documents({
   const [content, setContent] = useState(null);
   const params = useParams();
   const [footerLoading, setFooterLoading] = useState(false);
-  const [accountDropdown, setAccountDropdown] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [isMyTaskPopupOpen, setIsMyTaskPopupOpen] = useState(false);
@@ -119,12 +99,6 @@ function Documents({
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
   const [isSignReqLoading, setIsSignReqLoading] = useState(null);
-  const [completedTask, setCompletedTask] = useState({
-    upload: false,
-    completeForm: false,
-    sign: false,
-    autoLoan: false,
-  });
   const [page, setPage] = useState(null);
   const [isPageLoading, setIsPageLoading] = useState(false)
   const [isTaskLoading, setIsTaskLoading] = useState(false);
@@ -213,102 +187,6 @@ function Documents({
     }
   };
 
-  const handleSelfSign = async (file, taskType) => {
-    try {
-      setIsSignReqLoading(taskType);
-      const response = await fetchWrapper(
-        "/api/box/e-sign",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fileId: file.id,
-            signers: [
-              {
-                signerEmail: user.email,
-                signerId: user.id,
-              },
-            ],
-            boxUserId: user.boxUserId,
-            portal: params.portalid,
-            onSameDoc: false,
-          }),
-        },
-        "self-esign-request"
-      );
-      const data = await response.json();
-      console.log("data: ", data);
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to generate e-sign request");
-      }
-      toast.success("E-sign request generated successfully.");
-      const currentUserReq = data.data[0].signers.find(
-        (item) => item.email === user.email
-      );
-      if (currentUserReq) {
-        setTimeout(() => {
-          setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
-          setIsSignModalOpen(true);
-          setIsSignReqLoading(null);
-        }, 2500);
-      }
-    } catch (error) {
-      setIsSignReqLoading(null);
-    } finally {
-      setIsSignReqLoading(null);
-    }
-  };
-
-  const handleCreateFolder = async () => {
-    if (!folderName.trim()) return;
-
-    setIsLoading(true);
-    try {
-      const userData = getUserData();
-      let obj = {
-        name: folderName,
-        boxFolderId: loanFolderId || userData.boxFolderId,
-      };
-      console.log(selectedItem);
-      if (!!selectedItem && selectedItem.type == "folder") {
-        obj.boxFolderId = selectedItem.id;
-      }
-      const response = await fetchWrapper(
-        "/api/box/folders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(obj),
-        },
-        "create-folder"
-      );
-
-      const folderResponse = await response.json();
-
-      if (!response.ok)
-        throw new Error(folderResponse.error || "Failed to create folder");
-
-      setShowSuccess(true);
-      setFolderName("");
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setShowSuccess(false);
-        setIsModalOpen(false);
-        onFolderCreated();
-      }, 3000);
-      toast.success("Folder created successfully");
-    } catch (error) {
-      toast.error(error.message);
-      console.error("Error creating folder:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleFileSelect = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length > 0) {
@@ -377,15 +255,6 @@ function Documents({
       };
       if (fileType == "shared" || fileType == "loan") {
         if (loanFolderId) {
-          // const response = await fetchWrapper(
-          //   `/api/box/folders?folderId=${loanFolderId}`,
-          //   requestOptions,
-          //   "fetchFile"
-          // );
-          // if (!response.ok) throw new Error("Failed to fetch files");
-          // const data = await response.json();
-          // const newFilesList = data?.items || [];
-          // setFilesList(newFilesList)
           dispatch(setFiles(loanFolderId));
           setSelectedItem({ type: "folder", id: loanFolderId });
         } else if (
@@ -393,34 +262,11 @@ function Documents({
           userData.collaborationIds.length > 0 &&
           fileType == "shared"
         ) {
-          // const requestOptions = {
-          //   method: "POST",
-          //   body: JSON.stringify({ collaborated: userData.collaborationIds }),
-          // };
-          // const response = await fetchWrapper(
-          //   `/api/box/collaborations`,
-          //   requestOptions,
-          //   "fetchCollaboratedFolder"
-          // );
-          // if (!response.ok)
-          //   throw new Error("Failed to get collaborated folder");
-          // const data = await response.json();
-          // const newFilesList = data?.items;
-          // setFilesList(newFilesList)
           dispatch(setCollaboratedFiles(userData?.collaborationIds, userData?.boxFolderId));
         } else {
           if (!userData?.boxFolderId) {
             return;
           }
-          // const response = await fetchWrapper(
-          //   `/api/box/folders?folderId=${userData?.boxFolderId}`,
-          //   requestOptions,
-          //   "fetchFile"
-          // );
-          // if (!response.ok) throw new Error("Failed to fetch files");
-          // const data = await response.json();
-          // const newFilesList = data?.items || [];
-          // setFilesList(newFilesList)
           dispatch(setFiles(userData?.boxFolderId, userData?.collaborationIds));
         }
       } else if (fileType === 'advisor') {
@@ -434,15 +280,6 @@ function Documents({
         if (!userData?.boxFolderId) {
           return;
         }
-        // const response = await fetchWrapper(
-        //   `/api/box/folders?folderId=${userData?.boxFolderId}`,
-        //   requestOptions,
-        //   "fetchFile"
-        // );
-        // if (!response.ok) throw new Error("Failed to fetch files");
-        // const data = await response.json();
-        // const newFilesList = data?.items || [];
-        // setFilesList(newFilesList)
         dispatch(setFiles(userData?.boxFolderId, userData?.collaborationIds));
       }
     } catch (error) {
@@ -490,41 +327,6 @@ function Documents({
     // }
   }, [path]);
 
-  const NavBarItem = ({ title, href }) => {
-    if (!href) {
-      console.error("href prop is required for NavBarItem.");
-      return null;
-    }
-
-    return (
-      <Link href={href} passHref>
-        <button
-          className={`px-6 py-2 text-black hover:scale-105 duration-200 ease-in-out transition-all font-lato text-sm ${pathname.includes(href) ? "text-blue-300" : ""
-            }`}
-        >
-          {title}
-        </button>
-      </Link>
-    );
-  };
-
-  const toggleDropdown = () => {
-    setIsOpen((prev) => !prev);
-  };
-
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-
-    if (value.trim() === "") {
-      setSuggestions([]);
-      return;
-    }
-
-    const results = searchWithPaths(filesList, value);
-    setSuggestions(results);
-  };
-
   const searchWithPaths = (nodes, query, currentPath = []) => {
     const results = [];
 
@@ -565,23 +367,6 @@ function Documents({
       setSelectedItem(path.length === 0 ? null : path[path.length - 1]);
     }
   }, [path]);
-
-  const handleSuggestionClick = (item) => {
-    setSearchQuery(item.name);
-    // if(item.type !== "folder" ){
-    item.path.pop();
-    // }
-    setPath(item.path);
-    setCurrentFilesList([item]);
-    setSuggestions([]);
-  };
-
-  const handelClearSearch = () => {
-    setSearchQuery("");
-    setSuggestions([]);
-    setCurrentFilesList(filesList);
-    setPath([]);
-  };
 
   useEffect(() => {
     // If no searchQuery, reset the currentFilesList to either filesList or path's last child
@@ -695,13 +480,6 @@ function Documents({
     setSelectedItems && setSelectedItems(selectedBulkItems);
   }, [selectedBulkItems]);
 
-  // useEffect(() => {
-  //   if (selectedItems?.length > 0 && isRest) {
-  //     setSelectedBulkItems([]);
-  //     setSelectedItems([]);
-  //   }
-  // }, [isRest]);
-
   const handleBulkDelete = async () => {
     setIsDeleting(true);
     const selectedItemsDetails = currentFilesList
@@ -770,34 +548,6 @@ function Documents({
     );
     setMoveItem(selectedItemsDetails[0]);
     setIsMoveModalOpen(true);
-  };
-
-  const handleDownload = async (fileId = "", fileName = "") => {
-    if (selectedBulkItems.length > 0) {
-      handleBulkDownload();
-    } else {
-      try {
-        const response = await fetchWrapper(
-          `/api/box/download?fileId=${fileId}`,
-          {},
-          "download"
-        );
-        if (!response.ok) throw new Error("Download failed");
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        link.click();
-
-        window.URL.revokeObjectURL(url);
-        toast.success("File dowloaded successfully");
-      } catch (error) {
-        toast.error(error.message);
-        console.error("Download error:", error);
-      }
-    }
   };
 
   const handleBulkDownload = async () => {
@@ -983,8 +733,6 @@ function Documents({
         router.push("login");
         return;
       }
-      // setUser(userData);
-      // refreshFiles();
     });
   }, [router]);
 
@@ -1027,10 +775,6 @@ function Documents({
     }
   }, []);
 
-  const firstFileToSign = () => {
-    return filesList?.find((file) => file.type === "file") || null;
-  };
-
   const filterVisibility = (label) => {
     if (isPageLoading) return false;
     if (!page || !page.length) return true;
@@ -1061,44 +805,6 @@ function Documents({
       setIsTaskLoading(false);
     }
   };
-
-  const handleOpenSignModal = async (task) => {
-    try {
-      setIsSignReqLoading(task?.title);
-      const response = await fetchWrapper(
-        `/api/box/e-sign?id=${task?.uploads[0]}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          }
-        },
-        "get-esign-request"
-      );
-      const data = await response.json();
-      console.log("data: ", data);
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to get e-sign request");
-      }
-      setSignRequest(data?.data)
-      toast.success("E-sign request generated successfully.");
-      const currentUserReq = data?.data.signers.find(
-        (item) => item.email === user.email
-      );
-
-      if (currentUserReq) {
-        setTimeout(() => {
-          setSelectedSignUrl(currentUserReq.iframeableEmbedUrl);
-          setIsSignModalOpen(true);
-          setIsSignReqLoading(null);
-        }, 2500);
-      }
-    } catch (error) {
-      setIsSignReqLoading(null);
-    } finally {
-      setIsSignReqLoading(null);
-    }
-  }
 
   const updateTaskStatus = async () => {
     try {
@@ -1137,9 +843,6 @@ function Documents({
     }
   }, [signRequest]);
 
-  // useEffect(()=>{
-  //   fetchTasks()
-  // }, [])
 
   const LoadingSpinner = () => (
     <div className="h-[80vh] flex items-center justify-center bg-white">
@@ -1147,12 +850,7 @@ function Documents({
     </div>
   );
 
-  // if (!filterValue("Shared Docs Heading")) return <LoadingSpinner />;
-  const userIsAdmin = isAdmin();
-
   return (
-    // <div className="bg-white min-h-screen">
-    // <Container>
     <div
       className={`max-w-[1820px] ${fileType === "loan" || fileType === "advisor"
         ? ""
@@ -1321,9 +1019,6 @@ function Documents({
                         }
                         disabled={fileType === "shared"}
                       >
-                        {/* {isBulkDownloading ? (
-                          <LoaderSpinner className="text-gray-500" size={16}/>
-                        ) : ( */}
                           <Download className="size-5" />
                         {/* )} */}
                       </button>
@@ -1347,18 +1042,6 @@ function Documents({
               <div className="px-5 border-b break-words flex justify-between">
                 <div className="py-3 flex items-center justify-between flex-wrap relative">
                   <div>
-                    {/* <nav className="flex items-center text-gray-500 text-sm xl:text-sm space-x-1 py-1.5">
-                            <button className="text-gray-500 transition-colors font-normal hover:text-gray-950 font-lato">
-                              emailID
-                            </button>
-    
-                            <div className="flex items-center">
-                              <ChevronRight className="h-5 w-5" />
-                              <button className="text-gray-500 transition-colors text-sm font-normal hover:text-gray-950 font-lato">
-                                Folder name
-                              </button>
-                            </div>
-                          </nav>  */}
                     <Breadcrumbs
                       path={path}
                       setPath={setPath}
@@ -1491,12 +1174,6 @@ function Documents({
                   selectedItem?.id || user?.boxFolderId
                 )}
               />
-              {/* <UploadFileConfirmDialog
-                fileLocation={uploadedfilePath}
-                isModalOpen={isModalOpen}
-                setIsModalOpen={setIsModalOpen}
-                config={config}
-              /> */}
               <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
@@ -1505,165 +1182,6 @@ function Documents({
                 isOpen={isTechSupportModalOpen}
                 onClose={() => setIsTechSupportModalOpen(false)}
               />
-
-              {/* {view === "abc" && (
-                      <div className="min-h-[450px]">
-                        <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-                          {!filteredFilesList || filteredFilesList?.length === 0 ? (
-                            <thead>
-                              <tr>
-                                <th>
-                                  <EmptyState />
-                                </th>
-                              </tr>
-                            </thead>
-                          ) : (
-                            <>
-                              <thead className="custom-box-shadow">
-                                <tr>
-                                  <th></th>
-                                  <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                    <div className="flex items-center justify-start gap-2  mx-4">
-                                      <span className="block">Name</span>
-                                      <button className="flex items-center justify-center">
-                                        <ChevronUp className="h-4 w-4" />
-                                      </button>
-                                      <button className="flex items-center justify-center">
-                                        <ChevronDown className="h-4 w-4" />
-                                      </button>
-                                    </div>
-                                  </th>
-                                  <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                    <span className="block mx-4">Modified</span>
-                                  </th>
-                                  <th className="text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
-                                    <span className="block mx-4">Size</span>
-                                  </th>
-                                </tr>
-                              </thead>
-    
-                              <tbody className="w-full divide-y divide-y-gray-200">
-                               
-                              </tbody>
-                            </>
-                          )}
-                        </table>
-                      </div>
-                    )} */}
-
-              {/* Table in card view */}
-              {/* {view === "abc" && (
-                      <div>
-                        <div className={`grid grid-cols-${6 - cols} gap-5`}>
-                          <div className="p-2 max-w-[356px]">
-                          <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                            <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                              <div className="max-h-24 max-w-[80px] h-full w-full">
-                                <Folder className="flex-auto h-full w-full text-blue-500" />
-                              </div>
-                            </div>
-                            <div className="py-2 px-2.5">
-                              <div className="flex items-center justify-between">
-                                <h6 className="text-sm font-medium text-black font-lato">
-                                  Loans
-                                </h6>
-    
-                                <div className="relative">
-                                  <button
-                                    className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
-                                    onClick={() =>
-                                      setIsOpenOptionDrawer((prev) => !prev)
-                                    }
-                                  >
-                                    <Ellipsis />
-                                  </button>
-                                  {isOpenOptionDrawer && (
-                                    <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                      <ul>
-                                        <li>
-                                          <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                            Delete
-                                          </button>
-                                        </li>
-                                        <li>
-                                          <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                            Rename
-                                          </button>
-                                        </li>
-                                        <li>
-                                          <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                            Share
-                                          </button>
-                                        </li>
-                                      </ul>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <p className="text-xs text-gray-500 font-lato">
-                                Modified today by Wealthportal Service Account
-                              </p>
-                              <p className="text-xs text-gray-500 font-lato ">
-                                100.7 KB
-                              </p>
-                            </div>
-                          </div>
-                          <div className="border border-[#e8e8e8] card-shadow hover:border-sky-500">
-                            <div className="min-h-48 flex items-center justify-center bg-[#fbfbfb]">
-                              <div className="max-h-24 max-w-[80px] h-full w-full">
-                                <Folder className="flex-auto h-full w-full text-blue-500" />
-                              </div>
-                            </div>
-                            <div className="py-2 px-2.5">
-                              <div className="flex items-center justify-between">
-                                <h6 className="text-sm font-medium text-black font-lato">
-                                  Loans
-                                </h6>
-    
-                                <div className="relative">
-                                  <button
-                                    className="text-gray-600 hover:bg-gray-100 rounded-md px-3"
-                                    onClick={() =>
-                                      setIsOpenOptionDrawer((prev) => !prev)
-                                    }
-                                  >
-                                    <Ellipsis />
-                                  </button>
-                                  {isOpenOptionDrawer && (
-                                    <div className="absolute top-7 right-0 w-32 bg-white shadow-md p-3 rounded-md border border-[#e8e8e8]">
-                                      <ul>
-                                        <li>
-                                          <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                            Delete
-                                          </button>
-                                        </li>
-                                        <li>
-                                          <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                            Rename
-                                          </button>
-                                        </li>
-                                        <li>
-                                          <button className="px-3 py-2.5 w-full text-sm text-start font-lato text-[#222] font-normal hover:bg-gray-50 rounded-md transition-all ease-in-out duration-300">
-                                            Share
-                                          </button>
-                                        </li>
-                                      </ul>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <p className="text-xs text-gray-500 font-lato">
-                                Modified today by Wealthportal Service Account
-                              </p>
-                              <p className="text-xs text-gray-500 font-lato ">
-                                100.7 KB
-                              </p>
-                            </div>
-                          </div>
-                          </div>
-                        </div>
-                      </div>
-                    )} */}
 
               {/* Create folder */}
             </div>
@@ -1685,203 +1203,6 @@ function Documents({
               <div className="flex flex-col gap-4">
                 {/* Tasks */}
                 {filterVisibility("My Task Section") && (
-                  // <>
-                  //   <div className="grid grid-cols-3">
-                  //     <div></div>
-                  //     <h3 className="text-xl font-light text-center text-[#212529] font-lato mb-4">
-                  //       My Tasks
-                  //     </h3>
-                  //     <div
-                  //       className="flex items-center justify-end text-[#dc3545] cursor-pointer"
-                  //       onClick={() =>
-                  //         setCompletedTask({
-                  //           upload: false,
-                  //           completeForm: false,
-                  //           sign: false,
-                  //           autoLoan: false,
-                  //         })
-                  //       }
-                  //     >
-                  //       <RotateCw className="h-4 w-4" />
-                  //     </div>
-                  //   </div>
-
-                  //   <div className="mb-7">
-                  //     <table className="min-w-full divide-y divide-gray-200 overflow-auto border border-[#dee2e6]">
-                  //       <tbody className="divide-y divide-gray-200 ">
-                  //         <tr>
-                  //           <td className="ps-3 py-4">
-                  //             <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p className="font-lato text-[#212529] text-sm">
-                  //               Upload identity information
-                  //             </p>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p
-                  //               className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                  //               onClick={() => {
-                  //                 setMyTaskPopupBoxContent({
-                  //                   title: "Upload identity information",
-                  //                   actionText: "Upload",
-                  //                 });
-                  //                 setIsMyTaskPopupOpen((prev) => !prev);
-                  //                 setCompletedTask((prev) => ({
-                  //                   ...prev,
-                  //                   upload: true,
-                  //                 }));
-                  //               }}
-                  //             >
-                  //               {completedTask.upload ? (
-                  //                 <span className="italic">Completed</span>
-                  //               ) : (
-                  //                 "Upload"
-                  //               )}
-                  //             </p>
-                  //           </td>
-                  //         </tr>
-                  //         <tr>
-                  //           <td className="ps-3 py-4">
-                  //             <div className="h-3 w-3 rounded-full bg-[#1ec0cb] pulse-animation"></div>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p className="font-lato text-[#212529] text-sm">
-                  //               Upload 2023 tax return
-                  //             </p>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p
-                  //               className="font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer"
-                  //               onClick={() => {
-                  //                 setIsCompleteFormPopupOpen((prev) => !prev);
-                  //                 setCompletedTask((prev) => ({
-                  //                   ...prev,
-                  //                   completeForm: true,
-                  //                 }));
-                  //               }}
-                  //             >
-                  //               {completedTask.completeForm ? (
-                  //                 <span className="italic">Completed</span>
-                  //               ) : (
-                  //                 "Complete Forms"
-                  //               )}
-                  //             </p>
-                  //           </td>
-                  //         </tr>
-                  //         <tr>
-                  //           <td className="ps-3 py-4">
-                  //             <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p className="font-lato text-[#212529] text-sm">
-                  //               Sign money transfer agreement
-                  //             </p>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p
-                  //               className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
-                  //               onClick={() => {
-                  //                 if (!firstFileToSign()) return;
-                  //                 handleSelfSign(firstFileToSign(), "sign");
-                  //                 setCompletedTask((prev) => ({
-                  //                   ...prev,
-                  //                   sign: true,
-                  //                 }));
-                  //               }}
-                  //             >
-                  //               {isSignReqLoading === "sign" ? (
-                  //                 <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                  //               ) : completedTask.sign ? (
-                  //                 <span className="italic">Completed</span>
-                  //               ) : (
-                  //                 "Sign"
-                  //               )}
-                  //             </p>
-                  //           </td>
-                  //         </tr>
-                  //         <tr>
-                  //           <td className="ps-3 py-4">
-                  //             <div className="h-3 w-3 rounded-full bg-[#ffc107]"></div>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p className="font-lato text-[#212529] text-sm">
-                  //               Auto Loan Forms
-                  //             </p>
-                  //           </td>
-                  //           <td className="px-3 py-4">
-                  //             <p
-                  //               className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer ${!firstFileToSign() ? "pointer-events-none opacity-50" : ""}`}
-                  //               onClick={() => {
-                  //                 if (!firstFileToSign()) return;
-                  //                 handleSelfSign(
-                  //                   firstFileToSign(),
-                  //                   "autoLoan"
-                  //                 );
-                  //                 setCompletedTask((prev) => ({
-                  //                   ...prev,
-                  //                   autoLoan: true,
-                  //                 }));
-                  //               }}
-                  //             >
-                  //               {isSignReqLoading === "autoLoan" ? (
-                  //                 <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                  //               ) : completedTask.autoLoan ? (
-                  //                 <span className="italic">Completed</span>
-                  //               ) : (
-                  //                 "Start Forms"
-                  //               )}
-                  //             </p>
-                  //           </td>
-                  //         </tr>
-                  //         {tasks?.length > 0 && tasks?.map((task)=>(
-                  //            <tr key={task?.id}>
-                  //              <td className="ps-3 py-4">
-                  //                <div className={`h-3 w-3 rounded-full  pulse-animation ${task?.status === TaskStatus.PENDING ? "bg-[#ffc107]" : "bg-[#1ec0cb]"}`}></div>
-                  //              </td>
-                  //              <td className="px-3 py-4">
-                  //                <p className="font-lato text-[#212529] text-sm">
-                  //                  {task?.title}
-                  //                </p>
-                  //              </td>
-                  //              <td className="px-3 py-4">
-                  //                <p
-                  //                  className={`font-lato text-sky-500 text-sm hover:text-sky-700 text-end cursor-pointer`}
-                  //                  onClick={()=> {
-                  //                    if(task?.status === TaskStatus.COMPLETED){
-                  //                      return;
-                  //                    }
-                  //                    setTaskToUpdate(task)
-                  //                    if(task?.type === TaskType.SIGN){
-                  //                      handleOpenSignModal(task);
-                  //                    }else {
-                  //                      setMyTaskPopupBoxContent({
-                  //                        title: task?.title,
-                  //                        actionText: task?.type,
-                  //                      });
-                  //                      setIsMyTaskPopupOpen((prev) => !prev);
-                  //                      setCompletedTask((prev) => ({
-                  //                        ...prev,
-                  //                        upload: true,
-                  //                      }));
-                  //                    }
-                  //                  }}
-                  //                >
-                  //                  {isSignReqLoading === task?.title ? (
-                  //                    <Loader2 className="ml-auto size-5 animate-spin text-blue-500" />
-                  //                  ) : task?.status === TaskStatus.COMPLETED ? (
-                  //                    <span className="italic">Completed</span>
-                  //                  ) : (
-                  //                    <span>{task?.type.charAt(0).toUpperCase() + task?.type.slice(1)}</span>
-                  //                  )}
-                  //                </p>
-                  //              </td>
-                  //            </tr>
-                  //          ))}
-                  //       </tbody>
-                  //     </table>
-                  //   </div>
-                  // </>
                   <TasksSection />
                 )}
 

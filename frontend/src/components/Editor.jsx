@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Dialog, DialogPanel } from "@headlessui/react";
-import { MessageSquareDiff, Save, X } from "lucide-react";
+import { MessageSquareDiff, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
@@ -14,12 +13,10 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const editorRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
-  const [fileUrl, setFileUrl] = useState("");
   const [token, setToken] = useState("");
   const [fileType, setFileType] = useState("");
   const [blobReq, setBlobReq] = useState(false);
   const [replaceReq, setReplaceReq] = useState(false);
-  // const [user, setUser] = useState(null);
   const [isOpenCommentBox, setIsOpenCommentBox] = useState(false);
   const [message, setMessage] = useState("");
   const [isPostLoading, setIsPostLoading] = useState(false);

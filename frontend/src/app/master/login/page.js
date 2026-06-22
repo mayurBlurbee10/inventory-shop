@@ -127,17 +127,6 @@ export default function MasterLoginPage() {
             )}
           </button>
         </form>
-        {/* <div className="mt-6 text-center">
-          <div className="text-blue-600 text-sm">
-            Don't have an account?{" "}
-            <span
-              className="cursor-pointer hover:text-blue-500"
-              onClick={navigatToSignUp}
-            >
-              Sign up
-            </span>
-          </div>
-        </div> */}
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>&copy; 2024 MStrategy. All rights reserved.</p>
           <p className="mt-2">

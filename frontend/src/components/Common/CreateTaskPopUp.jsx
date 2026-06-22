@@ -1,27 +1,23 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import { ChevronDown, Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 import Button from "./Elements/Button";
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import MyTaskFileUploadArea from "../MyTaskFileUploadArea";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
-import { TaskType, UserRole } from "@/config/constants";
+import { TaskType } from "@/config/constants";
 
 const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onTaskUpdated = () => { }, allowedCheckLists = [] }) => {
   const isForImport = false;
   const params = useParams();
   const [submitLoading, setSubmitLoading] = useState(false)
-  const [selectedType, setSelectedType] = useState(TaskType.SIGN)
-  const [discription, setDiscription] = useState("");
-  const [title, setTitle] = useState("");
   const [filesUploaded, setFilesUploaded] = useState([])
   const [resetUpload, setResetUpload] = useState(false);
   const [usersList, setUsersList] = useState([]);
   const [users, setUsers] = useState([]);
-  const [userID, setUserID] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     userID: "",
@@ -287,10 +283,6 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
     }
   };
 
-  const handleTaskSelection = (type) => {
-    setSelectedType(type);
-  }
-
   const handleCreate = async () => {
     console.log("handleCreate triggered 🚀");
     if (task?.id) {
@@ -340,11 +332,6 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
       value: user.boxUserId,
       label: `${`${user.firstName || ''} ${user.lastName || ''}`.trim()} (${user.email})`,
     }));
-
-    // const loggedInUserId = loggedInUser?.boxUserId;
-
-    // const filteredUsers = users.filter((user) => user.role !== UserRole.MODERATOR);
-
     setUsers(users);
 
   }, [usersList]);

@@ -1,8 +1,6 @@
 "use client";
 import { X, File, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
-import DialogBox from "./DialogBox";
-import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import Button from "./Common/Elements/Button";
 
@@ -27,10 +25,6 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange, from="
     };
     const handleFileSelect = (event) => {
         const files = Array.from(event.target.files);
-        // setArrayOfFiles(files); 
-        // if (onUploadSuccess) {
-            // onUploadSuccess();
-        // }
         setArrayOfFiles((prevFiles) => {
             const existingFileNames = prevFiles.map((file) => file.name);
             const newFiles = files.filter(
@@ -41,9 +35,6 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange, from="
     };
 
     useEffect(() => {
-        // if(arrayOfFiles.length>0){
-        //     onUploadSuccess();
-        // }
         onFileChange(arrayOfFiles);
         console.log("Selected Files:", arrayOfFiles);
     }, [arrayOfFiles]);
@@ -125,15 +116,8 @@ export default function MyTaskFileUploadArea({ isForImport, onFileChange, from="
                                             onChange={handleFileSelect}
                                             style={{ display: "none" }} // Hide the file input
                                             multiple
-
                                         />
                                     </p>
-                                    {/* <button
-                                        onClick={handleBrowse}
-                                        className="border px-3 py-1 rounded-lg border-gray-300 hover:border-blue-300 text-gray-700"
-                                    >
-                                        Select Files
-                                    </button> */}
                                     <Button
                                         onClick={handleBrowse}
                                         type="Secondary"

@@ -4,36 +4,10 @@ import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import Documents from "@/components/Documents";
 import { getUserData } from "@/lib/auth";
 import { setLoans } from "@/store/services/loanService";
-import { ArrowDownUp, ChevronLeft, Folder, Loader2, Plus } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-const data = [
-  {
-    id: 635789,
-    name: "Auto - 635789",
-    type: "Auto",
-    status: "Active",
-    complete: 75,
-    paid: "$40,225.00 Paid",
-  },
-  {
-    id: 990154,
-    name: "Personal - 990154",
-    type: "Personal",
-    status: "Fully Paid",
-    complete: 100,
-    paid: "Fully Paid",
-  },
-  {
-    id: 174192,
-    name: "Mortgage - 174192",
-    type: "Mortgage	",
-    status: "Processing",
-    complete: 30,
-    paid: "In process",
-  },
-];
 
 const calculatePercentage = (value, totalValue) => {
   if (totalValue === 0) {
@@ -305,63 +279,6 @@ function DetailsPage() {
               <LoaderSpinner size={28} className="text-blue-500" />
             </div>
           )}
-          {/* <div className="flex items-center gap-2 p-5 bg-[#fcfcfc] border-b border-[#ced4da]">
-            <input
-              type="text"
-              placeholder="Search files and folder"
-              className="text-sm border border-[#ced4da] rounded p-1 w-full mr-2"
-            />
-          </div>
-          <div className="flex items-center justify-between text-sm p-3 border-b border-[#ced4da]">
-            <p>testUser@yopmail.com</p>
-            <div className="flex items-center gap-1">
-              <ArrowDownUp className="size-4" />
-              <Plus className="size-4" />
-            </div>
-          </div>
-          <div className="flex items-center w-full text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-            <Folder />
-            <div className="w-full">
-              <p className="text-sm font-normal text-gray-700 text-center">
-                Loans
-              </p>
-              <p className="text-gray-400 text-center">
-                Modified today by testUser@yopmail.com - 1.38 MB
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-            <Folder />
-            <div className="w-full">
-              <p className="text-sm font-normal text-gray-700 text-center">
-                Personal Documents
-              </p>
-              <p className="text-gray-400 text-center">
-                Modified Wed Jan 12 2025 by Wealthportal Service Account - 40.63
-                KB
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-            <Folder />
-            <div className="w-full">
-              <p className="text-sm font-normal text-gray-700 text-center">
-                Text Prep 2019
-              </p>
-              <p className="text-gray-400 text-center">
-                Modified Wed Jan 12 2025 by Wealthportal Service Account -
-                368.28 KB
-              </p>
-            </div>
-          </div> */}
-          {/* <div className="flex items-center text-xs bg-[#fcfcfc] py-2 px-3 gap-2 border-b border-[#ced4da]">
-              <Folder />
-              <div>
-                <p className="text-sm font-normal text-black">pay-stub.pdf</p>
-                <p>Modified Wed Jan 12 2025 by Wealthportal Service Account</p>
-                <p>40.63 KB</p>
-              </div>
-            </div> */}
         </div>
       </div>
     </div>

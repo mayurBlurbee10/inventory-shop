@@ -1,7 +1,7 @@
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { Dialog, DialogPanel } from "@headlessui/react";
-import { Loader2, Send, X } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Select from "react-select";

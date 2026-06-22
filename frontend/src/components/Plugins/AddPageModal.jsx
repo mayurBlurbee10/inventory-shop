@@ -266,37 +266,6 @@ function AddPageModal({
               </div>
 
               <div className="w-full flex items-center justify-end mr-12 gap-2">
-                {/* <button
-                  type="button"
-                  onClick={() => {
-                    if (editData?.description) {
-                      if (
-                        compareDescription(
-                          editData?.description,
-                          getValues("description")
-                        )
-                      ) {
-                        setEditData(null);
-                        setIsOpenCancelConfirm(false);
-                        setValue("description", "");
-                        onClose();
-                      } else {
-                        setIsOpenCancelConfirm(true);
-                      }
-                    } else if (getValues("description")) {
-                      setIsOpenCancelConfirm(true);
-                    } else {
-                      setEditData(null);
-                      setIsOpenCancelConfirm(false);
-                      setValue("description", "");
-                      onClose();
-                    }
-                  }}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-                  disabled={loading}
-                >
-                  Cancel
-                </button> */}
                 <Button
                   onClick={() => {
                     if (editData?.description) {
@@ -326,20 +295,6 @@ function AddPageModal({
                   type="Secondary"
                   label ="Cancel"
                 />
-                {/* <button
-                  type="button"
-                  disabled={loading}
-                  className="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleClose}
-                >
-                  {loading
-                    ? editData
-                      ? "Updating..."
-                      : "Adding..."
-                    : editData
-                    ? "Update"
-                    : "Add"}
-                </button> */}
                 <Button
                   disabled={loading}
                   onClick={handleClose}
@@ -391,28 +346,11 @@ function AddPageModal({
                 This action CANNOT be undone. This will not save your page
               </p>
               <div className="flex items-center justify-between">
-                {/* <button
-                  onClick={() => setIsOpenCancelConfirm(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button> */}
                 <Button
                   onClick={() => setIsOpenCancelConfirm(false)}
                   type="Secondary"
                   label="Cancel"
                 />
-                {/* <button
-                  onClick={() => {
-                    setEditData(null);
-                    setIsOpenCancelConfirm(false);
-                    setValue("description", "");
-                    onClose();
-                  }}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  OK
-                </button> */}
                 <Button
                   onClick={() => {
                     setEditData(null);

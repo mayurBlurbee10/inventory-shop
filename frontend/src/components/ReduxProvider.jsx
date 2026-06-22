@@ -1,13 +1,4 @@
 "use client";
-
-// import { store } from "@/store/store";
-// import { Provider } from "react-redux";
-
-// const ReduxProvider = ({ children }) => {
-//   return <Provider store={store}>{children}</Provider>;
-// };
-// export default ReduxProvider;
-
 import reducers from "@/store/reducers";
 import { legacy_createStore as createStore, applyMiddleware } from "redux";
 import { composeWithDevTools } from "redux-devtools-extension";
@@ -57,12 +48,6 @@ export const makeStore = () =>
     initialState,
     composeWithDevTools(applyMiddleware(...middleware))
   );
-
-/** ROOT TYPES EXPORTS */
-// export const useAppDispatch = () => useDispatch();
-// export const useAppSelector = () => useSelector();
-
-/** PROVIDER */
 export default function StoreProvider({ children }) {
   const storeRef = useRef();
   const persistorRef = useRef();

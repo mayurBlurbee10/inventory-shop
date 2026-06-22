@@ -95,14 +95,6 @@ const CompleteForms = ({ isOpen, onClose }) => {
                             </div>
                         </div>
                         <div className="p-2 w-full flex justify-end mt-2">
-                            {/* <button
-                                type="submit"
-                                onClick={handleSubmit}
-                                className={`px-4 py-2 rounded-lg text-white ${isFormValid ? "bg-[#0061D5]" : "bg-gray-400 cursor-not-allowed"
-                                    }`}
-                                disabled={!isFormValid}>
-                                {submitLoading ? "Submitting..." : "Submit"}
-                            </button> */}
                             <Button
                                 buttonType="submit"
                                 type="Primary"

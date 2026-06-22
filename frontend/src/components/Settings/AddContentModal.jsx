@@ -18,7 +18,7 @@ import {
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
-import { coverPhotoRatio, fontSizeOptions, fontSizes, fontWeightOptions, logoSizeRatio } from "@/app/lib/data/font_size";
+import { coverPhotoRatio, fontSizeOptions, fontSizes, fontWeightOptions } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 
 const AddContentModal = ({
@@ -136,9 +136,6 @@ const AddContentModal = ({
         const portalData = {
           ...config,
           logo: imageUrl,
-          // primaryColor: selectedTheme.primaryColor,
-          // secondaryColor: selectedTheme.secondaryColor,
-          // accentColor: selectedTheme.accentColor,
         };
   
         const response = await fetchWrapper(
@@ -387,23 +384,6 @@ const AddContentModal = ({
               {/* <option value="add-new">+ Add New</option> */}
             </select>
           </div>
-          {/* <div className="mb-4">
-          <label
-            htmlFor="type"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Type
-          </label>
-          <input
-            type="text"
-            id="type"
-            name="type"
-            value={newContent.type}
-            readOnly
-            disabled
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100 text-gray-500"
-          />
-        </div> */}
           {newContent?.type !== "Links" && newContent?.type !== "Icons" && (
             <div className="flex items-center gap-5">
               {newContent.title !== "Title" &&

@@ -7,21 +7,16 @@ import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import Documents from "@/components/Documents";
 import SignRequestModal from "@/components/SignRequestModal";
 import { setNewLoan } from "@/store/services/loanService";
-import { isPlainObject } from "@tiptap/core";
 import {
-  ArrowDownUp,
   Check,
   ChevronRight,
   CircleCheckBig,
-  Folder,
   ListChecks,
-  Loader2,
-  Plus,
   Signature,
   UploadCloud,
   X,
 } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -427,20 +422,6 @@ const ApplicationStep = ({
         >
           <ListChecks className="size-5" />
         </div>
-        {/* <button
-          className={`px-3 py-2 border border-gray-500 rounded-lg disabled:cursor-not-allowed disabled:opacity-50 ${!isLoading && !fileListLoading && 'transition-colors duration-300 ease-in-out hover:bg-[#0061D5] hover:text-white hover:border-white'} `}
-          disabled={isLoading || fileListLoading}
-          onClick={handelNext}
-        >
-          {isLoading && (
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          )}
-          {fileListLoading ? (
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          ) : (
-            "Next"
-          )}
-        </button> */}
         <Button
           onClick={handelNext}
           disabled={isLoading || fileListLoading}
@@ -603,15 +584,6 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
             <div className="flex items-center justify-between p-4">
               <p>{selectedItems.length} Selected</p>
               <div className="flex gap-2">
-                {/* <button
-                  className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
-                  onClick={() => {
-                    setIsRest(true);
-                  }}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </button> */}
                 <Button
                   onClick={() => {
                     setIsRest(true);
@@ -620,16 +592,6 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
                   type="Secondary"
                   label="Cancel"
                 />
-                {/* <button
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                  onClick={handelChoose}
-                  disabled={isLoading}
-                >
-                  <div className="flex items-center gap-2">
-                    {isLoading && <div className="spinner"></div>}
-                    Choose
-                  </div>
-                </button> */}
                 <Button
                   onClick={handelChoose}
                   disabled={isLoading}
@@ -705,46 +667,18 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
 
             {/* Footer with Buttons */}
             <div className="flex justify-between border-t items-center p-4">
-              {/* <button
-                className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
-                disabled={files.length > 0}
-              >
-                Close
-              </button> */}
               <Button
                 disabled={files.length > 0 || isUploadLoading}
                 type="Secondary"
                 label="Close"
               />
               <div className="flex space-x-2">
-                {/* <button
-                  className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
-                  onClick={handleCancel}
-                  disabled={isUploadLoading || files.length == 0}
-                >
-                  Cancel
-                </button> */}
                 <Button
                   onClick={handleCancel}
                   disabled={isUploadLoading || files.length == 0}
                   type="Secondary"
                   label="Cancel"
                 />
-                {/* <button
-                  className="text-white px-4 py-2 rounded-md border-gray bg-blue-500 hover:bg-blue-600"
-                  disabled={isUploadLoading || files.length == 0}
-                  onClick={uploadFiles}
-                >
-                  <div className="flex items-center gap-2">
-                    {isUploadLoading ? (
-                      <>
-                        <div className="spinner"></div> Uploading
-                      </>
-                    ) : (
-                      "Upload"
-                    )}
-                  </div>
-                </button> */}
                 <Button
                   onClick={uploadFiles}
                   disabled={isUploadLoading || files.length == 0}
@@ -903,13 +837,6 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
           )}
         </button>
         <Signature className="text-[#0057ca] size-10" />
-        {/* <p className="font-light text-lg text-center">Your Loan has been created successfully.</p>
-        <button
-          onClick={finalStep}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Loan Origination
-        </button> */}
       </div>
       <SignRequestModal
         isOpen={isSignModalOpen}
@@ -918,12 +845,6 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
         redirect_url={`/${params?.portalid}/forms`}
       />
       <div className="flex w-full justify-end mt-5">
-        {/* <button
-         className="px-3 py-2 border border-gray-500 rounded-lg hover:bg-gray-100"
-          onClick={() => setActiveStep("documents")}
-        >
-          Back
-        </button> */}
         <Button
           onClick={() => setActiveStep("documents")}
           type="Secondary"
@@ -939,9 +860,7 @@ function NewLoanPage() {
   const [loanFolderId, setLoanFolderId] = useState(null);
   const [createdLoan, setCreatedLoan] = useState(null);
   const [filesList, setFilesList] = useState([]);
-  const [shareFilesList, setShareFilesList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -956,12 +875,9 @@ function NewLoanPage() {
     propertyLocation: "",
   });
   const [uniqueNo, setUniqueNo] = useState(null);
-
-  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const type = searchParams.get("type");
-  const { data: loanData } = useSelector((state) => state.loans);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -991,35 +907,6 @@ function NewLoanPage() {
       console.error("Error get files:", error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getShareFile = async () => {
-    try {
-      setIsLoading(true);
-      const userData = getUserData();
-      if (userData?.collaborationIds && userData.collaborationIds.length > 0) {
-        const requestOptions = {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ collaborated: userData.collaborationIds }),
-        };
-        const response = await fetchWrapper(
-          `/api/box/collaborations`,
-          requestOptions,
-          "fetch-collaborated-folder"
-        );
-        if (!response.ok) throw new Error("Failed to get collaborated folder");
-        const data = await response.json();
-        const newFilesList = data?.items;
-        setShareFilesList(newFilesList);
-      }
-    } catch (error) {
-      console.error("Error get files:", error);
-    } finally {
-      // setIsLoading(false);
     }
   };
 

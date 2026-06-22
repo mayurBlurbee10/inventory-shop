@@ -1,7 +1,6 @@
 import { Bounce, ToastContainer } from "react-toastify";
 import localFont from "next/font/local";
 import "./globals.css";
-import ReduxProvider from "@/components/ReduxProvider";
 import StoreProvider from "@/components/ReduxProvider";
 import Script from "next/script";
 

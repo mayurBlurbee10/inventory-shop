@@ -51,7 +51,6 @@ function Header({
             >
               <Menu className="translate-y-1/3 xl:translate-y-1/2 text-[#3c4043]" />
             </div>
-            {/* <img src="/logo.png" alt="Wealthportal" className="h-12 w-auto" /> */}
             <img
               src={
                 user?.company?.logo
@@ -129,7 +128,6 @@ function Header({
               <p className="text-gray-500 text-[9px]">Powered by</p>
             </div>
             <div className="flex items-center justify-center">
-              {/* <img src="/logo.png" alt="Premierportal" className="h-20 w-auto" /> */}
               <img
                 src={config?.logo || "/logo.png"}
                 alt="Premierportal"

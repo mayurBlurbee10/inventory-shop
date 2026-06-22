@@ -2,19 +2,14 @@
 import { X, File, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import DialogBox from "./DialogBox";
-import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Button from "./Common/Elements/Button";
 
 export default function MyTaskPopupBox({ onClose, content, config, isForImport }) {
     const [confirmPopup, setConfirmPopup] = useState(false);
-    const [fileSelected, setFileSelected] = useState(false);
     const [arrayOfFiles, setArrayOfFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    // const [config, setConfig] = useState(null);
-    // const params = useParams();
     const fileInputRef = useRef(null);
 
     const handleBrowse = (event) => {
@@ -79,34 +74,6 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
             return [...prevFiles, ...newFiles];
         });
     };
-
-
-    // useEffect(() => {
-    //     const fetchConfig = async () => {
-    //         try {
-    //             if (!params?.portalid) return;
-    //             const response = await fetchWrapper(
-    //                 `/api/portal?portalid=${params.portalid}`,
-    //                 {},
-    //                 "portal-login"
-    //             );
-    //             const data = await response.json();
-    //             if (!data.data && response.status === 404) {
-    //                 router.push(`/${params.portalid}/not-found`);
-    //                 return;
-    //             }
-    //             if (!response.ok) {
-    //                 throw new Error("Failed to fetch users");
-    //             }
-
-    //             setConfig(data.data);
-    //         } catch (error) {
-    //             console.log("error: ", error);
-    //         }
-    //     };
-
-    //     fetchConfig();
-    // }, []);
 
     return (
 
@@ -215,12 +182,6 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
 
                     {/* Footer with Buttons */}
                     <div className="flex justify-between items-center p-4">
-                        {/* <button
-                            onClick={onClose}
-                            className="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100"
-                        >
-                            Close
-                        </button> */}
                         <Button
                             label="Close"
                             type="Secondary"
@@ -228,14 +189,6 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
                             disabled={isLoading}
                         />
                         <div className="flex space-x-2">
-                            {/* <button
-                                className="text-gray-500 px-4 py-2 rounded-lg hover:bg-gray-100"
-                                onClick={() => {
-                                    setArrayOfFiles([]);
-                                }}
-                            >
-                                Cancel
-                            </button> */}
                             <Button
                                 label="Cancel"
                                 type="Secondary"
@@ -244,21 +197,6 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
                                 }}
                                 disabled={isLoading}
                             />
-                            {/* <button
-                                className={`text-white px-4 py-2 rounded-lg border-gray ${config?.secondaryColor ? "" : "bg-blue-500 hover:bg-blue-600"
-                                    } ${isLoading ? "bg-gray-400 cursor-not-allowed" : ""}`}
-                                onClick={async () => {
-                                    setIsLoading(true);
-                                    await new Promise((resolve) => setTimeout(resolve, 3000));
-                                    setArrayOfFiles([]);
-                                    setIsLoading(false);
-                                    setConfirmPopup((prev) => !prev);
-                                }}
-                                style={{ backgroundColor: config?.secondaryColor || "#0061D5" }}
-                                disabled={arrayOfFiles.length === 0 || isLoading}
-                            >
-                                {isLoading ? "Uploading..." : "Upload"}
-                            </button> */}
 
                             <Button
                                 label="Upload"
@@ -283,31 +221,6 @@ export default function MyTaskPopupBox({ onClose, content, config, isForImport }
                                         setIsModalOpen={setConfirmPopup}
                                         config={config}
                                     />
-                                    // <div className="fixed inset-0 flex items-center justify-center z-100">
-                                    //     <div className="bg-white rounded-lg w-full max-w-xl shadow-lg border border-gray-300 absolute top-20 p-5">
-                                    //         <div className="flex justify-between items-center p-4 absolute right-0 top-0">
-                                    //             <button
-                                    //                 onClick={() => {
-                                    //                     setConfirmPopup(
-                                    //                         (prev) => !prev
-                                    //                     )
-                                    //                 }}
-                                    //                 className="text-gray-400 hover:text-gray-500"
-                                    //             >
-                                    //                 <X className="h-5 w-5" />
-                                    //             </button>
-                                    //         </div>
-                                    //         <p className="pt-5">
-                                    //             Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quam sunt perferendis magnam omnis enim iure ducimus aliquid dolorem est dicta.
-                                    //         </p>
-
-                                    //         <div className="flex space-x-2 pt-4 text-center justify-center">
-                                    //             <button className="text-white px-4 py-2 rounded-lg hover:bg-blue-400 bg-blue-500" onClick={onClose} >
-                                    //                 OK
-                                    //             </button>
-                                    //         </div>
-                                    //     </div>
-                                    // </div>
                                 )
                             }
                         </div>

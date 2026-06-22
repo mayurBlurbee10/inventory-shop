@@ -1,10 +1,9 @@
 import { useChat } from "@/hooks/useChat";
-import { setMessages } from "@/store/services/messageService";
 import { Dialog } from "@headlessui/react";
 import { ChevronDown, Inbox, Send, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Button from "./Elements/Button";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import LoaderSpinner from "./Elements/LoaderSpinner";

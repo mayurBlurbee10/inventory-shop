@@ -1,62 +1,27 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Settings,
   LogOut,
   Plus,
-  FilePlus,
   FolderPlus,
   House,
   UsersRound,
   CircleUserRound,
   Search,
-  File,
-  Eye,
-  Download,
-  Share2,
-  EllipsisVertical,
-  Trash2,
   ChevronRight,
   Upload,
   FileIcon,
 } from "lucide-react";
-import FileExplorer from "@/components/FileExplorer";
 import ActionButtons from "@/components/ActionButtons";
 import UploadArea from "@/components/UploadArea";
-import Footer from "@/components/Footer";
 import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
 import DialogBox from "@/components/DialogBox";
 import { fetchWrapper } from "../lib/fetchWrapper";
 import FolderExplorer from "@/components/FolderExplorer";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 
-const processBoxFiles = (files) => {
-  const itemsMap = new Map();
-  const rootItems = [];
-
-  files.forEach((file) => {
-    const item = {
-      id: file.id,
-      name: file.name,
-      type: file.type || "file",
-      size: file.size,
-      created_at: file.created_at,
-      modified_at: file.modified_at,
-      children: [],
-    };
-    itemsMap.set(file.id, item);
-
-    if (!file.parent || !itemsMap.has(file.parent?.id)) {
-      rootItems.push(item);
-    } else {
-      const parent = itemsMap.get(file.parent.id);
-      parent?.children.push(item);
-    }
-  });
-
-  return rootItems;
-};
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -135,57 +100,6 @@ const Header = ({
   </header>
 );
 
-const AccountInfo = ({ user, userIsAdmin }) => (
-  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
-    <h3 className="text-[22px] font-medium text-gray-900 mb-5">Account Info</h3>
-    <div className="space-y-3">
-      <p className="text-gray-600 flex justify-between items-center">
-        <span className="text-gray-500">Email</span>
-        <span className="font-medium">{user?.email}</span>
-      </p>
-      {user?.boxUserId && (
-        <p className="text-gray-600 flex justify-between items-center">
-          <span className="text-gray-500">Box ID</span>
-          <span className="font-medium">{user.boxUserId}</span>
-        </p>
-      )}
-      {user?.role && (
-        <p className="text-gray-600 flex justify-between items-center">
-          <span className="text-gray-500">Role</span>
-          <span className={`font-medium ${userIsAdmin ? "text-blue-600" : ""}`}>
-            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-          </span>
-        </p>
-      )}
-    </div>
-  </div>
-);
-
-const QuickActions = ({ userIsAdmin, router, handleLogout }) => (
-  <div className="bg-white rounded-xl p-7 shadow-sm border border-gray-100 hover:border-gray-200 transition-colors duration-200">
-    <h3 className="text-[22px] font-medium text-gray-900 mb-5">
-      Quick Actions
-    </h3>
-    <div className="space-y-2">
-      {userIsAdmin && (
-        <button
-          onClick={() => router.push("/settings?tab=configuration")}
-          className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
-        >
-          <Settings className="w-5 h-5" />
-          <span className="font-medium">Settings</span>
-        </button>
-      )}
-      <button
-        onClick={handleLogout}
-        className="w-full py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg text-left px-4 flex items-center space-x-3 transition-colors duration-200"
-      >
-        <LogOut className="w-5 h-5" />
-        <span className="font-medium">Sign Out</span>
-      </button>
-    </div>
-  </div>
-);
 
 const Sidepanel = ({
   sidepanelDropdown,
@@ -208,11 +122,6 @@ const Sidepanel = ({
         {/* DROPDOWN SECTION Done*/}
         {sidepanelDropdown && (
           <div className="absolute top-16 overflow-hidden left-0 max-w-52 w-full bg-white shadow py-2">
-            {/* <div className="pb-2 border-b-gray-300  border-b"> */}
-            {/* <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
-                <FilePlus className="h-5 w-5" />
-                New document
-              </button> */}
 
             <button
               className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100"
@@ -228,13 +137,6 @@ const Sidepanel = ({
               <Upload className="h-5 w-5" />
               Upload
             </button>
-            {/* </div> */}
-            {/* <div className="pt-2">
-              <button className="flex items-center gap-4 w-full py-2 px-3 bg-white text-gray-800 text-sm hover:bg-gray-100">
-                <Upload className="h-5 w-5" />
-                Upload
-              </button>
-            </div> */}
           </div>
         )}
 
@@ -452,36 +354,8 @@ export default function HomePage() {
               </button>
             </div>
           ))}
-
-        {/* {path.map((folder, index) => (
-          <React.Fragment key={index}>
-            <span>/</span>
-            <button
-              onClick={() => onNavigate(path.slice(0, index + 1))}
-              className="text-gray-700 transition-colors"
-            >
-              {folder}
-            </button>       
-          </React.Fragment>
-        ))} */}
       </nav>
     );
-  };
-
-  const handleShareLink = (itemId, newSharedLink) => {
-    const updateSharedLink = (items) =>
-      items.map((item) => {
-        if (item.id === itemId) {
-          return { ...item, shared_link: newSharedLink };
-        }
-        if (item.children) {
-          return { ...item, children: updateSharedLink(item.children) };
-        }
-        return item;
-      });
-
-    const updatedData = updateSharedLink(currentFilesList);
-    setCurrentFilesList(updatedData);
   };
 
   useEffect(() => {
@@ -492,9 +366,6 @@ export default function HomePage() {
     }
 
     setUser(userData);
-    // if (userData.boxFiles) {
-    //   setFiles(processBoxFiles(userData.boxFiles));
-    // }
     refreshFiles();
   }, [router]);
 
@@ -554,62 +425,7 @@ export default function HomePage() {
             setShowUploadArea={setShowUploadArea}
             router={router}
           />
-          {/* <div className="flex space-x-8">
-            <div className="flex-[7]">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-medium text-gray-900 mb-1">
-                    Shared Documents
-                  </h2>
-                  <p className="text-gray-500">
-                    Securely share content with your advisor and trusted
-                    collaborators
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <ActionButtons
-                    onFolderCreated={refreshFiles}
-                    onUploadClick={() => setShowUploadArea(true)}
-                    selectedItem={selectedItem}
-                  />
-                </div>
-              </div>
-
-              {showUploadArea && (
-                <div className="mb-6">
-                  <UploadArea
-                    isForImport = {false}
-                    onBrowse={handleBrowse}
-                    onClose={() => setShowUploadArea(false)}
-                  />
-                </div>
-              )}
-
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleFileSelect}
-                multiple
-              />
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <FileExplorer data={filesList} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
-              </div>
-            </div>
-
-            <div className="flex-[3]">
-              <div className="space-y-6">
-                <AccountInfo user={user} userIsAdmin={userIsAdmin} />
-                <QuickActions
-                  userIsAdmin={userIsAdmin}
-                  router={router}
-                  handleLogout={handleLogout}
-                />
-              </div>
-            </div>
-          </div> */}
-
+          
           <div
             className="bg-white rounded-2xl w-full mr-5 pt-5 pb-3 px-4"
             onClick={() => {

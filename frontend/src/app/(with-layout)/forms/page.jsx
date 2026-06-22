@@ -1,51 +1,15 @@
 "use client";
 import {
-  ArrowDownUp,
-  CarFront,
   ChevronDown,
-  Folder,
-  Home,
   List,
-  ListChecks,
   Plus,
   RotateCw,
-  UploadCloud,
-  User,
 } from "lucide-react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-
-const preData = [
-  // {
-  //   id: 635789,
-  //   icon: CarFront,
-  //   name: "Auto - 635789",
-  //   type: "Auto",
-  //   status: "Active",
-  // },
-  // {
-  //   id: 990154,
-  //   icon: User,
-  //   name: "Personal - 990154",
-  //   type: "Personal",
-  //   status: "Fully Paid",
-  // },
-];
-
-const dataToAdd = [
-  // {
-  //   id: 174192,
-  //   icon: Home,
-  //   name: "Mortgage - 174192",
-  //   type: "Mortgage	",
-  //   status: "Processing",
-  // },
-];
 
 function LoansPage() {
   const router = useRouter();
-  const params = useParams();
   const [isLoanOptionOpen, setIsLoanOptionOpen] = useState(false);
   const [loanData, setLoanData] = useState([...preData]);
   const [newLoan, setNewLoan] = useState(false);
