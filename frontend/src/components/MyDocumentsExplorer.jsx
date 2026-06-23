@@ -22,7 +22,7 @@ import {
   FilePenLine,
   Pencil,
 } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -52,7 +52,6 @@ const ShareModal = ({
   const params = useParams();
   const [userID, setUserID] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [userList, setUserList] = useState([]);
   const [role, setRole] = useState("viewer");
 
   const [sharedLink, setSharedLink] = useState(
@@ -76,26 +75,48 @@ const ShareModal = ({
     );
     setCollaborator(
       item?.collaborators
-        ? item.collaborators?.filter(
-            (collab) => collab?.user.id !== user.boxUserId
+        ? item.collaborators.filter(
+            (collab) =>
+              String(collab?.user?.id) !== String(user?.boxUserId)
           )
         : []
     );
-  }, [item]);
+  }, [item, user?.boxUserId]);
 
-  useEffect(() => {
-    const users = usersList.map((user) => ({
-      value: user.boxUserId,
-      label: `${`${user.firstName || ''} ${user.lastName || ''}`.trim()} (${user.email})`,
-    }));
+  const userList = useMemo(() => {
+    const loggedInUserId =
+      user?.boxUserId != null ? String(user.boxUserId) : null;
 
-    // const loggedInUser = JSON.parse(localStorage.getItem("user"));
-    const loggedInUserId = user?.boxUserId;
+    const collaboratorUserIds = new Set();
+    const collaboratorEmails = new Set();
 
-    const filteredUsers = users.filter((user) => user.value !== loggedInUserId);
+    collaborator.forEach((collab) => {
+      if (collab?.user?.id != null) {
+        collaboratorUserIds.add(String(collab.user.id));
+      }
+      if (collab?.user?.name) {
+        collaboratorEmails.add(collab.user.name.toLowerCase());
+      }
+    });
 
-    setUserList(filteredUsers);
-  }, [usersList]);
+    return usersList
+      .filter((portalUser) => {
+        const userId = String(portalUser.boxUserId);
+        if (loggedInUserId && userId === loggedInUserId) return false;
+        if (collaboratorUserIds.has(userId)) return false;
+        if (
+          portalUser.email &&
+          collaboratorEmails.has(portalUser.email.toLowerCase())
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .map((portalUser) => ({
+        value: portalUser.boxUserId,
+        label: `${`${portalUser.firstName || ''} ${portalUser.lastName || ''}`.trim()} (${portalUser.email})`,
+      }));
+  }, [usersList, collaborator, user?.boxUserId]);
 
   if (!isOpen) return null;
 
@@ -224,34 +245,27 @@ const ShareModal = ({
   };
 
   const onAddCollaborator = (collab) => {
-    if (collab.isForAdd) {
-      const user = usersList?.find((user) => user.boxUserId == collab.userID);
-      const collabIndex = collaborator.findIndex(
-        (collabs) => collabs.id == collab.id
-      );
-      if (collabIndex > -1) {
-        collaborator[collabIndex] = {
+    setCollaborator((prev) => {
+      if (collab.isForAdd) {
+        const matchedUser = usersList?.find(
+          (portalUser) => String(portalUser.boxUserId) === String(collab.userID)
+        );
+        const newEntry = {
           id: collab.id,
-          role: collab.role,
-          user: { name: user.email, id: user.boxUserId },
+          role: collab.role ?? role,
+          user: {
+            name: matchedUser?.email ?? matchedUser?.boxUserId ?? String(collab.userID),
+            id: matchedUser?.boxUserId ?? collab.userID,
+          },
         };
-      } else {
-        collaborator.push({
-          id: collab.id,
-          role: role,
-          user: { name: user.email, id: user.boxUserId },
-        });
+        const existingIndex = prev.findIndex((c) => c.id == collab.id);
+        if (existingIndex > -1) {
+          return prev.map((c, i) => (i === existingIndex ? newEntry : c));
+        }
+        return [...prev, newEntry];
       }
-    } else {
-      const index = collaborator.findIndex(
-        (collabs) => collabs.id == collab.id
-      );
-      if (index > -1) {
-        collaborator.splice(index, 1);
-      }
-    }
-    console.log("collaborator:", collaborator);
-    setCollaborator(collaborator);
+      return prev.filter((c) => c.id != collab.id);
+    });
   };
 
   const handleRoleChange = async (event, userId, collaborationId) => {
@@ -366,6 +380,7 @@ const ShareModal = ({
             </label>
             <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap justify-center">
               <Select
+                key={collaborator.map((c) => c.id).join("-")}
                 className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px]"
                 classNamePrefix="Enter email address"
                 isClearable={true}
@@ -445,12 +460,12 @@ const ShareModal = ({
           )}
         </div>
 
+      </div>
         {collabLoading && (
           <div className="absolute top-0 left-0 rounded-xl h-full w-full bg-[#00000038] flex items-center justify-center">
             <div className="border-blue-500 w-6 h-6 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
           </div>
         )}
-      </div>
     </div>
   );
 };
