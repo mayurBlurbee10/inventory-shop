@@ -48,7 +48,7 @@
     "lucide-react": "^0.453.0",
     "moment": "^2.30.1",
     "mssql": "^11.0.1",
-    "next": "^16.2.7",
+    "next": "^16.2.9",
     "next-auth": "^4.24.11",
     "next-redux-wrapper": "^8.1.0",
     "papaparse": "^5.4.1",
