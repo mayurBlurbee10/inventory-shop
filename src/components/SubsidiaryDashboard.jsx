@@ -177,7 +177,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h2 className="text-lg font-medium text-gray-900 mb-6">Usage Analytics</h2>
           <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={400}>
               <LineChart
                 data={data}
                 margin={{

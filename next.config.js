@@ -2,6 +2,7 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb'
@@ -15,6 +16,15 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === "production" ? {
       exclude: ['error', 'warn'],
     } : false,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "boxpartner.blob.core.windows.net",
+        pathname: "/**",
+      },
+    ],  
   },
   // Ensure client-side navigation works properly
   pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
