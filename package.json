@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
-    "box-node-sdk": "^3.7.1",
+    "box-node-sdk": "4",
     "box-ui-elements": "^22.0.0",
     "lucide-react": "^0.453.0",
     "mssql": "^11.0.1",
