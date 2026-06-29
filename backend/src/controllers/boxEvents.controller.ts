@@ -18,6 +18,7 @@ export const getEvents = asyncHandler(async (req: Request, res: Response) => {
       limit: limitParam = "10",
       page: pageParam = "1",
       search = "",
+      searchField = "all",
       sortBy = "createdAt",
       sortOrder = "DESC",
       filter = "all",
@@ -56,7 +57,8 @@ export const getEvents = asyncHandler(async (req: Request, res: Response) => {
       startDate ? new Date(startDate as string) : undefined,
       endDate ? new Date(endDate as string) : undefined,
       scopedUserId,
-      search
+      search,
+      searchField
     );
 
     // Get API logs from your system
@@ -69,7 +71,8 @@ export const getEvents = asyncHandler(async (req: Request, res: Response) => {
       offset,
       search,
       sortBy,
-      sortOrder
+      sortOrder,
+      searchField
     );
 
     const boxUserId = (user as any)?.boxUserId;
@@ -112,6 +115,7 @@ export const exportEvents = asyncHandler(async (req: Request, res: Response) => 
       endDate,
       userId,
       search = "",
+      searchField = "all",
       sortBy = "createdAt",
       sortOrder = "DESC",
       filter = "all",
@@ -150,7 +154,8 @@ export const exportEvents = asyncHandler(async (req: Request, res: Response) => 
       scopedUserId,
       search as string,
       sortBy as string,
-      sortOrder as string
+      sortOrder as string,
+      searchField as string
     );
 
     const formatTimestamp = (timestamp: string) =>
@@ -178,15 +183,17 @@ export const exportEvents = asyncHandler(async (req: Request, res: Response) => 
         : str;
     };
 
-    const headers = ["Date & Time", "Name", "User"];
+    const headers = ["Date & Time", "Name", "File", "User", "Email"];
     const rows = logs.map((log: any) => [
       escape(formatTimestamp(log.createdAt)),
       escape(formatType(log.type)),
+      escape(log.fileSource || "N/A"),
       escape(
         log.createdBy
           ? `${log.createdBy.firstName || ""} ${log.createdBy.lastName || ""}`.trim() || "N/A"
           : "N/A"
       ),
+      escape(log.createdBy?.email || "N/A"),
     ]);
 
     const csv = [headers.join(","), ...rows.map((r: string[]) => r.join(","))].join(

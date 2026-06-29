@@ -7,12 +7,69 @@ import { getBoxClient } from "../utils/boxClient.ts";
 
 const client = getBoxClient();
 
+const truncateLogValue = (value?: string | null) => {
+  if (!value) {
+    return null;
+  }
+  return value.length > 255 ? value.substring(0, 255) : value;
+};
+
+const applyApiLogSearch = (query: any, search?: string, searchField = "all") => {
+  if (!search) {
+    return;
+  }
+
+  const normalizedSearchField = ["fileSource", "user", "email"].includes(searchField)
+    ? searchField
+    : "all";
+  const searchParam = { search: `%${search}%` };
+
+  query.andWhere(new Brackets((qb) => {
+    if (normalizedSearchField === "fileSource") {
+      qb.where("apiLog.fileSource LIKE :search", searchParam);
+      return;
+    }
+
+    if (normalizedSearchField === "user") {
+      qb.where("user.firstName LIKE :search", searchParam)
+        .orWhere("user.lastName LIKE :search", searchParam);
+      return;
+    }
+
+    if (normalizedSearchField === "email") {
+      qb.where("user.email LIKE :search", searchParam);
+      return;
+    }
+
+    qb.where("apiLog.type LIKE :search", searchParam)
+      .orWhere("apiLog.source LIKE :search", searchParam)
+      .orWhere("apiLog.fileSource LIKE :search", searchParam)
+      .orWhere("user.firstName LIKE :search", searchParam)
+      .orWhere("user.lastName LIKE :search", searchParam)
+      .orWhere("user.email LIKE :search", searchParam);
+  }));
+};
+
+const getApiLogOrderKey = (sortBy?: string) => {
+  const sortColumns: Record<string, string> = {
+    createdAt: "apiLog.createdAt",
+    type: "apiLog.type",
+    source: "apiLog.source",
+    fileSource: "apiLog.fileSource",
+    user: "user.firstName",
+    email: "user.email",
+  };
+
+  return sortBy ? sortColumns[sortBy] : null;
+};
+
 const createApiLogFromRequest = async (req: any) => {
   const userId = req.headers["x-user-id"] as string;
   const portalId = req.headers["x-portal-id"] as string;
   const apiType = req.headers["x-api-type"] as string;
   const taskId = (req.headers["x-task-id"] as string) || null;
   const taskType = (req.headers["x-task-type"] as string) || null;
+  const fileSource = (req.headers["x-file-source"] as string) || null;
 
   const isGetMethod =
     req.method === "GET" &&
@@ -32,15 +89,14 @@ const createApiLogFromRequest = async (req: any) => {
     return;
   }
 
-  const source = `${req.method} ${req.originalUrl}`;
-  const truncatedSource =
-    source.length > 255 ? source.substring(0, 255) : source;
+  const source = truncateLogValue(`${req.method} ${req.originalUrl}`);
 
   await createApiLogs({
     portalId,
     userId,
     type: apiType,
-    source: truncatedSource,
+    source,
+    fileSource: truncateLogValue(fileSource),
     taskId: taskId && !["undefined", "null", ""].includes(taskId) ? taskId : null,
     taskType:
       taskType && !["undefined", "null", ""].includes(taskType) ? taskType : null,
@@ -58,6 +114,7 @@ const createApiLogs = async (data: any) => {
       portalId: data.portalId ?? null,
       type: data.type || "unknown",
       source: data.source ?? null,
+      fileSource: data.fileSource ?? null,
       taskId: data.taskId ?? null,
       taskType: data.taskType ?? null,
     };
@@ -109,8 +166,9 @@ const getApiLogsDateWise = async (
   limit: number = 500,
   offset: number = 0,
   search?: string,
-  sortBy: string = "createdAt",
-  sortOrder: string = "DESC"
+  sortBy?: string,
+  sortOrder?: string,
+  searchField: string = "all"
 ) => {
   await connectDatabase();
   const connection = getConnection();
@@ -128,48 +186,16 @@ const getApiLogsDateWise = async (
       query.andWhere("user.id = :userId", { userId });
     }
 
-    if (search) {
-      query.andWhere(new Brackets(qb => {
-        qb.where("apiLog.type LIKE :search", { search: `%${search}%` })
-          .orWhere("user.firstName LIKE :search", { search: `%${search}%` })
-          .orWhere("user.lastName LIKE :search", { search: `%${search}%` })
-          .orWhere("apiLog.source LIKE :search", { search: `%${search}%` });
-      }));
-    }
+    applyApiLogSearch(query, search, searchField);
 
-    // Sorting
-    let orderKey = "apiLog." + sortBy;
-    if (sortBy === "user") {
-      orderKey = "user.firstName";
+    const orderKey = getApiLogOrderKey(sortBy);
+    if (orderKey && sortOrder) {
+      query.orderBy(orderKey, sortOrder.toUpperCase() === "ASC" ? "ASC" : "DESC");
     }
-    query.orderBy(orderKey, sortOrder.toUpperCase() as "ASC" | "DESC");
 
     const apiLogs = await query.take(limit).skip(offset).getMany();
 
-    // Resolve Box source objects similar to frontend
-    const apiLogsWithSource = await Promise.all(
-      apiLogs.map(async (apiLog: any) => {
-        if (apiLog?.source) {
-          try {
-            if (apiLog?.type?.includes("file")) {
-              const file = await client.files.getFileById(apiLog?.source);
-              return { ...apiLog, source: file };
-            } else {
-              const folder = await client.folders.getFolderById(apiLog?.source);
-              return { ...apiLog, source: folder };
-            }
-          } catch (err: any) {
-            console.warn(
-              `Failed to fetch ${apiLog?.type} with ID ${apiLog?.source}: ${err.message}`
-            );
-            return { ...apiLog, source: null };
-          }
-        }
-        return apiLog;
-      })
-    );
-
-    return apiLogsWithSource;
+    return apiLogs;
   } catch (error) {
     throw new Error((error as Error).message);
   }
@@ -181,7 +207,8 @@ const getApiLogsCount = async (
   startDate?: Date,
   endDate?: Date,
   userId?: string | null,
-  search?: string
+  search?: string,
+  searchField: string = "all"
 ) => {
   await connectDatabase();
   const connection = getConnection();
@@ -199,14 +226,7 @@ const getApiLogsCount = async (
       query.andWhere("user.id = :userId", { userId });
     }
 
-    if (search) {
-      query.andWhere(new Brackets(qb => {
-        qb.where("apiLog.type LIKE :search", { search: `%${search}%` })
-          .orWhere("user.firstName LIKE :search", { search: `%${search}%` })
-          .orWhere("user.lastName LIKE :search", { search: `%${search}%` })
-          .orWhere("apiLog.source LIKE :search", { search: `%${search}%` });
-      }));
-    }
+    applyApiLogSearch(query, search, searchField);
 
     const count = await query.getCount();
     return count;
@@ -221,8 +241,9 @@ const getApiLogsForExport = async (
   endDate?: Date,
   userId?: string | null,
   search?: string,
-  sortBy: string = "createdAt",
-  sortOrder: string = "DESC"
+  sortBy?: string,
+  sortOrder?: string,
+  searchField: string = "all"
 ) => {
   await connectDatabase();
   const connection = getConnection();
@@ -244,22 +265,12 @@ const getApiLogsForExport = async (
       query.andWhere("user.id = :userId", { userId });
     }
 
-    if (search) {
-      query.andWhere(
-        new Brackets((qb) => {
-          qb.where("apiLog.type LIKE :search", { search: `%${search}%` })
-            .orWhere("user.firstName LIKE :search", { search: `%${search}%` })
-            .orWhere("user.lastName LIKE :search", { search: `%${search}%` })
-            .orWhere("apiLog.source LIKE :search", { search: `%${search}%` });
-        })
-      );
-    }
+    applyApiLogSearch(query, search, searchField);
 
-    let orderKey = "apiLog." + sortBy;
-    if (sortBy === "user") {
-      orderKey = "user.firstName";
+    const orderKey = getApiLogOrderKey(sortBy);
+    if (orderKey && sortOrder) {
+      query.orderBy(orderKey, sortOrder.toUpperCase() === "ASC" ? "ASC" : "DESC");
     }
-    query.orderBy(orderKey, sortOrder.toUpperCase() as "ASC" | "DESC");
 
     return await query.getMany();
   } catch (error) {

@@ -133,6 +133,14 @@ const bulkDownload = asyncHandler(async (req: Request, res: Response) => {
       try {
         if (item.type === "file") {
           const file = await client.files.getFileById(item.id);
+          await logApiCall(
+            req,
+            () => { },
+            "download",
+            null,
+            item.id,
+            (file as any)?.name || item.name
+          );
 
           const stream = await client.downloads.downloadFile(item.id);
 

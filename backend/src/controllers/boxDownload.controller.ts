@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/helper.ts";
 import { getBoxClient } from "../utils/boxClient.ts";
+import { logApiCall } from "../utils/api-log-middleware.ts";
 
 const client = getBoxClient();
 
@@ -13,6 +14,14 @@ const downloadFile = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const file = await client.files.getFileById(fileId as string);
+    await logApiCall(
+      req,
+      () => { },
+      undefined,
+      null,
+      fileId as string,
+      (file as any)?.name
+    );
 
     const stream = await client.downloads.downloadFile(fileId as string);
 

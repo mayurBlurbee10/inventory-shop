@@ -6,7 +6,6 @@ import { getBoxClientAccessToken } from "../utils/boxClient.ts";
 // GET /api/box/preview/:fileId
 const getPreview = asyncHandler(async (req: Request, res: Response) => {
   try {
-    await logApiCall(req);
     const { fileId } = req.params;
 
     // Get the service account  
@@ -14,6 +13,14 @@ const getPreview = asyncHandler(async (req: Request, res: Response) => {
 
     // Get file info
     const file = await client.files.getFileById(fileId);
+    await logApiCall(
+      req,
+      () => { },
+      undefined,
+      null,
+      fileId,
+      (file as any)?.name
+    );
     const downscoped = await client.auth.downscopeToken(
       ['base_preview', 'item_preview', 'item_download'],
       `https://api.box.com/2.0/files/${fileId}`

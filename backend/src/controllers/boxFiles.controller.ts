@@ -164,7 +164,6 @@ const fallback = () => ({
 const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
   try {
     // here userId is BoxUserId
-    await logApiCall(req, () => { });
     const newClient = client;
 
     const files = ((req as any).files || []) as any[];
@@ -219,8 +218,10 @@ const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
         await logApiCall(
           req,
           () => { },
-          "file-upload-copy",
-          null
+          "upload-file",
+          null,
+          (copiedFile as any)?.id,
+          (copiedFile as any)?.name
         );
         continue;
       }
@@ -254,6 +255,14 @@ const uploadFiles = asyncHandler(async (req: Request, res: Response) => {
         console.log("User is already a collaborator");
       }
       uploadedFiles.push(uploadedFile);
+      await logApiCall(
+        req,
+        () => { },
+        "upload-file",
+        null,
+        uploadedFile?.id,
+        uploadedFile?.name
+      );
     }
 
     return res.status(200).json({
@@ -299,8 +308,6 @@ const updateFileName = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { itemId, newName, type } = req.body;
 
-    await logApiCall(req);
-
     if (!itemId || !newName || !type) {
       return res.status(400).json({
         error: "Missing required parameters: itemId, newName, or type",
@@ -308,6 +315,14 @@ const updateFileName = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const updatedItem = await updateName(itemId, newName, type);
+    await logApiCall(
+      req,
+      () => { },
+      undefined,
+      null,
+      itemId,
+      (updatedItem as any)?.name || newName
+    );
 
     return res.status(200).json({
       message: "File updated successfully",
@@ -333,13 +348,20 @@ const deleteFile = asyncHandler(async (req: Request, res: Response) => {
   try {
     const { fileId } = req.query;
 
-    await logApiCall(req);
-
     if (!fileId) {
       return res.status(400).json({ error: "No fileId provided" });
     }
 
+    const file = await client.files.getFileById(fileId as string);
     await deleteBoxFile(fileId as string);
+    await logApiCall(
+      req,
+      () => { },
+      undefined,
+      null,
+      fileId as string,
+      (file as any)?.name
+    );
 
     return res.status(200).json({
       message: "File deleted successfully",
@@ -357,7 +379,6 @@ const deleteFile = asyncHandler(async (req: Request, res: Response) => {
 // POST /api/box/files/duplicate
 const duplicateFiles = asyncHandler(async (req: Request, res: Response) => {
   try {
-    await logApiCall(req);
     const { items, destinationFolderId, userId } = req.body;
     if (!Array.isArray(items) || items.length === 0 || !destinationFolderId) {
       return res.status(400).json({
@@ -373,6 +394,14 @@ const duplicateFiles = asyncHandler(async (req: Request, res: Response) => {
         const copiedFile = await client.files.copyFile(item.id, {
           parent: { id: destinationFolderId },
         });
+        await logApiCall(
+          req,
+          () => { },
+          "upload-file",
+          null,
+          (copiedFile as any)?.id,
+          (copiedFile as any)?.name
+        );
         // await addCollaborator(copiedFile.id, userId, "editor", "file");
         results.push(copiedFile);
       } catch (error) {
@@ -524,7 +553,6 @@ export const replaceFiles = async (
   res: Response,
 ): Promise<void> => {
   try {
-    await logApiCall(req, () => { });
     const newClient = client;
 
     const files = ((req as any).files || []) as any[];
@@ -568,7 +596,16 @@ export const replaceFiles = async (
             file: fileStream,
           },
         );
-        uploadedFiles.push(updatedFile?.entries?.[0]);
+        const uploadedFile = updatedFile?.entries?.[0];
+        uploadedFiles.push(uploadedFile);
+        await logApiCall(
+          req,
+          () => { },
+          "upload-file",
+          null,
+          uploadedFile?.id || existingFileId,
+          uploadedFile?.name || fileName
+        );
 
       } else {
         console.log(`Uploading new file: ${fileName}`);
@@ -588,6 +625,14 @@ export const replaceFiles = async (
         await addCollaborator(uploadedFile?.id!, userId, "editor", "file");
 
         uploadedFiles.push(uploadedFile);
+        await logApiCall(
+          req,
+          () => { },
+          "upload-file",
+          null,
+          uploadedFile?.id,
+          uploadedFile?.name || fileName
+        );
       }
     }
 
@@ -794,7 +839,6 @@ const findFolderByName = async (
 export const uploadEditedFile = asyncHandler(
   async (req: Request, res: Response) => {
     try {
-      await logApiCall(req);
       const newClient = client;
 
       const files = ((req as any).files || []) as any[];
@@ -897,6 +941,14 @@ export const uploadEditedFile = asyncHandler(
         }
 
         uploadedFiles.push(uploadedFile);
+        await logApiCall(
+          req,
+          () => { },
+          undefined,
+          null,
+          uploadedFile?.id,
+          uploadedFile?.name || editedFileName
+        );
       }
 
       return res.status(200).json({
@@ -1093,7 +1145,6 @@ export const getFileInfo = asyncHandler(async (req: Request, res: Response) => {
 export const uploadEnterpriseFile = asyncHandler(
   async (req: Request, res: Response) => {
     try {
-      await logApiCall(req);
       const files = ((req as any).files || []) as any[];
       if (!files || files.length === 0) {
         return res.status(400).json({ error: "No file uploaded." });
@@ -1245,6 +1296,15 @@ export const uploadEnterpriseFile = asyncHandler(
           }
         }
       }
+
+      await logApiCall(
+        req,
+        () => { },
+        undefined,
+        null,
+        uploadedFile?.id,
+        uploadedFile?.name || file.originalname
+      );
 
       return res.status(200).json({
         message: "File uploaded successfully.",

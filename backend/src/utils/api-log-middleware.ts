@@ -6,7 +6,8 @@ export const logApiCall = async (
   next?: NextFunction,
   type?: string | null,
   createdBy?: string | null,
-  fileId?: string | null
+  fileId?: string | null,
+  fileSource?: string | null
 ): Promise<void> => {
   const userId = (createdBy || (req.headers["x-user-id"] as string)) as string;
   const portalId = req.headers["x-portal-id"] as string;
@@ -18,7 +19,7 @@ export const logApiCall = async (
     req.method === "GET" &&
     apiType !== "file-edit" &&
     apiType !== "file-preview" &&
-    apiType !== "file-download";
+    apiType !== "download";
   if (
     !userId ||
     !apiType ||
@@ -35,7 +36,7 @@ export const logApiCall = async (
   }
 
   // Truncate source to 255 characters to match database column limit
-  const source = fileId || `${req.method} ${req.originalUrl}`;
+  const source = `${req.method} ${req.originalUrl}`;
   const truncatedSource =
     source.length > 255 ? source.substring(0, 255) : source;
 
@@ -43,6 +44,7 @@ export const logApiCall = async (
     portalId: portalId ?? null,
     type: apiType,
     source: truncatedSource,
+    fileSource: fileSource ?? null,
     taskId: taskId && !["undefined", "null", ""].includes(taskId) ? taskId : null,
     taskType: taskType && !["undefined", "null", ""].includes(taskType) ? taskType : null,
     userId: userId ?? null,

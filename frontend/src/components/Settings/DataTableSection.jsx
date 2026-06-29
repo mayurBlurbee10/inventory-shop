@@ -9,7 +9,7 @@ import {
     MenuItem,
     MenuItems,
   } from "@headlessui/react";
-import { ArrowDownToLine, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp } from 'lucide-react';
+import { ArrowDownToLine, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown, ChevronUp } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { getUserData } from '@/app/lib/auth';
 import { saveAs } from 'file-saver';
@@ -27,7 +27,7 @@ const formatTimestamp = (timestamp) => {
     });
 };
 
-const getReportData = async (portalId, startDate, endDate, newPage = 1, newItemsPerPage = 5, params = null, setIsLoading = null, setData = null, setPaginationInfo = null, search = "", sortBy = "createdAt", sortOrder = "desc", filter = "all") => {
+const getReportData = async (portalId, startDate, endDate, newPage = 1, newItemsPerPage = 5, params = null, setIsLoading = null, setData = null, setPaginationInfo = null, search = "", sortBy = null, sortOrder = null, filter = "all") => {
   try {
     if (setIsLoading) setIsLoading(true);
     const user = getUserData();
@@ -39,8 +39,10 @@ const getReportData = async (portalId, startDate, endDate, newPage = 1, newItems
     if (startDate) url += `&startDate=${startDate}`;
     if (endDate) url += `&endDate=${endDate}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
-    if (sortBy) url += `&sortBy=${sortBy}`;
-    if (sortOrder) url += `&sortOrder=${sortOrder}`;
+    if (sortBy && sortOrder) {
+      url += `&sortBy=${sortBy}`;
+      url += `&sortOrder=${sortOrder}`;
+    }
     if (filter) url += `&filter=${filter}`;
 
     const response = await fetchWrapper(url, { method: "GET", headers: { "Content-Type": "application/json" } }, "get-api-logs");
@@ -76,6 +78,34 @@ export const PaginatedTable = ({
 }) => {
   const totalPages = paginationInfo?.totalPages || 1;
   const paginatedData = data;
+
+  const getFullName = (user) =>
+    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "N/A";
+
+  const renderSortIcon = (key) => {
+    if (sortConfig.key !== key || !sortConfig.direction) {
+      return <ChevronsUpDown className="h-4 w-4 text-gray-400" />;
+    }
+
+    if (sortConfig.direction === "asc") {
+      return <ChevronUp className="h-4 w-4 text-blue-600" />;
+    }
+
+    return <ChevronDown className="h-4 w-4 text-blue-600" />;
+  };
+
+  const SortableHeader = ({ label, sortKey }) => (
+    <th className="p-4 border-b">
+      <button
+        type="button"
+        className="flex items-center justify-start gap-2 mx-4"
+        onClick={() => sortBy(sortKey)}
+      >
+        <span className="block">{label}</span>
+        {renderSortIcon(sortKey)}
+      </button>
+    </th>
+  );
 
   return (
     <div className="flex flex-col mx-auto overflow-y-auto hidden-scrollbar text-black rounded-lg min-h-[30vh]">
@@ -119,55 +149,17 @@ export const PaginatedTable = ({
             <table className={`w-full text-sm font-lato shadow-md overflow-hidden ${totalPages > 0 ? "rounded-t-lg" : "rounded-lg"}`}>
               <thead className="bg-gray-100 text-gray-700 text-left sticky top-0">
                 <tr>
-                  <th className="p-4 border-b">
-                    <div className="flex items-center justify-start gap-2 mx-4">
-                      <span className="block">Date & Time</span>
-                      <button className="flex items-center" onClick={() => sortBy("createdAt", "asc")}>
-                        <ChevronUp
-                          className={`h-4 w-4 transition-colors ${sortConfig.key === "createdAt" && sortConfig.direction === "asc"
-                              ? "text-blue-600"
-                              : "text-gray-400"
-                            }`}
-                        />
-                      </button>
-                      <button className="flex items-center" onClick={() => sortBy("createdAt", "desc")}>
-                        <ChevronDown
-                          className={`h-4 w-4 transition-colors ${sortConfig.key === "createdAt" && sortConfig.direction === "desc"
-                              ? "text-blue-600"
-                              : "text-gray-400"
-                            }`}
-                        />
-                      </button>
-                    </div>
-                  </th>
-                  <th className="p-4 border-b">
-                    <div className="flex items-center justify-start gap-2 mx-4">
-                      <span className="block">Name</span>
-                      <button className="flex items-center" onClick={() => sortBy("type", "asc")}>
-                        <ChevronUp
-                          className={`h-4 w-4 transition-colors ${sortConfig.key === "type" && sortConfig.direction === "asc"
-                              ? "text-blue-600"
-                              : "text-gray-400"
-                            }`}
-                        />
-                      </button>
-                      <button className="flex items-center" onClick={() => sortBy("type", "desc")}>
-                        <ChevronDown
-                          className={`h-4 w-4 transition-colors ${sortConfig.key === "type" && sortConfig.direction === "desc"
-                              ? "text-blue-600"
-                              : "text-gray-400"
-                            }`}
-                        />
-                      </button>
-                    </div>
-                  </th>
-                  <th className="p-4 border-b">User</th>
+                  <SortableHeader label="Date & Time" sortKey="createdAt" />
+                  <SortableHeader label="Name" sortKey="type" />
+                  <SortableHeader label="File" sortKey="fileSource" />
+                  <SortableHeader label="User" sortKey="user" />
+                  <SortableHeader label="Email" sortKey="email" />
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan="3" className="py-8">
+                    <td colSpan="5" className="py-8">
                       <div className="h-[35vh] w-full flex items-center justify-center">
                         <LoaderSpinner />
                       </div>
@@ -181,12 +173,14 @@ export const PaginatedTable = ({
                     >
                       <td className="py-3 px-4">{formatTimestamp(d?.createdAt)}</td>
                       <td className="py-3 px-4">{d?.type?.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</td>
-                      <td className="py-3 px-4">{d?.createdBy?.firstName + " " + d?.createdBy?.lastName || "N/A"}</td>
+                      <td className="py-3 px-4">{d?.fileSource || "-"}</td>
+                      <td className="py-3 px-4">{getFullName(d?.createdBy)}</td>
+                      <td className="py-3 px-4">{d?.createdBy?.email || "-"}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="text-center py-5 text-gray-500">
+                    <td colSpan="5" className="text-center py-5 text-gray-500">
                       No records found
                     </td>
                   </tr>
@@ -270,7 +264,7 @@ const DataTableSection = () => {
   const [searchRecord, setSearchRecord] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
-  const [sortConfig, setSortConfig] = useState({ key: "createdAt", direction: "desc" });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
   const apiCallThisMonth = () => {
     const currentMonth = new Date().getMonth();
@@ -293,8 +287,10 @@ const DataTableSection = () => {
       if (dateData.startDate) url += `&startDate=${dateData.startDate}`;
       if (dateData.endDate) url += `&endDate=${dateData.endDate}`;
       if (debouncedSearchTerm) url += `&search=${encodeURIComponent(debouncedSearchTerm)}`;
-      if (sortConfig.key) url += `&sortBy=${sortConfig.key}`;
-      if (sortConfig.direction) url += `&sortOrder=${sortConfig.direction}`;
+      if (sortConfig.key && sortConfig.direction) {
+        url += `&sortBy=${sortConfig.key}`;
+        url += `&sortOrder=${sortConfig.direction}`;
+      }
       if (filter) url += `&filter=${filter}`;
 
       const response = await fetchWrapper(url, { method: "GET" }, "get-api-logs");
@@ -321,8 +317,21 @@ const DataTableSection = () => {
   };
 
   const handleSearch = (e) => setSearchRecord(e.target.value);
-  const handleFilterChange = (selectedFilter) => setFilter(selectedFilter);
-  const handleSort = (key, direction) => setSortConfig({ key, direction });
+  const handleFilterChange = (selectedFilter) => {
+    setFilter(selectedFilter);
+    setCurrentPage(1);
+  };
+  const handleSort = (key) => {
+    setCurrentPage(1);
+
+    if (sortConfig.key !== key || !sortConfig.direction) {
+      setSortConfig({ key, direction: "asc" });
+    } else if (sortConfig.direction === "asc") {
+      setSortConfig({ key, direction: "desc" });
+    } else {
+      setSortConfig({ key: null, direction: null });
+    }
+  };
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchTerm(searchRecord), 500);
@@ -363,8 +372,8 @@ const DataTableSection = () => {
       setData,
       setPaginationInfo,
       "", // search
-      "createdAt", // sortBy
-      "desc", // sortOrder
+      null, // sortBy
+      null, // sortOrder
       filter // filter
     );
     // generateMockData()

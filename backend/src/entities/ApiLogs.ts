@@ -26,4 +26,7 @@ class ApiLogs extends BaseTable {
 
   @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
   source!: any;
+
+  @Column({ type: "nvarchar", length: 255, nullable: true, default: null })
+  fileSource!: any;
 }
