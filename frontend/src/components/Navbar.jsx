@@ -40,6 +40,7 @@ import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 import { clearUserStates } from "@/app/lib/userCleanupService";
 import PluginRenderer from "../../Plugins/PluginRenderer";
 import NotificationConfiguration from "./NotificationConfiguration";
+import NotificationModal from "./InAppNotification/NotificationModel";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -69,6 +70,11 @@ function Navbar({ content, config, filterValue }) {
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab");
+  const [notifications, setNotifications] = useState([]);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [isNotificationLoading, setIsNotificationLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
   useEffect(() => {
     setLogo(config?.logo || null);
@@ -180,6 +186,74 @@ function Navbar({ content, config, filterValue }) {
           {title}
         </button>
       </Link>
+    );
+  };
+
+  const NotificationNavButton = ({ variant = "desktop" }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const isActiveOrHovered = isNotificationModalOpen || isHovered;
+    const isMobile = variant === "mobile";
+
+    if (isMobile) {
+      return (
+        <button
+          type="button"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onClick={() => {
+            setIsNotificationModalOpen(true);
+            setIsOpenNavbar(false);
+          }}
+          className="relative flex w-full cursor-pointer items-center rounded-lg px-4 py-3 transition-all"
+          style={{
+            backgroundColor: isActiveOrHovered ? config?.accentColor : "transparent",
+          }}
+        >
+          <span
+            className={`font-lato flex items-center text-sm ${
+              isNotificationModalOpen ? "font-bold" : "font-medium"
+            }`}
+            style={isActiveOrHovered ? { color: config?.primaryColor } : { color: "#374151" }}
+          >
+            <Bell
+              className="mr-2 h-4 w-4"
+              style={{ color: isActiveOrHovered ? config?.primaryColor : "#374151" }}
+            />
+            Notifications
+          </span>
+          {notificationCount > 0 && (
+            <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+              {notificationCount}
+            </span>
+          )}
+        </button>
+      );
+    }
+
+    const buttonStyle = {
+      color: isActiveOrHovered ? config?.primaryColor : config?.secondaryColor,
+      backgroundColor: isActiveOrHovered ? config?.accentColor : "transparent",
+    };
+
+    return (
+      <button
+        type="button"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => setIsNotificationModalOpen(true)}
+        className="relative flex items-center rounded-md px-3 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105 cursor-pointer"
+        style={buttonStyle}
+      >
+        <Bell
+          className="h-5 w-5"
+          style={{ color: buttonStyle.color }}
+        />
+        {notificationCount > 0 && (
+          <span className={`absolute ${isHovered ? "right-[2px] -top-[-1px]" : "-right-0 -top-0"} flex size-2.5 items-center justify-center rounded-full bg-red-500 text-xs text-white`}>
+            {notificationCount}
+          </span>
+        )}
+      </button>
     );
   };
 
@@ -353,7 +427,57 @@ function Navbar({ content, config, filterValue }) {
     setIsIntegrateDropdownOpen(false);
   };
 
+  const getNotifications = async (limit = 7, offset = 0) => {
+    setIsNotificationLoading(true)
+      try {
+        setError(null);
+        const res = await fetchWrapper(
+          `/api/in-app-notification?limit=${limit}&offset=${offset}`,
+          {},
+          "get-notifications"
+        );
+  
+        if (!res.ok) {
+          throw new Error("Failed to fetch notifications");
+        }
+  
+        const data = await res.json();
+        if (data && data.data) {
+          setNotifications(data?.data);
+        }
+        return data;
+      } catch (error) {
+        setError(error?.message || "Failed to load notifications");
+        return null;
+      } finally {
+        setIsNotificationLoading(false)
+      }
+    };
+  
+    useEffect(() => {
+      getNotifications()
+    }, [])
+
+   useEffect(() => {
+      const unreadCount = notifications.filter(n => n.status?.toLowerCase() !== "read").length > 0;
+      setNotificationCount(unreadCount);
+    }, [notifications, setNotificationCount]);
+
   return (
+    <>
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        config={config}
+        setNotificationCount={setNotificationCount}
+        notificationCount={notificationCount}
+        notifications={notifications}
+        setNotifications={setNotifications}
+        isNotificationLoading={isNotificationLoading}
+        setIsNotificationLoading={setIsNotificationLoading}
+        error={error}
+        setError={setError}
+      />
     <div
       className="border-b border-[#0000001a] relative"
       style={{ backgroundColor: config?.primaryColor }}
@@ -497,6 +621,9 @@ function Navbar({ content, config, filterValue }) {
             <div className="hidden md:block">
               <PluginRenderer config={config} pluginKeys={['box_ai']} />
             </div>
+            {/* <div className="relative"> */}
+              <NotificationNavButton />
+            {/* </div> */}
             <div
               ref={dropdownRef}
               className="flex items-center space-x-3 pl-4 relative"
@@ -822,6 +949,9 @@ function Navbar({ content, config, filterValue }) {
                       <div className="">
                         <PluginRenderer config={config} pluginKeys={['box_ai']} />
                       </div>
+                      <div className="relative w-full">
+                        <NotificationNavButton variant="mobile" />
+                      </div>
                     </div>
                     <div className="flex items-center justify-start space-x-2 w-full mt-auto border-t border-slate-200">
                       <div ref={dropdownRef} className="w-full">
@@ -935,6 +1065,8 @@ function Navbar({ content, config, filterValue }) {
         user={user}
       />
     </div>
+    </>
+
   );
 }
 

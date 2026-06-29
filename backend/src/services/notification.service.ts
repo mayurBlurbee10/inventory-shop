@@ -138,6 +138,12 @@ const getAvailableNotificationTypes = () => {
       description: "Receive invitation and password reset emails",
       category: "authentication",
     },
+    {
+      key: NotificationConfigure.MESSAGE_IN_APP,
+      label: "Message",
+      description: "Receive an when someone sends you a message",
+      category: "message",
+    },
   ];
 };
 

@@ -37,6 +37,7 @@ import setPasswordRoutes from "./routes/setPassword.route.ts";
 import zendeskToAzureRoutes from "./routes/zendeskToAzure.route.ts";
 import portalPluginConfigsRoutes from "./routes/portalPluginConfigs.route.ts";
 import inbuildPluginsRoutes from "./routes/inbuildPlugins.route.ts";
+import inAppnotificationRoutes from "./routes/inAppNotification.route.ts";
 
 dotenv.config();
 
@@ -104,5 +105,6 @@ app.use("/api/zendesk", zendeskRoutes);
 app.use("/api/zendesk-to-azure", zendeskToAzureRoutes);
 app.use("/api/portal-plugin-configs", portalPluginConfigsRoutes);
 app.use("/api/inbuild-plugins", inbuildPluginsRoutes);
+app.use("/api/in-app-notification", inAppnotificationRoutes);
 
 export { app };

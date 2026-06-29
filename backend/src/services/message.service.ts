@@ -4,7 +4,10 @@ import { connectDatabase, getConnection } from "../config/db.ts";
 import { Messages } from "../entities/Messages.ts";
 import { Portals } from "../entities/Portals.ts";
 import { Users } from "../entities/Users.ts";
-import { NotificationType } from "../config/constants.ts";
+import { NotificationConfigure, NotificationType } from "../config/constants.ts";
+import inAppNotificationService from "./inAppNotification.service.ts";
+import notificationService from "./notification.service.ts";
+import { reverseSanitizeName } from "../utils/commonUtils.ts";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -15,7 +18,7 @@ const getRepository = async (entity: any) => {
   return connection.getRepository(entity);
 };
 
-/** Resolve portal identifier (UUID, slug, or legalName) to portal UUID for notifications. */
+/** Resolve portal identifier (UUID, sanitized legalName, or legalName) to portal UUID for notifications. */
 const resolvePortalIdToUuid = async (
   portalId: string | undefined,
 ): Promise<string | undefined> => {
@@ -24,11 +27,19 @@ const resolvePortalIdToUuid = async (
   const trimmed = portalId.trim();
   if (UUID_REGEX.test(trimmed)) return trimmed;
   const portalRepository = await getRepository(Portals);
+  const legalNameCandidates = Array.from(
+    new Set([trimmed, reverseSanitizeName(trimmed)])
+  );
   const portal = await portalRepository.findOne({
-    where: [{ slug: trimmed }, { legalName: trimmed }],
+    where: legalNameCandidates.map((legalName) => ({ legalName })),
   });
   return portal?.id;
 };
+
+const getFullName = (user: any) =>
+  `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+  user?.email ||
+  "Someone";
 
 const getMessages = async (
   senderId: string,
@@ -79,17 +90,31 @@ const createMessage = async (message: any) => {
       (newMsg as any).receiver?.id ?? message.receiver?.id ?? message.receiver;
     const senderId =
       (newMsg as any).sender?.id ?? message.sender?.id ?? message.sender;
-    const text = (newMsg as any).text ?? message.text ?? "";
-    const portalId = message.portal;
+    const portalId = message.portalId || message.portal;
 
-    if (receiverId && text && senderId !== receiverId) {
+    if (receiverId && senderId !== receiverId) {
       try {
+        const isEnabled = await notificationService.isNotificationEnabled(
+          receiverId,
+          NotificationConfigure.MESSAGE_IN_APP
+        );
+
+        if (!isEnabled) return newMsg;
+
         const userRepository = await getRepository(Users);
         const sender = await userRepository.findOne({
           where: { id: typeof senderId === "object" ? senderId?.id : senderId },
         });
-        const senderName = sender?.firstName ?? "Someone";
-        const body = text.length > 200 ? text.slice(0, 197) + "..." : text;
+        const senderName = getFullName(sender);
+
+        await inAppNotificationService.createNotification({
+          userId: receiverId,
+          portalId: await resolvePortalIdToUuid(portalId),
+          title: `${senderName} sent you a message.`,
+          body: message.text,
+          type: NotificationType.MESSAGE,
+          referenceId: (newMsg as any).id,
+        });
       } catch (notifErr) {
         console.error("Failed to create message notification:", notifErr);
       }

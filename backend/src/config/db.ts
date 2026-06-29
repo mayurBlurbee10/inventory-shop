@@ -13,6 +13,7 @@ import { NdaAgreements } from "../entities/NdaAgreements.ts";
 import { TestDb } from "../entities/TestDb.ts";
 import { InbuildPlugins } from "../entities/InbuildPlugins.ts";
 import { PortalPluginConfigs } from "../entities/PortalPluginConfigs.ts";
+import { InAppNotifications } from "../entities/InAppNotifications.ts";
 
 dotenv.config();
 
@@ -35,7 +36,8 @@ export const AppDataSource = new DataSource({
     NdaAgreements,
     TestDb,
     InbuildPlugins,
-    PortalPluginConfigs
+    PortalPluginConfigs,
+    InAppNotifications  
   ],
   logging: false,
   synchronize: true,
