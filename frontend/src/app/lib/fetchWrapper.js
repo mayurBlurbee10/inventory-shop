@@ -1,17 +1,10 @@
-import { getUserData } from "@/lib/auth";
+import { getRefreshToken, getUserData, setAuthTokens } from "./auth";
 import { clearUserStates } from "./userCleanupService";
 
 let isRefreshing = false;
 let refreshPromise = null;
 
-  const setClientTokenCookie = (accessToken) => {
-    document.cookie = `clientToken=${accessToken}; path=/; max-age=${1 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
-  };
-  const setClientRefreshTokenCookie = (refreshToken) => {
-    document.cookie = `clientRefreshToken=${refreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
-  };
-
-const refreshAccessToken = async (portalId, options = {}) => {
+const refreshAccessToken = async (portalId) => {
   if (isRefreshing && refreshPromise) {
     return refreshPromise;
   }
@@ -27,8 +20,10 @@ const refreshAccessToken = async (portalId, options = {}) => {
             'Content-Type': 'application/json',
           },
           credentials: "include",
-          ...options,
-          body: JSON.stringify({ portalId }),
+          body: JSON.stringify({
+            portalId,
+            refreshToken: getRefreshToken(),
+          }),
         },
       );
 
@@ -37,8 +32,10 @@ const refreshAccessToken = async (portalId, options = {}) => {
       }
 
       const data = await res.json();  
-      setClientTokenCookie(data.accessToken);
-      setClientRefreshTokenCookie(data.refreshToken);
+      setAuthTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
       return data.accessToken;
     } catch (err) {
       clearUserStates();
@@ -111,7 +108,7 @@ export const fetchWrapper = async (url, options = {}, type) => {
 
       try {
         try {
-          await refreshAccessToken(portalId, options);
+          await refreshAccessToken(portalId);
         } catch (error) {
           let loginPath = portalId !== "admin" ? `/${portalId}/login` : "/login";
 

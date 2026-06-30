@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { clearCookieByName, setUserData } from "@/app/lib/auth";
+import { clearCookieByName, setAuthTokens, setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
 import { toast } from "react-toastify";
 
@@ -168,13 +168,6 @@ function Login() {
     fetchNdaPages();
   }, []);
 
-  const setClientTokenCookie = (accessToken) => {
-    document.cookie = `clientToken=${accessToken}; path=/; max-age=${1 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
-  };
-  const setClientRefreshTokenCookie = (refreshToken) => {
-    document.cookie = `clientRefreshToken=${refreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax; ${process.env.NODE_ENV === "production" ? "secure;" : ""}`;
-  };
-
   const clearClientRefreshTokenCookie = () => {
     clearCookieByName("clientRefreshToken");
   };
@@ -219,11 +212,12 @@ function Login() {
       console.log("Storing user data:", userData);
       // setUserData(userData);
       dispatch(setCurrentUser({ ...userData, portalId: params?.portalid }));
-      setClientTokenCookie(data.accessToken);
-      setClientRefreshTokenCookie(data.refreshToken);
+      setAuthTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
       setUserData({ ...userData, portalId: params?.portalid });
       // localStorage.setItem("portal", params?.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
       if (userData && selectedNdaPage && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
       }
@@ -283,10 +277,11 @@ function Login() {
       const userData = data.user;
       // setUserData(userData);
       dispatch(setCurrentUser(userData));
-      setClientTokenCookie(data.accessToken);
-      setClientRefreshTokenCookie(data.refreshToken);
+      setAuthTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
       // localStorage.setItem("portal", params?.portalid || "default");
-      localStorage.setItem("accessToken", data.accessToken);
     } catch (error) {
       console.error("Failed to get user from email:", error);
       clearClientTokenCookie();

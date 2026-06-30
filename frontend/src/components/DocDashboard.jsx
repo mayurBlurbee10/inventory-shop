@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { setAuthTokens } from "@/app/lib/auth";
 import { getUserData } from "@/lib/auth";
 import { getSession } from "next-auth/react";
 import { setCurrentUser } from "@/store/services/userService";
@@ -98,7 +99,10 @@ export default function DocDashboard() {
       // setUserData(userData);
       dispatch(setCurrentUser(userData))
       // localStorage.setItem("portal", params.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
+      setAuthTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
     } catch (error) {
       console.error("Failed to get user from email:", error);
       router.push("login");

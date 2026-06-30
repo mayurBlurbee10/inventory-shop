@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
 import {
+  generateRefreshToken,
   generateNanoToken,
   generateToken,
 } from "../utils/jwt.ts";
@@ -977,11 +978,13 @@ const handleLoginByProvider = asyncHandler(
       };
 
       const accessToken = await generateToken(tokenPayload, "168h");
-      await userService.setUserAccessToken(data.email, accessToken, "okta");
+      const refreshToken = await generateRefreshToken();
+      await userService.setUserTokens(data.email, accessToken, refreshToken, "okta");
       const response = {
         success: true,
         user: userData,
         accessToken,
+        refreshToken,
       };
 
       res.cookie("user", JSON.stringify(userData), {
@@ -997,6 +1000,13 @@ const handleLoginByProvider = asyncHandler(
         sameSite: "lax",
         path: "/",
         maxAge: 7 * 24 * 60 * 60, // 7 days
+      });
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return res.status(200).json(response);

@@ -1,5 +1,5 @@
 "use client";
-import { setUserData } from "@/app/lib/auth";
+import { setAuthTokens, setUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
 import { setCurrentUser } from "@/store/services/userService";
@@ -40,11 +40,14 @@ export default function MasterLoginPage() {
         if (!response.ok) {
           throw new Error(data.error || "Login failed");
         }
-        // setUserData(data.user);
         const userData = data.user;
+        setUserData(userData);
         dispatch(setCurrentUser(userData))
         localStorage.setItem("portal", "master");
-        localStorage.setItem("accessToken", data.accessToken);
+        setAuthTokens({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        });
         router.push("/master/dashboard");
       } catch (error) {
         setError(error.message);

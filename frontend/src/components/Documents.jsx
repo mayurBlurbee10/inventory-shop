@@ -26,7 +26,7 @@ import SettingsModal from "@/components/Settings";
 import MoveDialog from "@/components/MoveDialog";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { clearUserData } from "@/app/lib/auth";
+import { clearUserData, setAuthTokens } from "@/app/lib/auth";
 import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { isAdmin } from "@/lib/auth";
@@ -711,7 +711,10 @@ function Documents({
       // setUserData(userData);
       dispatch(setCurrentUser(userData));
       // localStorage.setItem("portal", params.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
+      setAuthTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
     } catch (error) {
       console.error("Failed to get user from email:", error);
       router.push("login");

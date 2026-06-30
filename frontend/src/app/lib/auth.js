@@ -49,6 +49,35 @@ export const clearCookieByName = (name) => {
   });
 };
 
+export const setAuthTokens = ({ accessToken, refreshToken }) => {
+  if (!isBrowser()) return;
+
+  if (accessToken) {
+    localStorage.setItem("accessToken", accessToken);
+    document.cookie = `clientToken=${accessToken}; path=${COOKIE_OPTIONS.path}; samesite=${COOKIE_OPTIONS.sameSite}; max-age=${COOKIE_OPTIONS.maxAge}${COOKIE_OPTIONS.secure ? "; secure" : ""}`;
+  }
+
+  if (refreshToken) {
+    localStorage.setItem("refreshToken", refreshToken);
+    document.cookie = `clientRefreshToken=${refreshToken}; path=${COOKIE_OPTIONS.path}; samesite=${COOKIE_OPTIONS.sameSite}; max-age=${COOKIE_OPTIONS.maxAge}${COOKIE_OPTIONS.secure ? "; secure" : ""}`;
+  }
+};
+
+export const getRefreshToken = () => {
+  if (!isBrowser()) return null;
+
+  const storedRefreshToken = localStorage.getItem("refreshToken");
+  if (storedRefreshToken) return storedRefreshToken;
+
+  const refreshTokenCookie = document.cookie
+    .split(";")
+    .find((c) => c.trim().startsWith("clientRefreshToken="));
+
+  return refreshTokenCookie
+    ? decodeURIComponent(refreshTokenCookie.split("=")[1])
+    : null;
+};
+
 export const getUserData = () => {
   try {
     if (!isBrowser()) {
@@ -154,13 +183,17 @@ export const clearUserData = () => {
     // Clear from localStorage
     localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("newLoan");
     localStorage.removeItem("loan");
     localStorage.removeItem("portal");
 
     // Clear from cookies
-    document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    clearCookieByName("user");
+    clearCookieByName("token");
+    clearCookieByName("refreshToken");
+    clearCookieByName("clientToken");
+    clearCookieByName("clientRefreshToken");
   } catch (error) {
     console.error("Error clearing user data:", error);
   }

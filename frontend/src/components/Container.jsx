@@ -1,5 +1,5 @@
 "use client";
-import {getUserData } from "@/app/lib/auth";
+import { getUserData, setAuthTokens } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
@@ -65,7 +65,10 @@ function Container({ children }) {
       // setUserData(userData);
       dispatch(setCurrentUser(userData))
       // localStorage.setItem("portal", params.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
+      setAuthTokens({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
     } catch (error) {
       console.error("Failed to get user from email:", error);
       router.push("login");
