@@ -4,6 +4,25 @@ import { clearUserStates } from "./userCleanupService";
 let isRefreshing = false;
 let refreshPromise = null;
 
+const isBrowser = () => typeof window !== "undefined";
+
+// Helper function to get cookies
+const getCookie = (name) => {
+  if (!isBrowser()) return null;
+
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+};
+
+// Helper function to get client token
+const getClientToken = () => {
+  if (!isBrowser()) return "";
+
+  return getCookie("clientToken") || localStorage.getItem("accessToken") || "";
+};
+
 const refreshAccessToken = async (portalId) => {
   if (isRefreshing && refreshPromise) {
     return refreshPromise;
@@ -62,7 +81,7 @@ export const fetchWrapper = async (url, options = {}, type) => {
   const user = getUserData() || {
     id: null,
   };
-  const portal = localStorage.getItem("portal");
+  const portal = isBrowser() ? localStorage.getItem("portal") : null;
 
   let portalId = "admin"; // default
 
@@ -81,10 +100,12 @@ export const fetchWrapper = async (url, options = {}, type) => {
   }
 
   // Default headers
+  const accessToken = getClientToken();
   const defaultHeaders = {
     "x-user-id": user.id,
     "x-portal-id": portalId,
     "x-api-type": type, // Replace with your API type logic
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
   };
 
   // Merge headers
@@ -108,7 +129,11 @@ export const fetchWrapper = async (url, options = {}, type) => {
 
       try {
         try {
-          await refreshAccessToken(portalId);
+          const newAccessToken = await refreshAccessToken(portalId);
+          options.headers = {
+            ...options.headers,
+            Authorization: `Bearer ${newAccessToken}`,
+          };
         } catch (error) {
           let loginPath = portalId !== "admin" ? `/${portalId}/login` : "/login";
 
@@ -138,9 +163,11 @@ export const fetchWrapper = async (url, options = {}, type) => {
             );
           }
 
-          localStorage.clear();
+          if (isBrowser()) {
+            localStorage.clear();
+          }
 
-          if (typeof window !== "undefined") {
+          if (isBrowser()) {
             window.location.href = loginPath;
           }
         }
