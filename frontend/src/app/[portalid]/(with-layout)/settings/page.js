@@ -131,7 +131,6 @@ function SettingsPage() {
                     backgroundColor: isActive
                       ? config.accentColor
                       : "transparent",
-                    color:isActive ? config.primaryColor : config.secondaryColor  
 
                   }}
                   onMouseEnter={(e) => {
@@ -143,7 +142,6 @@ function SettingsPage() {
                   onMouseLeave={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = "";
-                      e.currentTarget.style.color = config.secondaryColor;
                     }
                   }}
                 >
@@ -159,7 +157,6 @@ function SettingsPage() {
                     {isMoreTab && <ChevronRight
                       className="w-4 h-4"
                       style={{
-                        color: isActive ? config.secondaryColor : "inherit",
                       }}
                     />}
                   </div>

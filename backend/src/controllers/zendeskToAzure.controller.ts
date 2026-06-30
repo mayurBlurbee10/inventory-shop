@@ -13,6 +13,10 @@ interface Attachment {
     content_url: string;
 }
 
+const ATTACHMENT_EXTENSIONS =
+    "pdf|png|jpe?g|gif|svg|mp4|mov|avi|webm|mkv|m4v|wmv|flv|3gp";
+const IMAGE_EXTENSIONS = /\.(png|jpe?g|gif|svg)$/i;
+
 const msalConfig = {
     auth: {
         clientId: process.env.ZENDESK_AZURE_CLIENT_ID!,
@@ -110,8 +114,10 @@ const createAzureWorkItem = async (
     );
 
     if (attachmentSection) {
-        const attachmentRegex =
-        /(.+?\.(?:pdf|png|jpe?g|gif|svg|mp4|mov|avi|webm|mkv|m4v))\s-\s(https:\/\/\S+)/gi;
+        const attachmentRegex = new RegExp(
+            `(.+?\\.(?:${ATTACHMENT_EXTENSIONS}))\\s-\\s(https:\\/\\/.*?\\.(?:${ATTACHMENT_EXTENSIONS}))`,
+            "gi"
+        );
 
         let match: RegExpExecArray | null;
 
@@ -136,100 +142,98 @@ const createAzureWorkItem = async (
     const attachmentRelations: any[] = [];
     let attachedHtml = "";
 
-   for (const attachment of attachments) {
-    const fileBuffer = await downloadZendeskAttachment(
-        attachment.content_url
-    );
+    for (const attachment of attachments) {
+        const fileBuffer = await downloadZendeskAttachment(
+            attachment.content_url
+        );
 
-    if (!fileBuffer) continue;
+        if (!fileBuffer) continue;
 
-    const adoAttachmentUrl = await uploadAzureAttachment(
-        token,
-        fileBuffer,
-        attachment.file_name
-    );
+        const adoAttachmentUrl = await uploadAzureAttachment(
+            token,
+            fileBuffer,
+            attachment.file_name
+        );
 
-    if (!adoAttachmentUrl) continue;
+        if (!adoAttachmentUrl) continue;
 
-    const isImage = /\.(png|jpe?g|gif|svg)$/i.test(
-        attachment.file_name
-    );
-
-    if (isImage) {
-        attachedHtml += `
-            <div style="margin-bottom:10px">
-                <img src="${adoAttachmentUrl}" alt="${attachment.file_name}" />
-            </div>
-        `;
-    } else {
-        attachmentRelations.push({
-            op: "add",
-            path: "/relations/-",
-            value: {
-                rel: "AttachedFile",
-                url: adoAttachmentUrl,
-                attributes: {
-                    comment: "Attachment from Zendesk",
+        if (IMAGE_EXTENSIONS.test(attachment.file_name)) {
+            attachedHtml += `<div><img src="${adoAttachmentUrl}" /></div>`;
+        } else {
+            attachmentRelations.push({
+                op: "add",
+                path: "/relations/-",
+                value: {
+                    rel: "AttachedFile",
+                    url: adoAttachmentUrl,
+                    attributes: {
+                        comment: "Attachment from Zendesk",
+                    },
                 },
-            },
-        });
+            });
+        }
     }
-}
 
     updatedDescription += attachedHtml;
 
-    const body = [
-        {
-          op: "add",
-          path: "/fields/System.Title",
+  const body = [
+    {
+      op: "add",
+      path: "/fields/System.Title",
           value: `[Universal Portal] Zendesk - ${zendeskTicketId}`,
-        },
-        ...(titleOp?.value?.toLowerCase() === "bug"
-          ? [
-              {
-                op: "add",
-                path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
-                value: updatedDescription,
-              },
-            ]
-          : [
-              {
-                op: "add",
-                path: "/fields/System.Description",
-                value: updatedDescription,
-              },
-            ]),
-        {
-          op: "add",
-          path: "/fields/System.AreaPath",
-          value: "MStrategyGroupCore\\Zendesk Support Tickets",
-        },
-        ...attachmentRelations,
-      ];
+    },
 
-    console.log(body, 'body----------------------------')
+    ...(titleOp?.value?.toLowerCase() === "bug"
+      ? [
+          {
+            op: "add",
+            path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
+            value: updatedDescription,
+          },
+        ]
+      : [
+          {
+            op: "add",
+            path: "/fields/System.Description",
+            value: updatedDescription,
+          },
+        ]),
 
-    // return response.status(200).json({
-    //     success: true,
-    //     body,
-    // })
+    {
+      op: "add",
+      path: "/fields/System.AreaPath",
+      value:
+        "MStrategyGroupCore\\Zendesk Support Tickets",
+    },
 
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json-patch+json",
-        },
-        body: JSON.stringify(body),
-    });
+    ...attachmentRelations,
+  ];
 
-    const result = await response.json();
+  console.log(
+    body,
+    "body----------------------------"
+  );
 
-    if (!response.ok) {
-        throw new Error(result.message || "Azure work item creation failed");
-    }
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type":
+        "application/json-patch+json",
+    },
+    body: JSON.stringify(body),
+  });
 
-    return result;
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message ||
+        "Azure work item creation failed"
+    );
+  }
+
+  return result;
 };
 
 const createZendeskToAzureTicket = asyncHandler(

@@ -647,12 +647,10 @@ function Navbar({ content, config, filterValue }) {
                   <button
                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                     onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633',
-                      e.currentTarget.style.color = config?.primaryColor ? config.primaryColor : config.secondaryColor || '#ffffff1b'
+                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
                       }}
                     onMouseLeave={ (e) =>{
                       e.currentTarget.style.backgroundColor = 'inherit'
-                      e.currentTarget.style.color = config?.secondaryColor 
                     }}
                     onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
                   >
@@ -661,12 +659,10 @@ function Navbar({ content, config, filterValue }) {
                   <button
                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                     onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633',
-                      e.currentTarget.style.color = config?.primaryColor ? config.primaryColor : config.secondaryColor || '#ffffff1b'
+                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
                       }}
                     onMouseLeave={ (e) =>{
                       e.currentTarget.style.backgroundColor = 'inherit'
-                      e.currentTarget.style.color = config?.secondaryColor 
                     }}
                     onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
                   >
@@ -679,12 +675,10 @@ function Navbar({ content, config, filterValue }) {
                       }
                       className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                       onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633',
-                      e.currentTarget.style.color = config?.primaryColor ? config.primaryColor : config.secondaryColor || '#ffffff1b'
+                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
                       }}
                     onMouseLeave={ (e) =>{
                       e.currentTarget.style.backgroundColor = 'inherit'
-                      e.currentTarget.style.color = config?.secondaryColor 
                     }}
                     >
                       <Headset className="h-5 w-5" />
@@ -696,12 +690,10 @@ function Navbar({ content, config, filterValue }) {
                     <button
                     className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                     onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633',
-                      e.currentTarget.style.color = config?.primaryColor ? config.primaryColor : config.secondaryColor || '#ffffff1b'
+                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
                       }}
                     onMouseLeave={ (e) =>{
                       e.currentTarget.style.backgroundColor = 'inherit'
-                      e.currentTarget.style.color = config?.secondaryColor 
                     }}  
                       onClick={() =>
                         router.push(
