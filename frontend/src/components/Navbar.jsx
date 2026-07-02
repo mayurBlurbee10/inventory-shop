@@ -23,10 +23,12 @@ import {
   LayoutDashboardIcon,
   LogOut,
   Menu,
+  MessageSquare,
   Plug,
   Settings,
   Signature,
   Users,
+  X,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -41,6 +43,8 @@ import { clearUserStates } from "@/app/lib/userCleanupService";
 import PluginRenderer from "../../Plugins/PluginRenderer";
 import NotificationConfiguration from "./NotificationConfiguration";
 import NotificationModal from "./InAppNotification/NotificationModel";
+import MessageComponent from "./Message/Message";
+import { useSocket } from "@/app/lib/useSocket";
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -56,6 +60,7 @@ function Navbar({ content, config, filterValue }) {
   const [isIntegrateDropdownOpen, setIsIntegrateDropdownOpen] = useState(false);
   const [isAccountInfoModalOpen, setIsAccountInfoModalOpen] = useState(false);
   const [isNotificationConfigurationOpen, setIsNotificationConfigurationOpen] = useState(false);
+  const [isMessageDrawerOpen, setIsMessageDrawerOpen] = useState(false);
   const dropdownRef = useRef(null);
   const moreLinksDropdownRef = useRef(null);
   const [logo, setLogo] = useState(null);
@@ -75,10 +80,20 @@ function Navbar({ content, config, filterValue }) {
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  useSocket();
 
   useEffect(() => {
     setLogo(config?.logo || null);
   }, [user, config]);
+
+  const openMessageDrawer = () => {
+    if (!user?.id) {
+      toast.error("Please sign in to view messages.");
+      return;
+    }
+
+    setIsMessageDrawerOpen(true);
+  };
 
   useEffect(() => {
     if (!navbarRef.current) return;
@@ -624,6 +639,18 @@ function Navbar({ content, config, filterValue }) {
             {/* <div className="relative"> */}
               <NotificationNavButton />
             {/* </div> */}
+            <button
+              type="button"
+              onClick={openMessageDrawer}
+              className={`relative flex items-center justify-center size-10 rounded-full hover:bg-white/25 transition-colors ${isMessageDrawerOpen ? "bg-white/25" : ""}`}
+              title="Messages"
+              aria-label="Messages"
+            >
+              <MessageSquare
+                className="size-5"
+                style={{ color: config?.secondaryColor || "#111827" }}
+              />
+            </button>
             <div
               ref={dropdownRef}
               className="flex items-center space-x-3 pl-4 relative"
@@ -896,6 +923,35 @@ function Navbar({ content, config, filterValue }) {
                           }
                         />
                       )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOpenNavbar(false);
+                          openMessageDrawer();
+                        }}
+                        className="relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg hover:bg-gray-100"
+                      >
+                        <span
+                          className={`font-lato text-sm flex items-center ${
+                            isMessageDrawerOpen ? "font-bold" : "font-medium"
+                          }`}
+                          style={
+                            isMessageDrawerOpen
+                              ? { color: config?.primaryColor }
+                              : { color: "#374151" }
+                          }
+                        >
+                          <MessageSquare
+                            className="mr-2 h-4 w-4"
+                            style={{
+                              color: isMessageDrawerOpen
+                                ? config?.primaryColor
+                                : "#374151",
+                            }}
+                          />
+                          Messages
+                        </span>
+                      </button>
                       {(userIsAdmin || userIsModerator) &&
                         filterPageVisibility("advisor dashboard") && (
                           <NavBarItem
@@ -1050,6 +1106,48 @@ function Navbar({ content, config, filterValue }) {
         user={user}
         userIsAdmin={userIsAdmin}
       />
+
+      {isMessageDrawerOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 z-40"
+            aria-hidden
+            onClick={() => setIsMessageDrawerOpen(false)}
+          />
+          <aside
+            className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col"
+            aria-label="Message sidebar"
+            style={{
+              "--accent": config?.accentColor,
+              "--primary": config?.primaryColor,
+              "--secondary": config?.secondaryColor,
+            }}
+          >
+            <div
+              className="flex items-center justify-between border-b px-4 bg-white shrink-0"
+              style={{
+                height: navbarHeight ? `${navbarHeight}px` : undefined,
+              }}
+            >
+              <div className="text-sm font-semibold text-[var(--secondary)]">
+                Messages
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMessageDrawerOpen(false)}
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                aria-label="Close messages"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <MessageComponent />
+            </div>
+          </aside>
+        </>
+      )}
+
       <NotificationConfiguration
         isOpen={isNotificationConfigurationOpen}
         onClose={() => setIsNotificationConfigurationOpen(false)}

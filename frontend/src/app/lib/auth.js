@@ -113,6 +113,24 @@ export const getUserData = () => {
   }
 };
 
+export const getUserDataSync = () => {
+  try {
+    if (!isBrowser()) {
+      return null;
+    }
+
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      return null;
+    }
+
+    return JSON.parse(storedUser);
+  } catch (error) {
+    console.error('Error getting user data sync:', error);
+    return null;
+  }
+};
+
 /**
  * Check if the current user is an admin
  * @returns {boolean} True if the user is an admin

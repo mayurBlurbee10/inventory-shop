@@ -1,7 +1,7 @@
 import { Server as SocketServer } from "socket.io";
 import { verifyToken } from "../utils/jwt.ts";
 import userService from "../services/user.service.ts";
-import messageService from "../services/message.service.ts";
+import messagesService from "../services/messages.service.ts";
 
 export const getConversationRoomId = (
   portalId: string,
@@ -10,6 +10,28 @@ export const getConversationRoomId = (
 ) => {
   const sorted = [userId1, userId2].sort();
   return `chat_${portalId}_${sorted[0]}_${sorted[1]}`;
+};
+
+const onlineUserConnections = new Map<string, number>();
+
+const getOnlineUserIds = () => Array.from(onlineUserConnections.keys());
+
+const markUserOnline = (io: SocketServer, userId: string) => {
+  const connectionCount = onlineUserConnections.get(userId) || 0;
+  onlineUserConnections.set(userId, connectionCount + 1);
+  io.emit("online_users", { userIds: getOnlineUserIds() });
+};
+
+const markUserOffline = (io: SocketServer, userId: string) => {
+  const connectionCount = onlineUserConnections.get(userId) || 0;
+
+  if (connectionCount <= 1) {
+    onlineUserConnections.delete(userId);
+  } else {
+    onlineUserConnections.set(userId, connectionCount - 1);
+  }
+
+  io.emit("online_users", { userIds: getOnlineUserIds() });
 };
 
 export const initSocket = (io: SocketServer) => {
@@ -44,6 +66,7 @@ export const initSocket = (io: SocketServer) => {
 
     // Join private room so server can emit to this user (e.g. new_notification)
     socket.join(`user_${userId}`);
+    markUserOnline(io, userId);
 
     socket.on(
       "join_conversation",
@@ -87,11 +110,11 @@ export const initSocket = (io: SocketServer) => {
             });
             return;
           }
-          const newMsg = await messageService.createMessage({
-            sender: { id: userId },
-            receiver: { id: receiverId },
+          const newMsg = await messagesService.createMessage({
+            senderId: userId,
+            receiverId,
+            portalId,
             text: text.trim(),
-            portal: portalId,
           });
           const roomId = getConversationRoomId(portalId, userId, receiverId);
           const messagePayload = {
@@ -117,6 +140,7 @@ export const initSocket = (io: SocketServer) => {
 
     socket.on("disconnect", () => {
       console.log(`[Socket] User disconnected: ${userId}`);
+      markUserOffline(io, userId);
     });
   });
 };
