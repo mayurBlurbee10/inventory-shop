@@ -171,7 +171,7 @@ const MessageCard = ({
             </button>
           </div>
           <div className="relative h-10 w-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary)] flex items-center justify-center mr-3 shrink-0">
-            <span className="text-sm font-bold text-[var(--secondary)]">
+            <span className="text-sm font-bold">
               {getUserInitials(selectedUser?.firstName + ' ' + selectedUser?.lastName)}
             </span>
             <span
@@ -182,10 +182,10 @@ const MessageCard = ({
             />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--secondary)] truncate">
+            <p className="text-sm font-semibold text-black truncate">
               {selectedUser?.firstName} {selectedUser?.lastName}
             </p>
-            <p className="text-xs text-[var(--secondary)] truncate">
+            <p className="text-xs text-black truncate">
               {selectedUser?.email ?? ""}
             </p>
             <div className="flex items-center gap-1">
@@ -211,7 +211,7 @@ const MessageCard = ({
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50 hidden-scrollbar relative">
         {messagesLoading && (
           <div className="flex justify-center items-center h-full text-gray-500 text-sm">
-            <LoaderSpinner size={32} className="text-[var(--secondary)]" />
+            <LoaderSpinner size={32}  />
           </div>
         )}
         {!messagesLoading &&
@@ -232,7 +232,7 @@ const MessageCard = ({
                   className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-sm text-sm ${
                     isCurrentUser
                       ? "bg-[var(--primary)] text-[var(--accent)] rounded-br-md"
-                      : "bg-white text-[var(--secondary)] border border-gray-200 rounded-bl-md"
+                      : "bg-white border border-gray-200 rounded-bl-md"
                   }`}
                 >
                   <div
@@ -292,7 +292,11 @@ const MessageCard = ({
           className="p-2 rounded-lg bg-[var(--primary)] transition-all duration-200 text-[var(--accent)] hover:bg-[var(--accent)] disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Send message"
         >
-          <Send className="w-5 h-5" />
+          {sending ? (
+            <LoaderSpinner size={20} />
+          ) : (
+            <Send className="w-5 h-5" />
+          )}
         </button>
       </div>
       {useRealtime && !connected && (

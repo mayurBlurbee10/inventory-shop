@@ -1129,7 +1129,7 @@ function Navbar({ content, config, filterValue }) {
                 height: navbarHeight ? `${navbarHeight}px` : undefined,
               }}
             >
-              <div className="text-sm font-semibold text-[var(--secondary)]">
+              <div className="text-sm font-semibold text-black">
                 Messages
               </div>
               <button

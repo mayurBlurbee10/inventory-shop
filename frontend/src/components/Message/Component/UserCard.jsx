@@ -19,10 +19,10 @@ const UserCard = ({ user, onSelect }) => {
             />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--secondary)] truncate">
+            <p className="text-sm font-semibold truncate">
               {user?.firstName + " " + user?.lastName}
             </p>
-            <p className="text-xs text-[var(--secondary)] truncate">
+            <p className="text-xs truncate">
               {user?.email ?? ""}
             </p>
           </div>

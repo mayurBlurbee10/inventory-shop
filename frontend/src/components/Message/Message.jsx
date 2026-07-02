@@ -83,7 +83,7 @@ export default function MessageComponent() {
             <div className="flex-1 min-h-0 overflow-y-auto hidden-scrollbar">
               {usersLoading ? (
                 <div className="flex justify-center items-center h-full text-[var(--secondary)] text-sm">
-                  <LoaderSpinner size={32} className="text-[var(--secondary)]" />
+                  <LoaderSpinner size={32} />
                 </div>
               ) : users.length ? (
                 users.map((user) => (
