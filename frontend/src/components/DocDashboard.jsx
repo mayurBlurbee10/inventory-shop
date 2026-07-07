@@ -258,10 +258,6 @@ export default function DocDashboard() {
             {filterVisibility("Collaborator Section") && (
               <CollaboratorSection />
             )}
-            {filterVisibility("Messaging") && (
-              // <Messaging />
-              <MessageSection />
-            )}
           </div>
         </div>
       </div>

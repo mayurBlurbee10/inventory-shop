@@ -632,13 +632,13 @@ function Navbar({ content, config, filterValue }) {
               ))}
           </div>
           {/* Profile dropdown */}
-          <div className="hidden lg:flex items-center space-x-8 cursor-pointer">
+          <div className="hidden lg:flex items-center cursor-pointer">
             <div className="hidden md:block">
               <PluginRenderer config={config} pluginKeys={['box_ai']} />
             </div>
-            {/* <div className="relative"> */}
+            <div className="ml-2">
               <NotificationNavButton />
-            {/* </div> */}
+            </div>
             <button
               type="button"
               onClick={openMessageDrawer}

@@ -190,9 +190,6 @@ function Page() {
           {filterVisibility("Collaborator Section") && (
             <CollaboratorSection />
           )}
-          {filterVisibility("Messaging") && (
-            <MessageSection />
-          )}
         </div>
       </div>
     </div>

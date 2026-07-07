@@ -89,7 +89,7 @@ export default function MessageComponent() {
                 users.map((user) => (
                   <div
                     key={user.id}
-                    className={`p-1 ${
+                    className={`${
                       selectedUser?.id === user?.id
                         ? "bg-gray-300 text-black"
                         : "bg-gray-100 text-gray-700"

@@ -328,14 +328,6 @@ export default function AdvisorViewSharedDocsPage() {
               </div>
             </div>
           )}
-          {filterVisibility("Messaging") && (
-            <div>
-              <MessageSection
-                clientId={user ? user.id : loggedInUser.id}
-                key={user ? user.id : loggedInUser.id}
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -352,9 +352,6 @@ export default function AdvisorViewDashboard() {
                     {filterVisibility("My Task Section") && (
                         <TasksSection />
                     )}
-                    {filterVisibility("Messaging") && (
-                        <MessageSection />
-                    )}
                 </div>
             </div>
         </div>
