@@ -152,10 +152,10 @@ const getUserNotifications = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
 
-    if (!userId) {
-      res.status(400).json({ error: "User ID is required" });
-      return;
-    }
+    // if (!userId) {
+    //   res.status(400).json({ error: "User ID is required" });
+    //   return;
+    // }
 
     const notifications = await inAppNotificationService.getUserNotifications(
       userId,

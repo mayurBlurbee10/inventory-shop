@@ -107,5 +107,6 @@ app.use("/api/zendesk-to-azure", zendeskToAzureRoutes);
 app.use("/api/portal-plugin-configs", portalPluginConfigsRoutes);
 app.use("/api/inbuild-plugins", inbuildPluginsRoutes);
 app.use("/api/real-messages", realMessageRoutes);
+app.use("/api/in-app-notification", inAppnotificationRoutes);
 
 export { app };

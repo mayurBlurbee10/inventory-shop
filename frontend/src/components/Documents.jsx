@@ -726,9 +726,9 @@ function Documents({
       const sessionData = await getSession();
       const userData = getUserData();
       setSession(sessionData);
-      // if (sessionData) {
-      //   await getUserDetailsByEmail(sessionData.user.email);
-      // }
+      if (sessionData) {
+        await getUserDetailsByEmail(sessionData.user.email);
+      }
     };
     fetchSession().then(() => {
       const userData = getUserData();
