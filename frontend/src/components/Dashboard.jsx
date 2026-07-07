@@ -13,7 +13,7 @@ import {
   Download,
 } from "lucide-react";
 
-import { getUserData, clearUserData, isAdmin } from "@/app/lib/auth";
+import { getUserData, clearUserData, isAdmin, setAuthTokens } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 
 import EmptyState from "./FileExplorer/EmptyState";
@@ -292,7 +292,7 @@ function Dashboard({ fileType }) {
       // setUserData(userData);
       dispatch(setCurrentUser(userData))
       // localStorage.setItem("portal", params.portalid);
-      localStorage.setItem("accessToken", data.accessToken);
+      setAuthTokens({ accessToken: data.accessToken });
     } catch (error) {
       console.error("Failed to get user from email:", error);
       router.push("login");

@@ -20,7 +20,7 @@ const getCookie = (name) => {
 const getClientToken = () => {
   if (!isBrowser()) return "";
 
-  return getCookie("clientToken") || localStorage.getItem("accessToken") || "";
+  return getCookie("clientToken") || "";
 };
 
 const refreshAccessToken = async (portalId) => {

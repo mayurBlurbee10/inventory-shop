@@ -8,7 +8,7 @@ import TNCModal from "./TNCModal";
 import { registerUser, setUserPassword } from "@/lib/auth-api";
 import { setCurrentUser } from "@/store/services/userService";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserData } from "@/app/lib/auth";
+import { setUserData, setAuthTokens } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
@@ -262,7 +262,7 @@ const Register = () => {
       );
       setUserData({ ...response.user, portalId: params?.portalid });
       // localStorage.setItem("portal", params?.portalid);
-      localStorage.setItem("accessToken", response.accessToken);
+      setAuthTokens({ accessToken: response.accessToken });
 
       // Store user ID for password step
       setRegisteredUserId(response.user.id);

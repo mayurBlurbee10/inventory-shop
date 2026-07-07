@@ -53,21 +53,16 @@ export const setAuthTokens = ({ accessToken, refreshToken }) => {
   if (!isBrowser()) return;
 
   if (accessToken) {
-    localStorage.setItem("accessToken", accessToken);
     document.cookie = `clientToken=${accessToken}; path=${COOKIE_OPTIONS.path}; samesite=${COOKIE_OPTIONS.sameSite}; max-age=${COOKIE_OPTIONS.maxAge}${COOKIE_OPTIONS.secure ? "; secure" : ""}`;
   }
 
   if (refreshToken) {
-    localStorage.setItem("refreshToken", refreshToken);
     document.cookie = `clientRefreshToken=${refreshToken}; path=${COOKIE_OPTIONS.path}; samesite=${COOKIE_OPTIONS.sameSite}; max-age=${COOKIE_OPTIONS.maxAge}${COOKIE_OPTIONS.secure ? "; secure" : ""}`;
   }
 };
 
 export const getRefreshToken = () => {
   if (!isBrowser()) return null;
-
-  const storedRefreshToken = localStorage.getItem("refreshToken");
-  if (storedRefreshToken) return storedRefreshToken;
 
   const refreshTokenCookie = document.cookie
     .split(";")

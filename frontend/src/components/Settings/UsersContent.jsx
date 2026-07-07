@@ -225,6 +225,9 @@ const UsersContent = () => {
                     </button>
                   </div>
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Role
+                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                   Actions
                 </th>
@@ -255,6 +258,11 @@ const UsersContent = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user?.permissions?.find(
+                      (permission) => permission.portalId === (params.portalid || "root")
+                    )?.role || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-3 text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">

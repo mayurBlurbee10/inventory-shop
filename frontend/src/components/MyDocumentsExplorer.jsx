@@ -112,11 +112,17 @@ const ShareModal = ({
         }
         return true;
       })
-      .map((portalUser) => ({
-        value: portalUser.boxUserId,
-        label: `${`${portalUser.firstName || ''} ${portalUser.lastName || ''}`.trim()} (${portalUser.email})`,
-      }));
-  }, [usersList, collaborator, user?.boxUserId]);
+      .map((portalUser) => {
+        const portalRole = portalUser?.permissions?.find(
+          (permission) => permission.portalId === (params.portalid || "root")
+        )?.role;
+        const name = `${portalUser.firstName || ''} ${portalUser.lastName || ''}`.trim();
+        return {
+          value: portalUser.boxUserId,
+          label: `${name} (${portalUser.email}${portalRole ? ` - ${portalRole}` : ""})`,
+        };
+      });
+  }, [usersList, collaborator, user?.boxUserId, params.portalid]);
 
   if (!isOpen) return null;
 
@@ -388,6 +394,26 @@ const ShareModal = ({
                 value={userID}
                 onChange={(e) => setUserID(e)}
                 options={userList}
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
+                menuPosition="fixed"
+                menuPlacement="auto"
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                  option: (base, state) => ({
+                    ...base,
+                    color: "#111827",
+                    backgroundColor: state.isSelected
+                      ? "#e0f2fe"
+                      : state.isFocused
+                      ? "#f3f4f6"
+                      : "#ffffff",
+                  }),
+                  singleValue: (base) => ({ ...base, color: "#111827" }),
+                  input: (base) => ({ ...base, color: "#111827" }),
+                  placeholder: (base) => ({ ...base, color: "#9ca3af" }),
+                }}
               />
               <select
                 className="py-2 px-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md text-gray-700"

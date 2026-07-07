@@ -20,8 +20,6 @@ const getAccessToken = () => {
     getCookie("token") ||
     getCookie("clientToken") ||
     getCookie("authToken") ||
-    localStorage.getItem("accessToken") ||
-    localStorage.getItem("clientToken") ||
     ""
   );
 };
