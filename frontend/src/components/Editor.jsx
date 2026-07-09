@@ -5,9 +5,31 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { SignJWT } from "jose";
-import Button from "./Common/Elements/Button";
 import { useSelector } from "react-redux";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import { getStoredMode } from "@/app/lib/theme-manager";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+function getInitials(name = "") {
+  return name
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join("");
+}
 
 function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const editorRef = useRef(null);
@@ -21,8 +43,22 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
   const [message, setMessage] = useState("");
   const [isPostLoading, setIsPostLoading] = useState(false);
   const [comments, setComments] = useState([]);
+  const [themeMode, setThemeMode] = useState(() =>
+    typeof window !== "undefined" ? getStoredMode() : "light",
+  );
 
   const { data: user } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    const handleModeChange = (event) => {
+      setThemeMode(event?.detail || getStoredMode());
+    };
+    setThemeMode(getStoredMode());
+    window.addEventListener("theme-mode-changed", handleModeChange);
+    return () => {
+      window.removeEventListener("theme-mode-changed", handleModeChange);
+    };
+  }, []);
 
   const getDocumentType = (fileType) => {
     const fileMappings = {
@@ -32,7 +68,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     };
     return (
       Object.keys(fileMappings).find((type) =>
-        fileMappings[type].includes(fileType)
+        fileMappings[type].includes(fileType),
       ) || "pdf"
     );
   };
@@ -47,9 +83,9 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       console.log("FileType", fileTypeParam);
       const response = await fetchWrapper(
         `/api/box/files/proxy-file?url=${encodeURIComponent(
-          url
+          url,
         )}&fileType=${fileTypeParam}&token=${token}`,
-        { responseType: "blob" }
+        { responseType: "blob" },
       );
 
       if (!response.ok) {
@@ -100,9 +136,11 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
       const documentType = getDocumentType(fetchedFileType);
       // Capture fileType for use in event callbacks
       const currentFileType = fetchedFileType;
+      const currentMode =
+        typeof window !== "undefined" ? getStoredMode() : themeMode;
 
       const secretKey = new TextEncoder().encode(
-        "4f5e6eef675c4ed79ba5c56b421cd6d2"
+        "4f5e6eef675c4ed79ba5c56b421cd6d2",
       );
 
       const tokenPayload = {
@@ -115,10 +153,14 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
         },
         documentType: documentType,
         editorConfig: {
-          user: { id: user?.id, firstName: user?.firstName, lastName: user?.lastName },
+          user: {
+            id: user?.id,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+          },
           customization: {
             autoSave: true,
-            uiTheme: "default-light",
+            uiTheme: currentMode === "dark" ? "default-dark" : "default-light",
             features: { tabBackground: { mode: "toolbar" } },
           },
         },
@@ -197,7 +239,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     } finally {
       setIsLoading(false);
     }
-  }, [item, isLoading]);
+  }, [item, isLoading, themeMode, user]);
 
   const uploadFileToBox = async (blob) => {
     if (replaceReq) {
@@ -291,7 +333,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
             "Content-Type": "application/json",
           },
         },
-        "fetch-comments"
+        "fetch-comments",
       );
 
       const data = await response.json();
@@ -323,7 +365,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
             boxUserId: user.boxUserId,
           }),
         },
-        "create-comment"
+        "create-comment",
       );
 
       const data = await response.json();
@@ -367,179 +409,205 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
     }
   }
 
+  const userDisplayName =
+    `${user?.firstName || ""} ${user?.lastName || ""}`.trim();
+
   return (
-    <>
-      {isModalOpen && (
-        <div className="relative z-50">
-          {/* Modal Background */}
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+    <Dialog
+      open={isModalOpen}
+      onOpenChange={(open) => {
+        if (!open && !isSaveLoading) {
+          handleClose();
+        }
+      }}
+    >
+      <DialogContent
+        className="flex max-h-[90vh] min-h-[80vh] w-full max-w-[90vw] flex-col gap-0 overflow-hidden bg-background p-0 sm:max-w-[90vw]"
+        overlayClassName="bg-black/30"
+        showCloseButton={false}
+      >
+        <DialogHeader className="min-w-0 shrink-0 space-y-0 border-b border-border px-6 py-4 text-left">
+          <div className="flex w-full min-w-0 items-center justify-between gap-3">
+            <DialogTitle
+              className="min-w-0 flex-1 overflow-hidden text-xl font-semibold text-foreground"
+              title={item?.name}
+            >
+              <span className="block truncate">
+                Edit &quot;{item?.name}&quot;
+              </span>
+            </DialogTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleClose}
+              className="shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </DialogHeader>
 
-          {/* Modal Content */}
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <div className="w-full max-w-[90vw] min-h-[80vh] max-h-[90vh] overflow-auto bg-white rounded-lg shadow-lg flex flex-col">
-              {/* Header */}
-              <div className="flex justify-between items-center border-b px-6 py-4">
-                <h2 className="text-xl text-gray-800 font-semibold">
-                  Edit &quot;{item?.name}&quot;
-                </h2>
-                <button
-                  onClick={handleClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+          <div className="min-h-[40vh] flex-1 overflow-hidden md:min-h-0">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center bg-background">
+                <LoaderSpinner size={32} className="text-secondary-foreground" />
               </div>
+            ) : (
+              <div id="onlyoffice-editor" className="h-full w-full" />
+            )}
+          </div>
 
-              {/* Editor Section */}
-              <div className="flex flex-col md:flex-row w-full h-[80vh] sm:h-[70vh]">
-                <div className="flex-1 overflow-hidden min-h-0">
-                  <div className="h-[100%]">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center h-full">
-                        <LoaderSpinner size={32} className="text-blue-500" />
-                      </div>
-                    ) : (
-                      <div
-                        id="onlyoffice-editor"
-                        ref={editorRef}
-                        className="h-full w-full"
-                      // style={{ minHeight: "600px" }}
-                      ></div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Comment Section */}
-                <div className="w-full md:w-[30%] md:border-l p-3 bg-gray-50 text-sm text-[#000000e8] flex flex-col font-lato pb-4">
-                  {comments &&
-                    comments.length > 0 &&
-                    comments?.map((comment) => (
-                      <div
-                        key={comment?.id}
-                        className="cursor-pointer w-full"
-                        onClick={() => setIsOpenCommentBox((prev) => !prev)}
-                      >
-                        {comment?.user && (
-                          <div className="flex items-start gap-3 pt-3 pb-5 border-b border-[#0000001a]">
-                            <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                              {comment?.user?.firstName
-                                ?.split(" ")
-                                .map((word) => word.charAt(0).toUpperCase())
-                                .slice(0, 2)
-                                .join("")}
-                            </div>
-                            <div>
-                              <p>{comment?.user?.email}</p>
-                              <p className="text-gray-600">
-                                {formatTimestamp(comment?.created_at)}
-                              </p>
-                              <p>{comment?.message}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  {comments && comments.length === 0 && (
-                    <div className="flex flex-col items-center my-auto text-gray-500 py-5">
-                      <MessageSquareDiff className="w-10 h-10 text-blue-500" />
-                      <p className="text-lg font-semibold mt-2 text-[#000000bd]">
-                        No comments to show
-                      </p>
-                      <span className="text-sm text-[#000000bd]">
-                        Be the first to add a comment!
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Comment Input */}
-                  {isOpenCommentBox ? (
-                    <div className="flex flex-col mt-auto">
-                      <div className="flex items-start mb-4">
-                        <div className="flex items-center justify-center p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                          {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()
-                            ?.split(" ")
-                            .map((word) => word.charAt(0).toUpperCase())
-                            .slice(0, 2)
-                            .join("")}
+          <div className="flex w-full flex-col border-t border-border bg-muted/30 p-3 text-sm text-foreground md:w-[30%] md:border-l md:border-t-0">
+            <ScrollArea className="min-h-0 flex-1">
+              {comments &&
+                comments.length > 0 &&
+                comments?.map((comment) => (
+                  <button
+                    key={comment?.id}
+                    type="button"
+                    className="w-full cursor-pointer text-left"
+                    onClick={() => setIsOpenCommentBox((prev) => !prev)}
+                  >
+                    {comment?.user && (
+                      <div className="flex items-start gap-3 border-b border-border py-3">
+                        <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
+                          <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
+                            {getInitials(
+                              `${comment?.user?.firstName || ""} ${comment?.user?.lastName || ""}`.trim() ||
+                                comment?.user?.email ||
+                                "",
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 space-y-1">
+                          <p className="truncate text-foreground">
+                            {comment?.user?.email}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {formatTimestamp(comment?.created_at)}
+                          </p>
+                          <p className="break-words text-foreground">
+                            {comment?.message}
+                          </p>
                         </div>
-                        <textarea
-                          placeholder="Write a comment..."
-                          className="border w-full mx-3 cursor-pointer h-24 rounded-md shadow-inner px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 resize-none placeholder-gray-400"
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          rows={4}
-                        />
                       </div>
-                      <div className="flex ml-auto space-x-2">
-                        <Button
-                          type="Secondary"
-                          onClick={() => setIsOpenCommentBox(false)}
-                          disabled={isPostLoading}
-                          label="Cancel"
-                        />
+                    )}
+                  </button>
+                ))}
 
-                        <Button
-                          type="Primary"
-                          onClick={handleAddComment}
-                          disabled={isPostLoading}
-                          label={"Post"}
-                          isLoading={isPostLoading}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className="flex items-center mt-auto cursor-pointer"
-                      onClick={() => setIsOpenCommentBox((prev) => !prev)}
-                    >
-                      <div className="flex items-center justify-center size-8 p-2 rounded-full bg-blue-600 text-white font-bold text-sm">
-                        {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()
-                          ?.split(" ")
-                          .map((word) => word.charAt(0).toUpperCase())
-                          .slice(0, 2)
-                          .join("")}
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Write a comment"
-                        className="border w-full mx-3 h-9 rounded-md shadow-inner pl-4 text-sm outline-none text-gray-700"
+              {comments && comments.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+                  <MessageSquareDiff className="h-10 w-10 text-primary" />
+                  <p className="mt-2 text-lg font-semibold text-foreground">
+                    No comments to show
+                  </p>
+                  <span className="text-sm text-muted-foreground">
+                    Be the first to add a comment!
+                  </span>
+                </div>
+              )}
+            </ScrollArea>
+
+            {isOpenCommentBox ? (
+              <div className="mt-3 flex flex-col gap-3 border-t border-border pt-3">
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-8 w-8 shrink-0 bg-primary text-primary-foreground">
+                    <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
+                      {getInitials(userDisplayName || user?.email || "")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Textarea
+                    placeholder="Write a comment..."
+                    className="min-h-24 !bg-background text-foreground"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+                <div className="ml-auto flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsOpenCommentBox(false)}
+                    disabled={isPostLoading}
+                    className="px-3 py-3"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleAddComment}
+                    disabled={isPostLoading || !message.trim()}
+                    className="px-3 py-3"
+                  >
+                    {isPostLoading ? (
+                      <LoaderSpinner
+                        size={18}
+                        className="text-primary-foreground"
                       />
-                    </div>
-                  )}
+                    ) : null}
+                    Post
+                  </Button>
                 </div>
               </div>
-              {/* Footer Buttons */}
-              <div className="flex justify-end border-t px-4 py-3 space-x-2">
-                <Button
-                  type="Secondary"
-                  onClick={() => {
-                    if (editorRef.current?.destroyEditor) {
-                      editorRef.current.destroyEditor();
-                    }
-                    setIsModalOpen(false);
-                  }}
-                  disabled={isSaveLoading}
-                  label="Cancel"
+            ) : (
+              <button
+                type="button"
+                className="mt-3 flex w-full items-center gap-3 border-t border-border pt-3 text-left"
+                onClick={() => setIsOpenCommentBox((prev) => !prev)}
+              >
+                <Avatar className="h-8 w-8 shrink-0 bg-primary text-primary-foreground">
+                  <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
+                    {getInitials(userDisplayName || user?.email || "")}
+                  </AvatarFallback>
+                </Avatar>
+                <Input
+                  type="text"
+                  readOnly
+                  placeholder="Write a comment"
+                  className="pointer-events-none flex-1 !bg-background text-foreground"
                 />
-
-                <Button
-                  type="Primary"
-                  disabled={isSaveLoading || isLoading}
-                  onClick={async () => {
-                    if (editorRef.current?.downloadAs) {
-                      setIsSaveLoading(true);
-                      editorRef.current.downloadAs();
-                    }
-                  }}
-                  label={"Save"}
-                  isLoading={isSaveLoading}
-                />
-              </div>
-            </div>
+              </button>
+            )}
           </div>
         </div>
-      )}
-    </>
+
+        <DialogFooter className="mx-0 mb-0 gap-2 rounded-none border-t border-border bg-muted/30 px-4 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              if (editorRef.current?.destroyEditor) {
+                editorRef.current.destroyEditor();
+              }
+              setIsModalOpen(false);
+            }}
+            disabled={isSaveLoading}
+            className="px-3 py-3"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            disabled={isSaveLoading || isLoading}
+            onClick={async () => {
+              if (editorRef.current?.downloadAs) {
+                setIsSaveLoading(true);
+                editorRef.current.downloadAs();
+              }
+            }}
+            className="px-3 py-3"
+          >
+            {isSaveLoading ? (
+              <LoaderSpinner size={18} className="text-primary-foreground" />
+            ) : null}
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

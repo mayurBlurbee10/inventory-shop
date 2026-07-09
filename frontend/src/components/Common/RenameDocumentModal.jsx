@@ -1,10 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Dialog } from "@headlessui/react";
 import { X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Button from "./Elements/Button";
 import { toast } from "react-toastify";
+import LoaderSpinner from "./Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
   const [newName, setNewName] = useState("");
@@ -13,7 +23,7 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
 
   useEffect(() => {
     setNewName(item?.name);
-  }, [item])
+  }, [item]);
 
   const handleRename = async () => {
     if (!newName.trim()) return;
@@ -23,18 +33,22 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
       const requestOptions = {
         method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ itemId: item?.id, newName: newName, type: item?.type }),
+        body: JSON.stringify({
+          itemId: item?.id,
+          newName: newName,
+          type: item?.type,
+        }),
       };
       const response = await fetchWrapper(
         "/api/box/files",
         requestOptions,
-        "rename-document"
+        "rename-document",
       );
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data?.error || "Failed to rename document")
+        throw new Error(data?.error || "Failed to rename document");
       }
       setShowSuccess(true);
       await onFileRename();
@@ -43,72 +57,92 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
         onClose();
       }, 2000);
     } catch (error) {
-      toast.error(error?.message)
+      toast.error(error?.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-[400px] w-full rounded-lg bg-white shadow-xl">
-          <div className="flex justify-between items-center p-4 border-b">
-            <Dialog.Title className="text-lg text-gray-600 font-medium flex items-center">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isLoading) onClose();
+      }}
+    >
+      <DialogContent
+        className="w-full max-w-[400px] bg-background sm:max-w-[400px]"
+        overlayClassName="bg-black/30"
+        showCloseButton={false}
+      >
+        <DialogHeader className="border-b border-border pb-4 text-left">
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="text-lg font-medium text-foreground">
               Rename {item?.type === "file" ? "File" : "Folder"}
-            </Dialog.Title>
-            <button
+            </DialogTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={onClose}
-              className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
+              disabled={isLoading}
+              className="rounded-full text-muted-foreground hover:text-foreground"
             >
-              <X className="w-5 h-5" />
-            </button>
+              <X className="h-5 w-5" />
+            </Button>
           </div>
+        </DialogHeader>
 
-          {showSuccess ? (
-            <div className="text-center p-4">
-              <div className="text-green-600 mb-4">
-                {item?.type === "file" ? "File" : "Folder"} successfully
-                renamed!
-              </div>
-              <div className="flex justify-center space-x-3">
-                <Button onClick={onClose} type="Primary" label="Done" />
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-sm w-full mx-auto p-6">
-              <label className="text-sm text-black font-medium block mb-1">
+        {showSuccess ? (
+          <div className="space-y-4 py-2 text-center">
+            <DialogDescription className="text-base font-medium text-success">
+              {item?.type === "file" ? "File" : "Folder"} successfully renamed!
+            </DialogDescription>
+            <DialogFooter className="m-0 justify-center p-0 sm:justify-center">
+              <Button type="button" onClick={onClose} className="px-3 py-3">
+                Done
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">
                 Enter new name
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                className="py-2 px-2 w-full text-black border border-gray-300 rounded-md text-sm outline-none mb-2 focus:border-blue-500 focus:ring-blue-500"
+                className="!bg-background text-foreground h-10"
                 disabled={isLoading}
-
               />
-              <div className="flex items-center justify-center pt-4 gap-2">
-                <Button
-                  disabled={isLoading || !newName?.trim()}
-                  onClick={handleRename}
-                  label="Rename"
-                  type="Primary"
-                  isLoading={isLoading}
-                />
-                <Button
-                  onClick={onClose}
-                  disabled={isLoading}
-                  type="Secondary"
-                  label="Cancel"
-                />
-              </div>
             </div>
-          )}
-        </Dialog.Panel>
-      </div>
+            <DialogFooter className="m-0 border-0 gap-2 p-0 sm:justify-center bg-transparent">
+              <Button
+                type="button"
+                onClick={handleRename}
+                disabled={isLoading || !newName?.trim()}
+                className="px-3 py-3"
+              >
+                {isLoading ? (
+                  <LoaderSpinner size={18} className="text-secondary-foreground" />
+                ) : null}
+                Rename
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isLoading}
+                className="px-3 py-3"
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
     </Dialog>
   );
 };

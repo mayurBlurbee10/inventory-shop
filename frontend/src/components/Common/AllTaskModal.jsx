@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { Edit, Trash2, X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -6,11 +8,25 @@ import { toast } from "react-toastify";
 import CreateTaskPopUp from "./CreateTaskPopUp";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import LoaderSpinner from "./Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 
 const AllTaskModal = ({ isOpen, onClose }) => {
   const params = useParams();
   const [tasks, setTasks] = useState([]);
-  const [isTasksLoading, setIsTasksLoading] = useState(false);
+  const [isTasksLoading, setIsTasksLoading] = useState(true);
   const [selectTaskToUpdate, setSelectTaskToUpdate] = useState(null);
   const [selectTaskToDelete, setSelectTaskToDelete] = useState(null);
   const [isTaskDeleteModalOpen, setIsTaskDeleteModalOpen] = useState(false);
@@ -38,16 +54,16 @@ const AllTaskModal = ({ isOpen, onClose }) => {
 
   const handleDeleteTask = async () => {
     try {
-      if(!selectTaskToDelete){
+      if (!selectTaskToDelete) {
         return;
       }
       const requestOptions = {
-        method : "DELETE",
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body : JSON.stringify({taskId : selectTaskToDelete?.id})
-      }
+        body: JSON.stringify({ taskId: selectTaskToDelete?.id }),
+      };
       setIsDeleteTaskLoading(true);
       const response = await fetchWrapper(
         `/api/tasks`,
@@ -70,113 +86,156 @@ const AllTaskModal = ({ isOpen, onClose }) => {
   };
 
   useEffect(() => {
-    fetchAllTasks();
-  }, []);
+    if (isOpen) {
+      fetchAllTasks();
+    }
+  }, [isOpen]);
 
   const formatDate = (timestamp) => {
-    if(timestamp){
+    if (timestamp) {
       const date = new Date(timestamp);
       return date.toLocaleDateString("en-US");
-    }else {
-      return "No Due"
     }
+    return "No Due";
   };
 
   return (
-    <div className="relative z-20">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-      <div className="fixed inset-0 flex items-center justify-center p-4 text-[#000000e8]">
-        <div className="mx-auto max-w-[90vw] w-[1200px] h-[80vh] bg-white rounded-lg shadow-xl relative">
-          <div className="flex items-center justify-between px-6 py-4 border-b">
-            <div className="text-lg font-semibold text-gray-900">
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent
+          className="flex h-[80vh] w-[1200px] max-w-[90vw] flex-col gap-0 overflow-hidden border-border bg-background p-0 text-foreground sm:max-w-[1200px]"
+          overlayClassName="bg-black/30"
+          showCloseButton={false}
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
+            <DialogTitle className="text-lg font-semibold text-foreground">
               Tasks
-            </div>
-            <button
+            </DialogTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={onClose}
-              className="p-1 hover:bg-gray-100 rounded-full text-black"
+              className="rounded-full px-3 py-3 text-muted-foreground hover:bg-muted hover:text-foreground"
             >
-              <X className="h-5 w-5" />
-            </button>
+              <X className="size-5" />
+              <span className="sr-only">Close</span>
+            </Button>
           </div>
 
-          <div className="h-[calc(80vh-73px)] relative mt-5 font-lato text-sm px-5 sm:px-10 ">
-            {isTasksLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white">
-                <LoaderSpinner size={28} className="text-blue-500"/>
+          <div className="relative min-h-0 flex-1 px-5 py-5 font-lato text-sm sm:px-10">
+            {isTasksLoading ? (
+              <div className="flex h-full min-h-[200px] items-center justify-center">
+                <LoaderSpinner size={28} className="text-primary" />
+              </div>
+            ) : (
+              <div className="h-full overflow-y-auto hidden-scrollbar">
+                <div className="overflow-hidden rounded-lg border border-border bg-background shadow-sm">
+                  <Table className="w-full text-sm">
+                    <TableHeader className="sticky top-0 z-[1] bg-muted">
+                      <TableRow className="border-b border-border hover:bg-muted">
+                        <TableHead className="px-4 py-3 text-left font-semibold text-foreground">
+                          User
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-left font-semibold text-foreground">
+                          Type
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-left font-semibold text-foreground">
+                          Title
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-left font-semibold text-foreground">
+                          Status
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-left font-semibold text-foreground">
+                          Due Date
+                        </TableHead>
+                        <TableHead className="px-4 py-3 text-left font-semibold text-foreground">
+                          Action
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="border-t border-border">
+                      {tasks?.length > 0 ? (
+                        tasks.map((task, index) => (
+                          <TableRow
+                            key={task?.id}
+                            className={`border-b border-border text-foreground transition hover:bg-muted/50 ${
+                              index % 2 === 0 ? "bg-background" : "bg-muted/30"
+                            }`}
+                          >
+                            <TableCell className="px-4 py-3">
+                              {task?.user?.firstName}
+                            </TableCell>
+                            <TableCell className="px-4 py-3">{task?.type}</TableCell>
+                            <TableCell className="px-4 py-3">{task?.title}</TableCell>
+                            <TableCell className="px-4 py-3">{task?.status}</TableCell>
+                            <TableCell className="px-4 py-3">
+                              {formatDate(task?.dueDate)}
+                            </TableCell>
+                            <TableCell className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  className="h-auto px-3 py-3 text-foreground hover:bg-transparent hover:text-primary"
+                                  onClick={() => setSelectTaskToUpdate(task)}
+                                >
+                                  <Edit className="size-5" />
+                                  <span className="sr-only">Edit task</span>
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  className="h-auto px-3 py-3 text-destructive hover:bg-transparent hover:text-destructive"
+                                  onClick={() => {
+                                    setSelectTaskToDelete(task);
+                                    setIsTaskDeleteModalOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="size-5" />
+                                  <span className="sr-only">Delete task</span>
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={6}
+                            className="py-8 text-center text-muted-foreground"
+                          >
+                            No records found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
-            <div className="h-[97%] rounded-lg overflow-y-auto hidden-scrollbar">
-              <table className="w-full text-sm font-lato shadow-md rounded-lg overflow-hidden">
-                <thead className="bg-gray-100 text-gray-700 text-left sticky top-0 border border-gray-200">
-                  <tr>
-                    <th className="p-4 border-b">User</th>
-                    <th className="p-4 border-b">Type</th>
-                    <th className="p-4 border-b">Title</th>
-                    <th className="p-4 border-b">Status</th>
-                    <th className="p-4 border-b">Due Date</th>
-                    <th className="p-4 border-b">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="border border-gray-200">
-                  {tasks?.length > 0 ? (
-                    tasks.map((task, index) => (
-                      <tr
-                        key={task?.id}
-                        className={`border-b text-gray-800 ${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        } hover:bg-gray-100 transition`}
-                      >
-                        <td className="py-3 px-4">{task?.user?.firstName}</td>
-                        <td className="py-3 px-4">{task?.type}</td>
-                        <td className="py-3 px-4">{task?.title}</td>
-                        <td className="py-3 px-4">{task?.status}</td>
-                        <td className="py-3 px-4">{formatDate(task?.dueDate)}</td>
-                        <td className="py-3 px-4 cursor-pointer flex items-center gap-2">
-                          <Edit
-                            className="size-5 text-gray-800"
-                            onClick={() => setSelectTaskToUpdate(task)}
-                          />
-                          <Trash2 
-                            className="size-5 text-red-800 ml-3"
-                            onClick={() => {setSelectTaskToDelete(task);setIsTaskDeleteModalOpen((prev) => !prev)}}
-                          />
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="6"
-                        className="text-center py-5 text-gray-500"
-                      >
-                        No records found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
           </div>
-        </div>
-        {selectTaskToUpdate !== null && (
-          <CreateTaskPopUp
-            onClose={() => setSelectTaskToUpdate(null)}
-            user={selectTaskToUpdate?.user}
-            onTaskCreated={fetchAllTasks}
-            task={selectTaskToUpdate}
-          />
-        )}
-       <DeleteConfirmDialog 
-          isModalOpen={isTaskDeleteModalOpen}
-          setIsModalOpen={setIsTaskDeleteModalOpen}
-          title="Delete Task"
-          content="Deleting this task cannot be undone. Do you want to continue?"
-          handleDelete={handleDeleteTask}
-          isLoading={isDeleteTaskLoading}
+        </DialogContent>
+      </Dialog>
+
+      {selectTaskToUpdate !== null && (
+        <CreateTaskPopUp
+          onClose={() => setSelectTaskToUpdate(null)}
+          user={selectTaskToUpdate?.user}
+          onTaskCreated={fetchAllTasks}
+          task={selectTaskToUpdate}
         />
-      </div>
-    </div>
+      )}
+
+      <DeleteConfirmDialog
+        isModalOpen={isTaskDeleteModalOpen}
+        setIsModalOpen={setIsTaskDeleteModalOpen}
+        title="Delete Task"
+        content="Deleting this task cannot be undone. Do you want to continue?"
+        handleDelete={handleDeleteTask}
+        isLoading={isDeleteTaskLoading}
+      />
+    </>
   );
 };
 

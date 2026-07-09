@@ -4,13 +4,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
-import { X, Upload, FileText, PenLine } from "lucide-react";
+import { Upload, FileText, PenLine } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { Dialog } from "@headlessui/react";
 import { useParams } from "next/navigation";
 import { getUserData } from "@/app/lib/auth";
-import Button from "../Common/Elements/Button";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const TextEditor = dynamic(() => import("../Plugins/RTE/TextEditor"), {
   ssr: false,
@@ -219,49 +230,57 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
     onClose();
   };
 
-  if (!isOpen) return null;
-
   const isEdit = !!editData?.id;
 
   return (
     <>
-      <div
-        className="fixed inset-0 min-h-screen text-gray-700 bg-black bg-opacity-50 flex items-center justify-center z-10"
-        style={{ marginTop: 0 }}
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open && !saveLoading && !uploadLoading) {
+            tryClose();
+          }
+        }}
       >
-        <div className="bg-white rounded-lg w-[90%] max-w-[1000px] flex flex-col relative max-h-[90vh] overflow-y-auto">
-          <button
-            type="button"
-            onClick={tryClose}
-            className="absolute top-3.5 right-3.5 text-gray-400 hover:bg-gray-100 rounded-full p-1 z-10"
-          >
-            <X className="size-6" />
-          </button>
-
-          <div className="flex flex-col p-5 space-y-4">
-            <h2 className="text-xl font-semibold text-center sm:text-left px-1">
+        <DialogContent
+          className="max-h-[90vh] w-[90%] max-w-[1000px] overflow-y-auto sm:max-w-[1000px] scrollbar-hide"
+          overlayClassName="bg-black/30"
+        >
+          <DialogHeader>
+            <DialogTitle className="px-1 text-center text-xl text-foreground sm:text-left">
               {isEdit ? "Edit NDA" : "Create NDA"}
-            </h2>
+            </DialogTitle>
+            <DialogDescription className="px-1 text-center sm:text-left">
+              Create an NDA with the built-in editor or upload a document for e-sign.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="flex flex-col w-full">
-              <span className="text-xl font-semibold mb-2 px-1">NDA type</span>
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 px-4">
+          <div className="flex flex-col space-y-5">
+            <div className="flex w-full flex-col">
+              <span className="mb-2 px-1 text-xl font-semibold text-foreground">
+                NDA type
+              </span>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <button
                   type="button"
                   disabled={isEdit}
                   onClick={() => setNdaType("editor")}
-                  className={`flex items-center gap-3 p-4 rounded-lg border-2 text-left transition ${
+                  className={cn(
+                    "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors",
                     ndaType === "editor"
                       ? "border-primary bg-primary/5"
-                      : "border-gray-200 hover:border-gray-300"
-                  } ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
+                      : "border-border bg-card hover:border-primary/40 hover:bg-muted/30",
+                    isEdit && "cursor-not-allowed opacity-60",
+                  )}
                 >
-                  <PenLine className="size-8 text-primary shrink-0" />
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm sm:text-base">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/50">
+                    <PenLine className="size-5 text-secondary-foreground" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <div className="text-sm font-semibold text-foreground sm:text-base">
                       NDA editor
                     </div>
-                    <div className="text-sm text-gray-600 hidden sm:block">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       Write terms in the rich text editor
                     </div>
                   </div>
@@ -270,18 +289,22 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
                   type="button"
                   disabled={isEdit}
                   onClick={() => setNdaType("esign")}
-                  className={`flex items-center gap-3 p-4 rounded-lg border-2 text-left transition ${
+                  className={cn(
+                    "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors",
                     ndaType === "esign"
                       ? "border-primary bg-primary/5"
-                      : "border-gray-200 hover:border-gray-300"
-                  } ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
+                      : "border-border bg-card hover:border-primary/40 hover:bg-muted/30",
+                    isEdit && "cursor-not-allowed opacity-60",
+                  )}
                 >
-                  <FileText className="size-8 text-primary shrink-0" />
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm sm:text-base">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/50">
+                    <FileText className="size-5 text-secondary-foreground" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <div className="text-sm font-semibold text-foreground sm:text-base">
                       E-sign
                     </div>
-                    <div className="text-sm text-gray-600 hidden sm:block">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       Upload a document for NDA signing
                     </div>
                   </div>
@@ -289,146 +312,151 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
               </div>
             </div>
 
-            <div className="flex flex-col w-full">
-              <label className="text-xl font-semibold mb-1">Title</label>
-              <div className="px-4">
-                <input
-                  type="text"
-                  placeholder="NDA title"
-                  {...register("title", {
-                    required: "Title is required",
-                    maxLength: {
-                      value: 100,
-                      message: "Title cannot exceed 100 characters",
-                    },
-                  })}
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
-                />
-              </div>
+            <div className="flex w-full flex-col">
+              <Label htmlFor="nda-title" className="mb-1 px-1 text-xl font-semibold text-foreground">
+                Title
+              </Label>
+              <Input
+                id="nda-title"
+                type="text"
+                placeholder="NDA title"
+                {...register("title", {
+                  required: "Title is required",
+                  maxLength: {
+                    value: 100,
+                    message: "Title cannot exceed 100 characters",
+                  },
+                })}
+                className="h-11 w-full !bg-background"
+              />
               {errors.title && (
-                <p className="text-sm text-red-600 mt-1 px-4">
+                <p className="mt-1 text-sm text-destructive">
                   {errors.title.message}
                 </p>
               )}
             </div>
 
             {ndaType === "editor" ? (
-              <div className="flex flex-col w-full max-h-[500px]">
-                <label className="text-xl font-semibold mb-1">
+              <div className="flex w-full max-h-[500px] flex-col space-y-2">
+                <Label className="mb-1 text-xl font-semibold text-foreground">
                   NDA content
-                </label>
-                <Controller
-                  name="description"
-                  control={control}
-                  render={({ field }) => (
-                    <TextEditor
-                      content={field.value || ""}
-                      onChange={(value) => setValue("description", value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") e.preventDefault();
-                      }}
-                    />
-                  )}
-                />
+                </Label>
+                <div className="overflow-hidden rounded-xl border border-border bg-card p-3">
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field }) => (
+                      <TextEditor
+                        content={field.value || ""}
+                        onChange={(value) => setValue("description", value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") e.preventDefault();
+                        }}
+                      />
+                    )}
+                  />
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col w-full">
-                <label className="text-xl font-semibold mb-2">
+              <div className="flex w-full flex-col space-y-2">
+                <Label className="mb-2 text-xl font-semibold text-foreground">
                   Upload document for NDA signing
-                </label>
-                <div className="px-4">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,application/pdf"
-                    onChange={onFileInputChange}
-                  />
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        fileInputRef.current?.click();
-                      }
-                    }}
-                    onDrop={onDrop}
-                    onDragOver={onDragOver}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-10 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/40 hover:bg-gray-50/80 transition"
-                  >
-                    <Upload className="h-10 w-10 text-gray-400" />
-                    <p className="text-sm text-gray-600 text-center">
-                      Drag and drop a file here, or click to browse
-                    </p>
-                    {uploadLoading && (
-                      <div className="flex items-center gap-2">
-                        <LoaderSpinner size={24} className="text-blue-500"/>
-                        <p className="text-sm text-primary">Uploading…</p>
-                      </div>
-                    )}
-                    {fileId && (
-                      <p className="text-sm text-green-700 mt-2 font-medium">
-                        {originalFileName || "File attached"} (ready to save)
+                </Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,application/pdf"
+                  onChange={onFileInputChange}
+                />
+                <Card className="border-dashed">
+                  <CardContent className="p-0">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          fileInputRef.current?.click();
+                        }
+                      }}
+                      onDrop={onDrop}
+                      onDragOver={onDragOver}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl p-10 text-center transition hover:bg-muted/30"
+                    >
+                      <Upload className="h-10 w-10 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Drag and drop a file here, or click to browse
                       </p>
-                    )}
-                  </div>
-                </div>
+                      {uploadLoading && (
+                        <div className="flex items-center gap-2">
+                          <LoaderSpinner size={24} className="text-secondary-foreground" />
+                          <p className="text-sm text-secondary-foreground">Uploading...</p>
+                        </div>
+                      )}
+                      {fileId && (
+                        <p className="mt-2 text-sm font-medium text-success">
+                          {originalFileName || "File attached"} (ready to save)
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
-            <div className="w-full flex items-center justify-end mr-4 sm:mr-12 gap-2 pt-2">
+            <DialogFooter className="gap-2 border-t border-border bg-muted/30 sm:gap-2">
               <Button
-                type="Secondary"
-                label="Cancel"
+                type="button"
+                variant="outline"
                 disabled={saveLoading || uploadLoading}
                 onClick={tryClose}
-              />
+                className="px-3 py-3"
+              >
+                Cancel
+              </Button>
               <Button
-                type="Primary"
-                label={isEdit ? "Save" : "Create"}
+                type="button"
                 disabled={saveLoading || uploadLoading}
-                isLoading={saveLoading}
                 onClick={handleSave}
-              />
-            </div>
+                className="px-3 py-3"
+              >
+                {saveLoading ? (
+                  <LoaderSpinner size={18} className="text-primary-foreground" />
+                ) : null}
+                {isEdit ? "Save" : "Create"}
+              </Button>
+            </DialogFooter>
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={isOpenCancelConfirm}
-        onClose={() => setIsOpenCancelConfirm(false)}
-        className="relative z-50"
+        onOpenChange={(open) => !open && setIsOpenCancelConfirm(false)}
       >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <Dialog.Title className="text-lg text-gray-600 font-medium">
+        <DialogContent className="sm:max-w-sm" overlayClassName="bg-black/30">
+          <DialogHeader>
+            <DialogTitle className="text-lg text-foreground">
                 Discard changes?
-              </Dialog.Title>
-              <button
-                type="button"
-                onClick={() => setIsOpenCancelConfirm(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="text-sm text-gray-700 py-2">
+            </DialogTitle>
+            <DialogDescription className="py-2 text-sm text-muted-foreground">
               Your changes will not be saved.
-            </p>
-            <div className="flex items-center justify-end gap-2 mt-4">
-              <Button
-                type="Secondary"
-                label="Keep editing"
-                onClick={() => setIsOpenCancelConfirm(false)}
-              />
-              <Button
-                type="Primary"
-                label="Discard"
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 border-t border-border bg-muted/30 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="px-3 py-3"
+              onClick={() => setIsOpenCancelConfirm(false)}
+            >
+              Keep editing
+            </Button>
+            <Button
+                type="button"
+                className="px-3 py-3"
                 onClick={() => {
                   setIsOpenCancelConfirm(false);
                   setEditData?.(null);
@@ -437,10 +465,11 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
                   setOriginalFileName("");
                   onClose();
                 }}
-              />
-            </div>
-          </Dialog.Panel>
-        </div>
+              >
+                Discard
+              </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </>
   );

@@ -21,3 +21,8 @@ export const TaskStatus = {
   PENDING: "pending",
   COMPLETED: "completed",
 };
+
+export const ThemeType = {
+  PRESET: "preset",
+  CUSTOM: "custom",
+};

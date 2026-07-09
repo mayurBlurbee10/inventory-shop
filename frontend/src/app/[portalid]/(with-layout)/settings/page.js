@@ -9,18 +9,20 @@ import {
   ChartLine,
   ChevronRight,
   Layout,
+  Palette,
   Plug,
   Users,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import PluginManagementPage from "@/components/Settings/PluginManagementPage";
+import ThemeContent from "@/components/Settings/ThemeContent";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
 
 function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: config } = useSelector((state) => state.portal);
   const isUpdatingRef = useRef(false);
 
   const tabFromURL = searchParams.get("tab");
@@ -81,6 +83,7 @@ function SettingsPage() {
     { id: "reports", label: "Reports", icon: ChartLine },
     { id: "users", label: "User Access", icon: Users },
     { id: "plugins", label: "Plugins", icon: Plug },
+    { id: "theme", label: "Theme", icon: Palette },
   ];
 
   const moreTabs = [
@@ -99,24 +102,29 @@ function SettingsPage() {
         return <ReportsContent />;
       case "plugins":
         return <PluginManagementPage />;
+      case "theme":
+        return <ThemeContent />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="bg-gray-50 rounded-lg flex justify-center relative w-full h-[87vh]">
-      <div className="hidden lg:block w-2/5 md:w-72 border-r border-[#dee2e6] p-3 bg-gray-50 text-gray-700 max-w-xs">
-        <h2 className="text-md text-gray-800 font-semibold mb-6">
-          Tools
-        </h2>
+    <div className="relative flex h-[87vh] w-full justify-center rounded-lg bg-background scrollbar-hide">
+      <div className="hidden w-2/5 max-w-xs border-r border-border bg-background p-3 text-muted-foreground md:w-72 lg:block scrollbar-hide">
+        <h2 className="text-md mb-6 font-semibold text-foreground">Tools</h2>
         <nav className="space-y-1">
           {tabs.map(({ id, label, icon: Icon }) => {
             const isActive = activeTab === id;
             const isMoreTab = id === "more";
             return (
-              <div key={id} className="relative" ref={isMoreTab ? moreMenuRef : null}>
-                <button
+              <div
+                key={id}
+                className="relative"
+                ref={isMoreTab ? moreMenuRef : null}
+              >
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     if (isMoreTab) {
                       setShowMorePopup((prev) => !prev);
@@ -124,53 +132,28 @@ function SettingsPage() {
                       handleTabChange(id);
                     }
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ease-in-out
-          ${isActive ? "font-semibold" : "hover:bg-accent"
-                    }`}
-                  style={{
-                    backgroundColor: isActive
-                      ? config.accentColor
-                      : "transparent",
-
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = config.accentColor;
-                      e.currentTarget.style.color = config.primaryColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = "";
-                    }
-                  }}
+                  className={cn(
+                    "h-auto w-full justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    "hover:bg-accent hover:text-secondary-foreground",
+                    isActive && "bg-accent font-semibold text-secondary-foreground",
+                  )}
                 >
                   <div className="flex items-center space-x-3">
-                    <div>
-                      <Icon
-                        className="w-5 h-5"
-                      />
-                    </div>
+                    <Icon className="h-5 w-5" />
                     <span className="text-left">{label}</span>
                   </div>
-                  <div>
-                    {isMoreTab && <ChevronRight
-                      className="w-4 h-4"
-                      style={{
-                      }}
-                    />}
-                  </div>
-                </button>
+                  {isMoreTab && <ChevronRight className="h-4 w-4" />}
+                </Button>
 
                 {isMoreTab && showMorePopup && (
-                  <div className="absolute top-0 left-full ml-3 w-72 bg-white rounded-2xl border border-gray-200 shadow-2xl p-2 z-50">
+                  <div className="absolute left-full top-0 z-50 ml-3 w-72 rounded-2xl border border-border bg-popover p-2 text-popover-foreground shadow-2xl">
                     {moreTabs.map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => handleTabChange(tab.id)}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-foreground transition-colors hover:bg-accent"
                       >
-                        <tab.icon className="w-5 h-5 text-gray-500" />
+                        <tab.icon className="h-5 w-5 text-muted-foreground" />
                         <span className="text-sm font-medium">{tab.label}</span>
                       </button>
                     ))}
@@ -181,11 +164,9 @@ function SettingsPage() {
           })}
         </nav>
       </div>
-      <div className="w-full p-6 overflow-y-auto mt-6 lg:mt-0">
+      <div className="mt-6 w-full overflow-y-auto p-6 scrollbar-hide lg:mt-0">
         {getActiveContent()}
       </div>
-
-
     </div>
   );
 }

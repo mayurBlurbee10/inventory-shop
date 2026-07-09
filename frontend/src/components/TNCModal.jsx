@@ -8,6 +8,16 @@ import PreviewModal from "@/components/FileExplorer/PreviewModal";
 import SignRequestModal from "@/components/SignRequestModal";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import { useSelector } from "react-redux";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const ESIGN_DONE_STATUSES = ["signed", "completed", "finalizing"];
 
@@ -255,118 +265,143 @@ function TNCModal({ onClose, user, email, password, page }) {
 
   return (
     <>
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-50 text-gray-800 w-full max-w-7xl py-5 flex relative rounded-lg overflow-hidden">
-        <div className="w-full h-full flex flex-col p-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold px-5">
-              {isEsignNda ? "Non-disclosure agreement" : "Terms and Conditions"}
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 pr-5"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-          <div className="mb-5">
-            {user && user?.id && page && !isEsignNda && page?.description && (
-              <div className="px-5">
+      <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent
+          className="flex max-h-[90vh] w-full max-w-5xl flex-col gap-0 overflow-hidden rounded-xl border border-border bg-background p-0 shadow-lg sm:max-w-5xl"
+          overlayClassName="bg-black/30"
+          showCloseButton={false}
+        >
+          <div className="relative flex min-h-0 w-full flex-1 flex-col">
+            <DialogHeader className="flex flex-row items-center justify-between gap-4 space-y-0 px-6 pb-3 pt-5">
+              <DialogTitle className="text-xl font-semibold text-foreground">
+                {isEsignNda ? "Non-disclosure agreement" : "Terms and Conditions"}
+              </DialogTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={onClose}
+                className="shrink-0 text-muted-foreground hover:text-foreground"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </DialogHeader>
+
+            <div className="min-h-0 flex-1 overflow-hidden px-6">
+              {user && user?.id && page && !isEsignNda && page?.description && (
                 <div
-                  className="w-full h-full px-5 pt-5 editor overflow-y-auto max-h-[60vh]"
+                  className="editor max-h-[55vh] min-h-[280px] w-full overflow-y-auto rounded-lg border border-border bg-background px-4 py-4 text-foreground"
                   dangerouslySetInnerHTML={{
                     __html: page.description,
                   }}
                   suppressHydrationWarning={true}
                 />
-              </div>
-            )}
-
-            {user && user?.id && page && isEsignNda && (
-              <div className="space-y-3 pb-2">
-                <PreviewModal
-                  variant="inline"
-                  isOpen={true}
-                  onClose={() => {}}
-                  fileId={page.fileId}
-                  fileName={
-                    page.originalFileName || page.title || "NDA document"
-                  }
-                />
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-sm px-6 mb-3 mt-2">
-            <input
-              type="checkbox"
-              className="form-checkbox h-4 w-4 text-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              checked={isAccepted}
-              disabled={isEsignNda && isSignRequestLoading}
-              onChange={handleAcceptanceChange}
-            />
-            <p>
-              {isEsignNda ? (
-                <>
-                  Check this box to confirm you have reviewed the NDA. Click{" "}
-                  <span className="font-medium">Agree</span> to open e-sign; when
-                  signing is complete you will be redirected to the dashboard.
-                </>
-              ) : (
-                <>
-                  By ticking, you are confirming that you have read, understood
-                  and agree to terms and conditions.
-                </>
               )}
-            </p>
-          </div>
-          <div className="flex items-center justify-end gap-2 px-5">
-            <button
-              type="button"
-              className="inline-flex items-center px-10 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 border border-gray-400 bg-gray-100 hover:bg-gray-50 transition-colors"
-              onClick={onClose}
-            >
-              Exit
-            </button>
-            <button
-              type="button"
-              disabled={agreeDisabled}
-              className="inline-flex items-center px-10 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleClose}
-            >
-              {isLoading ? (
-                <>
-                  <div className="flex items-center gap-2">
-                    <div className="spinner"></div>
+
+              {user && user?.id && page && isEsignNda && (
+                <div className="max-h-[55vh] min-h-[280px] w-full overflow-hidden rounded-lg border border-border bg-background">
+                  <PreviewModal
+                    variant="inline"
+                    isOpen={true}
+                    onClose={() => {}}
+                    fileId={page.fileId}
+                    fileName={
+                      page.originalFileName || page.title || "NDA document"
+                    }
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-start gap-3 px-6 py-4">
+              <Checkbox
+                id="tnc-accept"
+                checked={isAccepted}
+                disabled={isEsignNda && isSignRequestLoading}
+                onCheckedChange={(checked) =>
+                  handleAcceptanceChange({
+                    target: { checked: Boolean(checked) },
+                  })
+                }
+                className="mt-0.5"
+              />
+              <DialogDescription
+                id="tnc-accept-label"
+                className="cursor-pointer text-sm leading-6 text-foreground"
+                onClick={() => {
+                  if (isEsignNda && isSignRequestLoading) return;
+                  handleAcceptanceChange({
+                    target: { checked: !isAccepted },
+                  });
+                }}
+              >
+                {isEsignNda ? (
+                  <>
+                    Check this box to confirm you have reviewed the NDA. Click{" "}
+                    <span className="font-medium">Agree</span> to open e-sign;
+                    when signing is complete you will be redirected to the
+                    dashboard.
+                  </>
+                ) : (
+                  <>
+                    By ticking, you are confirming that you have read,
+                    understood and agree to terms and conditions.
+                  </>
+                )}
+              </DialogDescription>
+            </div>
+
+            <DialogFooter className="m-0 flex flex-row items-center justify-end gap-2 rounded-none border-0 bg-transparent p-0 px-6 pb-5 pt-0 sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                className="!px-3 !py-3"
+                onClick={onClose}
+              >
+                Exit
+              </Button>
+              <Button
+                type="button"
+                disabled={agreeDisabled}
+                className="!px-3 !py-3"
+                onClick={handleClose}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <LoaderSpinner
+                      size={18}
+                      className="text-primary-foreground"
+                    />
                     Agree
-                  </div>
-                </>
-              ) : (
-                "Agree"
-              )}
-            </button>
-          </div>
-        </div>
+                  </span>
+                ) : (
+                  "Agree"
+                )}
+              </Button>
+            </DialogFooter>
 
-        {isEsignNda && isSignRequestLoading && (
-          <div
-            className="absolute inset-0 z-20 flex items-center justify-center bg-gray-50/50"
-            aria-busy="true"
-            aria-label="Preparing e-sign"
-          >
-            <LoaderSpinner size={32} className="text-gray-500" />
+            {isEsignNda && isSignRequestLoading && (
+              <div
+                className="absolute inset-0 z-20 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+                aria-busy="true"
+                aria-label="Preparing e-sign"
+              >
+                <LoaderSpinner size={32} className="text-secondary-foreground" />
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </DialogContent>
+      </Dialog>
 
-    <SignRequestModal
-      isOpen={isSignModalOpen && Boolean(signUrl)}
-      onClose={handleSignModalClose}
-      signUrl={signUrl}
-      signRequest={signRequest}
-      setSignRequest={setSignRequest}
-      ndaSignFlag={true}
-    />
+      <SignRequestModal
+        isOpen={isSignModalOpen && Boolean(signUrl)}
+        onClose={handleSignModalClose}
+        signUrl={signUrl}
+        signRequest={signRequest}
+        setSignRequest={setSignRequest}
+        ndaSignFlag={true}
+      />
     </>
   );
 }

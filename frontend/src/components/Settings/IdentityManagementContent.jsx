@@ -1,239 +1,142 @@
 import React, { useState } from 'react';
-import Button from '../Common/Elements/Button';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { ThemeSwitch } from '@/components/ui/theme-switch';
+
+const PROVIDERS = [
+  {
+    key: 'microsoft',
+    title: 'Microsoft Authentication',
+    description: 'Enable sign-in with Microsoft Azure AD',
+    fields: [
+      { field: 'clientId', label: 'Client ID' },
+      { field: 'clientSecret', label: 'Client Secret' },
+      { field: 'tenantId', label: 'Tenant ID' },
+      { field: 'redirectUri', label: 'Redirect URI' },
+    ],
+  },
+  {
+    key: 'okta',
+    title: 'Okta Authentication',
+    description: 'Enable sign-in with Okta',
+    fields: [
+      { field: 'orgUrl', label: 'Organization URL' },
+      { field: 'clientId', label: 'Client ID' },
+      { field: 'clientSecret', label: 'Client Secret' },
+      { field: 'redirectUri', label: 'Redirect URI' },
+    ],
+  },
+  {
+    key: 'google',
+    title: 'Google Authentication',
+    description: 'Enable sign-in with Google',
+    fields: [
+      { field: 'clientId', label: 'Client ID' },
+      { field: 'clientSecret', label: 'Client Secret' },
+      { field: 'redirectUri', label: 'Redirect URI' },
+    ],
+  },
+  {
+    key: 'oauth',
+    title: 'OAuth 2.0',
+    description: 'Configure a custom OAuth 2.0 provider',
+    fields: [
+      { field: 'authorizationUrl', label: 'Authorization URL' },
+      { field: 'tokenUrl', label: 'Token URL' },
+      { field: 'clientId', label: 'Client ID' },
+      { field: 'clientSecret', label: 'Client Secret' },
+      { field: 'redirectUri', label: 'Redirect URI' },
+      { field: 'scope', label: 'Scope' },
+    ],
+  },
+];
 
 const IdentityManagementContent = () => {
   const [authProviders, setAuthProviders] = useState({
     microsoft: false,
     okta: false,
     google: false,
-    oauth: false
+    oauth: false,
   });
-  
+
   const [providerConfigs, setProviderConfigs] = useState({
-    microsoft: {
-      clientId: '',
-      clientSecret: '',
-      tenantId: '',
-      redirectUri: ''
-    },
-    okta: {
-      orgUrl: '',
-      clientId: '',
-      clientSecret: '',
-      redirectUri: ''
-    },
-    google: {
-      clientId: '',
-      clientSecret: '',
-      redirectUri: ''
-    },
+    microsoft: { clientId: '', clientSecret: '', tenantId: '', redirectUri: '' },
+    okta: { orgUrl: '', clientId: '', clientSecret: '', redirectUri: '' },
+    google: { clientId: '', clientSecret: '', redirectUri: '' },
     oauth: {
       authorizationUrl: '',
       tokenUrl: '',
       clientId: '',
       clientSecret: '',
       redirectUri: '',
-      scope: ''
-    }
+      scope: '',
+    },
   });
 
   const handleToggleProvider = (provider) => {
-    setAuthProviders(prev => ({
+    setAuthProviders((prev) => ({
       ...prev,
-      [provider]: !prev[provider]
+      [provider]: !prev[provider],
     }));
   };
 
   const handleConfigChange = (provider, field, value) => {
-    setProviderConfigs(prev => ({
+    setProviderConfigs((prev) => ({
       ...prev,
       [provider]: {
         ...prev[provider],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
-  };
-
-  const renderProviderConfig = (provider) => {
-    if (!authProviders[provider]) return null;
-
-    const configs = {
-      microsoft: [
-        { field: 'clientId', label: 'Client ID' },
-        { field: 'clientSecret', label: 'Client Secret' },
-        { field: 'tenantId', label: 'Tenant ID' },
-        { field: 'redirectUri', label: 'Redirect URI' }
-      ],
-      okta: [
-        { field: 'orgUrl', label: 'Organization URL' },
-        { field: 'clientId', label: 'Client ID' },
-        { field: 'clientSecret', label: 'Client Secret' },
-        { field: 'redirectUri', label: 'Redirect URI' }
-      ],
-      google: [
-        { field: 'clientId', label: 'Client ID' },
-        { field: 'clientSecret', label: 'Client Secret' },
-        { field: 'redirectUri', label: 'Redirect URI' }
-      ],
-      oauth: [
-        { field: 'authorizationUrl', label: 'Authorization URL' },
-        { field: 'tokenUrl', label: 'Token URL' },
-        { field: 'clientId', label: 'Client ID' },
-        { field: 'clientSecret', label: 'Client Secret' },
-        { field: 'redirectUri', label: 'Redirect URI' },
-        { field: 'scope', label: 'Scope' }
-      ]
-    };
-
-    return (
-      <div className="mt-4 space-y-4 border-t pt-4">
-        {configs[provider].map(({ field, label }) => (
-          <div key={field}>
-            <label className="block text-sm font-medium text-gray-700">
-              {label}
-            </label>
-            <input
-              type={field.includes('secret') ? 'password' : 'text'}
-              value={providerConfigs[provider][field]}
-              onChange={(e) => handleConfigChange(provider, field, e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            />
-          </div>
-        ))}
-      </div>
-    );
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap justify-center gap-2 sm:justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Identity Management</h3>
-        {/* <button className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">
-          Save Changes
-        </button> */}
-        <Button
-          type="Primary"
-          label="Save Changes"
-        />
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between">
+        <h3 className="text-lg font-medium text-foreground">
+          Identity Management
+        </h3>
+        <Button className="px-3 py-3">Save Changes</Button>
       </div>
 
-      <div className="bg-white shadow rounded-lg divide-y divide-gray-200">
-        {/* Microsoft Authentication */}
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div>
-                <h4 className="text-lg font-medium text-gray-900">Microsoft Authentication</h4>
-                <p className="text-sm text-gray-500">Enable sign-in with Microsoft Azure AD</p>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleToggleProvider('microsoft')}
-                className={`
-                  relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${authProviders.microsoft ? 'bg-blue-600' : 'bg-gray-200'}
-                `}
-              >
-                <span
-                  className={`
-                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                    ${authProviders.microsoft ? 'translate-x-5' : 'translate-x-0'}
-                  `}
+      <Card className="divide-y divide-border">
+        {PROVIDERS.map(({ key, title, description, fields }) => {
+          const isEnabled = authProviders[key];
+          return (
+            <div key={key} className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg font-medium text-foreground">{title}</h4>
+                  <p className="text-sm text-muted-foreground">{description}</p>
+                </div>
+                <ThemeSwitch
+                  checked={isEnabled}
+                  onCheckedChange={() => handleToggleProvider(key)}
                 />
-              </button>
-            </div>
-          </div>
-          {renderProviderConfig('microsoft')}
-        </div>
+              </div>
 
-        {/* Okta Authentication */}
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div>
-                <h4 className="text-lg font-medium text-gray-900">Okta Authentication</h4>
-                <p className="text-sm text-gray-500">Enable sign-in with Okta</p>
-              </div>
+              {isEnabled && (
+                <div className="mt-4 space-y-4 border-t border-border pt-4">
+                  {fields.map(({ field, label }) => (
+                    <div key={field} className="space-y-2">
+                      <Label htmlFor={`${key}-${field}`}>{label}</Label>
+                      <Input
+                        id={`${key}-${field}`}
+                        type={field.toLowerCase().includes('secret') ? 'password' : 'text'}
+                        value={providerConfigs[key][field]}
+                        onChange={(e) => handleConfigChange(key, field, e.target.value)}
+                        className="h-10 !bg-background"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleToggleProvider('okta')}
-                className={`
-                  relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${authProviders.okta ? 'bg-blue-600' : 'bg-gray-200'}
-                `}
-              >
-                <span
-                  className={`
-                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                    ${authProviders.okta ? 'translate-x-5' : 'translate-x-0'}
-                  `}
-                />
-              </button>
-            </div>
-          </div>
-          {renderProviderConfig('okta')}
-        </div>
-
-        {/* Google Authentication */}
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div>
-                <h4 className="text-lg font-medium text-gray-900">Google Authentication</h4>
-                <p className="text-sm text-gray-500">Enable sign-in with Google</p>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleToggleProvider('google')}
-                className={`
-                  relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${authProviders.google ? 'bg-blue-600' : 'bg-gray-200'}
-                `}
-              >
-                <span
-                  className={`
-                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                    ${authProviders.google ? 'translate-x-5' : 'translate-x-0'}
-                  `}
-                />
-              </button>
-            </div>
-          </div>
-          {renderProviderConfig('google')}
-        </div>
-
-        {/* OAuth2.0 Generic */}
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div>
-                <h4 className="text-lg font-medium text-gray-900">OAuth 2.0</h4>
-                <p className="text-sm text-gray-500">Configure a custom OAuth 2.0 provider</p>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={() => handleToggleProvider('oauth')}
-                className={`
-                  relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                  ${authProviders.oauth ? 'bg-blue-600' : 'bg-gray-200'}
-                `}
-              >
-                <span
-                  className={`
-                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                    ${authProviders.oauth ? 'translate-x-5' : 'translate-x-0'}
-                  `}
-                />
-              </button>
-            </div>
-          </div>
-          {renderProviderConfig('oauth')}
-        </div>
-      </div>
+          );
+        })}
+      </Card>
     </div>
   );
 };

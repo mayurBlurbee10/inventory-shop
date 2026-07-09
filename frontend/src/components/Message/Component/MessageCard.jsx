@@ -10,8 +10,11 @@ import React, {
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useSocket } from "@/app/lib/useSocket";
 import { getUserInitials } from "@/utils/helper";
-import { useSelector } from "react-redux";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 
 const formatMsgTime = (dateStr) => {
   if (!dateStr) return "";
@@ -40,7 +43,6 @@ const MessageCard = ({
   const [expandedMessages, setExpandedMessages] = useState(new Set());
   const { socket, connected, onlineUserIds } = useSocket();
   const useRealtime = Boolean(currentUserId && portalId && selectedUser?.id);
-  const { data: config } = useSelector((state) => state.portal);
   const isSelectedUserOnline =
     selectedUser?.online || onlineUserIds.includes(selectedUser?.id);
 
@@ -149,54 +151,51 @@ const MessageCard = ({
   }, [messages]);
 
   return (
-    <div
-      className="bg-white flex flex-col h-full min-h-0"
-      style={{
-        "--accent": config?.accentColor || "#2563EB",
-        "--primary": config?.primaryColor || "#ffffff",
-        "--secondary": config?.secondaryColor || "#2563EB",
-      }}
-    >
+    <div className="flex h-full min-h-0 flex-col bg-card text-card-foreground">
       {/* Header */}
-      <div className="flex items-center justify-between border-b px-4 py-3 bg-white shrink-0">
+      <div className="flex shrink-0 items-center justify-between border-b border-border bg-card px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
-              className="text-gray-700 hover:text-gray-900 font-semibold"
+              variant="ghost"
+              size="icon-sm"
               onClick={onBack}
               aria-label="Back"
+              className="rounded-full"
             >
               <ArrowLeft className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
-          <div className="relative h-10 w-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary)] flex items-center justify-center mr-3 shrink-0">
-            <span className="text-sm font-bold">
-              {getUserInitials(selectedUser?.firstName + ' ' + selectedUser?.lastName)}
-            </span>
+          <div className="relative mr-3 shrink-0">
+            <Avatar className="h-10 w-10 bg-primary text-primary-foreground">
+              <AvatarFallback className="bg-primary text-sm font-bold text-primary-foreground">
+                {getUserInitials(selectedUser?.firstName + " " + selectedUser?.lastName)}
+              </AvatarFallback>
+            </Avatar>
             <span
-              className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                isSelectedUserOnline ? "bg-green-500" : "bg-gray-400"
+              className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-border ${
+                isSelectedUserOnline ? "bg-success" : "bg-muted-foreground"
               }`}
               aria-label={isSelectedUserOnline ? "Online" : "Offline"}
             />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-black truncate">
+            <p className="truncate text-sm font-semibold text-foreground">
               {selectedUser?.firstName} {selectedUser?.lastName}
             </p>
-            <p className="text-xs text-black truncate">
+            <p className="truncate text-xs text-muted-foreground">
               {selectedUser?.email ?? ""}
             </p>
             <div className="flex items-center gap-1">
               <span
                 className={`h-2 w-2 rounded-full ${
-                  isSelectedUserOnline ? "bg-green-500" : "bg-gray-400"
+                  isSelectedUserOnline ? "bg-success" : "bg-muted-foreground"
                 }`}
               />
               <p
                 className={`text-xs ${
-                  isSelectedUserOnline ? "text-green-600" : "text-gray-500"
+                  isSelectedUserOnline ? "text-success" : "text-muted-foreground"
                 }`}
               >
                 {isSelectedUserOnline ? "Online" : "Offline"}
@@ -208,10 +207,10 @@ const MessageCard = ({
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50 hidden-scrollbar relative">
+      <div className="relative flex-1 space-y-3 overflow-y-auto bg-muted/30 px-4 py-4 hidden-scrollbar">
         {messagesLoading && (
-          <div className="flex justify-center items-center h-full text-gray-500 text-sm">
-            <LoaderSpinner size={32}  />
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            <LoaderSpinner size={32} className="text-secondary-foreground" />
           </div>
         )}
         {!messagesLoading &&
@@ -228,38 +227,41 @@ const MessageCard = ({
                 }`}
               >
                 {/* Message Bubble */}
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-sm text-sm ${
+                <Card
+                  className={`max-w-[75%] rounded-2xl shadow-sm ${
                     isCurrentUser
-                      ? "bg-[var(--primary)] text-[var(--secondary)] rounded-br-md"
-                      : "bg-white border border-gray-200 rounded-bl-md text-gray-700"
+                      ? "rounded-br-md border-border bg-primary text-primary-foreground"
+                      : "rounded-bl-md border-border bg-card text-foreground"
                   }`}
                 >
-                  <div
-                    className={`break-words ${
-                      isExpanded ? "" : "line-clamp-2 overflow-hidden"
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-
-                  {needsToggle && (
-                    <button
-                      type="button"
-                      onClick={() => toggleExpandMessage(msg.id)}
-                      className={`text-xs mt-1 font-semibold hover:font-bold ${
-                        isCurrentUser
-                          ? "text-[var(--accent)] hover:text-gray-200"
-                          : "text-gray-500 hover:text-gray-700"
+                  <CardContent className="px-4 py-2 text-sm">
+                    <div
+                      className={`break-words ${
+                        isExpanded ? "" : "line-clamp-2 overflow-hidden"
                       }`}
                     >
-                      {isExpanded ? "Show Less" : "Show More"}
-                    </button>
-                  )}
-                </div>
+                      {msg.text}
+                    </div>
+
+                    {needsToggle && (
+                      <Button
+                        type="button"
+                        variant="link"
+                        onClick={() => toggleExpandMessage(msg.id)}
+                        className={`mt-1 h-auto p-0 text-xs font-semibold ${
+                          isCurrentUser
+                            ? "text-primary-foreground/80 hover:text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {isExpanded ? "Show Less" : "Show More"}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Timestamp */}
-                <span className="text-xs text-gray-400 mt-1 px-1">
+                <span className="mt-1 px-1 text-xs text-muted-foreground">
                   {msg.time}
                 </span>
               </div>
@@ -269,11 +271,11 @@ const MessageCard = ({
       </div>
 
       {/* Input Box */}
-      <div className="border-t px-4 py-3 bg-white flex items-center gap-2 shrink-0">
-        <input
+      <div className="flex shrink-0 items-center gap-2 border-t border-border bg-card px-4 py-3">
+        <Input
           ref={inputBoxRef}
           type="text"
-          className="flex-1 min-h-[44px] text-gray-600 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          className="min-h-[44px] flex-1 !bg-background text-foreground"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -285,11 +287,11 @@ const MessageCard = ({
           }}
           disabled={!useRealtime || sending}
         />
-        <button
+        <Button
           type="button"
           onClick={handleSendOrSave}
           disabled={!input.trim() || !useRealtime || sending}
-          className="p-2 rounded-lg bg-[var(--primary)] transition-all duration-200 text-[var(--accent)] hover:bg-[var(--accent)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-3"
           aria-label="Send message"
         >
           {sending ? (
@@ -297,10 +299,10 @@ const MessageCard = ({
           ) : (
             <Send className="w-5 h-5" />
           )}
-        </button>
+        </Button>
       </div>
       {useRealtime && !connected && (
-        <p className="text-xs text-amber-600 px-4 pb-2 text-center">
+        <p className="px-4 pb-2 text-center text-xs text-warning">
           Connecting...
         </p>
       )}

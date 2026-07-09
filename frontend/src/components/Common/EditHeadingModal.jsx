@@ -1,18 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import Button from './Elements/Button';
-import { Controller, useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import TextEditor from '../Plugins/RTE/TextEditor';
-import { X } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { fetchWrapper } from '@/app/lib/fetchWrapper';
-import { setContent } from '@/store/services/contentService';
-import { toast } from 'react-toastify';
+ "use client";
+
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
+import TextEditor from "../Plugins/RTE/TextEditor";
+import { useParams } from "next/navigation";
+import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { setContent } from "@/store/services/contentService";
+import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const EditHeadingModal = ({ isOpen, onClose, data }) => {
   const [isLoading, setIsLoading] = useState(false);
   const params = useParams();
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const {
     register,
     handleSubmit,
@@ -79,68 +89,71 @@ const EditHeadingModal = ({ isOpen, onClose, data }) => {
   };
  
   return (
-    <>
-      {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/30 flex items-center justify-center z-10">
-          <div className="bg-white rounded-lg w-[90%] max-w-[1000px] flex flex-col relative max-h-[80vh] overflow-y-auto">
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 text-gray-600 hover:bg-gray-100 p-1 rounded-full"
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col justify-center items-center p-5 space-y-4"
-            >
-              <div className="flex flex-col w-full">
-                <label className="text-xl font-semibold mb-1">Title</label>
-                <div className="px-4">
-                  <input
-                    type="text"
-                    {...register("title")}
-                    readOnly
-                    className="w-full px-4 py-3 border rounded-lg outline-none text-text"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col w-full max-h-[500px]">
-                <label className="text-xl font-semibold mb-1">
-                  Description
-                </label>
-                <Controller
-                  name="value"
-                  control={control}
-                  render={({ field }) => (
-                    <TextEditor
-                      from={data?.title || "Heading"}
-                      content={field.value || ""}
-                      onChange={(value) => setValue("value", value)}
-                    />
-                  )}
-                />
-              </div>
-              <div className="w-full flex items-center justify-end mr-12 gap-2">
-                <Button
-                  type="Secondary"
-                  label="Cancel"
-                  disabled={isLoading}
-                  onClick={onClose}
-                />
-                <Button
-                  buttonType="submit"
-                  type="Primary"
-                  label={data?.value ? "Save" : "Add"}
-                  isLoading={isLoading}
-                  disabled={isLoading}
-                />
-              </div>
-            </form>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isLoading) onClose();
+      }}
+    >
+      <DialogContent
+        className="max-h-[80vh] w-[90%] max-w-[1000px] overflow-y-auto sm:max-w-[1000px]"
+        overlayClassName="bg-black/30"
+      >
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col items-center justify-center space-y-4"
+        >
+          <div className="flex w-full flex-col space-y-2">
+            <Label htmlFor="heading-title" className="text-xl font-semibold text-foreground">
+              Title
+            </Label>
+            <Input
+              id="heading-title"
+              type="text"
+              {...register("title")}
+              readOnly
+              className="w-full !bg-background h-10"
+            />
           </div>
-        </div>
-      )}
-    </>
+
+          <div className="flex w-full max-h-[500px] flex-col space-y-2">
+            <Label className="text-xl font-semibold text-foreground ">
+              Description
+            </Label>
+            <Controller
+              name="value"
+              control={control}
+              render={({ field }) => (
+                <TextEditor
+                  from={data?.title || "Heading"}
+                  content={field.value || ""}
+                  onChange={(value) => setValue("value", value)}
+                />
+              )}
+            />
+          </div>
+
+          <DialogFooter className="ml-auto w-auto flex-row justify-end gap-2 border-t-0 bg-transparent p-3 pt-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading}
+              onClick={onClose}
+              className="px-3 py-3"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="px-3 py-3"
+            >
+              {isLoading ? "Saving..." : data?.value ? "Save" : "Add"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

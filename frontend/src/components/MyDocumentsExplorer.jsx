@@ -26,7 +26,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Select from "react-select";
+import ReactSelect from "react-select";
 import { useParams, useRouter } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { toast } from "react-toastify";
@@ -35,11 +35,244 @@ import SendforSignatureDialog from "./SendForSignature";
 import { getUserData } from "@/app/lib/auth";
 import SignRequestModal from "./SignRequestModal";
 import { useSelector } from "react-redux";
-import Button from "./Common/Elements/Button";
 import Editor from "./Editor";
 import RenameDocumentModal from "./Common/RenameDocumentModal";
 import moment from "moment";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { ThemeSwitch } from "./ui/theme-switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Card, CardContent } from "./ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+
+const FileActionsMenu = ({
+  file,
+  variant = "list",
+  listType,
+  fromAdvisor,
+  esignAvailable,
+  isSignLoading,
+  onPreview,
+  onDownload,
+  onShare,
+  onMove,
+  onEdit,
+  onRename,
+  onDelete,
+  onRequestSignature,
+  onSelfSign,
+}) => {
+  const isList = variant === "list";
+  const TriggerIcon = isList ? EllipsisVertical : Ellipsis;
+
+  if (isList && (fromAdvisor || listType === "shared")) {
+    return null;
+  }
+
+  if (!isList && file.type === "folder" && listType === "shared") {
+    return null;
+  }
+
+  const menuItemClass =
+    "flex items-center gap-2 px-3 py-2 text-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer";
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="icons"
+            size="icon-sm"
+            className="relative z-10 rounded-full text-muted-foreground hover:bg-accent"
+            onClick={(e) => e.stopPropagation()}
+          />
+        }
+      >
+        <TriggerIcon className="h-4 w-4 text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="z-50 w-44 border-border bg-popover p-1">
+        {!isList && file.type === "file" && (
+          <DropdownMenuItem
+            className={menuItemClass}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview();
+            }}
+          >
+            <Eye className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span>View</span>
+          </DropdownMenuItem>
+        )}
+
+        {!isList &&
+          file.type === "file" &&
+          (listType !== "shared" || file.currentUserRole !== "viewer") && (
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDownload();
+              }}
+            >
+              <Download className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Download</span>
+            </DropdownMenuItem>
+          )}
+
+        {!isList && listType !== "shared" && file.currentUserRole !== "viewer" && (
+          <DropdownMenuItem
+            className={menuItemClass}
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare();
+            }}
+          >
+            <Share2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span>Share</span>
+          </DropdownMenuItem>
+        )}
+
+        {listType !== "shared" && (
+          <>
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                onMove();
+              }}
+            >
+              <FolderInput className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Move</span>
+            </DropdownMenuItem>
+
+            {file.type === "file" && esignAvailable && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger
+                  className={menuItemClass}
+                  disabled={isSignLoading}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Signature className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  {isSignLoading ? (
+                    <>
+                      <span>Signing</span>
+                      <LoaderSpinner
+                        size={16}
+                        className="ml-auto text-muted-foreground"
+                      />
+                    </>
+                  ) : (
+                    <span>Sign</span>
+                  )}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-48 border-border bg-popover">
+                  <DropdownMenuItem
+                    className={menuItemClass}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRequestSignature();
+                    }}
+                  >
+                    <UsersRoundIcon className="h-4 w-4 shrink-0" />
+                    <span>Request Signature</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className={menuItemClass}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelfSign();
+                    }}
+                  >
+                    <UserRound className="h-4 w-4 shrink-0" />
+                    <span>Sign Myself</span>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
+
+            {file.type === "file" && (
+              <DropdownMenuItem
+                className={menuItemClass}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <FilePenLine className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>Edit</span>
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRename();
+              }}
+            >
+              <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Rename</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+            >
+              <Trash2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        {!isList && listType === "shared" && file.type === "file" && (
+          <DropdownMenuItem
+            className={menuItemClass}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
+            <FilePenLine className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span>Edit</span>
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 const ShareModal = ({
   isOpen,
@@ -123,8 +356,6 @@ const ShareModal = ({
         };
       });
   }, [usersList, collaborator, user?.boxUserId, params.portalid]);
-
-  if (!isOpen) return null;
 
   const handleCopyLink = () => {
     if (sharedLink) {
@@ -274,10 +505,9 @@ const ShareModal = ({
     });
   };
 
-  const handleRoleChange = async (event, userId, collaborationId) => {
+  const handleRoleChange = async (newRole, userId, collaborationId) => {
     try {
       setCollabLoading(true);
-      const newRole = event.target.value;
       const obj = {
         method: "POST",
         headers: {
@@ -315,65 +545,57 @@ const ShareModal = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl w-full max-w-xl relative max-h-[90vh] overflow-y-auto hidden-scrollbar">
-        <div className="flex sticky items-center justify-between p-4 border-b bg-white top-0 z-10">
-          <h3 className="text-xl font-semibold text-gray-900">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className="w-full max-w-xl max-h-[90vh] overflow-y-auto hidden-scrollbar gap-0 p-0 sm:max-w-xl"
+      >
+        <DialogHeader className="sticky top-0 z-10 flex flex-row items-center justify-between border-b bg-card p-4 space-y-0">
+          <DialogTitle className="text-xl font-semibold text-foreground">
             {item?.name}
-          </h3>
-          <button
+          </DialogTitle>
+          <Button
+            variant="icons"
             onClick={onClose}
-            className="text-gray-600 hover:bg-gray-100 transition-colors p-1 rounded-full"
+            className="rounded-full text-muted-foreground hover:bg-accent"
           >
             <X size={20} />
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
 
-        <div className="space-y-6 p-6">
+        <div className="space-y-6 p-6 bg-card">
           {item?.type === "file" && (
             <div className="space-y-2">
               <div className="flex gap-4">
-                <label className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-foreground">
                   Share link
-                </label>
+                </Label>
                 <div className="flex items-center">
-                  <button
-                    onClick={() => handleToggleShare()}
-                    className={`
-                                        relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                                        ${sharedLink !== null
-                                            ? "bg-blue-600"
-                                            : "bg-gray-200"
-                                        }
-                                        `}
-                  >
-                    <span
-                      className={`
-                                            pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                                            ${sharedLink !== null
-                                                ? "translate-x-5"
-                                                : "translate-x-0"
-                                            }
-                                            `}
-                    />
-                  </button>
+                  <ThemeSwitch
+                    checked={sharedLink !== null}
+                    onCheckedChange={() => handleToggleShare()}
+                  />
                 </div>
               </div>
               {sharedLink !== null && (
                 <div className="flex items-center gap-3">
-                  <input
+                  <Input
                     type="text"
                     value={sharedLink}
                     readOnly
-                    className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none"
+                    className="flex-1 px-4 py-2.5 h-auto bg-muted border-border rounded-lg text-foreground text-sm"
                   />
                   <Button
+                    variant="outline"
                     onClick={handleCopyLink}
-                    icon={Copy}
-                    type="Secondary"
-                    label={copied ? "Copied!" : "Copy"}
-                  />
+                    className="text-muted-foreground hover:bg-accent !px-3 !py-3"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {copied ? "Copied!" : "Copy"}
+                  </Button>
                 </div>
               )}
             </div>
@@ -381,64 +603,149 @@ const ShareModal = ({
 
           {/* {item?.type === "folder" && ( */}
           <div className="space-y-2">
-            <label className="text-gray-800 font-semibold">
+            <Label className="text-foreground font-semibold">
               Share with user
-            </label>
-            <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap justify-center">
-              <Select
+            </Label>
+            <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+              <ReactSelect
                 key={collaborator.map((c) => c.id).join("-")}
-                className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px]"
-                classNamePrefix="Enter email address"
+                className="min-w-[250px] flex-1 text-sm"
+                classNamePrefix="share-user-select"
                 isClearable={true}
                 isSearchable={true}
                 value={userID}
                 onChange={(e) => setUserID(e)}
                 options={userList}
+                placeholder="Enter email address"
                 menuPortalTarget={
                   typeof document !== "undefined" ? document.body : null
                 }
                 menuPosition="fixed"
                 menuPlacement="auto"
                 styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: "40px",
+                    height: "40px",
+                    backgroundColor: "hsl(var(--background))",
+                    borderColor: state.isFocused
+                      ? "hsl(var(--ring))"
+                      : "hsl(var(--border))",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 3px hsl(var(--ring) / 0.5)"
+                      : "none",
+                    borderRadius: "0.5rem",
+                    "&:hover": {
+                      borderColor: "hsl(var(--border))",
+                    },
+                  }),
+                  valueContainer: (base) => ({
+                    ...base,
+                    height: "40px",
+                    padding: "0 0.75rem",
+                  }),
+                  indicatorsContainer: (base) => ({
+                    ...base,
+                    height: "40px",
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: "hsl(var(--foreground))",
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: "hsl(var(--foreground))",
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: "hsl(var(--muted-foreground))",
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    backgroundColor: "hsl(var(--popover))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "0.5rem",
+                    overflow: "hidden",
+                    zIndex: 50,
+                  }),
                   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                  menuList: (base) => ({
+                    ...base,
+                    backgroundColor: "hsl(var(--popover))",
+                    padding: "0.25rem",
+                  }),
                   option: (base, state) => ({
                     ...base,
-                    color: "#111827",
+                    borderRadius: "0.375rem",
                     backgroundColor: state.isSelected
-                      ? "#e0f2fe"
+                      ? "hsl(var(--accent))"
                       : state.isFocused
-                      ? "#f3f4f6"
-                      : "#ffffff",
+                        ? "hsl(var(--accent) / 0.7)"
+                        : "transparent",
+                    color:
+                      state.isSelected || state.isFocused
+                        ? "hsl(var(--accent-foreground))"
+                        : "hsl(var(--foreground))",
+                    cursor: "pointer",
+                    "&:active": {
+                      backgroundColor: "hsl(var(--accent))",
+                    },
                   }),
-                  singleValue: (base) => ({ ...base, color: "#111827" }),
-                  input: (base) => ({ ...base, color: "#111827" }),
-                  placeholder: (base) => ({ ...base, color: "#9ca3af" }),
+                  clearIndicator: (base) => ({
+                    ...base,
+                    color: "hsl(var(--muted-foreground))",
+                    "&:hover": {
+                      color: "hsl(var(--foreground))",
+                    },
+                  }),
+                  dropdownIndicator: (base) => ({
+                    ...base,
+                    color: "hsl(var(--muted-foreground))",
+                    "&:hover": {
+                      color: "hsl(var(--foreground))",
+                    },
+                  }),
+                  indicatorSeparator: (base) => ({
+                    ...base,
+                    backgroundColor: "hsl(var(--border))",
+                  }),
                 }}
               />
-              <select
-                className="py-2 px-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md text-gray-700"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option value="viewer">Viewer</option>
-                <option value="editor">Editor</option>
-              </select>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger className="!h-10 w-[120px] shrink-0 !bg-background px-3 text-foreground">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-border bg-popover text-popover-foreground">
+                  <SelectItem value="viewer" className="focus:bg-accent focus:text-accent-foreground">
+                    Viewer
+                  </SelectItem>
+                  <SelectItem value="editor" className="focus:bg-accent focus:text-accent-foreground">
+                    Editor
+                  </SelectItem>
+                </SelectContent>
+              </Select>
 
               <Button
-                 onClick={handleEmailShare}
-                 disabled={!userID}
-                 icon={Send}
-                 type="Primary"
-                 label="Send"
-                 isLoading={sendButtonLoading}
-              />
+                onClick={handleEmailShare}
+                disabled={!userID || sendButtonLoading}
+                className="h-10 shrink-0 px-3 py-2"
+              >
+                {sendButtonLoading ? (
+                  <LoaderSpinner size={20} className="text-primary-foreground" />
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Send
+                  </>
+                )}
+              </Button>
             </div>
           </div>
           {/* )} */}
           {/* {collaborator.slice(1).length > 0 && ( */}
           {collaborator.length > 0 && (
             <div>
-              <div className="text-gray-700 py-2 pr-2 grid grid-cols-2">
+              <div className="text-foreground py-2 pr-2 grid grid-cols-2">
                 <div className="font-semibold">Name</div>
                 <div className="font-semibold">Permissions</div>
                 <div></div>
@@ -450,32 +757,45 @@ const ShareModal = ({
                   return (
                     <div
                       key={idx}
-                      className="text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group grid grid-cols-2"
+                      className="text-foreground hover:bg-accent rounded-lg py-2 pr-2 group grid grid-cols-2"
                     >
                       <div className="flex items-center">
                         {content?.user.name}
                       </div>
                       <div className="flex items-center justify-between">
-                        <select
-                          className="py-2 px-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
+                        <Select
                           value={content?.role}
-                          onChange={(e) =>
-                            handleRoleChange(e, content?.user.id, content.id)
+                          onValueChange={(newRole) =>
+                            handleRoleChange(newRole, content?.user.id, content.id)
                           }
                         >
-                          <option value="viewer">Viewer</option>
-                          <option value="editor">Editor</option>
-                        </select>
+                          <SelectTrigger className="py-2 px-2 bg-card">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent
+                            className="bg-card text-foreground"
+                            alignItemWithTrigger={false}
+                          >
+                            <SelectItem value="viewer" className="bg-card focus:bg-accent">
+                              Viewer
+                            </SelectItem>
+                            <SelectItem value="editor" className="bg-card focus:bg-accent">
+                              Editor
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                         <div className="sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
+                          <Button
+                            variant="icons"
+                            size="icon-sm"
                             onClick={() => {
                               handelRemoveCollaborator(content);
                             }}
-                            className="p-1.5 hover:bg-gray-100 rounded-md text-gray-600"
+                            className="text-muted-foreground hover:bg-accent"
                             title="Remove"
                           >
                             <Trash2 size={16} />
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -486,13 +806,13 @@ const ShareModal = ({
           )}
         </div>
 
-      </div>
         {collabLoading && (
-          <div className="absolute top-0 left-0 rounded-xl h-full w-full bg-[#00000038] flex items-center justify-center">
-            <div className="border-blue-500 w-6 h-6 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="absolute top-0 left-0 rounded-xl h-full w-full bg-foreground/20 flex items-center justify-center">
+            <LoaderSpinner size={24} className="text-primary" />
           </div>
         )}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -529,13 +849,10 @@ function SharedFolderExplorer({
   const [deleteDropdown, setDeleteDropdown] = useState(null);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [signatureFile, setSignatureFile] = useState(null);
-  const [fileSelectedInGrid, seFileSelectedInGrid] = useState(null);
   const [isSignModalOpen, setIsSignModalOpen] = useState(false);
   const [selectedSignUrl, setSelectedSignUrl] = useState(null);
   const [isSignLoading, setIsSignLoading] = useState(false);
-  const dropdownRef = useRef(null);
   const deleteModalRef = useRef(null);
-  const nestedDropdownRef = useRef(null);
   const listContainerRef = useRef(null);
   const gridContainerRef = useRef(null);
   const { loading: isFilesLoading } = useSelector((state) => state.files);
@@ -546,14 +863,6 @@ function SharedFolderExplorer({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectFileToRename, setSelectFileToRename] = useState(null);
   const [sortedFilesList, setSortedFilesList] = useState([])
-  const [dropdownPlacement, setDropdownPlacement] = useState({
-    vertical: "bottom",
-    horizontal: "right",
-  });
-  const [gridDropdownPlacement, setGridDropdownPlacement] = useState({
-    vertical: "bottom",
-    horizontal: "right",
-  });
   const [columnSizing, setColumnSizing] = useState({
     select: 44,
     name: 320,
@@ -563,12 +872,6 @@ function SharedFolderExplorer({
   });
   const [columnSizingInfo, setColumnSizingInfo] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
-  const [activeSubmenu, setActiveSubmenu] = useState(null);
-  const submenuTriggerRef = useRef(null);
-  const [submenuPosition, setSubmenuPosition] = useState({
-    top: 0,
-    left: 0,
-  });
   const fetchPage = async () => {
     try {
       if (!params?.portalid) return;
@@ -595,26 +898,14 @@ function SharedFolderExplorer({
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && dropdownRef.current.contains(event.target)) {
-        return;
-      }
       if (
         deleteModalRef.current &&
         deleteModalRef.current.contains(event.target)
       ) {
         return;
       }
-      if (
-        nestedDropdownRef.current &&
-        nestedDropdownRef.current.contains(event.target)
-      ) {
-        return;
-      }
       setDeleteDropdown(null);
       setIsDeleteModalOpen(false);
-      seFileSelectedInGrid(null);
-      submenuTriggerRef.current = null;
-      setActiveSubmenu(null);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -629,108 +920,6 @@ function SharedFolderExplorer({
     setSelectedItem(folder);
     setPath((prev) => [...prev, folder]);
     setDeleteDropdown(null);
-  };
-
-  const getDropdownPlacement = (
-    triggerElement,
-    containerRef,
-    menuHeight = 320,
-    menuWidth = 176
-  ) => {
-    if (!triggerElement || typeof window === "undefined") {
-      return { vertical: "bottom", horizontal: "right" };
-    }
-
-    const rect = triggerElement.getBoundingClientRect();
-    const containerRect = containerRef?.current?.getBoundingClientRect() ?? {
-      top: 0,
-      left: 0,
-      right: window.innerWidth,
-      bottom: window.innerHeight,
-    };
-
-    const spaceBelow = containerRect.bottom - rect.bottom;
-    const spaceAbove = rect.top - containerRect.top;
-    const spaceRight = containerRect.right - rect.right;
-    const spaceLeft = rect.left - containerRect.left;
-
-    const vertical =
-      spaceBelow < menuHeight && spaceAbove > spaceBelow ? "top" : "bottom";
-    const horizontal =
-      spaceRight < menuWidth && spaceLeft > spaceRight ? "left" : "right";
-
-    return { vertical, horizontal };
-  };
-
-  const getSubmenuPosition = (
-    triggerElement,
-    submenuWidth = 192,
-    submenuHeight = 170,
-    offset = 4
-  ) => {
-    if (!triggerElement || typeof window === "undefined") {
-      return { top: 0, left: 0 };
-    }
-
-    const rect = triggerElement.getBoundingClientRect();
-    const openRight = rect.right + submenuWidth + offset <= window.innerWidth - 8;
-    const preferredLeft = openRight
-      ? rect.right + offset
-      : rect.left - submenuWidth - offset;
-    const left = Math.max(
-      8,
-      Math.min(preferredLeft, window.innerWidth - submenuWidth - 8)
-    );
-    const top = Math.max(
-      8,
-      Math.min(rect.top, window.innerHeight - submenuHeight - 8)
-    );
-
-    return { top, left };
-  };
-
-  const toggleSubmenu = (file, menuType, triggerElement) => {
-    if (
-      activeSubmenu?.fileId === file?.id &&
-      activeSubmenu?.menuType === menuType
-    ) {
-      setActiveSubmenu(null);
-      submenuTriggerRef.current = null;
-      return;
-    }
-
-    submenuTriggerRef.current = triggerElement;
-    setSubmenuPosition(getSubmenuPosition(triggerElement));
-    setActiveSubmenu({
-      fileId: file?.id,
-      menuType,
-    });
-  };
-
-  const handleDelete = (file, triggerElement) => {
-    if (
-      listType == "shared" &&
-      file.currentUserRole == "viewer" &&
-      view == "list"
-    ) {
-      return;
-    }
-    if (view === "list") {
-      setDropdownPlacement(
-        getDropdownPlacement(triggerElement, listContainerRef)
-      );
-    }
-    setDeleteDropdown((prev) => (prev?.id === file?.id ? null : file));
-  };
-
-  const handleSelect = (file, triggerElement) => {
-    if (view == "list") {
-      return;
-    }
-    setGridDropdownPlacement(
-      getDropdownPlacement(triggerElement, gridContainerRef)
-    );
-    seFileSelectedInGrid((prev) => (prev?.id === file?.id ? null : file));
   };
 
   const handlePreview = (fileId) => {
@@ -1121,10 +1310,11 @@ function SharedFolderExplorer({
     if (!header || !header.column.getCanResize()) return null;
 
     return (
-      <button
+      <Button
         type="button"
-        className={`absolute right-0 top-0 h-full w-3 cursor-col-resize z-20 group/resizer ${
-          isResizing ? "bg-blue-100/60" : "bg-transparent"
+        variant="ghost"
+        className={`absolute right-0 top-0 h-full w-3 cursor-col-resize z-20 rounded-none p-0 group/resizer ${
+          isResizing ? "bg-primary/10" : "bg-transparent"
         }`}
         onMouseDown={header.getResizeHandler()}
         onTouchStart={header.getResizeHandler()}
@@ -1133,10 +1323,10 @@ function SharedFolderExplorer({
       >
         <span
           className={`block mx-auto h-full w-[2px] rounded-full ${
-            isResizing ? "bg-blue-500" : "bg-gray-300 group-hover/resizer:bg-gray-500"
+            isResizing ? "bg-primary" : "bg-border group-hover/resizer:bg-muted-foreground"
           }`}
         />
-      </button>
+      </Button>
     );
   };
   
@@ -1145,17 +1335,17 @@ function SharedFolderExplorer({
       {view === "list" && (
         <div
           ref={listContainerRef}
-          className="min-h-[600px] max-h-[600px] overflow-x-auto custom-scrollbar"
+          className="h-[600px] overflow-y-auto overflow-x-auto bg-background scrollbar-hide"
         >
-          <table className="min-w-full divide-y divide-gray-200 overflow-auto z-10">
+          <Table className="min-w-full divide-y divide-border z-10">
             {!currentFilesList || currentFilesList?.length === 0 ? (
-              <thead>
-                <tr>
-                  <th>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
                     <EmptyState checkLoading={isFilesLoading} />
-                  </th>
-                </tr>
-              </thead>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
             ) : (
               <>
                 <colgroup>
@@ -1171,100 +1361,101 @@ function SharedFolderExplorer({
                     </>
                   )}
                 </colgroup>
-                <thead className="custom-box-shadow">
-                  <tr>
+                <TableHeader className="custom-box-shadow sticky top-0 z-10 bg-background">
+                  <TableRow>
                     {!fromAdvisor && listType !== "shared" && (
-                      <th className="relative py-2.5">
+                      <TableHead className="relative py-2.5">
                         {renderColumnResizer("select", "Resize selection column")}
-                      </th>
+                      </TableHead>
                     )}
 
-                    <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                    <TableHead className="relative text-muted-foreground text-[13px] font-normal py-2.5 text-start font-lato">
                       <div className="flex items-center justify-start gap-2 mx-4">
-                        <span className="block cursor-pointer hover:text-gray-900" onClick={() => handleSort('name')}>Name</span>
+                        <span className="block cursor-pointer hover:text-foreground" onClick={() => handleSort('name')}>Name</span>
                         <div className="cursor-pointer" onClick={() => handleSort('name')}>
                           {sortConfig.key === 'name' ? (
                             sortConfig.direction === 'asc' ? (
-                              <ChevronUp className="h-4 w-4 text-black" />
+                              <ChevronUp className="h-4 w-4 text-foreground" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 text-black" />
+                              <ChevronDown className="h-4 w-4 text-foreground" />
                             )
                           ) : (
-                            <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                            <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
                           )}
                         </div>
                       </div>
                       {renderColumnResizer("name", "Resize name column")}
-                    </th>
+                    </TableHead>
                     {listType !== "loan" && (
                       <>
-                        <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                        <TableHead className="relative text-muted-foreground text-[13px] font-normal py-2.5 text-start font-lato">
                           <div className="flex items-center justify-start gap-2 mx-4">
-                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => handleSort('modified_at')}>Modified</span>
+                            <span className="block cursor-pointer hover:text-foreground" onClick={() => handleSort('modified_at')}>Modified</span>
                             <div className="cursor-pointer" onClick={() => handleSort('modified_at')}>
                               {sortConfig.key === 'modified_at' ? (
                                 sortConfig.direction === 'asc' ? (
-                                  <ChevronUp className="h-4 w-4 text-black" />
+                                  <ChevronUp className="h-4 w-4 text-foreground" />
                                 ) : (
-                                  <ChevronDown className="h-4 w-4 text-black" />
+                                  <ChevronDown className="h-4 w-4 text-foreground" />
                                 )
                               ) : (
-                                <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                                <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
                               )}
                             </div>
                           </div>
                           {renderColumnResizer("modified", "Resize modified column")}
-                        </th>
-                        <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                        </TableHead>
+                        <TableHead className="relative text-muted-foreground text-[13px] font-normal py-2.5 text-start font-lato">
                           <div className="flex items-center justify-start gap-2 mx-4">
-                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => handleSort('size')}>Size</span>
+                            <span className="block cursor-pointer hover:text-foreground" onClick={() => handleSort('size')}>Size</span>
                             <div className="cursor-pointer" onClick={() => handleSort('size')}>
                               {sortConfig.key === 'size' ? (
                                 sortConfig.direction === 'asc' ? (
-                                  <ChevronUp className="h-4 w-4 text-black" />
+                                  <ChevronUp className="h-4 w-4 text-foreground" />
                                 ) : (
-                                  <ChevronDown className="h-4 w-4 text-black" />
+                                  <ChevronDown className="h-4 w-4 text-foreground" />
                                 )
                               ) : (
-                                <ChevronsUpDown className="h-4 w-4 text-gray-400" />
+                                <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
                               )}
                             </div>
                           </div>
                           {renderColumnResizer("size", "Resize size column")}
-                        </th>
-                        <th className="relative text-[#767676] text-[13px] font-normal py-2.5 text-start font-lato">
+                        </TableHead>
+                        <TableHead className="relative text-muted-foreground text-[13px] font-normal py-2.5 text-start font-lato">
                           <span className="sr-only">Actions</span>
                           {renderColumnResizer("actions", "Resize actions column")}
-                        </th>
+                        </TableHead>
                       </>
                     )}
-                  </tr>
-                </thead>
+                  </TableRow>
+                </TableHeader>
 
-                <tbody className="w-full divide-y divide-y-gray-200">
+                <TableBody className="w-full divide-y divide-border">
                   {sortedFilesList &&
                     sortedFilesList.length > 0 &&
                     sortedFilesList.map((file, index) => (
-                      <tr
+                      <TableRow
                         key={index}
-                        className={`group hover:bg-[#e4f4ff66] border-l-2 border-l-white hover:border-l-cyan-700 active:bg-[#E4F4FF] ${selectedBulkItems.includes(file?.id) && "bg-[#e4f4ff66]"}`}
+                        className={`group hover:bg-accent border-l-2 border-l-transparent hover:border-l-primary active:bg-accent ${selectedBulkItems.includes(file?.id) && "bg-accent"}`}
                       >
                         {!fromAdvisor && listType !== "shared" && (
-                          <td className="py-3 pl-4">
-                            <input
+                          <TableCell className="py-3 pl-4">
+                            <Input
                               type="checkbox"
-                              className="form-checkbox h-4 w-4 text-blue-600 cursor-pointer"
+                              className="form-checkbox h-4 w-4 text-primary cursor-pointer w-4"
                               checked={selectedBulkItems.includes(file?.id)}
                               onChange={(e) =>
                                 handleCheckboxChange(file?.id, e.target.checked)
                               }
                             />
-                          </td>
+                          </TableCell>
                         )}
 
-                        <td className="py-1">
-                          <button
-                            className={`text-sm text-black font-lato group-hover:text-[#1a5976] max-w-64 w-full text-start mx-4 ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
+                        <TableCell className="py-1">
+                          <Button
+                            variant="ghost"
+                            className={`h-auto px-3 py-3 text-sm text-foreground font-lato group-hover:text-primary max-w-64 w-full justify-start text-start mx-4 font-normal ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                             onClick={() =>
                               file?.type === "folder" && handleFolderClick(file)
                             }
@@ -1272,56 +1463,52 @@ function SharedFolderExplorer({
                           >
                             <div className="flex items-center justify-start gap-3">
                               {file.type === "folder" ? (
-                                <Folder className="h-5 w-5 text-[#3c4043]" />
+                                <Folder className="h-5 w-5 text-muted-foreground" />
                               ) : (
-                                <File className="h-5 w-5 text-[#3c4043]" />
+                                <File className="h-5 w-5 text-muted-foreground" />
                               )}
-                              <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56" title={file?.name}>
+                              <p className="text-foreground mt-1 font-semibold text-sm truncate max-w-56" title={file?.name}>
                                 {file?.name}
                               </p>
                             </div>
-                          </button>
-                        </td>
+                          </Button>
+                        </TableCell>
                         {listType !== "loan" && (
                           <>
-                            <td className="py-1">
-                              <p className="text-sm text-[#767676] font-lato group-hover:text-[#1a5976] mx-4">
+                            <TableCell className="py-1">
+                              <p className="text-sm text-muted-foreground font-lato group-hover:text-primary mx-4">
                                 {/* today by Wealthportal Service Account */}
                                 {listType === "shared"
                                   ? getUserName(file)
                                   : moment(file?.modified_at).fromNow(false)}
                               </p>
-                            </td>
-                            <td>
-                              <p className="text-sm text-[#767676] font-lato group-hover:text-[#1a5976]">
+                            </TableCell>
+                            <TableCell>
+                              <p className="text-sm text-muted-foreground font-lato group-hover:text-primary">
                                 {/* 100.7 KB */}
                                 {formatSize(file?.size)}
                               </p>
-                            </td>
+                            </TableCell>
                           </>
                         )}
                         {listType !== "loan" && (
-                          <td className="py-1 pr-4 pl-10">
+                          <TableCell className="py-1 pr-4 pl-10">
                             <div className="flex items-center justify-end">
                               <div className="flex items-center justify-start gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                                 <div className="flex items-center justify-start gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                                   {/* FOR ONLY FILES */}
                                   {file.type === "file" && !fromAdvisor && (
-                                    <button
-                                      className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                                      onClick={(e) => {
+                                    <Button variant="icons" size="icon-sm" className="rounded-full text-muted-foreground hover:bg-accent" onClick={(e) => {
                                         e.stopPropagation();
                                         handlePreview(file?.id);
-                                        setDeleteDropdown(null);
                                       }}
                                     >
-                                      <Eye className="h-4 w-4 text-gray-600" />
-                                    </button>
+                                      <Eye className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
                                   )}
 
                                   {file.type === "file" && !fromAdvisor && (
-                                    <button
-                                      className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center ${listType === "shared" &&
+                                    <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" &&
                                         file.currentUserRole === "viewer"
                                           ? "hidden"
                                           : ""
@@ -1329,208 +1516,80 @@ function SharedFolderExplorer({
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDownload(file.id, file.name);
-                                        setDeleteDropdown(null);
                                       }}
                                       title="Download"
                                     >
-                                      <Download className="h-4 w-4 text-gray-600" />
-                                    </button>
+                                      <Download className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
                                   )}
 
                                   {!fromAdvisor && (
-                                    <button
-                                      className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center ${listType === "shared" ? "hidden" : ""
+                                    <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" ? "hidden" : ""
                                       } `}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleShare(file);
-                                        setDeleteDropdown(null);
                                       }}
                                       title="Share"
                                     >
-                                      <Share2 className="h-4 w-4 text-gray-600" />
-                                    </button>
+                                      <Share2 className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
                                   )}
                                 </div>
                               </div>
 
-                              <div className="relative">
-                                {!fromAdvisor && (
-                                  <button
-                                    className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10 ${listType === "shared" ? "hidden" : ""
-                                    }`}
-                                    onClick={(e) => handleDelete(file, e.currentTarget)}
-                                  >
-                                    <EllipsisVertical className="h-4 w-4 text-gray-600" />
-                                  </button>
-                                )}
-
-                                {/* OPTION DROPDOWN DONE*/}
-
-                                {deleteDropdown?.id === file?.id && (
-                                  <div
-                                    className={`absolute shadow w-40 bg-white rounded-lg z-20 ${
-                                      dropdownPlacement.vertical === "top"
-                                        ? "bottom-9 mb-1"
-                                        : "top-9 mt-1"
-                                    } ${
-                                      dropdownPlacement.horizontal === "left"
-                                        ? "right-0"
-                                        : "left-0"
-                                    }`}
-                                    ref={dropdownRef}
-                                  >
-                                    {listType !== "shared" && (
-                                      <>
-                                        <button
-                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIsMoveModalOpen((prev) => !prev);
-                                            setMoveItem(file);
-                                            setSelectedBulkItems([]);
-                                          }}
-                                        >
-                                          <FolderInput className="h-4 w-4 text-gray-600" />{" "}
-                                          Move
-                                        </button>
-                                        {file.type === "file" && esignAvailable && (
-                                          <div className="relative text-gray-600">
-                                            <button
-                                              className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 rounded-lg"
-                                              onClick={(event) => {
-                                                event.stopPropagation();
-                                                if (isSignLoading) return;
-                                                toggleSubmenu(
-                                                  file,
-                                                  "sign",
-                                                  event.currentTarget
-                                                );
-                                              }}
-                                              aria-expanded={
-                                                activeSubmenu?.fileId ===
-                                                  file?.id &&
-                                                activeSubmenu?.menuType ===
-                                                  "sign"
-                                              }
-                                            >
-                                              <Signature className="h-4 w-4 text-gray-600" />{" "}
-                                              {isSignLoading ? (
-                                                <>
-                                                  Signing{" "}
-                                                  <LoaderSpinner
-                                                    size={16}
-                                                    className="ml-auto text-gray-500"
-                                                  />
-                                                </>
-                                              ) : (
-                                                "Sign"
-                                              )}
-                                            </button>
-                                            <div
-                                              ref={nestedDropdownRef}
-                                              style={submenuPosition}
-                                              className={`fixed bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out w-48 z-[1300] ${
-                                                activeSubmenu?.fileId ===
-                                                  file?.id &&
-                                                activeSubmenu?.menuType ===
-                                                  "sign"
-                                                  ? "opacity-100 scale-100"
-                                                  : "opacity-0 scale-95 pointer-events-none"
-                                              }`}
-                                            >
-                                              <button
-                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-t-md"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setIsSignatureModalOpen(
-                                                    (prev) => !prev
-                                                  );
-                                                  setSignatureFile(file);
-                                                  setSelectedBulkItems([]);
-                                                  setActiveSubmenu(null);
-                                                }}
-                                              >
-                                                <UsersRoundIcon className="h-4 w-4 mr-2 shrink-0" />
-                                                Request Signature
-                                              </button>
-
-                                              <button
-                                                className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-b-md"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleSelfSign(file);
-                                                  setActiveSubmenu(null);
-                                                }}
-                                              >
-                                                <UserRound className="h-4 w-4 mr-2" />
-                                                Sign Myself
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                        {file.type === "file" && (
-                                          <button
-                                            className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
-                                            onClick={() => {
-                                              setIsEditorModalOpen(
-                                                (prev) => !prev
-                                              );
-                                              setEditorFile(file);
-                                            }}
-                                          >
-                                            <FilePenLine className="h-4 w-4 text-gray-600" />{" "}
-                                            Edit
-                                          </button>
-                                        )}
-                                        <button
-                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIsRenameModalOpen((prev) => !prev);
-                                            setSelectFileToRename((prev) => prev?.id === file?.id ? null : file);
-                                          }}
-                                        >
-                                          <Pencil className="h-4 w-4 text-gray-600" />
-                                          Rename
-                                        </button>
-                                        <button
-                                          className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIsDeleteModalOpen(
-                                              (prev) => !prev
-                                            );
-                                            setDeleteDropdown(file);
-                                          }}
-                                        >
-                                          <Trash2 className="h-4 w-4 text-gray-600" />{" "}
-                                          Delete
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
+                              <FileActionsMenu
+                                file={file}
+                                variant="list"
+                                listType={listType}
+                                fromAdvisor={fromAdvisor}
+                                esignAvailable={esignAvailable}
+                                isSignLoading={isSignLoading}
+                                onMove={() => {
+                                  setIsMoveModalOpen((prev) => !prev);
+                                  setMoveItem(file);
+                                  setSelectedBulkItems([]);
+                                }}
+                                onEdit={() => {
+                                  setIsEditorModalOpen((prev) => !prev);
+                                  setEditorFile(file);
+                                }}
+                                onRename={() => {
+                                  setIsRenameModalOpen((prev) => !prev);
+                                  setSelectFileToRename((prev) =>
+                                    prev?.id === file?.id ? null : file
+                                  );
+                                }}
+                                onDelete={() => {
+                                  setIsDeleteModalOpen((prev) => !prev);
+                                  setDeleteDropdown(file);
+                                }}
+                                onRequestSignature={() => {
+                                  setIsSignatureModalOpen((prev) => !prev);
+                                  setSignatureFile(file);
+                                  setSelectedBulkItems([]);
+                                }}
+                                onSelfSign={() => handleSelfSign(file)}
+                              />
                             </div>
-                          </td>
+                          </TableCell>
                         )}
-                      </tr>
+                      </TableRow>
                     ))}
-                </tbody>
+                </TableBody>
               </>
             )}
-          </table>
+          </Table>
         </div>
       )}
 
       {view === "grid" && (
         <div
           ref={gridContainerRef}
-          className="min-h-[600px] max-h-[600px] overflow-x-auto custom-scrollbar"
+          className="h-[600px] overflow-y-auto bg-background scrollbar-hide"
         >
           {!currentFilesList || currentFilesList?.length === 0 ? (
-            <div className="w-full h-full flex justify-center items-center">
+            <div className="w-full h-full flex justify-center items-center text-muted-foreground border-0 hover:bg-transparent">
               <EmptyState checkLoading={loading} />
             </div>
           ) : (
@@ -1546,11 +1605,12 @@ function SharedFolderExplorer({
                     key={index}
                     className={`col-span-${6 - cols} md:col-span-1`}
                   >
-                    <div
-                      className={`border border-[#e8e8e8] card-shadow hover:border-sky-500`}
+                    <Card
+                      className={`border border-border card-shadow hover:border-primary overflow-hidden shadow-sm`}
                     >
+                      <CardContent className="p-0">
                       <div
-                        className={`min-h-48 flex items-center justify-center bg-[#fbfbfb] ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
+                        className={`min-h-48 flex items-center justify-center bg-muted ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                         onClick={() =>
                           file?.type === "folder" && handleFolderClick(file)
                         }
@@ -1558,235 +1618,65 @@ function SharedFolderExplorer({
                         <div className="max-h-24 max-w-[80px] h-full w-full">
                           {/* <Folder className="flex-auto h-full w-full text-blue-500" /> */}
                           {file.type === "folder" ? (
-                            <Folder className="flex-auto h-full w-full text-blue-500" />
+                            <Folder className="flex-auto h-full w-full text-primary" />
                           ) : (
-                            <File className="flex-auto h-full w-full text-blue-500" />
+                            <File className="flex-auto h-full w-full text-primary" />
                           )}
                         </div>
                       </div>
                       <div className="py-2 px-2.5">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-1">
                           <h6
-                            className="text-sm font-medium text-black font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full"
+                            className="min-w-0 flex-1 text-sm font-medium text-foreground font-lato text-ellipsis overflow-hidden whitespace-nowrap"
                             title={file?.name}
                           >
                             {file?.name}
                           </h6>
 
-                          <div className="relative">
-                            <button
-                              className={`h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative z-10  ${file.type === "folder" && listType === "shared"
-                                  ? "hidden"
-                                  : ""
-                              }`}
-                              onClick={(e) => handleSelect(file, e.currentTarget)}
-                            >
-                              <Ellipsis className="h-4 w-4 text-gray-600" />
-                            </button>
-
-                            {/* OPTION DROPDOWN DONE*/}
-
-                            {fileSelectedInGrid?.id === file?.id && (
-                              <div
-                                className={`absolute shadow w-40 bg-white rounded-lg z-20 ${
-                                  gridDropdownPlacement.vertical === "top"
-                                    ? "bottom-9 mb-1"
-                                    : "top-9 mt-1"
-                                } ${
-                                  gridDropdownPlacement.horizontal === "left"
-                                    ? "right-0"
-                                    : "left-0"
-                                }`}
-                                ref={dropdownRef}
-                              >
-                                {file.type === "file" && (
-                                  <button
-                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handlePreview(file?.id);
-                                      setDeleteDropdown(null);
-                                    }}
-                                  >
-                                    <Eye className="h-4 w-4 text-gray-600" />
-                                    View
-                                  </button>
-                                )}
-                                {file.type === "file" &&
-                                  (listType !== "shared" ||
-                                    file.currentUserRole !== "viewer") && (
-                                    <button
-                                      className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownload(file.id, file.name);
-                                        setDeleteDropdown(null);
-                                      }}
-                                      title="Download"
-                                    >
-                                      <Download className="h-4 w-4 text-gray-600" />
-                                      Download
-                                    </button>
-                                  )}
-
-                                {listType !== "shared" && (
-                                  <button
-                                    className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${file.currentUserRole === "viewer"
-                                        ? "hidden"
-                                        : ""
-                                    }`}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleShare(file);
-                                      setDeleteDropdown(null);
-                                    }}
-                                    title="Share"
-                                  >
-                                    <Share2 className="h-4 w-4 text-gray-600" />{" "}
-                                    Share
-                                  </button>
-                                )}
-
-                                {listType !== "shared" && (
-                                  <button
-                                    className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
-                                    }`}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setIsMoveModalOpen((prev) => !prev);
-                                      setMoveItem(file);
-                                      setSelectedBulkItems([]);
-                                    }}
-                                  >
-                                    <FolderInput className="h-4 w-4 text-gray-600" />{" "}
-                                    Move
-                                  </button>
-                                )}
-                                {listType !== "shared" &&
-                                  file.type === "file" && esignAvailable && (
-                                    <div className="relative text-gray-600">
-                                      <button
-                                        className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 "
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          if (isSignLoading) return;
-                                          toggleSubmenu(
-                                            file,
-                                            "sign",
-                                            event.currentTarget
-                                          );
-                                        }}
-                                        aria-expanded={
-                                          activeSubmenu?.fileId === file?.id &&
-                                          activeSubmenu?.menuType === "sign"
-                                        }
-                                      >
-                                        <Signature className="h-4 w-4 text-gray-600" />{" "}
-                                        {isSignLoading ? (
-                                          <>
-                                            Signing{" "}
-                                            <LoaderSpinner
-                                              size={16}
-                                              className="ml-auto text-gray-500"
-                                            />
-                                          </>
-                                        ) : (
-                                          "Sign"
-                                        )}
-                                      </button>
-                                      <div
-                                        ref={nestedDropdownRef}
-                                        style={submenuPosition}
-                                        className={`fixed bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 transition-all duration-200 ease-in-out w-48 z-[1300] ${
-                                          activeSubmenu?.fileId === file?.id &&
-                                          activeSubmenu?.menuType === "sign"
-                                            ? "opacity-100 scale-100"
-                                            : "opacity-0 scale-95 pointer-events-none"
-                                        }`}
-                                      >
-                                        <button
-                                          className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-t-md"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIsSignatureModalOpen(
-                                              (prev) => !prev
-                                            );
-                                            setSignatureFile(file);
-                                            setSelectedBulkItems([]);
-                                            setActiveSubmenu(null);
-                                          }}
-                                        >
-                                          <UsersRoundIcon className="h-4 w-4 mr-2" />
-                                          Request Signature
-                                        </button>
-
-                                        <button
-                                          className="flex items-center w-full px-4 py-2 hover:bg-gray-200 pt-1 rounded-b-md"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleSelfSign(file);
-                                            setActiveSubmenu(null);
-                                          }}
-                                        >
-                                          <UserRound className="h-4 w-4 mr-2" />
-                                          Sign Myself
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                {file.type === "file" && (
-                                  <button
-                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
-                                    onClick={() => {
-                                      setIsEditorModalOpen(
-                                        (prev) => !prev
-                                      );
-                                      setEditorFile(file);
-                                    }}
-                                  >
-                                    <FilePenLine className="h-4 w-4 text-gray-600" />{" "}
-                                    Edit
-                                  </button>
-                                )}
-                                {listType !== "shared" && (
-                                  <button
-                                    className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 rounded-lg"
-                                   onClick={(e) => {
-                                     e.stopPropagation();
-                                     setIsRenameModalOpen((prev) => !prev);
-                                     setSelectFileToRename(file);
-                                   }}
-                                  >
-                                    <Pencil className="h-4 w-4 text-gray-600" />
-                                    Rename
-                                  </button>
-                                )}
-                                <button
-                                  className={`hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600 ${listType === "shared" ? "hidden" : ""
-                                  }`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsDeleteModalOpen((prev) => !prev);
-                                    setDeleteDropdown(file);
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4 text-gray-600" />{" "}
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-
-                           
-                          </div>
+                          <FileActionsMenu
+                            file={file}
+                            variant="grid"
+                            listType={listType}
+                            fromAdvisor={fromAdvisor}
+                            esignAvailable={esignAvailable}
+                            isSignLoading={isSignLoading}
+                            onPreview={() => handlePreview(file?.id)}
+                            onDownload={() => handleDownload(file.id, file.name)}
+                            onShare={() => handleShare(file)}
+                            onMove={() => {
+                              setIsMoveModalOpen((prev) => !prev);
+                              setMoveItem(file);
+                              setSelectedBulkItems([]);
+                            }}
+                            onEdit={() => {
+                              setIsEditorModalOpen((prev) => !prev);
+                              setEditorFile(file);
+                            }}
+                            onRename={() => {
+                              setIsRenameModalOpen((prev) => !prev);
+                              setSelectFileToRename(file);
+                            }}
+                            onDelete={() => {
+                              setIsDeleteModalOpen((prev) => !prev);
+                              setDeleteDropdown(file);
+                            }}
+                            onRequestSignature={() => {
+                              setIsSignatureModalOpen((prev) => !prev);
+                              setSignatureFile(file);
+                              setSelectedBulkItems([]);
+                            }}
+                            onSelfSign={() => handleSelfSign(file)}
+                          />
                         </div>
-                        <p className="text-xs text-gray-500 font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full">
+                        <p className="text-xs text-muted-foreground font-lato text-ellipsis overflow-hidden whitespace-nowrap w-full">
                           Modified today by Wealthportal Service Account
                         </p>
-                        <p className="text-xs text-gray-500 font-lato ">
+                        <p className="text-xs text-muted-foreground font-lato ">
                           {formatSize(file?.size)}
                         </p>
                       </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 ))}
             </div>

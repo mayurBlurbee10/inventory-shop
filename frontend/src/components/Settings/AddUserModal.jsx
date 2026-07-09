@@ -6,24 +6,25 @@ import { useParams } from "next/navigation";
 import { getUserData } from "@/app/lib/auth";
 import { toast } from "react-toastify";
 import { UserRole } from "@/config/constants";
-import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
-import Select from "react-select";
 import { setCurrentUser } from "@/store/services/userService";
-
-
-const customStyles = {
-    menu: (provided) => ({
-      ...provided,
-      zIndex: 1000,
-    }),
-    menuList: (provided) => ({
-      ...provided,
-      zIndex: 1000,
-      maxHeight: "150px",
-      overflowY: "auto",
-    }),
-  };
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, setFormData, handleModalClose, from }) => {
 
@@ -321,204 +322,209 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
       delete updatedUserData.companyName;
       delete updatedUserData.logo;
 
-      // ✅ Optional: show success toast or update local user state
-      console.log("User updated:", result.user);
       toast.success("Profile updated successfully");
       handleModalClose()
     } catch (error) {
       console.error("Failed to update user:", error);
-      alert("Failed to update profile: " + error.message);
+      toast.error("Failed to update profile: " + error.message);
     } finally {
       setIsLoading(false);
     }
   };
-  console.log("Updated User Details:", formData);
-
-
 
   return (
-    // <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    //   <div className="bg-white rounded-lg p-6 w-full max-w-md">
-    <form onSubmit={handleSubmit} className={`space-y-4 ${from === 'editProfile' ? "mt-2" : ""}`}>
-      <div className="px-6 space-y-4">
-      <div className="flex gap-4 w-full">
-        <div className="w-1/2">
-          <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-            <User className="h-4 w-4" />
-            First Name <span className="text-red-600">*</span>
-          </label>
-          <input
-            type="text"
-            required
-            className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-            value={formData.firstName}
-            onChange={(e) => handleFormChange("firstName", e.target.value)}
-          />
-        </div>
-        <div className="w-1/2">
-          <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-            <User className="h-4 w-4" />
-            Last Name <span className="text-red-600">*</span>
-          </label>
-          <input
-            type="text"
-            required
-            className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-            value={formData.lastName}
-            onChange={(e) => handleFormChange("lastName", e.target.value)}
-          />
-        </div>
-      </div>
-      <div>
-        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-          <Mail className="h-4 w-4" />
-          Email <span className="text-red-600">*</span>
-        </label>
-        <input
-          type="email"
-          required
-          disabled={from === 'editProfile'}
-          className={`mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed`}
-          value={formData.email}
-          onChange={handleEmailChange}
-        />
-      </div>
-      {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
-      <div>
-        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-          <Phone className="h-4 w-4" />
-          Phone No
-        </label>
-        <input
-          type="text"
-          // maxLength={16}
-          className={`mt-1 pl-2 block w-full text-gray-500 rounded-md border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 ${phoneError ? "border-red-500" : "border-gray-300 text-gray-500"
-            }`}
-          value={formData.phoneNo ?? ""}
-          onChange={handlePhoneChange}
-        />
-      </div>
-      {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
-      <div>
-        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-          <Briefcase className="h-4 w-4" />
-          Title <span className="text-red-600">*</span>
-        </label>
-        <input
-          type="text"
-          className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-          value={formData.title}
-          onChange={(e) => handleFormChange("title", e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-          <Building className="h-4 w-4" />
-          Company Name <span className="text-red-600">*</span>
-        </label>
-        <input
-          type="text"
-          className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-          value={formData.companyName}
-          onChange={(e) => handleFormChange("companyName", e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-          <UserPlus className="h-4 w-4" />
-          Role <span className="text-red-600">*</span>
-        </label>
-        <Select
-          className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
-          classNamePrefix="Choose Role"
-          isClearable={false}
-          isSearchable={false}
-          value={roleOptions?.find(option => option.value === formData.role)}
-          onChange={(e) => {
-            handleFormChange("role", e ? e.value : null);
-          }}
-          options={roleOptions || []}
-          placeholder="Select role..."
-          isDisabled={from === "editProfile"}
-          styles={customStyles}
-        />
-      </div>
-      <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Briefcase className="h-4 w-4" />
-            NDA Pages
-          </label>
-          <Select
-            className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
-            classNamePrefix="Choose NDA pages"
-            isClearable={true}
-            isSearchable={true}
-            value={formData.ndaPages ? ndaPages?.find(page => page.value === formData.ndaPages) : null}
-            onChange={(e) => {
-              handleFormChange("ndaPages", e ? e.value : null);
-            }}
-            options={ndaPages || []}
-            isLoading={isNdaPagesLoading}
-            loadingMessage={() => "Fetching NDA pages..."}
-            placeholder="Select NDA pages..."
-            isDisabled={from === "editProfile"}
-            styles={customStyles}
-          />
-        </div>
-      <div>
-        <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-          <Image className="h-4 w-4" />
-          Company Logo
-        </label>
-        <div className="mt-1 flex items-center space-x-4">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-        </div>
-        {previewUrl && (
-          <div className="mt-2">
-            <img
-              src={previewUrl}
-              alt="Logo preview"
-              className="h-20 w-20 object-contain rounded border"
+    <form onSubmit={handleSubmit} className={cn("space-y-4 bg-background", from === "editProfile" && "mt-2")}>
+      <div className="space-y-4 px-6">
+        <div className="flex w-full gap-4">
+          <div className="w-1/2 space-y-2">
+            <Label className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              First Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              type="text"
+              required
+              className="h-10 !bg-background"
+              value={formData.firstName}
+              onChange={(e) => handleFormChange("firstName", e.target.value)}
             />
           </div>
-        )}
+          <div className="w-1/2 space-y-2">
+            <Label className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Last Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              type="text"
+              required
+              className="h-10 !bg-background"
+              value={formData.lastName}
+              onChange={(e) => handleFormChange("lastName", e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Mail className="h-4 w-4" />
+            Email <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            type="email"
+            required
+            disabled={from === "editProfile"}
+            className="h-10 !bg-background"
+            value={formData.email}
+            onChange={handleEmailChange}
+          />
+        </div>
+        {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            Phone No
+          </Label>
+          <Input
+            type="text"
+            className={cn("h-10 !bg-background", phoneError && "border-destructive")}
+            value={formData.phoneNo ?? ""}
+            onChange={handlePhoneChange}
+          />
+        </div>
+        {phoneError && <p className="text-sm text-destructive">{phoneError}</p>}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            Title <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            type="text"
+            className="h-10 !bg-background"
+            value={formData.title}
+            onChange={(e) => handleFormChange("title", e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Building className="h-4 w-4" />
+            Company Name <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            type="text"
+            className="h-10 !bg-background"
+            value={formData.companyName}
+            onChange={(e) => handleFormChange("companyName", e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            Role <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={formData.role}
+            onValueChange={(value) => handleFormChange("role", value)}
+            disabled={from === "editProfile"}
+          >
+            <SelectTrigger className="h-11 w-full !bg-background">
+              <SelectValue placeholder="Select role..." />
+            </SelectTrigger>
+            <SelectContent>
+              {roleOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            NDA Pages
+          </Label>
+          <Select
+            value={formData.ndaPages ?? "none"}
+            onValueChange={(value) =>
+              handleFormChange("ndaPages", value === "none" ? null : value)
+            }
+            disabled={from === "editProfile" || isNdaPagesLoading}
+          >
+            <SelectTrigger className="h-11 w-full !bg-background">
+              <SelectValue
+                placeholder={
+                  isNdaPagesLoading ? "Fetching NDA pages..." : "Select NDA pages..."
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No NDA</SelectItem>
+              {(ndaPages || []).map((page) => (
+                <SelectItem key={page.value} value={page.value}>
+                  {page.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Image className="h-4 w-4" />
+            Company Logo
+          </Label>
+          <div className="mt-2 flex items-center space-x-4">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-secondary-foreground hover:file:bg-accent/70"
+            />
+          </div>
+          {previewUrl && (
+            <div className="mt-2">
+              <img
+                src={previewUrl}
+                alt="Logo preview"
+                className="h-20 w-20 rounded border border-border object-contain"
+              />
+            </div>
+          )}
+        </div>
       </div>
-      </div>
-      <div className="flex justify-end space-x-3 sticky bottom-0 bg-white border-t p-4 rounded-b-lg">
+      <div className="sticky bottom-0 flex justify-end space-x-3 rounded-b-lg border-t border-border bg-background p-4">
         <Button
-          type="Secondary"
+          type="button"
+          variant="outline"
+          className="px-3 py-3"
           onClick={handleModalClose}
           disabled={loading}
-          label="Cancel"
-        />
-        {
-          from === "editProfile" ? (
-            <Button
-              onClick={handelUpdateProfile}
-              disabled={isLoading || !isFormChanged() || !formData.firstName || !formData.lastName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
-              isLoading={isLoading}
-              type="Primary"
-              label="Update"
-            />
-          ) : (
-            <Button
-              onClick={handelNext}
-              disabled={isLoading || !formData.firstName || !formData.lastName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
-              isLoading={isLoading}
-              type="Primary"
-              label="Next"
-            />
-          )
-        }
+        >
+          Cancel
+        </Button>
+        {from === "editProfile" ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="px-3 py-3"
+            onClick={handelUpdateProfile}
+            disabled={isLoading || !isFormChanged() || !formData.firstName || !formData.lastName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
+          >
+            {isLoading && <LoaderSpinner size={16} className="text-current" />}
+            Update
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handelNext}
+            className="px-3 py-3"
+            disabled={isLoading || !formData.firstName || !formData.lastName || !formData.email || !formData.title || !formData.companyName || emailError || phoneError}
+          >
+            {isLoading && <LoaderSpinner size={16} className="text-current" />}
+            Next
+          </Button>
+        )}
       </div>
     </form>
-    //   </div>
-    // </div>
   );
 };
 
@@ -649,7 +655,6 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
     }
   };
 
-  console.log("FormData:", formData);
   const handleCheckboxClick = (id) => {
     setPermissions((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -662,52 +667,50 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
     <div className="p-6">
       {/* Permissions */}
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Additional Permissions
-        </label>
-        <div className="space-y-2 mt-2">
+        <Label className="mb-1 block">Additional Permissions</Label>
+        <div className="mt-2 space-y-2">
           {[
             { id: "billing", label: "Billing Management" },
             { id: "users", label: "User Management" },
             { id: "security", label: "Security Settings" },
             { id: "api", label: "API Access" },
           ].map(({ id, label }) => (
-            <label key={id} className="flex items-center cursor-pointer">
+            <label key={id} className="flex cursor-pointer items-center">
               <input
                 type="checkbox"
                 checked={permissions[id] ?? false}
                 onChange={() => handleCheckboxClick(id)}
-                className="rounded border-gray-300 text-gray-900 focus:ring-gray-400"
+                className="h-4 w-4 rounded border-input accent-[var(--primary-solid)]"
               />
-              <span className="ml-2 text-sm text-gray-700">{label}</span>
+              <span className="ml-2 text-sm text-foreground">{label}</span>
             </label>
           ))}
         </div>
       </div>
 
       {/* Box Enterprise Setup */}
-      <div className="space-y-6 text-gray-700">
-        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+      <div className="space-y-6 text-foreground">
+        <div className="space-y-4 rounded-lg bg-muted/50 p-4">
           <div className="flex items-start">
-            <div className="flex-shrink-0 mt-0.5">
-              <Box className="h-5 w-5 text-gray-900" />
+            <div className="mt-0.5 flex-shrink-0">
+              <Box className="h-5 w-5 text-foreground" />
             </div>
             <div className="ml-3">
-              <h4 className="text-sm font-medium text-gray-900">
+              <h4 className="text-sm font-medium text-foreground">
                 Box Enterprise Setup
               </h4>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Configure storage and user limits for the Box enterprise account
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Storage Limit (GB) <span className="text-red-600">*</span>
-              </label>
-              <input
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>
+                Storage Limit (GB) <span className="text-destructive">*</span>
+              </Label>
+              <Input
                 type="number"
                 value={storageLimit}
                 onChange={(e) => {
@@ -717,37 +720,39 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
                   }
                 }}
                 placeholder="1000"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="h-10 !bg-background"
               />
             </div>
-            <div>
-              <label className="block text-sm text-gray-700">API Limit <span className="text-red-600">*</span></label>
+            <div className="space-y-2">
+              <Label>API Limit <span className="text-destructive">*</span></Label>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <input
-                    type="number"
-                    value={apiLimit}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        setApiLimit(value);
-                      }
-                    }}
-                    placeholder="100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <select
-                    value={formData.retentionApi}
-                    onChange={(e) => setFormData({ ...formData, retentionApi: e.target.value })}
-                    className="w-full px-3 py-[10px] border border-gray-300 rounded-md"
-                  >
-                    <option value="100 p/m">Daily</option>
-                    <option value="500 p/m">Weekly</option>
-                    <option value="1000 p/m">Monthly</option>
-                  </select>
-                </div>
+                <Input
+                  type="number"
+                  value={apiLimit}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      setApiLimit(value);
+                    }
+                  }}
+                  placeholder="100"
+                  className="h-10 !bg-background"
+                />
+                <Select
+                  value={formData.retentionApi}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, retentionApi: value })
+                  }
+                >
+                  <SelectTrigger className="h-11 w-full !bg-background">
+                    <SelectValue placeholder="Daily" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="100 p/m">Daily</SelectItem>
+                    <SelectItem value="500 p/m">Weekly</SelectItem>
+                    <SelectItem value="1000 p/m">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -755,9 +760,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
 
         {/* Security Settings */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Security Settings
-          </label>
+          <Label className="mb-3 block">Security Settings</Label>
           <div className="space-y-3">
             {[
               { id: "mfa", label: "Require Multi-Factor Authentication", default: true },
@@ -765,14 +768,14 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
               { id: "audit", label: "Enable Audit Logging", default: true },
               { id: "ip_restrict", label: "IP Address Restrictions", default: false },
             ].map(({ id, label }) => (
-              <div key={id} className="flex items-center justify-between py-2 border-b border-gray-100">
-                <label htmlFor={id} className="text-sm text-gray-700">{label}</label>
+              <div key={id} className="flex items-center justify-between border-b border-border py-2">
+                <label htmlFor={id} className="text-sm text-foreground">{label}</label>
                 <input
                   type="checkbox"
                   id={id}
                   checked={securitySettings[id]}
                   onChange={() => handleSecurityToggle(id)}
-                  className="rounded border-gray-300 text-gray-900 focus:ring-gray-400 cursor-pointer"
+                  className="h-4 w-4 cursor-pointer rounded border-input accent-[var(--primary-solid)]"
                 />
               </div>
             ))}
@@ -781,51 +784,59 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
 
         {/* Data Retention */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Data Retention
-          </label>
+          <Label className="mb-3 block">Data Retention</Label>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Audit Logs</label>
-              <select
+            <div className="space-y-2">
+              <Label className="text-sm font-normal text-muted-foreground">Audit Logs</Label>
+              <Select
                 value={formData.retentionAudit}
-                onChange={(e) => setFormData({ ...formData, retentionAudit: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                onValueChange={(value) =>
+                  setFormData({ ...formData, retentionAudit: value })
+                }
               >
-                <option value="30">30 days</option>
-                <option value="60">60 days</option>
-                <option value="90">90 days</option>
-                <option value="180">180 days</option>
-                <option value="365">1 year</option>
-              </select>
+                <SelectTrigger className="h-11 w-full !bg-background">
+                  <SelectValue placeholder="30 days" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="60">60 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                  <SelectItem value="180">180 days</SelectItem>
+                  <SelectItem value="365">1 year</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">System Backups</label>
-              <select
+            <div className="space-y-2">
+              <Label className="text-sm font-normal text-muted-foreground">System Backups</Label>
+              <Select
                 value={formData.retentionBackup}
-                onChange={(e) => setFormData({ ...formData, retentionBackup: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                onValueChange={(value) =>
+                  setFormData({ ...formData, retentionBackup: value })
+                }
               >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
+                <SelectTrigger className="h-11 w-full !bg-background">
+                  <SelectValue placeholder="Daily" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
       </div>
 
       {/* Buttons */}
-      <div className="flex justify-end gap-3 mt-3">
-        <Button onClick={() => setActiveStep("User Details")} type="Secondary" label="Back" />
-        <Button
-          onClick={handleSubmit}
-          buttonType="submit"
-          type="Primary"
-          disabled={loading}
-          isLoading={loading}
-          label="Add User"
-        />
+      <div className="mt-3 flex justify-end gap-3">
+        <Button variant="outline" onClick={() => setActiveStep("User Details")}>
+          Back
+        </Button>
+        <Button onClick={handleSubmit} disabled={loading}>
+          {loading && <LoaderSpinner size={16} className="text-current" />}
+          Add User
+        </Button>
       </div>
     </div>
   )
@@ -847,9 +858,25 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
     ndaPages: from === "editProfile" ? user.ndaPages || null : null,
   });
 
-
   const finalStep = () => {
     dispatch(setNewLoan(newLoanData));
+  };
+
+  const handleModalClose = () => {
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      title: "",
+      companyName: "",
+      role: "user",
+      logo: null,
+      ndaPages: null,
+    });
+    setError("");
+    onClose();
+    setActiveStep("User Details");
   };
 
   const getActiveStepContent = () => {
@@ -889,28 +916,24 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
     const isActive = currentStep === step;
 
     return (
-      <div className="flex items-center w-30">
+      <div className="flex w-30 items-center">
         <div
-          className={`
-          w-8 h-8 rounded-full flex items-center justify-center border
-          ${isCompleted
-              ? "bg-[#0061D5]"
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-full border",
+            isCompleted
+              ? "border-transparent bg-[var(--primary-solid)] text-primary-foreground"
               : isActive
-                ? "bg-white border-[#0061D5] text-[#0061D5]"
-                : "bg-white border-gray-300"
-            }
-          ${isCompleted || isActive ? "text-white" : "text-[#0061D5]"}
-        `}
+                ? "border-primary-solid bg-background text-primary-solid"
+                : "border-border bg-background text-muted-foreground"
+          )}
         >
           {isCompleted ? (
-            <Check size={16} className="text-white" />
+            <Check size={16} className="text-secondary-foreground" />
           ) : (
-            <span className={isActive ? "text-[#0061D5]" : "text-gray-500"}>
-              {step + 1}
-            </span>
+            <span className="text-secondary-foreground">{step + 1}</span>
           )}
         </div>
-        <div className={`ml-3 ${isActive || isCompleted ? "text-[#0061D5]" : "text-gray-500"}`}>
+        <div className={cn("ml-3", isActive || isCompleted ? "text-secondary-foreground" : "text-muted-foreground")}>
           {["User Details", "Permissions"][step]}
         </div>
       </div>
@@ -931,62 +954,50 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
     }
   }, [activeStepIndex]);
 
-if (!isOpen) return ;
-  console.log("activeStep:", activeStep);
-  const handleModalClose = () => {
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      title: "",
-      companyName: "",
-      role: "user",
-      logo: null,
-      ndaPages: null,
-    });
-    setError("");
-    onClose();
-    setActiveStep("User Details");
-  };
   return (
-    <>
-      <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg  w-full max-w-2xl">
-          <div className="flex justify-between items-center border-b px-4 pt-4 pb-3">
-            <h2 className="text-xl text-gray-800 font-semibold">
-              {from === 'editProfile' ? "Edit Profile" : "Add New User"}
-            </h2>
-            <button
-              onClick={handleModalClose}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-          {
-            from !== 'editProfile' && (
-              <div ref={scrollContainerRef} className="px-6 py-4 flex w-full justify-center">
-                <div className="flex justify-between items-center space-x-2 md:space-x-8">
-                  {[0, 1].map((step) => (
-                    <div key={step} className="flex items-center" ref={(el) => (stepRefs.current[step] = el)}>
-                      <WizardStep step={step} currentStep={activeStepIndex} />
-                      {step < 1 && (
-                        <ChevronRight size={16} className="mx-2 text-gray-300" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          }
-          <div className="w-full max-h-[72vh] overflow-y-auto hidden-scrollbar">{getActiveStepContent()}</div>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleModalClose();
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        className="flex max-h-[85vh] w-full max-w-2xl flex-col gap-0 p-0 sm:max-w-2xl bg-background"
+      >
+        <div className="flex items-center justify-between border-b border-border px-4 pb-3 pt-4">
+          <DialogTitle className="text-xl font-semibold text-foreground">
+            {from === "editProfile" ? "Edit Profile" : "Add New User"}
+          </DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={handleModalClose}
+            aria-label="Close"
+          >
+            <X className="h-6 w-6" />
+          </Button>
         </div>
-      </div>
-    </>
-
+        {from !== "editProfile" && (
+          <div ref={scrollContainerRef} className="flex w-full justify-center px-6 py-4">
+            <div className="flex items-center justify-between space-x-2 md:space-x-8">
+              {[0, 1].map((step) => (
+                <div key={step} className="flex items-center" ref={(el) => (stepRefs.current[step] = el)}>
+                  <WizardStep step={step} currentStep={activeStepIndex} />
+                  {step < 1 && (
+                    <ChevronRight size={16} className="mx-2 text-secondary-foreground/40" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="hidden-scrollbar w-full flex-1 overflow-y-auto">
+          {getActiveStepContent()}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
-
 }
 
 export default AddUserModal;

@@ -2,12 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   X,
   Trash2,
-  Send,
   ArrowUp,
   BrainCog,
-  Loader2,
-  Loader,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   Link,
@@ -18,6 +14,12 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { sanitizeName } from "../../src/lib/helper.js";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/app/lib/utils";
 
 /** Collapse whitespace / underscores for comparing Box citation snippets to answer text */
 function normalizeForCitationMatch(s) {
@@ -320,10 +322,10 @@ function renderMarkdownBlockContent(block, keyPrefix, trailingSlot = null) {
       const text = heading[2];
       const cls =
         level === 1
-          ? "text-2xl font-semibold text-gray-900 mb-2"
+          ? "mb-2 text-2xl font-semibold text-foreground"
           : level === 2
-            ? "text-xl font-semibold text-gray-900 mb-1.5"
-            : "text-lg font-semibold text-gray-900 mb-1";
+            ? "mb-1.5 text-xl font-semibold text-foreground"
+            : "mb-1 text-lg font-semibold text-foreground";
       out.push(
         <div key={`${keyPrefix}-h-${nodeIndex++}`} className={cls}>
           {renderInlineMarkdown(text, `${keyPrefix}-h-${nodeIndex}`)}
@@ -767,18 +769,22 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
       ? "Show all sources"
       : `Sources for this section (${list.length}): ${names}`;
     return (
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon-xs"
         onClick={() => toggleSectionSourceFilter(msg.id, list)}
-        className={`inline-flex flex-shrink-0 rounded-md p-0.5 ml-1 align-baseline transition-colors ${isActive
-          ? "text-purple-600 bg-purple-50"
-          : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
-          }`}
+        className={cn(
+          "ml-1 inline-flex shrink-0 align-baseline !px-1 !py-1",
+          isActive
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:bg-accent hover:text-primary"
+        )}
         title={title}
         aria-label={title}
       >
-        <Link className="w-3 h-3" />
-      </button>
+        <Link className="h-3 w-3" />
+      </Button>
     );
   };
 
@@ -802,7 +808,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
       return (
         <>
           {showMultiHeader && (
-            <p className="text-sm whitespace-pre-wrap font-medium text-gray-800 mb-1">
+            <p className="mb-1 text-sm font-medium whitespace-pre-wrap text-foreground">
               Based on the information from {msg.answerSegments.length} hubs:
             </p>
           )}
@@ -889,7 +895,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
     return (
       <>
         {content.startsWith("Based on the information from") && (
-          <p className="text-sm whitespace-pre-wrap font-medium text-gray-800 mb-1">
+          <p className="mb-1 text-sm font-medium whitespace-pre-wrap text-foreground">
             {content.split("\n")[0]}
           </p>
         )}
@@ -914,245 +920,283 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-end bg-black transition-opacity duration-300 ${isOpen ? "bg-opacity-50" : "bg-opacity-0 pointer-events-none"
-        }`}
+      className={cn(
+        "fixed inset-0 z-50 flex items-center justify-end bg-black/30 transition-opacity duration-300",
+        isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+      )}
       onClick={handleBackdropClick}
     >
       <div
         ref={modalRef}
-        className={`bg-white lg:rounded-l-[2%] shadow-2xl h-full w-full max-w-5xl flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={cn(
+          "flex h-full w-full max-w-5xl flex-col overflow-hidden border-border bg-background shadow-2xl transition-all duration-300 ease-in-out lg:rounded-l-[2%]",
+          isOpen ? "translate-x-0" : "translate-x-full"
+        )}
         style={{ maxHeight: "100vh" }}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-          <div className="flex items-center space-x-3">
-            <BrainCog className="w-4 h-4 text-purple-500" />
-            <h2 className="text-lg font-semibold text-gray-900">Box AI Plugin</h2>
+        <div className="flex items-center justify-between border-b border-border bg-card p-4">
+          <div className="flex items-center gap-3">
+            <BrainCog className="h-4 w-4 text-primary-solid" />
+            <h2 className="text-lg font-semibold text-foreground">Box AI Plugin</h2>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             {messages.length > 0 && !isLoading && (
-              <button
+              <Button
+                type="button"
+                variant="icons"
+                size="icon-sm"
                 onClick={clearChat}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded transition-colors"
+                className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
                 title="Clear chat"
               >
-                <Trash2 className="w-4 h-4" />
-              </button>
+                <Trash2 className="h-4 w-4" />
+              </Button>
             )}
-            <button
+            <Button
+              type="button"
+              variant="icons"
+              size="icon-sm"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 p-1 rounded transition-colors"
+              className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
+              aria-label="Close"
             >
-              <X className="w-5 h-5" />
-            </button>
+              <X className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col overflow-auto">
+        <div className="flex flex-1 flex-col overflow-hidden">
           {isHubsLoading && (
-            <div className="py-24 flex items-center justify-center">
-              <Loader className="w-8 h-8 animate-spin text-purple-500" />
+            <div className="flex items-center justify-center py-24">
+              <LoaderSpinner size={32} className="text-secondary-foreground" />
             </div>
           )}
           {messages.length === 0 && !isHubsLoading ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-              <div className="mb-6 ">
-                <BrainCog className="w-4 h-4 stroke-purple-500" />
+            <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+              <div className="mb-6">
+                <BrainCog className="h-6 w-6 text-secondary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="mb-2 text-xl font-semibold text-foreground">
                 Welcome to Box AI Plugin
               </h3>
-              <div className="bg-gray-50 rounded-lg p-4 max-w-sm">
-                <p className="text-sm text-gray-600">
-                  Chat cleared when you close this hub
-                </p>
-                {hubs.length > 0 && (
-                  <p className="text-xs text-green-600 mt-2">
-                    {hubs.length} hub{hubs.length > 1 ? "s" : ""} loaded and
-                    ready for AI search
+              <Card className="max-w-sm border-border bg-muted/50">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">
+                    Chat cleared when you close this hub
                   </p>
-                )}
-              </div>
+                  {hubs.length > 0 && (
+                    <p className="mt-2 text-xs text-success">
+                      {hubs.length} hub{hubs.length > 1 ? "s" : ""} loaded and
+                      ready for AI search
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 hidden-scrollbar">
+            <div className="hidden-scrollbar flex-1 space-y-4 overflow-y-auto p-4">
               {messages?.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"
-                    }`}
+                  className={cn(
+                    "flex",
+                    msg.type === "user" ? "justify-end" : "justify-start"
+                  )}
                 >
                   <div
-                    className={`flex items-start space-x-2 ${msg.type === "user" ? "max-w-[80%]" : "max-w-full"
-                      }`}
+                    className={cn(
+                      "flex items-start gap-2",
+                      msg.type === "user" ? "max-w-[80%]" : "max-w-full"
+                    )}
                   >
                     {msg.type === "ai" && (
-                      <div className="flex-shrink-0 w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                        <div className="w-4 h-4">
-                          <BrainCog className="w-4 h-4 text-purple-500" />
-                        </div>
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <BrainCog className="h-4 w-4 text-primary-solid" />
                       </div>
                     )}
 
                     <div
-                      className={`w-full ${msg.type === "ai" &&
-                        msg.citations &&
-                        msg.citations.length > 0
-                        ? "flex flex-col md:flex-row md:gap-4"
-                        : ""
-                        }`}
+                      className={cn(
+                        "w-full",
+                        msg.type === "ai" &&
+                          msg.citations &&
+                          msg.citations.length > 0 &&
+                          "flex flex-col md:flex-row md:gap-4"
+                      )}
                     >
                       <div
-                        className={`rounded-lg relative ${msg.citations && msg.citations.length > 0
-                          ? "mb-3 lg:mb-0 md:flex-1"
-                          : ""
-                          } ${msg.type === "user"
-                            ? "bg-purple-600 text-white px-4 py-2 max-w-fit ml-auto"
+                        className={cn(
+                          "relative rounded-lg",
+                          msg.citations && msg.citations.length > 0
+                            ? "mb-3 md:flex-1 lg:mb-0"
+                            : "",
+                          msg.type === "user"
+                            ? "ml-auto max-w-fit bg-primary px-4 py-2 text-primary-foreground"
                             : msg.isError
-                              ? "bg-red-100 text-red-900 px-4 py-2"
-                              : "bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 text-gray-900 pl-4 pr-8 py-2"
-                          }`}
+                              ? "border border-destructive/30 bg-destructive/10 px-4 py-2 text-destructive"
+                              : "border border-border bg-muted/50 px-4 py-2 pr-8 text-foreground"
+                        )}
                       >
                         <div
-                          className={`flex flex-col gap-2 ${msg.type === "ai" &&
-                            msg.citations &&
-                            msg.citations.length > 0
-                            ? "pb-10 pr-10"
-                            : ""
-                            }`}
+                          className={cn(
+                            "flex flex-col gap-2",
+                            msg.type === "ai" &&
+                              msg.citations &&
+                              msg.citations.length > 0 &&
+                              "pb-10 pr-10"
+                          )}
                         >
                           {renderAIContentWithCitations(msg)}
                         </div>
                         {msg.type === "ai" && (
-                          <div className="absolute bottom-1 right-1 flex items-center gap-1 z-10">
+                          <div className="absolute bottom-1 right-1 z-10 flex items-center gap-1">
                             {messageCopyied === msg?.id && (
-                              <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-md border border-green-200 animate-fade-in">
+                              <Badge
+                                variant="outline"
+                                className="animate-fade-in border-success/40 bg-success/10 text-success"
+                              >
                                 Copied!
-                              </span>
+                              </Badge>
                             )}
-                            <button
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon-sm"
                               onClick={() =>
                                 handleCopyToClipboard(msg.content, msg?.id)
                               }
-                              className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md transition-all duration-200"
+                              className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
                               title="Copy to clipboard"
                               aria-label="Copy message to clipboard"
                             >
-                              <Copy className="w-4 h-4" />
-                            </button>
+                              <Copy className="h-4 w-4" />
+                            </Button>
                           </div>
                         )}
                       </div>
 
                       {msg.citations && msg.citations.length > 0 && (
-                        <div className="p-3 rounded-lg md:max-w-[350px] md:flex-shrink-0 md:self-start bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs text-gray-800 font-semibold flex items-center">
-                              <FileText
-                                className="w-3.5 h-3.5 mr-1"
-                                strokeWidth={1.5}
-                              />
-                              Sources
-                              <span className="ml-2 bg-purple-200 text-gray-700 text-xs px-1.5 py-0.5 rounded-full">
-                                {getDisplayCitations(msg).length}
-                              </span>
-                              {filteredCitations[msg.id]?.fileIds?.length > 0 && (
-                                <span className="ml-1 text-xs text-purple-600">
-                                  (filtered)
-                                </span>
-                              )}
-                            </p>
-                            <div className="flex items-center gap-2">
-                              {filteredCitations[msg.id]?.fileIds?.length > 0 && (
-                                <button
-                                  onClick={() =>
-                                    clearMessageCitationFilter(msg.id)
-                                  }
-                                  className="flex items-center text-xs text-gray-600 hover:text-purple-800 font-medium transition-colors"
-                                  title="Show all sources"
+                        <Card className="border-border bg-muted/50 md:max-w-[350px] md:shrink-0 md:self-start">
+                          <CardContent className="p-3">
+                            <div className="mb-2 flex items-center justify-between">
+                              <p className="flex items-center text-xs font-semibold text-foreground">
+                                <FileText
+                                  className="mr-1 h-3.5 w-3.5"
+                                  strokeWidth={1.5}
+                                />
+                                Sources
+                                <Badge
+                                  variant="secondary"
+                                  className="ml-2 px-1.5 py-0.5 text-xs"
                                 >
-                                  Show All
-                                </button>
-                              )}
-                              {getDisplayCitations(msg).length > 2 && (
-                                <button
-                                  onClick={() => toggleExpandCitations(msg.id)}
-                                  className="flex items-center text-xs text-gray-600 hover:text-purple-800 font-medium transition-colors"
-                                >
-                                  {expandedCitations[msg.id] ? (
-                                    <>
-                                      Show Less
-                                      <ChevronUp className="w-3 h-3 ml-1" />
-                                    </>
-                                  ) : (
-                                    <>
-                                      View All
-                                      <ChevronDown className="w-3 h-3 ml-1" />
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-
-                          <div
-                            className={`space-y-2 overflow-y-auto ${expandedCitations[msg.id]
-                              ? "max-h-auto"
-                              : "max-h-38"
-                              }`}
-                          >
-                            {(expandedCitations[msg.id]
-                              ? getDisplayCitations(msg)
-                              : getDisplayCitations(msg).slice(0, 2)
-                            ).map((citation, index) => (
-                              <div
-                                key={index}
-                                className="bg-white rounded-lg p-2 border border-gray-100 hover:shadow-sm transition-shadow"
-                              >
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <div className="w-2 h-2 rounded-full flex-shrink-0 bg-purple-600"></div>
-                                      <p className="text-xs font-medium text-gray-800 truncate leading-tight">
-                                        {citation.name}
-                                      </p>
-                                    </div>
-                                    {citation.content && (
-                                      <p
-                                        className="text-xs text-gray-600 mt-1 leading-relaxed pl-4"
-                                        style={{
-                                          display: "-webkit-box",
-                                          WebkitLineClamp: 2,
-                                          WebkitBoxOrient: "vertical",
-                                          overflow: "hidden",
-                                        }}
-                                      >
-                                        {citation.content
-                                          .replace(/_+/g, "")
-                                          .trim()}
-                                      </p>
+                                  {getDisplayCitations(msg).length}
+                                </Badge>
+                                {filteredCitations[msg.id]?.fileIds?.length > 0 && (
+                                  <span className="ml-1 text-xs text-primary">
+                                    (filtered)
+                                  </span>
+                                )}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                {filteredCitations[msg.id]?.fileIds?.length > 0 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() =>
+                                      clearMessageCitationFilter(msg.id)
+                                    }
+                                    className="h-auto !px-3 !py-3 text-xs font-medium text-muted-foreground hover:text-primary"
+                                    title="Show all sources"
+                                  >
+                                    Show All
+                                  </Button>
+                                )}
+                                {getDisplayCitations(msg).length > 2 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => toggleExpandCitations(msg.id)}
+                                    className="h-auto !px-3 !py-3 text-xs font-medium text-muted-foreground hover:text-primary"
+                                  >
+                                    {expandedCitations[msg.id] ? (
+                                      <>
+                                        Show Less
+                                        <ChevronUp className="ml-1 h-3 w-3" />
+                                      </>
+                                    ) : (
+                                      <>
+                                        View All
+                                        <ChevronDown className="ml-1 h-3 w-3" />
+                                      </>
                                     )}
-                                  </div>
-                                </div>
+                                  </Button>
+                                )}
                               </div>
-                            ))}
-                          </div>
-
-                          {getDisplayCitations(msg).length > 2 && (
-                            <div className="mt-2 pt-2 border-t border-gray-200 text-center">
-                              <button
-                                onClick={() => toggleExpandCitations(msg.id)}
-                                className="text-xs text-gray-500 hover:text-purple-600 transition-colors"
-                              >
-                                {expandedCitations[msg.id]
-                                  ? `Showing all ${getDisplayCitations(msg).length
-                                  } sources`
-                                  : `${getDisplayCitations(msg).length - 2
-                                  } more sources available`}
-                              </button>
                             </div>
-                          )}
-                        </div>
+
+                            <div
+                              className={cn(
+                                "space-y-2 overflow-y-auto scrollbar-hide",
+                                expandedCitations[msg.id]
+                                  ? "max-h-auto"
+                                  : "max-h-38"
+                              )}
+                            >
+                              {(expandedCitations[msg.id]
+                                ? getDisplayCitations(msg)
+                                : getDisplayCitations(msg).slice(0, 2)
+                              ).map((citation, index) => (
+                                <Card
+                                  key={index}
+                                  className="border-border bg-card shadow-sm transition-shadow hover:shadow-md"
+                                >
+                                  <CardContent className="p-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="min-w-0 flex-1">
+                                        <div className="mb-1 flex items-center gap-2">
+                                          <div className="h-2 w-2 shrink-0 rounded-full bg-primary-solid" />
+                                          <p className="truncate text-xs font-medium leading-tight text-foreground">
+                                            {citation.name}
+                                          </p>
+                                        </div>
+                                        {citation.content && (
+                                          <p
+                                            className="mt-1 pl-4 text-xs leading-relaxed text-muted-foreground"
+                                            style={{
+                                              display: "-webkit-box",
+                                              WebkitLineClamp: 2,
+                                              WebkitBoxOrient: "vertical",
+                                              overflow: "hidden",
+                                            }}
+                                          >
+                                            {citation.content
+                                              .replace(/_+/g, "")
+                                              .trim()}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+
+                            {getDisplayCitations(msg).length > 2 && (
+                              <div className="mt-2 border-t border-border pt-2 text-center">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  onClick={() => toggleExpandCitations(msg.id)}
+                                  className="h-auto !px-3 !py-3 text-xs text-muted-foreground hover:text-primary"
+                                >
+                                  {expandedCitations[msg.id]
+                                    ? `Showing all ${getDisplayCitations(msg).length} sources`
+                                    : `${getDisplayCitations(msg).length - 2} more sources available`}
+                                </Button>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
                       )}
                     </div>
                   </div>
@@ -1160,23 +1204,21 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="flex items-start space-x-2">
-                    <div className="flex-shrink-0 w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                      <div className="w-4 h-4">
-                        <BrainCog className="w-4 h-4 text-purple-500" />
-                      </div>
+                  <div className="flex items-start gap-2">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <BrainCog className="h-4 w-4 text-primary-solid" />
                     </div>
-                    <div className="bg-gray-100 rounded-lg px-4 py-2">
+                    <div className="rounded-lg bg-muted px-4 py-2">
                       <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" />
                         <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground"
                           style={{ animationDelay: "0.1s" }}
-                        ></div>
+                        />
                         <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                          className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground"
                           style={{ animationDelay: "0.2s" }}
-                        ></div>
+                        />
                       </div>
                     </div>
                   </div>
@@ -1187,19 +1229,21 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
           )}
           {lastAIErrorMessage && lastQuery && !isLoading && (
             <div className="flex justify-center p-2">
-              <button
+              <Button
+                type="button"
+                variant="destructive"
                 onClick={() => handleSearchAI(lastQuery)}
-                className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 transition text-sm"
+                className="!px-3 !py-3 text-sm"
               >
                 Retry
-              </button>
+              </Button>
             </div>
           )}
-          <div className="border-t border-gray-200 p-4">
+          <div className="border-t border-border bg-card p-4">
             <div className="relative">
-              <div className="flex items-end space-x-2">
-                <div className="flex-1 relative">
-                  <textarea
+              <div className="flex items-end gap-2">
+                <div className="relative flex-1">
+                  <Textarea
                     ref={textareaRef}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -1212,19 +1256,22 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                           : "Ask Box AI"
                     }
                     disabled={isHubsLoading}
-                    className="w-full px-4 py-4 pr-12 text-gray-600 border border-purple-200 rounded-xl resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all min-h-[48px] max-h-32 bg-gradient-to-r from-purple-50 to-blue-50 hidden-scrollbar disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="hidden-scrollbar min-h-[48px] max-h-32 resize-none border-border bg-background pr-12 text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                     rows={1}
                   />
-                  <button
+                  <Button
+                    type="button"
+                    size="icon-sm"
                     onClick={handleSendMessage}
                     disabled={!message.trim() || isLoading || isHubsLoading}
-                    className="absolute right-2 bottom-3 w-8 h-8 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-300 text-white rounded-full flex items-center justify-center transition-colors"
+                    className="absolute bottom-3 right-2 !h-8 !w-8 !rounded-full !px-0 !py-0"
+                    aria-label="Send message"
                   >
-                    <ArrowUp className="w-4 h-4" />
-                  </button>
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                 <span>Press Enter to send, Shift+Enter for new line</span>
                 <span>{message.length}/2000</span>
               </div>

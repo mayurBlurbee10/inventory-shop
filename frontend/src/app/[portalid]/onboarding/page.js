@@ -12,6 +12,7 @@ import { IdCard, LockKeyhole, Pen } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Input } from "@/components/ui/input";
 import { toast } from "react-toastify";
 import * as LucideIcons from "lucide-react";
 import { coverPhotoRatio, fontSizes, logoSizeRatio } from "@/app/lib/data/font_size";
@@ -252,7 +253,7 @@ export default function OnBoardingPage() {
       {/* Preview Page */}
       <div className="col-span-1 md:col-span-1 lg:col-span-12 h-full relative overflow-hidden bg-background flex flex-col justify-between">
         <div>
-          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.primaryColor }}>
+          <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{backgroundColor: "hsl(var(--primary))"}}>
             <div className="max-w-[1140px] w-full mx-auto ">
               <a className="flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
                 <span className="border border-dashed border-gray-400 text-black pl-3 pr-8 py-1 relative">
@@ -270,11 +271,11 @@ export default function OnBoardingPage() {
                   style={{
                     fontSize: filterTheme("Header Text").fontSize,
                     fontWeight: filterTheme("Header Text").fontWeight,
-                    color: filterTheme("Header Text").color
+                    color: "hsl(var(--secondary-foreground))"
                   }}
                 >
                   <div
-                    className="absolute top-0 right-0 p-1 cursor-pointer"
+                    className="absolute top-0 right-0 p-1 cursor-pointer text-secondary-foreground"
                     onClick={() => handleModalOpenForEdit("Header Text")}
                   >
                     <Pen className="size-4" />
@@ -295,7 +296,7 @@ export default function OnBoardingPage() {
                     style={{
                       fontSize: filterTheme("Title").fontSize,
                       fontWeight: filterTheme("Title").fontWeight,
-                      color: filterTheme("Title").color
+                      color: "hsl(var(--secondary-foreground))"
                     }}>
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
@@ -306,10 +307,10 @@ export default function OnBoardingPage() {
                     {filterContent("Title")}
                   </h2>
                   <div
-                    style={{ backgroundColor: config?.primaryColor }}
+                    style={{backgroundColor: "hsl(var(--primary))"}}
                     className="p-[1px] w-full my-2"
                   ></div>
-                  <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative ">
+                  <div className="font-lato border border-dashed text-secondary-foreground border-gray-400 pl-3 pr-8 py-3 mb-2 relative ">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("Paragraph")}
@@ -321,12 +322,12 @@ export default function OnBoardingPage() {
                       style={{
                         fontSize: filterTheme("Paragraph").fontSize,
                         fontWeight: filterTheme("Paragraph").fontWeight,
-                        color: filterTheme("Paragraph").color
+                        color: "hsl(var(--secondary-foreground))"
                       }}>
                       {filterContent("Paragraph")}
                     </p>
                   </div>
-                  <div className="font-lato border border-dashed text-[#000000e6] border-gray-400 pl-3 pr-8 py-3 mb-2 relative flex justify-center">
+                  <div className="font-lato border border-dashed text-secondary-foreground border-gray-400 pl-3 pr-8 py-3 mb-2 relative flex justify-center">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("CoverPhoto")}
@@ -350,7 +351,7 @@ export default function OnBoardingPage() {
                         <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
                           <IdCard className="h-4 w-4" />
                         </div>
-                        <input
+                        <Input
                           type="email"
                           placeholder="Email"
                           className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
@@ -361,7 +362,7 @@ export default function OnBoardingPage() {
                         <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
                           <LockKeyhole className="h-4 w-4" />
                         </div>
-                        <input
+                        <Input
                           type="password"
                           placeholder="Password"
                           className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
@@ -371,9 +372,10 @@ export default function OnBoardingPage() {
                       <Button
                         type="Login"
                         label="Log In"
+                        className="w-full bg-secondary-foreground text-secondary-foreground hover:bg-secondary-foreground/80"
                       />
                       <div className="w-full flex justify-center items-center">
-                        <p className="text-sm text-black mt-2 cursor-pointer">
+                        <p className="text-sm text-secondary-foreground mt-2 cursor-pointer">
                           Forgot Password?
                         </p>
                       </div>
@@ -386,11 +388,11 @@ export default function OnBoardingPage() {
             {/* cards */}
 
             <div className="grid grid-cols-1 md:grid-cols-3">
-              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
+              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-gray-400 hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
                 <div className="px-5 py-4">
-                  <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                  <h5 className="text-secondary-foreground font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
                     <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
-                      <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+                      <span className="text-3xl text-secondary-foreground mb-1 font-lato pl-3 pr-5 py-4 relative">
                         <div
                           className="absolute top-2 right-0 p-1 cursor-pointer"
                           onClick={() => handleModalOpenForEdit("Card 1 Icon")}
@@ -422,13 +424,13 @@ export default function OnBoardingPage() {
                         style={{
                           fontSize: filterTheme("Card 1 Title").fontSize,
                           fontWeight: filterTheme("Card 1 Title").fontWeight,
-                          color: filterTheme("Card 1 Title").color
+                          color: "hsl(var(--secondary-foreground))"
                         }}>
                         {filterContent("Card 1 Title")}
                       </div>
                     </span>
                   </h5>
-                  <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                  <span className="text-secondary-foreground text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("Card 1 Content")}
@@ -439,17 +441,17 @@ export default function OnBoardingPage() {
                       style={{
                         fontSize: filterTheme("Card 1 Content").fontSize,
                         fontWeight: filterTheme("Card 1 Content").fontWeight,
-                        color: filterTheme("Card 1 Content").color
+                        color: "hsl(var(--secondary-foreground))"
                       }}>{filterContent("Card 1 Content")}</div>
                   </span>
                 </div>
               </div>
 
-              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
+              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-gray-400 hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
                 <div className="px-5 py-4">
-                  <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                  <h5 className="text-secondary-foreground font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
                     <div className="border border-dashed border-gray-400 h-10 w-12 flex items-center justify-center shrink-0">
-                      <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+                      <span className="text-3xl text-secondary-foreground mb-1 font-lato pl-3 pr-5 py-4 relative">
                         <div
                           className="absolute top-2 right-0 p-1 cursor-pointer"
                           onClick={() => handleModalOpenForEdit("Card 2 Icon")}
@@ -481,13 +483,13 @@ export default function OnBoardingPage() {
                         style={{
                           fontSize: filterTheme("Card 2 Title").fontSize,
                           fontWeight: filterTheme("Card 2 Title").fontWeight,
-                          color: filterTheme("Card 2 Title").color
+                          color: "hsl(var(--secondary-foreground))"
                         }}>
                         {filterContent("Card 2 Title")}
                       </div>
                     </span>
                   </h5>
-                  <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                  <span className="text-secondary-foreground text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("Card 2 Content")}
@@ -498,17 +500,17 @@ export default function OnBoardingPage() {
                       style={{
                         fontSize: filterTheme("Card 2 Content").fontSize,
                         fontWeight: filterTheme("Card 2 Content").fontWeight,
-                        color: filterTheme("Card 2 Content").color
+                        color: "hsl(var(--secondary-foreground))"
                       }}>{filterContent("Card 2 Content")}</div>
                   </span>
                 </div>
               </div>
 
-              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
+              <div className="mx-3.5 mb-12 p-4 shadow-lg rounded-sm border border-solid border-gray-400 hover:scale-105 transition-all ease-in-out duration-150 h-[200px] overflow-auto hidden-scrollbar">
                 <div className="px-5 py-4">
-                  <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
+                  <h5 className="text-secondary-foreground font-medium mb-3 text-xl font-lato w-full flex items-center gap-3">
                     <div className="border border-dashed border-gray-400 h-10 flex items-center justify-center shrink-0">
-                      <span className="text-3xl text-[#000000e6] mb-1 font-lato pl-3 pr-5 py-4 relative">
+                      <span className="text-3xl text-secondary-foreground mb-1 font-lato pl-3 pr-5 py-4 relative">
                         <div
                           className="absolute top-2 right-0 p-1 cursor-pointer"
                           onClick={() => handleModalOpenForEdit("Card 3 Icon")}
@@ -540,13 +542,13 @@ export default function OnBoardingPage() {
                         style={{
                           fontSize: filterTheme("Card 3 Title").fontSize,
                           fontWeight: filterTheme("Card 3 Title").fontWeight,
-                          color: filterTheme("Card 3 Title").color
+                          color: "hsl(var(--secondary-foreground))"
                         }}>
                         {filterContent("Card 3 Title")}
                       </div>
                     </span>
                   </h5>
-                  <span className="text-[#6c757d] text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
+                  <span className="text-secondary-foreground text-sm font-normal leading-5 line-clamp-4 border border-dashed border-gray-400 pl-3 pr-8 py-3 relative">
                     <div
                       className="absolute top-0 right-0 p-1 cursor-pointer"
                       onClick={() => handleModalOpenForEdit("Card 3 Content")}
@@ -557,7 +559,7 @@ export default function OnBoardingPage() {
                       style={{
                         fontSize: filterTheme("Card 3 Content").fontSize,
                         fontWeight: filterTheme("Card 3 Content").fontWeight,
-                        color: filterTheme("Card 3 Content").color
+                        color: "hsl(var(--secondary-foreground))"
                       }}>{filterContent("Card 3 Content")}</div>
                   </span>
                 </div>

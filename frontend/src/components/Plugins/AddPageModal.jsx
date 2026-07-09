@@ -3,12 +3,21 @@ import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import dynamic from "next/dynamic";
 import { toast } from "react-toastify";
-import { X } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { Dialog } from "@headlessui/react";
 import { useParams } from "next/navigation";
-import Button from "../Common/Elements/Button";
 import { customPageSectionTemplate } from "@/app/lib/data/existingPages";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const TextEditor = dynamic(() => import("./RTE/TextEditor"), { ssr: false });
 
@@ -16,7 +25,6 @@ function AddPageModal({
   isOpen,
   onClose,
   setPluginData,
-  // setPages,
   editData,
   setEditData,
   setOnPageCreated,
@@ -63,12 +71,10 @@ function AddPageModal({
       return div.textContent || div.innerText || "";
     };
 
-    // Remove HTML tags and normalize the text
     const sanitizedExistingDescription =
       sanitizeHTML(existingDescription).trim();
     const sanitizedCurrentDescription = sanitizeHTML(currentDescription).trim();
 
-    // Compare the sanitized descriptions
     return sanitizedExistingDescription === sanitizedCurrentDescription;
   };
 
@@ -79,7 +85,7 @@ function AddPageModal({
         title: values.title,
         description: values.description,
         visibility: customPageSectionTemplate?.sections,
-        isCustomPage: true 
+        isCustomPage: true,
       };
 
       const response = await fetchWrapper(
@@ -91,7 +97,7 @@ function AddPageModal({
           },
           body: JSON.stringify(data),
         },
-        "save-page"
+        "save-page",
       );
 
       const savedData = await response.json();
@@ -107,6 +113,7 @@ function AddPageModal({
       setLoading(false);
     }
   };
+
   const handleClose = async () => {
     try {
       setLoading(true);
@@ -114,12 +121,10 @@ function AddPageModal({
       const title = getValues("title");
       const description = getValues("description");
 
-      if (!title || !description || description==='<p></p>') {
+      if (!title || !description || description === "<p></p>") {
         toast.error("Both title and description are required.");
         return;
       }
-
-      console.log("Plugin", plugin)
 
       const payload = {
         title,
@@ -133,9 +138,9 @@ function AddPageModal({
       const url = "/api/pages";
 
       if (isEditMode) {
-        payload.id = editData.id
-      }else {
-        payload.visibility = customPageSectionTemplate.sections
+        payload.id = editData.id;
+      } else {
+        payload.visibility = customPageSectionTemplate.sections;
       }
 
       const response = await fetchWrapper(
@@ -147,13 +152,13 @@ function AddPageModal({
           },
           body: JSON.stringify(payload),
         },
-        isEditMode ? "edit-page" : "save-page"
+        isEditMode ? "edit-page" : "save-page",
       );
 
       const savedData = await response.json();
       if (!response.ok) {
         throw new Error(
-          savedData.error || `Failed to ${isEditMode ? "update" : "save"} page`
+          savedData.error || `Failed to ${isEditMode ? "update" : "save"} page`,
         );
       }
 
@@ -173,7 +178,7 @@ function AddPageModal({
             ? prev.map((page) =>
                 page.id === savedData.data.id
                   ? { ...page, ...savedData.data }
-                  : page
+                  : page,
               )
             : [...prev, { ...savedData.data, type: pageType }];
         });
@@ -187,7 +192,7 @@ function AddPageModal({
       setEditData(null);
       onClose();
     } catch (error) {
-      setValue("title", "")
+      setValue("title", "");
       setValue("description", "");
       toast.error(error.message);
       console.error("Error in handleClose:", error);
@@ -196,175 +201,160 @@ function AddPageModal({
     }
   };
 
+  const handleCancelClick = () => {
+    if (editData?.description) {
+      if (
+        compareDescription(editData?.description, getValues("description"))
+      ) {
+        setEditData(null);
+        setIsOpenCancelConfirm(false);
+        setValue("description", "");
+        onClose();
+      } else {
+        setIsOpenCancelConfirm(true);
+      }
+    } else if (getValues("description")) {
+      setIsOpenCancelConfirm(true);
+    } else {
+      setEditData(null);
+      setIsOpenCancelConfirm(false);
+      setValue("description", "");
+      onClose();
+    }
+  };
+
+  const confirmDiscard = () => {
+    setEditData(null);
+    setIsOpenCancelConfirm(false);
+    setValue("title", "");
+    setValue("description", "");
+    onClose();
+  };
+
   if (editData && editData?.description && !getValues("description")) {
-    return;
+    return null;
   }
 
   return (
     <>
-      {isOpen && (
-        <div className="fixed inset-0 min-h-screen text-gray-700 bg-black/30 flex items-center justify-center z-10" style={{marginTop : 0}}>
-          <div className="bg-white rounded-lg w-[90%] max-w-[1000px] flex flex-col relative max-h-[80vh] overflow-y-auto">
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 text-gray-600 hover:bg-gray-100 p-1 rounded-full"
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit(handleSubmitData)(e);
-              }}
-              className="flex flex-col justify-center items-center p-5 space-y-4"
-            >
-              <div className="flex flex-col w-full">
-                <label className="text-xl font-semibold mb-1">Title</label>
-                <div className="px-4">
-                  <input
-                    type="text"
-                    placeholder="Page Title"
-                    {...register("title", {
-                      required: "Title is required",
-                      maxLength: {
-                        value: 100,
-                        message: "Title cannot exceed 100 characters",
-                      },
-                    })}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/10 focus:border-primary/30 outline-none text-text"
-                  />
-                </div>
-                {errors.title && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.title.message}
-                  </p>
-                )}
-              </div>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => !open && handleCancelClick()}
+      >
+        <DialogContent
+          className="max-h-[85vh] w-[90%] max-w-[1000px] overflow-y-auto sm:max-w-[1000px]"
+          overlayClassName="bg-black/30"
+          showCloseButton
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit(handleSubmitData)(e);
+            }}
+            className="flex w-full flex-col gap-5"
+          >
+            <div className="w-full space-y-2 mt-3">
+              <Label htmlFor="page-title" className="text-foreground text-lg ">
+                Title
+              </Label>
+              <Input
+                id="page-title"
+                type="text"
+                placeholder="Page Title"
+                className="w-full !bg-background h-10"
+                {...register("title", {
+                  required: "Title is required",
+                  maxLength: {
+                    value: 100,
+                    message: "Title cannot exceed 100 characters",
+                  },
+                })}
+              />
+              {errors.title && (
+                <p className="text-sm text-destructive">{errors.title.message}</p>
+              )}
+            </div>
 
-              <div className="flex flex-col w-full max-h-[500px]">
-                <label className="text-xl font-semibold mb-1">
-                  Description
-                </label>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field }) => (
-                      <TextEditor
-                        content={field.value || ""}
-                        onChange={(value) => setValue("description", value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") e.preventDefault();
-                        }}
-                      />
-                    )}
-                  />
-                {errors.description && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.description.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="w-full flex items-center justify-end mr-12 gap-2">
-                <Button
-                  onClick={() => {
-                    if (editData?.description) {
-                      if (
-                        compareDescription(
-                          editData?.description,
-                          getValues("description")
-                        )
-                      ) {
-                        setEditData(null);
-                        setIsOpenCancelConfirm(false);
-                        setValue("description", "");
-                        onClose();
-                      } else {
-                        setIsOpenCancelConfirm(true);
-                      }
-                    } else if (getValues("description")) {
-                      setIsOpenCancelConfirm(true);
-                    } else {
-                      setEditData(null);
-                      setIsOpenCancelConfirm(false);
-                      setValue("description", "");
-                      onClose();
-                    }
-                  }}
-                  disabled={loading}
-                  type="Secondary"
-                  label ="Cancel"
-                />
-                <Button
-                  disabled={loading}
-                  onClick={handleClose}
-                  isLoading={loading}
-                  type="Primary"
-                  label={editData
-                    ? "Save"
-                    : "Add"}
+            <div className="w-full max-h-[500px] space-y-2">
+              <Label htmlFor="page-description" className="text-foreground text-lg ">
+                Description
+              </Label>
+              <div className="w-full  rounded-xl bg-card">
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <TextEditor
+                      content={field.value || ""}
+                      onChange={(value) => setValue("description", value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.preventDefault();
+                      }}
+                    />
+                  )}
                 />
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+              {errors.description && (
+                <p className="text-sm text-destructive">
+                  {errors.description.message}
+                </p>
+              )}
+            </div>
+
+            <DialogFooter className="gap-2 border-t border-border bg-card sm:gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancelClick}
+                disabled={loading}
+                className="px-3 py-3"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                disabled={loading}
+                onClick={handleClose}
+                className="px-3 py-3"
+              >
+                {loading ? (
+                  <LoaderSpinner size={18} className="text-primary-foreground" />
+                ) : null}
+                {editData ? "Save" : "Add"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog
         open={isOpenCancelConfirm}
-        onClose={() => {
-          setEditData(null);
-          setIsOpenCancelConfirm(false);
-          setValue("title", "")
-          setValue("description", "");
-          onClose();
-        }}
-        className="relative z-50"
+        onOpenChange={(open) => !open && setIsOpenCancelConfirm(false)}
       >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-4 border-b">
-              <Dialog.Title className="text-lg text-gray-600 font-medium">
-                Cancel Add
-              </Dialog.Title>
-              <button
-                onClick={() => {
-                  setEditData(null);
-                  setIsOpenCancelConfirm(false);
-                  setValue("description", "");
-                  onClose();
-                }}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex flex-col text-gray-800 space-x-3 mt-4">
-              <p className="text-sm text-center py-4">
-                This action CANNOT be undone. This will not save your page
-              </p>
-              <div className="flex items-center justify-between">
-                <Button
-                  onClick={() => setIsOpenCancelConfirm(false)}
-                  type="Secondary"
-                  label="Cancel"
-                />
-                <Button
-                  onClick={() => {
-                    setEditData(null);
-                    setIsOpenCancelConfirm(false);
-                    setValue("description", "");
-                    onClose();
-                  }}
-                  type="Primary"
-                  label="OK"
-                />
-              </div>
-            </div>
-          </Dialog.Panel>
-        </div>
+        <DialogContent className="sm:max-w-sm" overlayClassName="bg-black/30">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">
+              {editData ? "Discard Page Changes?" : "Cancel Add"}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              This action CANNOT be undone. This will not save your page.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 border-t border-border bg-muted/30 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpenCancelConfirm(false)}
+              className="px-3 py-3"
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={confirmDiscard} className="px-3 py-3">
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </>
   );

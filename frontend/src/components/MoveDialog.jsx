@@ -1,8 +1,15 @@
-import { Dialog, DialogPanel } from "@headlessui/react";
 import { useEffect, useState } from "react";
-import { ChevronRight, FolderInput, X } from "lucide-react";
+import { ChevronRight, FolderInput } from "lucide-react";
 import FileExplorer from "./FileExplorer";
-import Button from "./Common/Elements/Button";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 function MoveDialog({
   item,
@@ -49,77 +56,81 @@ function MoveDialog({
   }, [item]);
 
   return (
-    <Dialog
-      open={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-      className="relative z-50 text-gray-600"
-    >
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-      {/* Dialog Panel */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-md rounded-lg bg-white shadow-lg">
-          {/* Header */}
-          <div className="flex justify-between items-center border-b px-4 py-3">
-            <h2 className="text-lg font-semibold">Move “{item?.name}”</h2>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <DialogContent className="w-full max-w-md gap-0 overflow-hidden bg-background p-0 text-foreground sm:max-w-md">
+        {/* Header */}
+        <DialogHeader className="space-y-2 overflow-hidden border-b border-border px-4 py-3 pr-12 text-left">
+          <DialogTitle className="text-lg font-semibold text-secondary-foreground">
+            Move
+          </DialogTitle>
+          {item?.name ? (
+            <p
+              className="min-w-0 break-all text-sm font-medium text-muted-foreground"
+              title={item.name}
             >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+              “{item.name}”
+            </p>
+          ) : null}
+        </DialogHeader>
 
-          {/* Content */}
-          <div className="p-4 space-y-4 overflow-auto max-h-[600px] h-[60vh]">
-            {/* Current Location */}
-            <div>
-              <p className="text-gray-500 font-medium">Current location:</p>
-              <div className="font-medium flex">
-                My Files
-                {currentLocation &&
-                  currentLocation.length > 0 &&
-                  currentLocation.map((p, index) => (
-                    <div key={index} className="flex items-center">
-                      <ChevronRight className="h-5 w-5" />
+        {/* Content */}
+        <div className="h-[60vh] max-h-[600px] space-y-4 overflow-auto p-4">
+          {/* Current Location */}
+          <div className="min-w-0 space-y-1">
+            <p className="font-medium text-secondary-foreground">
+              Current location:
+            </p>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-1 text-sm font-medium text-foreground">
+              <span className="shrink-0">My Files</span>
+              {currentLocation &&
+                currentLocation.length > 0 &&
+                currentLocation.map((p, index) => (
+                  <div key={index} className="flex min-w-0 max-w-full items-center gap-1">
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="truncate" title={p.name}>
                       {p.name}
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* Folder List */}
-            <div>
-              <p className="text-gray-500">Select a new location:</p>
-              <div className="mt-2 space-y-2 overflow-auto custom-scrollbar">
-                <FileExplorer
-                  data={fileList}
-                  selectedItem={selectedFolder}
-                  setSelectedItem={setSelectedFolder}
-                  isInDialog={true}
-                />
-              </div>
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end border-t px-4 py-3 space-x-2">
-            <Button
-              onClick={() => setIsModalOpen(false)}
-              disabled={isLoading}
-              type="Secondary"
-              label="Cancel"
-            />
-            
-            <Button
+          {/* Folder List */}
+          <div className="min-w-0">
+            <p className="font-medium text-secondary-foreground">
+              Select a new location:
+            </p>
+            <div className="custom-scrollbar mt-2 space-y-2 overflow-auto rounded-lg border border-border bg-secondary">
+              <FileExplorer
+                data={fileList}
+                selectedItem={selectedFolder}
+                setSelectedItem={setSelectedFolder}
+                isInDialog={true}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <DialogFooter className="mx-0 mb-0 rounded-none border-t border-border bg-transparent px-4 py-3">
+          <Button
+            variant="outline"
+            className="px-3 py-3"
+            onClick={() => setIsModalOpen(false)}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+
+          <Button
             onClick={() => {
               handleMove(selectedFolder);
               setIsLoading(true);
               setTimeout(() => {
                 setIsLoading(false);
-            }, 2000); 
+              }, 2000);
             }}
+            className="px-3 py-3"
             disabled={
               isLoading ||
               !selectedFolder ||
@@ -127,14 +138,18 @@ function MoveDialog({
                 currentLocation[currentLocation.length - 1]?.id ||
               selectedFolder?.id == item?.id
             }
-            isLoading={isLoading}
-            icon={FolderInput}
-            type="Primary"
-            label ="Move"
-            />
-          </div>
-        </DialogPanel>
-      </div>
+          >
+            {isLoading ? (
+              <LoaderSpinner size={20} className="text-primary-foreground" />
+            ) : (
+              <>
+                <FolderInput className="h-4 w-4" />
+                Move
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

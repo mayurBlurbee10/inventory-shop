@@ -3,6 +3,13 @@ import { X } from "lucide-react";
 import FileExplorer from "../FileExplorer";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const FileViewerModal = ({ isOpen, onClose, user }) => {
   const [files, setFiles] = useState([]);
@@ -50,42 +57,52 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
     }
   }, [isOpen, user]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] flex flex-col relative">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Files - {`${user.firstName || ''} ${user.lastName || ''}`.trim()}
-          </h2>
-          <button
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        className="flex h-[80vh] w-full max-w-4xl flex-col gap-0 p-0 sm:max-w-4xl"
+      >
+        <div className="flex items-center justify-between border-b border-border p-6">
+          <DialogTitle className="text-xl font-semibold text-foreground">
+            Files - {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
+          </DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
+            aria-label="Close"
           >
             <X className="h-6 w-6" />
-          </button>
+          </Button>
         </div>
 
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {error && (
-            <div className="p-4 bg-red-50 text-red-600 rounded-md mb-4">
-              {error}
-            </div>
+            <Alert variant="destructive" className="mb-4 border-destructive/30">
+              <AlertDescription className="text-destructive">
+                {error}
+              </AlertDescription>
+            </Alert>
           )}
 
           {loading ? (
             <div className="flex justify-center py-8">
-              <LoaderSpinner size={32} className="text-blue-500" />
+              <LoaderSpinner size={32} className="text-secondary-foreground" />
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="rounded-xl border border-border bg-card shadow-sm">
               <FileExplorer data={files} />
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

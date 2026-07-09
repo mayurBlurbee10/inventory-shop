@@ -1,9 +1,16 @@
 'use client'
 import { clearUserData } from "@/app/lib/auth";
-import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Button from "./Common/Elements/Button";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
   const router = useRouter();
@@ -17,38 +24,47 @@ function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
-      className="relative z-50 text-gray-600"
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-md rounded-lg bg-white shadow-lg">
-          <div className="flex justify-between items-center border-b px-4 py-3">
-            <h2 className="text-lg font-semibold">
+      <DialogContent
+        className="w-full max-w-md bg-background"
+        overlayClassName="bg-black/30"
+        showCloseButton={false}
+      >
+          <DialogHeader className="border-b border-border pb-4 text-left">
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="text-lg font-semibold text-foreground">
               Portal Created Successfully
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="p-4 space-y-4 text-center">
-            <p className="text-gray-600 mb-6">
-              Your portal <span className="font-semibold">{portalName}</span> has
-              been created successfully. Please visit to explore more.
-            </p>
-            <div className="w-full flex justify-center">
+              </DialogTitle>
               <Button
-                onClick={handleVisitPortal}
-                label="Visit your portal"
-                type="Primary"
-              />
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={onClose}
+                className="rounded-full text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </Button>
             </div>
+          </DialogHeader>
+          <div className="space-y-4 p-4 text-center">
+            <DialogDescription className="mb-6 text-base text-muted-foreground">
+              Your portal <span className="font-semibold text-foreground">{portalName}</span> has
+              been created successfully. Please visit to explore more.
+            </DialogDescription>
+            <DialogFooter className="justify-center sm:justify-center">
+              <Button
+                type="button"
+                onClick={handleVisitPortal}
+                className="px-3 py-3"
+              >
+                Visit your portal
+              </Button>
+            </DialogFooter>
           </div>
-        </DialogPanel>
-      </div>
+      </DialogContent>
     </Dialog>
   );
 }

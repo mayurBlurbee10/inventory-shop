@@ -19,8 +19,8 @@ const generateMockData = async (year, portalId) => {
 
 
 const LoadingSpinner = () => (
-  <div className="flex justify-center items-center py-8 min-h-[50vh]">
-    <LoaderSpinner size={32} className="text-blue-500" />
+  <div className="flex min-h-[50vh] items-center justify-center py-8">
+    <LoaderSpinner size={32} className="text-secondary-foreground" />
   </div>
 );
 

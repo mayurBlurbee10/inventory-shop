@@ -62,7 +62,7 @@ const PreviewLoginPage = () => {
           
               if (!Icon) return null;
           
-              return <Icon className="w-7 h-7 text-gray-700" />;
+              return <Icon className="h-7 w-7 text-secondary-foreground" />;
             }
 
             const CoverPhoto = () => {
@@ -112,27 +112,27 @@ const PreviewLoginPage = () => {
     return (
         <div className="min-h-screen bg-background flex flex-col justify-between">
             <div>
-                <nav className="flex justify-between items-center bg-secondary py-2 px-2 border-b" style={{ backgroundColor: config?.primaryColor }}>
-                    <div className="max-w-[1140px] w-full mx-auto min-h-[70px]">
-                        <a className=" flex items-center py-1 px-[18px] gap-2 hover:scale-105 transition-all ease-in-out duration-300">
+                <nav className="flex items-center justify-between border-b border-border bg-primary px-2 py-2">
+                    <div className="mx-auto min-h-[70px] w-full max-w-[1140px]">
+                        <a className="flex items-center gap-2 px-[18px] py-1 transition-all duration-300 ease-in-out hover:scale-105">
                             {user?.company?.logo || config?.logo ? (
                                 <LogoImage />
                             ) : (
-                                <div className="h-[52px] w-[52px] mr-2 bg-gray-300 animate-pulse rounded" />
+                                <div className="mr-2 h-[52px] w-[52px] animate-pulse rounded bg-muted" />
                             )}
 
                             <span
-                                className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
+                                className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap font-lato text-3xl text-secondary-foreground md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
                                 style={{
                                     fontSize: filterTheme("Header Text").fontSize,
                                     fontWeight: filterTheme("Header Text").fontWeight,
-                                    color: filterTheme("Header Text").color,
+                                    color: "hsl(var(--secondary-foreground))",
                                     lineHeight: "1.2",
                                     paddingInline: "2px"
                                 }}
                             >
                                 {content?.portalContent === undefined ? (
-                                    <span className="w-[200px] h-[50px] bg-gray-200 animate-pulse rounded block"></span>
+                                    <span className="block h-[50px] w-[200px] animate-pulse rounded bg-muted" />
                                 ) : filterValue("Header Text") &&
                                     filterValue("Header Text") !== "Premier Customer Portal" ? (
                                     filterValue("Header Text")
@@ -145,28 +145,26 @@ const PreviewLoginPage = () => {
                 </nav>
                 <div className="max-w-[1140px] w-full mx-auto mt-10">
                     <div className="flex-1 flex flex-col xl:flex-row">
-                        <div className="w-full md:w-full lg:w-full xl:w-4/5 flex flex-col justify-between bg-secondary">
+                        <div className="flex w-full flex-col justify-between bg-secondary md:w-full lg:w-full xl:w-4/5">
                             <div>
                                 <div className="px-[15px]">
                                     <h2
-                                        className="font-light leading-tight text-text font-lato mb-2" style={{
+                                        className="mb-2 font-lato font-light leading-tight text-secondary-foreground"
+                                        style={{
                                             fontSize: filterTheme("Title").fontSize,
                                             fontWeight: filterTheme("Title").fontWeight,
-                                            color: filterTheme("Title").color
+                                            color: "hsl(var(--secondary-foreground))"
                                           }}>
                                         {filterValue("Title")}
                                     </h2>
-                                    <div
-                                        style={{ backgroundColor: config?.primaryColor }}
-                                        className="p-[1px] w-full"
-                                    ></div>
+                                    <div className="my-2 h-px w-full bg-[var(--primary-solid)]" />
 
                                     <p
-                                        className="font-light text-black leading-7 font-lato mb-3 mt-5"
+                                        className="mb-3 mt-5 font-lato font-light leading-7 text-secondary-foreground"
                                         style={{
                                             fontSize: filterTheme("Paragraph").fontSize,
                                             fontWeight: filterTheme("Paragraph").fontWeight,
-                                            color: filterTheme("Paragraph").color
+                                            color: "hsl(var(--secondary-foreground))"
                                           }}>
                                         {filterValue("Paragraph")}
                                     </p>
@@ -182,37 +180,38 @@ const PreviewLoginPage = () => {
                         </div>
 
                         {/* Right Panel - Login Form */}
-                        <div className="w-full md:w-full lg:w-full xl:w-2/5 flex items-center justify-center px-[15px] mb-12 mt-5 md:mt-0">
-                            <div className="w-full max-w-xl bg-secondary rounded-md p-4 custom-shadow-sm border border-solid border-[0,0,0,.125]">
+                        <div className="mb-12 mt-5 flex w-full items-center justify-center px-[15px] md:mt-0 md:w-full lg:w-full xl:w-2/5">
+                            <div className="custom-shadow-sm w-full max-w-xl rounded-md border border-border bg-card p-4">
                                 <form>
-                                    <div className="">
-                                        <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-3 mx-5">
-                                            <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                                    <div>
+                                        <div className="group mx-5 mb-3 flex items-center justify-center overflow-hidden rounded-sm border border-border">
+                                            <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center bg-muted text-muted-foreground">
                                                 <IdCard className="h-4 w-4" />
                                             </div>
                                             <input
                                                 type="email"
                                                 placeholder="Email"
-                                                className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
+                                                className="w-full rounded-sm bg-background px-4 py-2.5 text-sm text-secondary-foreground outline-none placeholder:text-muted-foreground"
                                                 readOnly
                                             />
                                         </div>
-                                        <div className="rounded-sm flex items-center justify-center border border-[#f1f1f1] group mb-5 mx-5">
-                                            <div className="bg-[#f2f2f2] h-[42px] w-[42px] flex items-center justify-center text-gray-400 flex-shrink-0">
+                                        <div className="group mx-5 mb-5 flex items-center justify-center overflow-hidden rounded-sm border border-border">
+                                            <div className="flex h-[42px] w-[42px] shrink-0 items-center justify-center bg-muted text-muted-foreground">
                                                 <LockKeyhole className="h-4 w-4" />
                                             </div>
                                             <input
                                                 type="password"
                                                 placeholder="Password"
-                                                className="w-full px-4 py-2.5 text-sm rounded-sm outline-none text-text group-focus:ring-1 group-focus:ring-gray-800"
+                                                className="w-full rounded-sm bg-background px-4 py-2.5 text-sm text-secondary-foreground outline-none placeholder:text-muted-foreground"
                                                 readOnly
                                             />
                                         </div>
                                         <Button
                                             type="Login"
                                             label="Log In"
+                                            className="w-full bg-primary-solid text-primary-foreground hover:bg-primary-solid/80"
                                         />
-                                        <div className="w-full flex justify-center items-center text-sm mt-2 text-black hover:text-blue-700  cursor-pointer">
+                                        <div className="mt-2 flex w-full cursor-pointer items-center justify-center text-sm text-muted-foreground hover:text-primary">
                                             <p>
                                                 Forgot Password?
                                             </p>
@@ -226,10 +225,10 @@ const PreviewLoginPage = () => {
                     {/* cards */}
                     <div>
                         <div className="grid grid-cols-1 md:grid-cols-3 py-5">
-                            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+                            <div className="mx-3.5 mb-5 rounded-sm border border-border bg-card p-4 shadow-lg transition-all duration-150 ease-in-out hover:scale-105">
                                 <div className="px-5 py-4">
-                                    <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                                        <div>
+                                    <h5 className="mb-3 flex items-center justify-start gap-3 font-lato text-xl font-medium text-secondary-foreground">
+                                        <div className="text-secondary-foreground">
                                             {iconComponent("Card 1 Icon") || (
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -237,6 +236,7 @@ const PreviewLoginPage = () => {
                                                     width="28"
                                                     height="28"
                                                     fill="currentColor"
+                                                    className="text-secondary-foreground"
                                                 >
                                                     <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
                                                 </svg>
@@ -246,22 +246,22 @@ const PreviewLoginPage = () => {
                                              style={{
                                                 fontSize: filterTheme("Card 1 Title").fontSize,
                                                 fontWeight: filterTheme("Card 1 Title").fontWeight,
-                                                color: filterTheme("Card 1 Title").color
+                                                color: "hsl(var(--secondary-foreground))"
                                               }}>{filterValue("Card 1 Title")}</div>
                                     </h5>
-                                    <p className="text-[#6c757d] font-normal leading-6"  style={{
+                                    <p className="font-normal leading-6 text-muted-foreground"  style={{
                                                     fontSize: filterTheme("Card 1 Content").fontSize,
                                                     fontWeight: filterTheme("Card 1 Content").fontWeight,
-                                                    color: filterTheme("Card 1 Content").color
+                                                    color: "hsl(var(--secondary-foreground))"
                                                     }}>
                                         {filterValue("Card 1 Content")}
                                     </p>
                                 </div>
                             </div>
-                            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+                            <div className="mx-3.5 mb-5 rounded-sm border border-border bg-card p-4 shadow-lg transition-all duration-150 ease-in-out hover:scale-105">
                                 <div className="px-5 py-4">
-                                    <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                                        <div>
+                                    <h5 className="mb-3 flex items-center justify-start gap-3 font-lato text-xl font-medium text-secondary-foreground">
+                                        <div className="text-secondary-foreground">
                                             {iconComponent("Card 2 Icon") || (
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -269,6 +269,7 @@ const PreviewLoginPage = () => {
                                                     width="28"
                                                     height="28"
                                                     fill="currentColor"
+                                                    className="text-secondary-foreground"
                                                 >
                                                     <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
                                                 </svg>
@@ -278,22 +279,22 @@ const PreviewLoginPage = () => {
                                             style={{
                                                 fontSize: filterTheme("Card 2 Title").fontSize,
                                                 fontWeight: filterTheme("Card 2 Title").fontWeight,
-                                                color: filterTheme("Card 2 Title").color
+                                                color: "hsl(var(--secondary-foreground))"
                                               }}>{filterValue("Card 2 Title")}</div>
                                     </h5>
-                                    <p className="text-[#6c757d] font-normal leading-6" style={{
+                                    <p className="font-normal leading-6 text-muted-foreground" style={{
                                                     fontSize: filterTheme("Card 2 Content").fontSize,
                                                     fontWeight: filterTheme("Card 2 Content").fontWeight,
-                                                    color: filterTheme("Card 2 Content").color
+                                                    color: "hsl(var(--secondary-foreground))"
                                                     }}>
                                         {filterValue("Card 2 Content")}
                                     </p>
                                 </div>
                             </div>
-                            <div className="mx-3.5 mb-5 p-4 shadow-lg rounded-sm border border-solid border-[#00000020] hover:scale-105 transition-all ease-in-out duration-150">
+                            <div className="mx-3.5 mb-5 rounded-sm border border-border bg-card p-4 shadow-lg transition-all duration-150 ease-in-out hover:scale-105">
                                 <div className="px-5 py-4">
-                                    <h5 className="text-[#212529] font-medium mb-3 text-xl font-lato flex items-center justify-start gap-3">
-                                        <div>
+                                    <h5 className="mb-3 flex items-center justify-start gap-3 font-lato text-xl font-medium text-secondary-foreground">
+                                        <div className="text-secondary-foreground">
                                             {iconComponent("Card 3 Icon") || (
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -301,6 +302,7 @@ const PreviewLoginPage = () => {
                                                     width="28"
                                                     height="28"
                                                     fill="currentColor"
+                                                    className="text-secondary-foreground"
                                                 >
                                                     <path d="M5 3V19H21V21H3V3H5ZM19.9393 5.93934L22.0607 8.06066L16 14.1213L13 11.121L9.06066 15.0607L6.93934 12.9393L13 6.87868L16 9.879L19.9393 5.93934Z"></path>
                                                 </svg>
@@ -310,13 +312,13 @@ const PreviewLoginPage = () => {
                                             style={{
                                                 fontSize: filterTheme("Card 3 Title").fontSize,
                                                 fontWeight: filterTheme("Card 3 Title").fontWeight,
-                                                color: filterTheme("Card 3 Title").color
+                                                color: "hsl(var(--secondary-foreground))"
                                               }}>{filterValue("Card 3 Title")}</div>
                                     </h5>
-                                    <p className="text-[#6c757d] font-normal leading-6 font-lato" style={{
+                                    <p className="font-normal leading-6 font-lato text-muted-foreground" style={{
                                                             fontSize: filterTheme("Card 3 Content").fontSize,
                                                             fontWeight: filterTheme("Card 3 Content").fontWeight,
-                                                            color: filterTheme("Card 3 Content").color
+                                                            color: "hsl(var(--secondary-foreground))"
                                                             }}>
                                         {filterValue("Card 3 Content")}
                                     </p>

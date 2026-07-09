@@ -1,62 +1,75 @@
-import { Dialog } from "@headlessui/react";
-import { Trash2, X } from "lucide-react";
-import Button from "./Common/Elements/Button";
+"use client";
+
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function DeleteConfirmDialog({
   isModalOpen,
   setIsModalOpen,
   handleDelete,
-  config,
+  config: _config,
   title = "Delete File",
   content = "Confirm delete?",
   buttonText = "Delete",
   isLoading,
-  modalRef
+  modalRef,
 }) {
-  
   return (
     <Dialog
       open={isModalOpen}
-      onClose={() => {
-        setIsModalOpen(false);
+      onOpenChange={(open) => {
+        if (!open && !isLoading) {
+          setIsModalOpen(false);
+        }
       }}
-      className="relative z-50"
     >
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center" ref={modalRef}>
-        <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white shadow-md">
-          <div className="flex justify-between items-center border-b p-4">
-            <Dialog.Title className="text-xl text-gray-600 font-medium flex items-center">
-              {title}
-            </Dialog.Title>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="text-gray-600 hover:bg-gray-100 rounded-full p-1"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="text-center p-4">
-            <div className="text-lg text-red-600 mb-4">{content}</div>
-            <div className="flex justify-center space-x-3">
-              <Button
-              onClick={() => setIsModalOpen(false)}
-              disabled={isLoading}
-              type="Secondary"
-              label="Close"
-              />
-              <Button
-               onClick={handleDelete}
-               disabled={isLoading}
-               isLoading={isLoading}
-               type="Delete"
-               label={buttonText}
-               icon={Trash2}
-              />
-            </div>
-          </div>
-        </Dialog.Panel>
-      </div>
+      <DialogContent
+        ref={modalRef}
+        className="sm:max-w-sm bg-background"
+        showCloseButton={!isLoading}
+      >
+        <DialogHeader className="text-center sm:text-left">
+          <DialogTitle className="text-foreground">{title}</DialogTitle>
+          <DialogDescription className="text-center text-base text-destructive my-3">
+            {content}
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter className="gap-2 border-0 p-0 mb-2 sm:justify-center sm:gap-0 bg-background">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsModalOpen(false)}
+            disabled={isLoading}
+            className="px-3 py-3 mx-3"
+          >
+            Close
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isLoading}
+            className="px-3 py-3"
+          >
+            {isLoading ? (
+              <LoaderSpinner size={18} className="text-destructive-foreground" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            {buttonText}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

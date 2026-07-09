@@ -1,39 +1,64 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { installTradingViewErrorSuppressor } from "../../../app/lib/tradingview";
+
+type ColorTheme = "light" | "dark";
+
+const getMode = (): ColorTheme =>
+  typeof window !== "undefined" && localStorage.getItem("mode") === "dark"
+    ? "dark"
+    : "light";
 
 const TopStories = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isWidgetLoaded = useRef(false);
+  const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isWidgetLoaded.current || !containerRef.current) return;
-    isWidgetLoaded.current = true;
+    installTradingViewErrorSuppressor();
 
-    containerRef.current.innerHTML = "";
+    const loadWidget = (colorTheme: ColorTheme) => {
+      const widget = widgetRef.current;
+      if (!widget) return;
 
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-timeline.js";
-    script.async = true;
-    script.type = "text/javascript";
-    script.innerHTML = JSON.stringify({
-      feedMode: "all_symbols",
-      isTransparent: false,
-      displayMode: "compact",
-      width: "100%", // responsive
-      height: "250",
-      colorTheme: "light",
-      locale: "en"
-    });
+      widget.innerHTML = "";
 
-    containerRef.current.appendChild(script);
+      const script = document.createElement("script");
+      script.src =
+        "https://s3.tradingview.com/external-embedding/embed-widget-timeline.js";
+      script.async = true;
+      script.type = "text/javascript";
+      script.innerHTML = JSON.stringify({
+        feedMode: "all_symbols",
+        isTransparent: true,
+        displayMode: "compact",
+        width: "100%", // responsive
+        height: "250",
+        colorTheme,
+        locale: "en",
+      });
+
+      widget.appendChild(script);
+    };
+
+    loadWidget(getMode());
+
+    const handleModeChange = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      loadWidget(detail === "dark" ? "dark" : "light");
+    };
+
+    window.addEventListener("theme-mode-changed", handleModeChange);
+
+    return () => {
+      window.removeEventListener("theme-mode-changed", handleModeChange);
+    };
   }, []);
 
   return (
-    <div className="w-full max-w-full overflow-y-auto border-b border-gray-200">
+    <div className="w-full max-w-full overflow-y-auto border-b border-border bg-secondary text-secondary-foreground">
       <div
         className="tradingview-widget-container__widget"
-        ref={containerRef}
+        ref={widgetRef}
       />
       <div className="tradingview-widget-copyright text-sm mt-2 text-center">
         <a
@@ -44,8 +69,6 @@ const TopStories = () => {
       </div>
     </div>
   );
-  
-  
 };
 
 export default TopStories;

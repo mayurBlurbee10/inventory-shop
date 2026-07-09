@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import {
   PlusCircle,
@@ -16,20 +18,69 @@ import {
 import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
-import Button from "../Common/Elements/Button";
 import { PluginType } from "@/config/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPages } from "@/store/services/pageService";
 import AllTaskModal from "../Common/AllTaskModal";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { ThemeSwitch } from "@/components/ui/theme-switch";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const options = [
   {
-    key:"t&c",
+    key: "t&c",
     label: "Terms and Conditions",
-    value : PluginType.TNC
+    value: PluginType.TNC,
   },
-]
+];
+
+const placeholderWidgets = [
+  {
+    name: "Workflow Builder",
+    description: "Create and manage custom workflows",
+    icon: Workflow,
+    status: "Ready",
+  },
+  {
+    name: "Signature Integration",
+    description: "Add digital signature capabilities",
+    icon: Fingerprint,
+    status: "Beta",
+  },
+  {
+    name: "Custom API",
+    description: "Configure custom API endpoints",
+    icon: Code,
+    status: "Ready",
+  },
+];
+
+const formatPluginTitle = (type) =>
+  type === PluginType.TNC
+    ? type.toUpperCase()
+    : type.charAt(0).toUpperCase() + type.slice(1);
+
+const CardActionLinks = () => (
+  <div className="mt-4 flex gap-2">
+    <Button
+      type="button"
+      variant="link"
+      className="h-auto p-0 text-secondary-foreground"
+    >
+      Configure
+    </Button>
+    <Button
+      type="button"
+      variant="link"
+      className="h-auto p-0 text-muted-foreground"
+    >
+      Documentation
+    </Button>
+  </div>
+);
 
 const ProductsContent = () => {
   const params = useParams();
@@ -43,7 +94,7 @@ const ProductsContent = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [pluginOptions, setPluginOptions] = useState(options);
   const [pagesData, setPagesData] = useState([]);
-  const [isUpdateLoading, setIsUpdateLoading] = useState(null)
+  const [isUpdateLoading, setIsUpdateLoading] = useState(null);
   const [isAllTaskModalOpen, setIsAllTaskModalOpen] = useState(false);
   const [defaultPageAlert, setDefaultPageAlert] = useState(false);
   const { data: allPages } = useSelector((state) => state.pages);
@@ -55,27 +106,31 @@ const ProductsContent = () => {
       const response = await fetchWrapper(
         `/api/plugins?portalId=${params?.portalid || "root"}`,
         {},
-        "fetch-plugins"
+        "fetch-plugins",
       );
       if (!response.ok) {
         throw new Error("Failed to fetch plugins");
       }
       const data = await response.json();
-      const filterTncPlugin = data.data.filter((item)=>item.type !== PluginType.PAGES);
+      const filterTncPlugin = data.data.filter(
+        (item) => item.type !== PluginType.PAGES,
+      );
 
       setPlugins(filterTncPlugin);
 
-      const filterPagePlugin = data.data.find((item) => item.type === PluginType.PAGES).pages.filter((item) => !item.isCustomPage);
+      const filterPagePlugin = data.data
+        .find((item) => item.type === PluginType.PAGES)
+        .pages.filter((item) => !item.isCustomPage);
 
       dispatch(
-        setPages(data.data.find((item) => item.type === PluginType.PAGES).pages)
+        setPages(data.data.find((item) => item.type === PluginType.PAGES).pages),
       );
 
-      setPagesData(filterPagePlugin)
+      setPagesData(filterPagePlugin);
       setPluginOptions((prevOptions) =>
         prevOptions.filter(
-          (option) => !data.data.some((plugin) => plugin?.type === option.key)
-        )
+          (option) => !data.data.some((plugin) => plugin?.type === option.key),
+        ),
       );
     } catch (error) {
       console.error("Error fetching plugins:", error);
@@ -88,7 +143,11 @@ const ProductsContent = () => {
     try {
       setDefaultPageAlert(false);
       setIsUpdateLoading(pageId);
-      setPagesData((prevPages) => prevPages.map((p) => p.id === pageId ? { ...p, isPageVisible: pageStatus} : p ));
+      setPagesData((prevPages) =>
+        prevPages.map((p) =>
+          p.id === pageId ? { ...p, isPageVisible: pageStatus } : p,
+        ),
+      );
       const response = await fetchWrapper(
         `/api/pages/status`,
         {
@@ -98,16 +157,25 @@ const ProductsContent = () => {
           },
           body: JSON.stringify({ id: pageId, isPageVisible: pageStatus }),
         },
-        "update-page"
+        "update-page",
       );
       if (!response.ok) {
         throw new Error("Failed to update page");
       }
-      const data = await response.json();
-      dispatch(setPages(allPages.map((p) => p.id === pageId ? { ...p, isPageVisible: pageStatus} : p )))
+      dispatch(
+        setPages(
+          allPages.map((p) =>
+            p.id === pageId ? { ...p, isPageVisible: pageStatus } : p,
+          ),
+        ),
+      );
     } catch (error) {
       console.error("Error fetching plugins:", error);
-      setPagesData((prevPages) => prevPages.map((p) => p.id === pageId ? { ...p, isPageVisible: !pageStatus} : p ));
+      setPagesData((prevPages) =>
+        prevPages.map((p) =>
+          p.id === pageId ? { ...p, isPageVisible: !pageStatus } : p,
+        ),
+      );
     } finally {
       setIsUpdateLoading(null);
     }
@@ -126,7 +194,7 @@ const ProductsContent = () => {
           },
           body: JSON.stringify({ id: plugin.id }),
         },
-        "delete-page"
+        "delete-page",
       );
 
       const data = await response.json();
@@ -134,40 +202,41 @@ const ProductsContent = () => {
       if (!response.ok) {
         throw new Error(data.error || "Failed to delete page");
       }
-      setPluginOptions((prev)=>([...prev, ...options.filter((opt)=>opt.key === plugin?.type)]))
+      setPluginOptions((prev) => [
+        ...prev,
+        ...options.filter((opt) => opt.key === plugin?.type),
+      ]);
       setIsDeleteModalOpen(false);
       setPluginSelected(null);
       fetchPlugins();
       toast.success("Plugin deleted successfully");
     } catch (error) {
       toast.error(error.message);
-      // setError("Failed to delete Page. Please try again.");
     } finally {
       setDeleteLoading(null);
     }
   };
 
- const isDefaultPageVisible = (toggleToPage) => {
-   if (toggleToPage?.title === "dashboard") {
-     const sharedDocsPage = pagesData.find(
-       (item) => item?.title === "shared-docs"
-     );
-     if (!sharedDocsPage?.isPageVisible) {
-       setDefaultPageAlert(true);
-       return false;
-     }
-   } else if (toggleToPage?.title === "shared-docs") {
-     const documentsPage = pagesData.find(
-       (item) => item?.title === "dashboard"
-     );
-     if (!documentsPage?.isPageVisible) {
-       setDefaultPageAlert(true);
-       return false;
-     }
-   }
-   return true;
- };
-
+  const isDefaultPageVisible = (toggleToPage) => {
+    if (toggleToPage?.title === "dashboard") {
+      const sharedDocsPage = pagesData.find(
+        (item) => item?.title === "shared-docs",
+      );
+      if (!sharedDocsPage?.isPageVisible) {
+        setDefaultPageAlert(true);
+        return false;
+      }
+    } else if (toggleToPage?.title === "shared-docs") {
+      const documentsPage = pagesData.find(
+        (item) => item?.title === "dashboard",
+      );
+      if (!documentsPage?.isPageVisible) {
+        setDefaultPageAlert(true);
+        return false;
+      }
+    }
+    return true;
+  };
 
   useEffect(() => {
     fetchPlugins();
@@ -175,135 +244,125 @@ const ProductsContent = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap justify-center gap-2 sm:justify-between items-center">
-      <div className=" text-center sm:text-left">
-        <h3 className="text-lg font-medium text-gray-900">
-          Workflow Widgets
-        </h3>
-        <p className="text-gray-600 text-sm">
-          Easily manage and customize the workflow widgets on your
-          application.
-        </p>
-         </div>
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between">
+        <div className="text-center sm:text-left">
+          <h3 className="text-lg font-medium text-foreground">
+            Workflow Widgets
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Easily manage and customize the workflow widgets on your application.
+          </p>
+        </div>
         {pluginOptions && pluginOptions.length > 0 && (
           <Button
             onClick={() => setIsOpenCreatePlugin((prev) => !prev)}
-            icon={PlusCircle}
-            type="Primary"
-            label="Add Widget"
-          />
+            className="px-3 py-3"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add Widget
+          </Button>
         )}
       </div>
+
       {loading || !pagesData?.length ? (
         <div className="flex justify-center py-8">
-          <LoaderSpinner size={28} className="text-blue-500" />
+          <LoaderSpinner size={28} className="text-secondary-foreground" />
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-1 md:p-2 lg:p-3">
-            {[
-              {
-                name: "Workflow Builder",
-                description: "Create and manage custom workflows",
-                icon: <Workflow className="w-6 h-6 text-blue-600" />,
-                status: "Ready",
-              },
-              {
-                name: "Signature Integration",
-                description: "Add digital signature capabilities",
-                icon: <Fingerprint className="w-6 h-6 text-blue-600" />,
-                status: "Beta",
-              },
-              {
-                name: "Custom API",
-                description: "Configure custom API endpoints",
-                icon: <Code className="w-6 h-6 text-blue-600" />,
-                status: "Ready",
-              },
-            ].map((widget, idx) => (
-              <div
-                key={idx}
-                className="border rounded-lg p-4 bg-gray-200 select-none shadow-sm opacity-50 pointer-events-none"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start gap-3">
-                    {widget.icon}
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-600">{widget.name}</h4>
-                      <p className="text-sm text-gray-600">{widget.description}</p>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      widget.status === "Beta"
-                        ? "bg-yellow-100 text-yellow-400"
-                        : "bg-green-100 text-green-400"
-                    }`}
-                  >
-                    {widget.status}
-                  </span>
-                </div>
-                <div className="mt-4 flex space-x-2">
-                  <button className="text-gray-600 text-sm font-medium cursor-not-allowed">
-                    Configure
-                  </button>
-                  <button className="text-gray-600 text-sm font-medium cursor-not-allowed">
-                    Documentation
-                  </button>
-                </div>
-              </div>
-
-            ))}
-
-            {plugins &&
-              plugins.map((plugin, index) => (
-                <div
-                  key={index}
-                  className="border rounded-lg p-4 bg-white shadow-sm text-gray-800 hover:shadow-md transition-shadow"
+          <div className="grid grid-cols-1 gap-6 p-1 sm:grid-cols-2 md:p-2 lg:grid-cols-3 lg:p-3">
+            {placeholderWidgets.map((widget) => {
+              const Icon = widget.icon;
+              return (
+                <Card
+                  key={widget.name}
+                  className="pointer-events-none select-none bg-muted/50 opacity-50 shadow-sm"
                 >
-                  <div className="flex justify-between items-start">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <Icon className="h-6 w-6 text-secondary-foreground" />
+                        <div>
+                          <h4 className="text-lg font-medium text-muted-foreground">
+                            {widget.name}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {widget.description}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        className={
+                          widget.status === "Beta"
+                            ? "bg-warning/15 text-warning"
+                            : "bg-success/15 text-success"
+                        }
+                      >
+                        {widget.status}
+                      </Badge>
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <span className="text-sm font-medium text-secondary-foreground">
+                        Configure
+                      </span>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Documentation
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+
+            {plugins?.map((plugin) => (
+              <Card
+                key={plugin.id}
+                className="transition-shadow hover:shadow-md"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      <div><File className="w-6 h-6 text-blue-600" /></div>
+                      <File className="h-6 w-6 text-secondary-foreground" />
                       <div>
-                        <h4 className="text-lg font-medium text-gray-900">
-                          {plugin?.type === PluginType.TNC ? plugin?.type.toUpperCase() : plugin?.type.charAt(0).toUpperCase() +
-                            plugin?.type.slice(1)}
+                        <h4 className="text-lg font-medium text-foreground">
+                          {formatPluginTitle(plugin?.type)}
                         </h4>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           Create and manage custom pages
                         </p>
                       </div>
                     </div>
 
-                    <div className=" flex items-center justify-end gap-2">
-                      <div
-                        className={`px-2 py-1 cursor-pointer`}
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full"
                         onClick={() => {
                           setIsOpenUpdatePlugin((prev) => !prev);
                           setPluginEdit(plugin);
                         }}
+                        title="Edit plugin"
                       >
-                        <Edit className="size-4 text-blue-700" />
-                      </div>
-                      <div
-                        className={`px-2 py-1 cursor-pointer`}
+                        <Edit className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full text-destructive hover:text-destructive"
                         onClick={() => {
                           setIsDeleteModalOpen((prev) => !prev);
                           setPluginSelected(plugin);
                         }}
+                        title="Delete plugin"
                       >
-                        <Trash2 className="size-4 text-red-700" />
-                      </div>
+                        <Trash2 className="size-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                      Configure
-                    </button>
-                    <button className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                      Documentation
-                    </button>
-                  </div>
+                  <CardActionLinks />
                   {pluginSelected?.id === plugin?.id && (
                     <DeleteConfirmDialog
                       isModalOpen={isDeleteModalOpen}
@@ -313,122 +372,107 @@ const ProductsContent = () => {
                       isLoading={deleteLoading}
                     />
                   )}
-                </div>
-              ))}
-             <div
-                  className="border rounded-lg p-4 bg-white shadow-sm text-gray-800 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start gap-3">
-                      <div><File className="w-6 h-6 text-blue-600" /></div>
-                      <div>
-                        <h4 className="text-lg font-medium text-gray-900">
-                          Tasks
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Edit and manage user tasks
-                        </p>
-                      </div>
-                    </div>
+                </CardContent>
+              </Card>
+            ))}
 
-                    <div className=" flex items-center justify-end gap-2">
-                      <div
-                        className={`px-2 py-1 cursor-pointer`}
-                        onClick={() => {
-                          setIsAllTaskModalOpen((prev) => !prev);
-                        }}
-                      >
-                        <Edit className="size-4 text-blue-700" />
-                      </div>
+            <Card className="transition-shadow hover:shadow-md">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <File className="h-6 w-6 text-secondary-foreground" />
+                    <div>
+                      <h4 className="text-lg font-medium text-foreground">
+                        Tasks
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Edit and manage user tasks
+                      </p>
                     </div>
                   </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                      Configure
-                    </button>
-                    <button className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                      Documentation
-                    </button>
-                  </div>
-                </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-1 md:p-2 lg:p-3">
-            {pagesData &&
-              pagesData.length > 0 &&
-              pagesData.map((page, idx) => {
-                if(page?.title.includes("advisor shared-docs")){
-                  return;
-                }
-                return (
-                  <div
-                    key={idx}
-                    className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+
+                  <Button
+                    type="button"
+                    variant="icons"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => setIsAllTaskModalOpen((prev) => !prev)}
+                    title="Edit tasks"
                   >
-                    <div className="flex justify-between items-start">
+                    <Edit className="size-4" />
+                  </Button>
+                </div>
+                <CardActionLinks />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 p-1 sm:grid-cols-2 md:p-2 lg:grid-cols-3 lg:p-3">
+            {pagesData?.map((page, idx) => {
+              if (page?.title.includes("advisor shared-docs")) {
+                return null;
+              }
+
+              const PageIcon =
+                page?.title === "esignature" ? Fingerprint : File;
+
+              return (
+                <Card
+                  key={page.id || idx}
+                  className="transition-shadow hover:shadow-md"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
-                        {page?.title === "esignature" ? (
-                          <div><Fingerprint className="w-6 h-6 text-blue-600" /></div>
-                        ) : (
-                          <div><File className="w-6 h-6 text-blue-600" /></div>
-                        )}
+                        <PageIcon className="h-6 w-6 shrink-0 text-secondary-foreground" />
                         <div>
-                          <h4 className="text-lg font-medium text-gray-900">
+                          <h4 className="text-lg font-medium text-foreground">
                             {page?.title.charAt(0).toUpperCase() +
                               page?.title.slice(1)}
                           </h4>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {page?.description}
                           </p>
                         </div>
                       </div>
-                       <div className="flex items-center">
+                      <div className="flex items-center">
                         {isUpdateLoading === page?.id && (
-                          <div className="mr-3">
-                            <LoaderSpinner size={24} className="ml-auto text-blue-500" />
-                          </div>
+                          <LoaderSpinner
+                            size={24}
+                            className="mr-3 text-secondary-foreground"
+                          />
                         )}
-                        <button
-                          type="button"
-                          onClick={() => {
+                        <ThemeSwitch
+                          checked={!!page?.isPageVisible}
+                          onCheckedChange={() => {
                             if (isDefaultPageVisible(page)) {
                               handleUpdatePageStatus(
                                 page?.id,
-                                !page?.isPageVisible
+                                !page?.isPageVisible,
                               );
                             }
                           }}
-                          className={`
-                            relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                            ${
-                              page?.isPageVisible
-                                ? "bg-blue-600"
-                                : "bg-gray-200"
-                            }
-                          `}
-                        >
-                          <span
-                            className={`
-                              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                              ${
-                                page?.isPageVisible
-                                  ? "translate-x-5"
-                                  : "translate-x-0"
-                              }
-                            `}
-                          />
-                        </button>
+                        />
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
+
           {defaultPageAlert && (
-            <p className="text-red-600 text-sm p-1 md:p-2 lg:pt-4 lg:px-4"><span className="font-semibold">Note*:</span> You cannot turn off both the Dashboard and Shared Docs pages. At
-              least one page should remain enabled.</p>
+            <Alert variant="destructive" className="mx-1 border-destructive/30 md:mx-2 lg:mx-4 lg:mt-4">
+              <AlertDescription className="text-destructive">
+                <span className="font-semibold">Note*:</span> You cannot turn off
+                both the Dashboard and Shared Docs pages. At least one page should
+                remain enabled.
+              </AlertDescription>
+            </Alert>
           )}
         </>
       )}
+
       <CreatePluginModal
         isOpen={isOpenCreatePlugin}
         onClose={() => setIsOpenCreatePlugin(false)}
@@ -440,14 +484,12 @@ const ProductsContent = () => {
         onClose={() => setIsOpenUpdatePlugin(false)}
         plugin={pluginEdit}
       />
-      {
-        isAllTaskModalOpen && (
-          <AllTaskModal
+      {isAllTaskModalOpen && (
+        <AllTaskModal
           isOpen={isAllTaskModalOpen}
           onClose={() => setIsAllTaskModalOpen(false)}
         />
-        )
-      }
+      )}
     </div>
   );
 };

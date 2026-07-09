@@ -35,45 +35,29 @@ import OrderedList from "@tiptap/extension-ordered-list";
 import { useEffect, useState } from "react";
 import AddLinkModal from "./AddLinkModal";
 import FontSize, { FontSizeControl } from "./FontSize";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
 
-const fontSizeOptions = [
-  { label: '8', value: '8px' },
-  { label: '10', value: '10px' },
-  { label: '12', value: '12px' },
-  { label: '14', value: '14px' },
-  { label: '16', value: '16px' },
-  { label: '18', value: '18px' },
-  { label: '20', value: '20px' },
-  { label: '24', value: '24px' },
-  { label: '28', value: '28px' },
-  { label: '32', value: '32px' },
-];
+const ToolbarButton = ({ active, className, children, ...props }) => (
+  <Button
+    type="button"
+    variant="ghost"
+    size="lg"
+    className={cn(
+      "h-11 w-11 shrink-0 rounded-md text-foreground hover:bg-accent hover:text-primary",
+      active && "bg-accent text-primary",
+      className,
+    )}
+    {...props}
+  >
+    {children}
+  </Button>
+);
 
 const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLinkUrl, savedRange, setSavedRange, text, setText, from }) => {
   if (!editor) return null;
-  const [color, setColor] = useState("#000")
+  const [color, setColor] = useState("#000");
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
-  const [currentFontSize, setCurrentFontSize] = useState(
-    editor.getAttributes("textStyle").fontSize || null
-  );
-
-  // const handleFontSizeChange = (fontSize) => {
-  //   if (!editor.isActive("textStyle")) {
-  //     console.error("TextStyle extension is not active.");
-  //     return;
-  //   }
-
-  //   if (fontSize) {
-  //     editor.chain().focus().setTextStyle({ fontSize }).run();
-  //   } else {
-  //     editor.chain().focus().unsetTextStyle().run();
-  //   }
-  // };
-
-  // const handleFontSizeChange = (fontSize) => {
-  //   editor.chain().focus().setTextStyle({ fontSize }).run();
-  //   setCurrentFontSize(fontSize)
-  // };
   const applyTextColor = (color) => {
     editor.chain().focus().setColor(color).run();
     setColorPickerVisible(false); // Close the picker after color selection
@@ -81,198 +65,151 @@ const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLi
   };
 
 
-  const addImage = () => {
-    const url = window.prompt("Enter the image URL:");
-    if (url) editor.chain().focus().setImage({ src: url }).run();
-  };
-
   return (
-    <div className="flex items-center justify-start w-full gap-2 rounded border border-[#ccc] shadow mb-4 py-1 lg:flex-wrap overflow-x-auto custom-scrollbar">
-      <button
-        type="button"
+    <div className="custom-scrollbar mb-4 flex w-full items-center justify-start gap-1 overflow-x-auto rounded-lg border border-border bg-card py-1 shadow-sm lg:flex-wrap">
+      <ToolbarButton
+        active={editor.isActive("bold")}
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 ml-1 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("bold") ? "bg-indigo-200" : ""
-        }`}
+        className="ml-1"
       >
         <Bold />
-      </button>
-      {/* <select 
-        value={currentFontSize || ''} 
-        onChange={(e) => handleFontSizeChange(e.target.value)}
-        className="border border-gray-300 rounded px-2 py-1"
-      >
-        <option value="">Default</option>
-        {fontSizeOptions.map((option) => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
-      </select>  */}
+      </ToolbarButton>
       <FontSizeControl editor={editor} />
-      <button
-        type="button"
-        onClick={() => setColorPickerVisible((prev) => !prev)}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 -mx-2 text-2xl border-none rounded cursor-pointer hover:bg-indigo-200 relative ${
-          editor.isActive("textStyle", { color: "red" }) ? "bg-indigo-200" : ""
-        }`}
-      >
-        A
-        <div className="absolute h-[6px] w-5 left-1/2 -translate-x-1/2 top-[80%]" style={{ backgroundColor: color }}></div>
-      </button>
-      {colorPickerVisible && (
-        <div className="absolute z-50 mt-2">
-          <CompactPicker
-            color={editor.getAttributes("textStyle").color || "#000"}
-            onChange={(color) => applyTextColor(color.hex)}
+      <div className="relative">
+        <ToolbarButton
+          active={editor.isActive("textStyle", { color: "red" })}
+          onClick={() => setColorPickerVisible((prev) => !prev)}
+          className="relative text-2xl"
+        >
+          A
+          <div
+            className="absolute left-1/2 top-[80%] h-[6px] w-5 -translate-x-1/2 rounded-sm"
+            style={{ backgroundColor: color }}
           />
-        </div>
-      )}
-      <button
-        type="button"
+        </ToolbarButton>
+        {colorPickerVisible && (
+          <div className="absolute z-50 mt-2">
+            <CompactPicker
+              color={editor.getAttributes("textStyle").color || "#000"}
+              onChange={(color) => applyTextColor(color.hex)}
+            />
+          </div>
+        )}
+      </div>
+      <ToolbarButton
+        active={editor.isActive("italic")}
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("italic") ? "bg-indigo-200" : ""
-        }`}
       >
         <Italic />
-      </button>
-      <button
-        type="button"
+      </ToolbarButton>
+      <ToolbarButton
+        active={editor.isActive("strikeThrough")}
         onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("strikeThrough") ? "bg-indigo-200" : ""
-        }`}
       >
         <Strikethrough />
-      </button>
-      <button
-        type="button"
+      </ToolbarButton>
+      <ToolbarButton
+        active={editor.isActive("highlight")}
         onClick={() => editor.chain().focus().toggleHighlight().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("highlight") ? "bg-indigo-200" : ""
-        }`}
+        className="w-auto px-3"
       >
         Highlight
-      </button>
-      <button
-        type="button"
+      </ToolbarButton>
+      <ToolbarButton
+        active={editor.isActive("paragraph")}
         onClick={() => editor.chain().focus().setParagraph().run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("paragraph") ? "bg-indigo-200" : ""
-        }`}
       >
         p
-      </button>
-      <button
-        type="button"
+      </ToolbarButton>
+      <ToolbarButton
+        active={editor.isActive("heading", { level: 1 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("heading", { level: 1 }) ? "bg-indigo-200" : ""
-        }`}
       >
         <Heading1 />
-      </button>
-      <button
-        type="button"
+      </ToolbarButton>
+      <ToolbarButton
+        active={editor.isActive("heading", { level: 2 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("heading", { level: 2 }) ? "bg-indigo-200" : ""
-        }`}
       >
         <Heading2 />
-      </button>
-      <button
-        type="button"
+      </ToolbarButton>
+      <ToolbarButton
+        active={editor.isActive("heading", { level: 3 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${
-          editor.isActive("heading", { level: 3 }) ? "bg-indigo-200" : ""
-        }`}
       >
         <Heading3 />
-      </button>
+      </ToolbarButton>
       {!from && (
         <>
-          <button
-            type="button"
+          <ToolbarButton
+            active={editor.isActive("alignLeft")}
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
-            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("alignLeft") ? "bg-indigo-200" : ""
-              }`}
           >
             <AlignLeft />
-          </button>
-          <button
-            type="button"
+          </ToolbarButton>
+          <ToolbarButton
+            active={editor.isActive("alignCenter")}
             onClick={() => editor.chain().focus().setTextAlign("center").run()}
-            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("alignCenter") ? "bg-indigo-200" : ""
-              }`}
           >
             <AlignCenter />
-          </button>
-          <button
-            type="button"
+          </ToolbarButton>
+          <ToolbarButton
+            active={editor.isActive("alignRight")}
             onClick={() => editor.chain().focus().setTextAlign("right").run()}
-            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("alignRight") ? "bg-indigo-200" : ""
-              }`}
           >
             <AlignRight />
-          </button>
-          <button
-            type="button"
+          </ToolbarButton>
+          <ToolbarButton
+            active={editor.isActive("link")}
             onClick={() => {
               const previousUrl = editor.getAttributes("link").href;
               const selection = editor.state.selection;
-
-              // Get selected text
               const { from, to } = selection;
               const selectedText = editor.state.doc.textBetween(from, to, " ");
 
               setSavedRange(selection);
               setLinkUrl(previousUrl || "");
-              setText(selectedText); // 👈 set selected text
+              setText(selectedText);
               setLinkModalVisible(true);
             }}
-            className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("link") ? "bg-indigo-200" : ""
-              }`}
           >
             <Link2 className="-rotate-45" />
-          </button>
-          <button
-            type="button"
+          </ToolbarButton>
+          <ToolbarButton
+            active={editor.isActive("bulletList")}
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("bulletList") ? "bg-indigo-200" : ""
-              }`}
           >
             <List />
-          </button>
-          <button
-            type="button"
+          </ToolbarButton>
+          <ToolbarButton
+            active={editor.isActive("orderedList")}
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("orderedList") ? "bg-indigo-200" : ""
-              }`}
+            className="w-auto px-3"
           >
             Ordered List
-          </button>
-          {/* <button onClick={addImage}>Add Image</button> */}
-          <button
-            type="button"
+          </ToolbarButton>
+          <ToolbarButton
+            active={editor.isActive("table")}
             onClick={() =>
               editor.chain().focus().insertTable({ rows: 3, cols: 3 }).run()
             }
-            className={`bg-[#fdfdfd] text-gray-800 px-2 h-11 w-11 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("table") ? "bg-indigo-200" : ""
-              }`}
           >
             <TableIcon className="rotate-90" />
-          </button>
-          <button
-            type="button"
+          </ToolbarButton>
+          <ToolbarButton
+            active={editor.isActive("deleteTable")}
             onClick={() => editor.chain().focus().deleteTable().run()}
-            className={`bg-[#fdfdfd] text-gray-800 px-2 py-2 border-none rounded cursor-pointer hover:bg-indigo-200 ${editor.isActive("deleteTable") ? "bg-indigo-200" : ""
-              }`}
+            className="w-auto px-3"
           >
             Delete Table
-          </button>
+          </ToolbarButton>
           <AddLinkModal
             isOpen={linkModalVisible}
-            onClose={() => { setLinkModalVisible(false); setLinkUrl(""); setText("") }}
+            onClose={() => {
+              setLinkModalVisible(false);
+              setLinkUrl("");
+              setText("");
+            }}
             text={text}
             initialLink={linkUrl}
             setLink={setLinkUrl}
@@ -281,9 +218,7 @@ const Toolbar = ({ editor, linkModalVisible, setLinkModalVisible, linkUrl, setLi
           />
         </>
       )}
-      
     </div>
-    
   );
 };
 

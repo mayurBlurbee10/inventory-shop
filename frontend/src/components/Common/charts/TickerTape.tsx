@@ -1,65 +1,70 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { installTradingViewErrorSuppressor } from "../../../app/lib/tradingview";
+
+type ColorTheme = "light" | "dark";
 
 const TickerTape = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isLoaded = useRef(false);
+  const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const originalConsoleError = console.error;
+    installTradingViewErrorSuppressor();
 
-    // Suppress iframe contentWindow error
-    console.error = function (...args) {
-      if (
-        typeof args[0] === "string" &&
-        args[0].includes("contentWindow is not available")
-      ) {
-        return;
-      }
-      originalConsoleError.apply(console, args);
+    const getMode = (): ColorTheme =>
+      typeof window !== "undefined" && localStorage.getItem("mode") === "dark"
+        ? "dark"
+        : "light";
+
+    const loadWidget = (colorTheme: ColorTheme) => {
+      const widget = widgetRef.current;
+      if (!widget) return;
+
+      widget.innerHTML = "";
+
+      const script = document.createElement("script");
+      script.src =
+        "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+      script.async = true;
+      script.type = "text/javascript";
+      script.innerHTML = JSON.stringify({
+        symbols: [
+          { proName: "FOREXCOM:SPXUSD", title: "S&P 500 Index" },
+          { proName: "FOREXCOM:NSXUSD", title: "US 100 Cash CFD" },
+          { proName: "FX_IDC:EURUSD", title: "EUR to USD" },
+          { proName: "BITSTAMP:BTCUSD", title: "Bitcoin" },
+          { proName: "BITSTAMP:ETHUSD", title: "Ethereum" },
+        ],
+        showSymbolLogo: false,
+        // Transparent so the widget blends with the current theme background.
+        isTransparent: true,
+        displayMode: "regular",
+        colorTheme,
+        locale: "en",
+      });
+
+      widget.appendChild(script);
     };
 
-    if (isLoaded.current || !containerRef.current) return;
-    isLoaded.current = true;
+    loadWidget(getMode());
 
-    containerRef.current.innerHTML = "";
+    // Reload the widget with the matching color theme when the theme changes.
+    const handleModeChange = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      loadWidget(detail === "dark" ? "dark" : "light");
+    };
 
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.async = true;
-    script.type = "text/javascript";
-    script.innerHTML = JSON.stringify({
-      symbols: [
-        { proName: "FOREXCOM:SPXUSD", title: "S&P 500 Index" },
-        { proName: "FOREXCOM:NSXUSD", title: "US 100 Cash CFD" },
-        { proName: "FX_IDC:EURUSD", title: "EUR to USD" },
-        { proName: "BITSTAMP:BTCUSD", title: "Bitcoin" },
-        { proName: "BITSTAMP:ETHUSD", title: "Ethereum" },
-      ],
-      showSymbolLogo: false,
-      isTransparent: false,
-      displayMode: "regular",
-      colorTheme: "light",
-      locale: "en",
-    });
-
-    containerRef.current.appendChild(script);
+    window.addEventListener("theme-mode-changed", handleModeChange);
 
     return () => {
-      console.error = originalConsoleError;
+      window.removeEventListener("theme-mode-changed", handleModeChange);
     };
   }, []);
 
   return (
     <div className="w-full flex justify-center">
-      <div
-        className="tradingview-widget-container w-full max-w-6xl"
-      >
-        <div
-          className="tradingview-widget-container__widget"
-          ref={containerRef}
-        />
+      <div className="tradingview-widget-container w-full max-w-6xl rounded-lg bg-secondary text-foreground">
+        <div className="tradingview-widget-container__widget" ref={widgetRef} />
         <div className="tradingview-widget-copyright">
           <a
             href="https://www.tradingview.com/"

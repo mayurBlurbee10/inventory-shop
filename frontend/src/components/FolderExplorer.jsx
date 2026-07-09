@@ -17,13 +17,123 @@ import {
 import React, { useEffect, useState } from "react";
 import PreviewModal from "./FileExplorer/PreviewModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Select from "react-select";
-import { useParams } from "next/navigation";
-import { usePathname } from "next/navigation";
+import ReactSelect from "react-select";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import { ThemeSwitch } from "./ui/theme-switch";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "react-toastify";
 import { getUserData } from "@/app/lib/auth";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
+const shareSelectStyles = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: "40px",
+    height: "40px",
+    backgroundColor: "hsl(var(--background))",
+    borderColor: state.isFocused ? "hsl(var(--ring))" : "hsl(var(--border))",
+    boxShadow: state.isFocused ? "0 0 0 3px hsl(var(--ring) / 0.5)" : "none",
+    borderRadius: "0.5rem",
+    "&:hover": {
+      borderColor: "hsl(var(--border))",
+    },
+  }),
+  valueContainer: (base) => ({
+    ...base,
+    height: "40px",
+    padding: "0 0.75rem",
+  }),
+  indicatorsContainer: (base) => ({
+    ...base,
+    height: "40px",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: "hsl(var(--foreground))",
+  }),
+  input: (base) => ({
+    ...base,
+    color: "hsl(var(--foreground))",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "hsl(var(--muted-foreground))",
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: "hsl(var(--popover))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: "0.5rem",
+    overflow: "hidden",
+    zIndex: 50,
+  }),
+  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  menuList: (base) => ({
+    ...base,
+    backgroundColor: "hsl(var(--popover))",
+    padding: "0.25rem",
+  }),
+  option: (base, state) => ({
+    ...base,
+    borderRadius: "0.375rem",
+    backgroundColor: state.isSelected
+      ? "hsl(var(--accent))"
+      : state.isFocused
+        ? "hsl(var(--accent) / 0.7)"
+        : "transparent",
+    color:
+      state.isSelected || state.isFocused
+        ? "hsl(var(--accent-foreground))"
+        : "hsl(var(--foreground))",
+    cursor: "pointer",
+    "&:active": {
+      backgroundColor: "hsl(var(--accent))",
+    },
+  }),
+  clearIndicator: (base) => ({
+    ...base,
+    color: "hsl(var(--muted-foreground))",
+    "&:hover": {
+      color: "hsl(var(--foreground))",
+    },
+  }),
+  dropdownIndicator: (base) => ({
+    ...base,
+    color: "hsl(var(--muted-foreground))",
+    "&:hover": {
+      color: "hsl(var(--foreground))",
+    },
+  }),
+  indicatorSeparator: (base) => ({
+    ...base,
+    backgroundColor: "hsl(var(--border))",
+  }),
+};
 const ShareModal = ({
   isOpen,
   onClose,
@@ -33,7 +143,7 @@ const ShareModal = ({
   user,
 }) => {
   const params = useParams();
-  const [userID, setUserID] = useState("");
+  const [userID, setUserID] = useState(null);
   const [copied, setCopied] = useState(false);
   const [userList, setUserList] = useState([]);
   const [sharedLink, setSharedLink] = useState(
@@ -65,8 +175,6 @@ const ShareModal = ({
     setUserList(users);
   }, [usersList]);
 
-  if (!isOpen) return null;
-
   const handleCopyLink = () => {
     if (sharedLink) {
       navigator.clipboard.writeText(sharedLink);
@@ -77,6 +185,9 @@ const ShareModal = ({
 
   const handleEmailShare = async () => {
     try {
+      if (!userID?.value) {
+        throw new Error("Please select a user to share with");
+      }
       setCollabLoading(true);
       const obj = {
         method: "POST",
@@ -105,7 +216,7 @@ const ShareModal = ({
         isForAdd: true,
         type: item?.type,
       });
-      setUserID("");
+      setUserID(null);
       toast.success("File shared successfully");
     } catch (error) {
       toast.error(error.message);
@@ -214,10 +325,9 @@ const ShareModal = ({
     setCollaborator(collaborator);
   };
 
-  const handleRoleChange = async (event, userId, collaborationId, type) => {
+  const handleRoleChange = async (newRole, userId, collaborationId) => {
     try {
       setCollabLoading(true);
-      const newRole = event.target.value;
       const obj = {
         method: "POST",
         headers: {
@@ -255,149 +365,165 @@ const ShareModal = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 w-full max-w-lg relative">
-        <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <X size={20} />
-        </button>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        overlayClassName="bg-black/30"
+        className="relative w-full max-w-xl max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-xl"
+      >
+        <DialogHeader className="sticky top-0 z-10 flex flex-row items-center justify-between space-y-0 border-b border-border bg-card p-4">
+          <DialogTitle className="text-xl font-semibold text-foreground">
+            {item?.name}
+          </DialogTitle>
+          <Button
+            type="button"
+            variant="icons"
+            onClick={onClose}
+            className="rounded-full text-muted-foreground hover:bg-accent"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </Button>
+        </DialogHeader>
 
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">
-          {item?.name}
-        </h3>
-
-        <div className="space-y-6">
+        <div className="space-y-6 bg-card p-6">
           {item?.type === "file" && (
             <div className="space-y-2">
               <div className="flex gap-4">
-                <label className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-foreground">
                   Share link
-                </label>
+                </Label>
                 <div className="flex items-center">
-                  <button
-                    onClick={() => handleToggleShare()}
-                    className={`
-                    relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                    ${sharedLink !== null ? "bg-blue-600" : "bg-gray-200"}
-                    `}
-                  >
-                    <span
-                      className={`
-                      pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                      ${sharedLink !== null ? "translate-x-5" : "translate-x-0"}
-                      `}
-                    />
-                  </button>
+                  <ThemeSwitch
+                    checked={sharedLink !== null}
+                    onCheckedChange={() => handleToggleShare()}
+                  />
                 </div>
               </div>
               {sharedLink !== null && (
-                <div className="flex items-center gap-3">
-                  <input
+                <div className="flex h-10 items-stretch gap-3">
+                  <Input
                     type="text"
                     value={sharedLink}
                     readOnly
-                    className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none"
+                    className="h-full flex-1 border-border bg-muted text-foreground"
                   />
-                  <button
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={handleCopyLink}
-                    className="shrink-0 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    className="!h-full !min-h-0 shrink-0 !px-3 !py-0"
                   >
-                    <Copy size={16} />
-                    <span>{copied ? "Copied!" : "Copy"}</span>
-                  </button>
+                    <Copy className="h-4 w-4" />
+                    {copied ? "Copied!" : "Copy"}
+                  </Button>
                 </div>
               )}
             </div>
           )}
 
-          {/* {item?.type === "folder" && ( */}
           <div className="space-y-2">
-            <label className="text-gray-800 font-semibold">
+            <Label className="font-semibold text-foreground">
               Share with user
-            </label>
-            <div className="flex items-center gap-3">
-              <Select
-                className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                classNamePrefix="Enter email address"
-                isClearable={true}
-                isSearchable={true}
+            </Label>
+            <div className="flex flex-wrap items-center gap-3">
+              <ReactSelect
+                className="min-w-[250px] flex-1 text-sm"
+                classNamePrefix="share-user-select"
+                isClearable
+                isSearchable
                 value={userID}
                 onChange={(e) => setUserID(e)}
                 options={userList}
+                placeholder="Enter email address"
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
+                menuPosition="fixed"
+                menuPlacement="auto"
+                styles={shareSelectStyles}
               />
-              <button
+              <Button
+                type="button"
                 onClick={handleEmailShare}
                 disabled={!userID}
-                className={`shrink-0 px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors
-                    ${
-                      userID
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    }`}
+                className="h-10 shrink-0 !px-3 !py-3"
               >
-                <Send size={16} />
-                <span>Send</span>
-              </button>
+                <Send className="h-4 w-4" />
+                Send
+              </Button>
             </div>
           </div>
-          {/* )} */}
+
           {collaborator.length > 0 && (
             <div>
-              <div className="text-gray-700 py-2 pr-2 grid grid-cols-2">
+              <div className="grid grid-cols-2 py-2 pr-2 text-foreground">
                 <div className="font-semibold">Name</div>
                 <div className="font-semibold">Permissions</div>
-                <div></div>
               </div>
-              {collaborator.length > 0 &&
-                collaborator.map((content, idx) => (
-                  <div
-                    key={idx}
-                    className="text-gray-700 hover:bg-gray-50 rounded-lg py-2 pr-2 group grid grid-cols-2"
-                  >
-                    <div className="flex items-center">
-                      {content?.user.name}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <select
-                        className="py-2 px-2 border focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
-                        value={content?.role}
-                        onChange={(e) =>
-                          handleRoleChange(e, content?.user.id, content.id)
-                        }
-                      >
-                        <option value="viewer">Viewer</option>
-                        <option value="editor">Editor</option>
-                        {/* <option value="uploader">Uploader</option>
-                        <option value="co-owner">Co-owner</option> */}
-                      </select>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => {
-                            handelRemoveCollaborator(content);
-                          }}
-                          className="p-1.5 hover:bg-gray-100 rounded-md text-gray-600"
-                          title="Remove"
+              {collaborator.map((content, idx) => (
+                <div
+                  key={idx}
+                  className="group grid grid-cols-2 rounded-lg py-2 pr-2 text-foreground hover:bg-accent"
+                >
+                  <div className="flex items-center">{content?.user.name}</div>
+                  <div className="flex items-center justify-between gap-2">
+                    <Select
+                      value={content?.role}
+                      onValueChange={(newRole) =>
+                        handleRoleChange(newRole, content?.user.id, content.id)
+                      }
+                    >
+                      <SelectTrigger className="h-9 bg-card px-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="border-border bg-popover text-popover-foreground">
+                        <SelectItem
+                          value="viewer"
+                          className="focus:bg-accent focus:text-accent-foreground"
                         >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                          Viewer
+                        </SelectItem>
+                        <SelectItem
+                          value="editor"
+                          className="focus:bg-accent focus:text-accent-foreground"
+                        >
+                          Editor
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon-sm"
+                        onClick={() => handelRemoveCollaborator(content)}
+                        className="text-muted-foreground hover:bg-accent"
+                        title="Remove"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           )}
         </div>
 
         {collabLoading && (
-          <div className="absolute top-0 left-0 rounded-xl h-full w-full bg-[#00000038] flex items-center justify-center">
-            <div className="border-blue-500 w-6 h-6 border-2 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div
+            className="absolute inset-0 flex items-center justify-center rounded-xl bg-foreground/20"
+            aria-busy="true"
+          >
+            <LoaderSpinner size={24} className="text-sec-solid" />
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -420,6 +546,7 @@ function FolderExplorer({
 }) {
   const params = useParams();
   const pathName = usePathname();
+  const router = useRouter();
   const [previewFileId, setPreviewFileId] = useState("");
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [shareFile, setShareFile] = useState(null);
@@ -442,11 +569,9 @@ function FolderExplorer({
     setDeleteDropdown(null);
   };
 
-  const handleDelete = (file) => {
-    if (listType == "shared" && file.currentUserRole == "viewer") {
-      return;
-    }
-    setDeleteDropdown((prev) => (prev?.id === file?.id ? null : file));
+  const openDeleteDialog = (file) => {
+    setDeleteDropdown(file);
+    setIsDeleteModalOpen(true);
   };
 
   const handlePreview = (fileId) => {
@@ -651,21 +776,25 @@ function FolderExplorer({
     setUser(userData);
   }, []);
 
+  const menuItemClass =
+    "gap-3 px-3 py-2 text-muted-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer";
+
   return (
     <>
       {currentFilesList &&
         currentFilesList.length > 0 &&
         currentFilesList.map((file, index) => {
+          const ownerName =
+            listType == "shared" ? getUserName(file) : "me";
+
           return (
-            <React.Fragment key={index}>
-              <tr className="px-3 hover:bg-gray-50 hidden md:table-row divide-gray-200 border-b border-b-gray-200 group active:bg-sky-200 active:text-sky-800 relative">
+            <React.Fragment key={file?.id || index}>
+              <tr className="group relative hidden border-b border-border hover:bg-accent active:bg-accent md:table-row">
                 <td className="py-3 pl-4">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-4 w-4 text-blue-600 cursor-pointer"
+                  <Checkbox
                     checked={selectedBulkItems?.includes(file?.id)}
-                    onChange={(e) =>
-                      handleCheckboxChange(file?.id, e.target.checked)
+                    onCheckedChange={(checked) =>
+                      handleCheckboxChange(file?.id, Boolean(checked))
                     }
                   />
                 </td>
@@ -677,11 +806,11 @@ function FolderExplorer({
                 >
                   <div className="flex items-center justify-start gap-3">
                     {file.type === "folder" ? (
-                      <Folder className="h-5 w-5 text-[#3c4043]" />
+                      <Folder className="h-5 w-5 text-muted-foreground" />
                     ) : (
-                      <File className="h-5 w-5 text-[#3c4043]" />
+                      <File className="h-5 w-5 text-muted-foreground" />
                     )}
-                    <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
+                    <p className="mt-1 max-w-56 truncate text-sm font-semibold text-foreground">
                       {file?.name}
                     </p>
                   </div>
@@ -689,22 +818,25 @@ function FolderExplorer({
 
                 <td className="py-3">
                   <div className="flex items-center">
-                    <div>
-                      <img
-                        src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?uid=R149831676&ga=GA1.1.983684055.1709024503&semt=ais_hybrid"
-                        className="h-8 w-8 object-contain rounded-full mr-3"
+                    <Avatar size="sm" className="mr-3">
+                      <AvatarImage
+                        src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg"
+                        alt={ownerName}
                       />
-                    </div>
-                    <p className="text-gray-600 text-sm truncate max-w-40 w-full">
-                      {listType == "shared" ? getUserName(file) : "me"}
+                      <AvatarFallback>
+                        {ownerName?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="w-full max-w-40 truncate text-sm text-muted-foreground">
+                      {ownerName}
                     </p>
                   </div>
                 </td>
 
                 <td className="py-3">
                   <div className="flex items-center gap-3">
-                    <UsersRound className="h-5 w-5 text-gray-600" />
-                    <p className="text-gray-600 text-sm truncate max-w-40">
+                    <UsersRound className="h-5 w-5 text-muted-foreground" />
+                    <p className="max-w-40 truncate text-sm text-muted-foreground">
                       {pathName.includes("/home")
                         ? "My Folders"
                         : "Shared with me"}
@@ -713,264 +845,272 @@ function FolderExplorer({
                 </td>
 
                 <td className="py-3">
-                  <p className="text-gray-600 text-sm truncate max-w-40">
+                  <p className="max-w-40 truncate text-sm text-muted-foreground">
                     {formatDate(file.modified_at)}
                   </p>
                 </td>
 
                 <td className="py-3 pr-3">
                   <div className="flex items-center justify-end">
-                    <div className="opacity-0 flex items-center justify-start gap-2 group-hover:opacity-100">
-                      {/* FOR ONLY FILES */}
+                    <div className="flex items-center justify-start gap-2 opacity-0 group-hover:opacity-100">
                       {file.type === "file" && (
-                        <button
-                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                        <Button
+                          type="button"
+                          variant="icons"
+                          size="icon-sm"
+                          className="rounded-full text-muted-foreground hover:bg-accent"
                           onClick={(e) => {
                             e.stopPropagation();
                             handlePreview(file?.id);
-                            setDeleteDropdown(null);
                           }}
                         >
-                          <Eye className="h-4 w-4 text-gray-600" />
-                        </button>
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       )}
                       {pathName.includes("/home") && (
-                        <button
-                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                        <Button
+                          type="button"
+                          variant="icons"
+                          size="icon-sm"
+                          className="rounded-full text-muted-foreground hover:bg-accent"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleShare(file);
-                            setDeleteDropdown(null);
                           }}
                           title="Share"
                         >
-                          <Share2 className="h-4 w-4 text-gray-600" />
-                        </button>
+                          <Share2 className="h-4 w-4" />
+                        </Button>
                       )}
                       {file.type === "file" &&
                         (listType !== "shared" ||
                           file.currentUserRole !== "viewer") && (
-                          <button
-                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
+                          <Button
+                            type="button"
+                            variant="icons"
+                            size="icon-sm"
+                            className="rounded-full text-muted-foreground hover:bg-accent"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDownload(file.id, file.name);
-                              setDeleteDropdown(null);
                             }}
                             title="Download"
                           >
-                            <Download className="h-4 w-4 text-gray-600" />
-                          </button>
+                            <Download className="h-4 w-4" />
+                          </Button>
                         )}
                     </div>
-                    <div className="relative">
-                      {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-                      {listType === "shared" &&
-                        file.type === "folder" &&
-                        file.currentUserRole === "editor" && (
-                          <button
-                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                            onClick={() => handleDelete(file)}
-                          >
-                            <EllipsisVertical className="h-4 w-4 text-gray-600" />
-                          </button>
-                        )}
-                      {listType !== "shared" && (
-                        <button
-                          className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                          onClick={() => handleDelete(file)}
+
+                    {(listType === "shared" &&
+                      file.type === "folder" &&
+                      file.currentUserRole === "editor") ||
+                    listType !== "shared" ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon-sm"
+                              className="rounded-full text-muted-foreground hover:bg-accent"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          }
                         >
-                          <EllipsisVertical className="h-4 w-4 text-gray-600" />
-                        </button>
-                      )}
-                      {/* DELETE DROPDOWN DONE*/}
-                      {deleteDropdown?.id === file?.id && (
-                        <div className="absolute top-8 left-[-120px] shadow w-40 bg-white rounded-lg z-20 overflow-hidden">
+                          <EllipsisVertical className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-40 border-border bg-popover"
+                        >
                           {listType !== "shared" && (
-                            <button
-                              className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
+                            <DropdownMenuItem
+                              className={menuItemClass}
                               onClick={() => {
                                 setIsMoveModalOpen((prev) => !prev);
                                 setMoveItem(file);
                                 setSelectedBulkItems([]);
                               }}
                             >
-                              <FolderInput className="h-4 w-4 text-gray-600" />{" "}
+                              <FolderInput className="h-4 w-4" />
                               Move
-                            </button>
+                            </DropdownMenuItem>
                           )}
-                          <button
-                            className="hover:bg-gray-200 w-full py-2 px-3 flex items-center gap-3 text-gray-600"
-                            onClick={() =>
-                              setIsDeleteModalOpen((prev) => !prev)
-                            }
+                          <DropdownMenuItem
+                            className={menuItemClass}
+                            onClick={() => openDeleteDialog(file)}
                           >
-                            <Trash2 className="h-4 w-4 text-gray-600" /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : null}
                   </div>
                 </td>
               </tr>
 
-              {/* MOBILE SCREEN */}
-
-              <tr className="hover:bg-gray-50 overflow-x-hidden flex md:hidden shadow-md rounded-xl mt-2 divide-gray-200 active:bg-sky-200 active:text-sky-800">
-                <td className="py-3 px-4 col-span-2 w-full bg-white rounded-lg">
-                  <div className="flex flex-col gap-3 space-y-2 w-full">
-                    <div
-                      onClick={() =>
-                        file.type === "folder" && handleFolderClick(file)
-                      }
-                      className={`${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {file.type === "folder" ? (
-                          <Folder className="h-5 w-5 text-[#3c4043]" />
-                        ) : (
-                          <File className="h-5 w-5 text-[#3c4043]" />
-                        )}
-                        <p className="text-[#3c4043] mt-1 font-semibold text-sm truncate max-w-56">
-                          {file?.name}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-center bg-gray-50 py-8">
-                        {file.type === "folder" ? (
-                          <Folder className="h-10 w-10 text-[#3c4043]" />
-                        ) : (
-                          <File className="h-10 w-10 text-[#3c4043]" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between w-full flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center">
-                          <img
-                            src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg?uid=R149831676&ga=GA1.1.983684055.1709024503&semt=ais_hybrid"
-                            className="size-6 object-cover rounded-full mr-1"
-                            alt="User Avatar"
-                          />
-                          <p className="text-gray-600 text-xs truncate max-w-40">
-                            me
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <UsersRound className="size-4 text-gray-600" />
-                          <p className="text-gray-600 text-xs truncate max-w-40">
-                            {pathName.includes("/home")
-                              ? "My Folders"
-                              : "Shared with me"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-end">
-                        {file.type === "file" && (
-                          <button
-                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePreview(file?.id);
-                              setDeleteDropdown(null);
-                            }}
-                          >
-                            <Eye className="h-4 w-4 text-gray-600" />
-                          </button>
-                        )}
-                        {pathName.includes("/home") && (
-                          <button
-                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleShare(file);
-                              setDeleteDropdown(null);
-                            }}
-                            title="Share"
-                          >
-                            <Share2 className="h-4 w-4 text-gray-600" />
-                          </button>
-                        )}
-                        {file.type === "file" &&
-                          (listType !== "shared" ||
-                            file.currentUserRole !== "viewer") && (
-                            <button
-                              className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownload(file.id, file.name);
-                                setDeleteDropdown(null);
-                              }}
-                              title="Download"
-                            >
-                              <Download className="h-4 w-4 text-gray-600" />
-                            </button>
-                          )}
-                        {listType !== "shared" && (
-                          <button
-                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                            onClick={() => {
-                              if (
-                                listType == "shared" &&
-                                file.currentUserRole == "viewer"
-                              ) {
-                                return;
-                              } else {
-                                setIsDeleteModalOpen((prev) => !prev);
-                                setDeleteDropdown(file);
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 text-gray-600" />
-                          </button>
-                        )}
-                        {listType !== "shared" && (
-                          <button
-                            className="h-8 w-8 rounded-full hover:bg-gray-200 flex items-center justify-center relative"
-                            onClick={() => {
-                              setIsMoveModalOpen((prev) => !prev);
-                              setMoveItem(file);
-                            }}
-                          >
-                            <FolderInput className="h-4 w-4 text-gray-600" />
-                          </button>
-                        )}
-                        <DeleteConfirmDialog
-                          isModalOpen={isDeleteModalOpen}
-                          setIsModalOpen={setIsDeleteModalOpen}
-                          handleDelete={
-                            file?.type === "file"
-                              ? () => handleDeleteFile(deleteDropdown)
-                              : () => handleDeleteFolder(deleteDropdown)
+              <tr className="flex overflow-x-hidden md:hidden">
+                <td className="w-full py-3 px-2">
+                  <Card className="border-border bg-card shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex w-full flex-col gap-3 space-y-2">
+                        <div
+                          onClick={() =>
+                            file.type === "folder" && handleFolderClick(file)
                           }
-                        />
+                          className={`${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {file.type === "folder" ? (
+                              <Folder className="h-5 w-5 text-muted-foreground" />
+                            ) : (
+                              <File className="h-5 w-5 text-muted-foreground" />
+                            )}
+                            <p className="mt-1 max-w-56 truncate text-sm font-semibold text-foreground">
+                              {file?.name}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-center bg-muted py-8">
+                            {file.type === "folder" ? (
+                              <Folder className="h-10 w-10 text-muted-foreground" />
+                            ) : (
+                              <File className="h-10 w-10 text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex w-full flex-1 items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center">
+                              <Avatar size="sm" className="mr-1">
+                                <AvatarImage
+                                  src="https://img.freepik.com/premium-vector/avatar-icon0002_750950-43.jpg"
+                                  alt={ownerName}
+                                />
+                                <AvatarFallback>
+                                  {ownerName?.charAt(0)?.toUpperCase() || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <p className="max-w-40 truncate text-xs text-muted-foreground">
+                                {ownerName}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <UsersRound className="size-4 text-muted-foreground" />
+                              <p className="max-w-40 truncate text-xs text-muted-foreground">
+                                {pathName.includes("/home")
+                                  ? "My Folders"
+                                  : "Shared with me"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-end">
+                            {file.type === "file" && (
+                              <Button
+                                type="button"
+                                variant="icons"
+                                size="icon-sm"
+                                className="rounded-full text-muted-foreground hover:bg-accent"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePreview(file?.id);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {pathName.includes("/home") && (
+                              <Button
+                                type="button"
+                                variant="icons"
+                                size="icon-sm"
+                                className="rounded-full text-muted-foreground hover:bg-accent"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleShare(file);
+                                }}
+                                title="Share"
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {file.type === "file" &&
+                              (listType !== "shared" ||
+                                file.currentUserRole !== "viewer") && (
+                                <Button
+                                  type="button"
+                                  variant="icons"
+                                  size="icon-sm"
+                                  className="rounded-full text-muted-foreground hover:bg-accent"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownload(file.id, file.name);
+                                  }}
+                                  title="Download"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              )}
+                            {listType !== "shared" && (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="icons"
+                                  size="icon-sm"
+                                  className="rounded-full text-muted-foreground hover:bg-accent"
+                                  onClick={() => openDeleteDialog(file)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="icons"
+                                  size="icon-sm"
+                                  className="rounded-full text-muted-foreground hover:bg-accent"
+                                  onClick={() => {
+                                    setIsMoveModalOpen((prev) => !prev);
+                                    setMoveItem(file);
+                                  }}
+                                >
+                                  <FolderInput className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 </td>
               </tr>
             </React.Fragment>
           );
         })}
 
-      <tr>
-        <td>
-          <PreviewModal
-            isOpen={isPreviewModalOpen}
-            onClose={() => setIsPreviewModalOpen(false)}
-            fileId={previewFileId}
-          />
-        </td>
-        <td>
-          <ShareModal
-            isOpen={isShareModalOpen}
-            onClose={() => setIsShareModalOpen(false)}
-            item={shareFile}
-            onShareLinkToggle={handleShareLinkToggle}
-            usersList={usersList}
-            user={user}
-          />
-        </td>
-      </tr>
+      <PreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        fileId={previewFileId}
+      />
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        item={shareFile}
+        onShareLinkToggle={handleShareLinkToggle}
+        usersList={usersList}
+        user={user}
+      />
+
+      <DeleteConfirmDialog
+        isModalOpen={isDeleteModalOpen}
+        setIsModalOpen={setIsDeleteModalOpen}
+        handleDelete={
+          deleteDropdown?.type === "file"
+            ? () => handleDeleteFile(deleteDropdown)
+            : () => handleDeleteFolder(deleteDropdown?.id)
+        }
+      />
     </>
   );
 }

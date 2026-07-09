@@ -4,14 +4,19 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
-import Button from "./Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <LoaderSpinner size={24} className="text-blue-500" />
+  <div className="flex min-h-screen items-center justify-center bg-muted/30">
+    <LoaderSpinner size={24} className="text-secondary-foreground" />
   </div>
 );
 
@@ -114,9 +119,9 @@ export default function SetPasswordUsingToken() {
 
   if (isTokenExpired) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="w-full max-w-md bg-white shadow-md rounded-lg">
-
+      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+        <Card className="w-full max-w-md border-border bg-card shadow-sm">
+          <CardHeader className="space-y-4">
           <div className="w-full flex justify-center">
             <div
               style={{
@@ -129,24 +134,29 @@ export default function SetPasswordUsingToken() {
               }}
             />
           </div>
-          <h2 className="text-xl font-bold text-center text-red-600">
+          <h2 className="text-center text-xl font-bold text-destructive">
             Link is invalid or expired
           </h2>
-          <hr className="mt-3 border-gray-200" />
-          <div className='w-full p-6'>
+          <Separator />
+          </CardHeader>
+          <CardContent className="w-full p-6 pt-0">
             <div className="flex flex-col items-center justify-center">
-              <h2 className="font-semibold text-gray-600 mb-2 text-center">
+              <h2 className="mb-2 text-center font-semibold text-foreground">
                 This link may have expired or already been used.
               </h2>
-              <p className="text-sm text-gray-600 text-center mb-4">
-                Please contact us at <a href="mailto:info@mstrategygroup.com" className="text-blue-600">info@mstrategygroup.com</a> to request a new link.
+              <p className="mb-4 text-center text-sm text-muted-foreground">
+                Please contact us at{" "}
+                <a href="mailto:info@mstrategygroup.com" className="text-primary hover:underline">
+                  info@mstrategygroup.com
+                </a>{" "}
+                to request a new link.
               </p>
             </div>
-          </div>
-          <div className="w-full border-t bg-gray-50 rounded-b-md flex justify-center items-center h-[50px]">
-            <p className="text-sm text-gray-600">M Strategy Group 2026. All rights reserved.</p>
-          </div>
-        </div>
+          </CardContent>
+          <CardFooter className="flex justify-center border-t border-border bg-muted/30 py-4">
+            <p className="text-sm text-muted-foreground">M Strategy Group 2026. All rights reserved.</p>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
@@ -155,8 +165,9 @@ export default function SetPasswordUsingToken() {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg">
+    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+      <Card className="w-full max-w-md border-border bg-card shadow-sm">
+        <CardHeader className="space-y-4">
         <div className="w-full flex justify-center">
           <div
             style={{
@@ -169,45 +180,48 @@ export default function SetPasswordUsingToken() {
             }}
           />
         </div>
-          <h2 className="text-xl font-bold text-center text-gray-800 px-6">
+          <h2 className="px-6 text-center text-xl font-bold text-foreground">
             Please create a password to log into Universal Portal Wealth Demo
           </h2>
-        <hr className="mt-3 border-gray-200" />
-        <div className="w-full p-6">
-        <form className="text-gray-700" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
+        <Separator />
+        </CardHeader>
+        <CardContent className="w-full p-6 pt-0">
+        <form className="text-foreground" onSubmit={(e)=>{handleSetPassword(e,'standardUser')}}>
             <>
-                <div className=" text-center mb-4">
-                  <p className="text-sm text-gray-600">Please create a password to sign in. Once completed, you'll be directed to the Universal Portal Wealth Demo homepage.</p>
+                <div className="mb-4 text-center">
+                  <p className="text-sm text-muted-foreground">Please create a password to sign in. Once completed, you'll be directed to the Universal Portal Wealth Demo homepage.</p>
                 </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-600">
+              <div className="mb-4 space-y-2">
+                <Label className="text-sm font-medium text-foreground">
                   Password
-                </label>
+                </Label>
                 <div className="relative">
-                  <input
+                  <Input
                     type={showPassword ? "text" : "password"}
-                    className="w-full px-4 py-2 mt-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    className="pr-12 !bg-background text-foreground"
                     placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <button
+                  <Button
                     type="button"
-                    className="absolute top-[58%] right-4 transform -translate-y-1/2"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full text-muted-foreground hover:text-foreground"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <Eye /> : <EyeOff />}
-                  </button>
+                    {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  </Button>
                 </div>
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-600">
+              <div className="mb-4 space-y-2">
+                <Label className="text-sm font-medium text-foreground">
                   Confirm Password
-                </label>
-                <input
+                </Label>
+                <Input
                   type="password"
-                  className="w-full px-4 py-2 mt-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-700"
+                  className="!bg-background text-foreground"
                   placeholder="Confirm password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -215,24 +229,33 @@ export default function SetPasswordUsingToken() {
                 />
               </div>
               {error && (
-                <p className="text-red-500 text-center text-sm">{error}</p>
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription className="text-center text-sm">{error}</AlertDescription>
+                </Alert>
               )}
                 <div className="w-full flex justify-center items-center">
                   <Button
-                    buttonType="submit"
+                    type="submit"
                     disabled={loading}
-                    isLoading={loading}
-                    type="Primary"
-                    label="Set Password"
-                  />
+                    className="px-3 py-3"
+                  >
+                    {loading ? (
+                      <>
+                        <LoaderSpinner size={18} className="text-primary-foreground" />
+                        Set Password
+                      </>
+                    ) : (
+                      "Set Password"
+                    )}
+                  </Button>
                 </div>
             </>
         </form>
-        </div>
-        <div className="w-full border-t bg-gray-50 rounded-b-md flex justify-center items-center h-[50px]">
-          <p className="text-sm text-gray-600">M Strategy Group 2026. All rights reserved.</p>
-        </div>
-      </div>
+        </CardContent>
+        <CardFooter className="flex justify-center border-t border-border bg-muted/30 py-4">
+          <p className="text-sm text-muted-foreground">M Strategy Group 2026. All rights reserved.</p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

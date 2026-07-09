@@ -52,7 +52,7 @@ const Button = ({
   };
 
   const baseStyles = `flex items-center justify-center gap-2 font-lato ${
-    type === "Login" ? "" : "border border-gray px-4 py-2 rounded-lg"
+    type === "Login" ? "" : "border border-gray px-3 py-3 rounded-lg"
   }`;
 
   const typeOfButton = {

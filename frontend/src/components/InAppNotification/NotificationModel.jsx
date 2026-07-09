@@ -15,11 +15,16 @@ import {
   Gem,
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/utils/helper";
+import { toast } from "react-toastify";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 import { decryptMessage } from "@/app/lib/crypto";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ThemeSwitch } from "@/components/ui/theme-switch";
 
 const NotificationModal = ({
   isOpen,
@@ -51,18 +56,20 @@ const NotificationModal = ({
 
   // Get notification icon based on type
   const getNotificationTypeIcon = (type) => {
-    const iconClass = "w-2.5 h-2.5 text-white";
+    const iconClass = "w-2.5 h-2.5 text-background";
+    const badgeClass =
+      "w-5 h-5 rounded-full flex items-center justify-center border-2 border-popover shadow-sm bg-foreground";
 
     switch (type?.toLowerCase()) {
       case "comment":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <MessageCircleMore className={iconClass} strokeWidth={3} />
           </div>
         );
       case "message":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <MessageSquareMore
               className={iconClass}
               fill="currentColor"
@@ -72,32 +79,32 @@ const NotificationModal = ({
         );
       case "connection":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Globe className={iconClass} strokeWidth={3} />
           </div>
         );
       case "endorsement":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Gem className={iconClass} strokeWidth={3} />
           </div>
         );
       case "task":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <CheckSquare className={iconClass} strokeWidth={3} />
           </div>
         );
       case "like":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Heart className={iconClass} fill="currentColor" strokeWidth={3} />
           </div>
         );
       case "system":
       default:
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Info className={iconClass} strokeWidth={3} />
           </div>
         );
@@ -361,64 +368,48 @@ const NotificationModal = ({
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
 
       {/* Modal - full-width centered on mobile, top-right on desktop */}
-      <div className="fixed left-4 right-4 top-20 max-h-[85vh] w-[calc(100%-2rem)] md:left-auto md:right-4 md:top-16 md:w-96 md:max-w-96 md:max-h-[80vh] bg-white rounded-lg shadow-xl border z-[9999] flex flex-col">
+      <div className="fixed left-4 right-4 top-20 z-[9999] flex max-h-[85vh] w-[calc(100%-2rem)] flex-col rounded-lg border border-border bg-popover text-popover-foreground shadow-xl md:left-auto md:right-4 md:top-16 md:max-h-[80vh] md:w-96 md:max-w-96">
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between p-4 border-b bg-white rounded-t-lg">
-          <h2 className="text-lg font-semibold text-gray-800">Notifications</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-t-lg border-b border-border p-4">
+          <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
           <div className="flex items-center gap-3">
             {/* Toggle Switch for Only show unread */}
-            <div className="flex items-center gap-2 text-sm text-gray-800">
+            <div className="flex items-center gap-2 text-sm text-foreground">
               <span>Only show unread</span>
-              <button
-                type="button"
-                aria-pressed={showUnreadOnly}
-                onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors duration-200 ${
-                  showUnreadOnly ? "bg-blue-600" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    showUnreadOnly ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
+              <ThemeSwitch
+                checked={showUnreadOnly}
+                onCheckedChange={setShowUnreadOnly}
+              />
             </div>
 
             {/* External link icon */}
-            <button
-              className="p-1 rounded hover:bg-gray-100 text-gray-600 transition-colors"
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground"
               onClick={() => router.push(`/${params.portalid}/notifications`)}
+              aria-label="Open notifications page"
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-            </button>
+              <ExternalLink className="h-4 w-4" />
+            </Button>
 
-            {/* Three dots menu */}
+            {/* Three dots menu (inline dropdown to stay above the portal modal) */}
             <div className="relative">
-              <button
-                className="p-1 rounded hover:bg-gray-100 text-gray-600 transition-colors"
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground"
                 onClick={() => setShowDropdown(!showDropdown)}
+                aria-label="More options"
               >
                 <MoreHorizontal className="h-4 w-4" />
-              </button>
+              </Button>
               {/* Dropdown menu */}
               {showDropdown && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border py-1 z-10">
+                <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-lg">
                   <button
                     onClick={markAllAsRead}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-left text-sm text-gray-800 hover:bg-gray-100"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     <Check className="h-4 w-4" />
                     Mark all as read
@@ -430,27 +421,29 @@ const NotificationModal = ({
         </div>
 
         {/* Notifications List */}
-        <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1">
           {isNotificationLoading ? (
-            <div className="p-8 text-center flex justify-center items-center h-36">
-              <LoaderSpinner size={32} className="text-gray-800" />
+            <div className="flex h-36 items-center justify-center p-8 text-center">
+              <LoaderSpinner size={32} className="text-secondary-foreground" />
             </div>
           ) : error ? (
             <div className="p-8 text-center">
-              <div className="h-8 w-8 mx-auto mb-2 text-red-500">
+              <div className="mx-auto mb-2 h-8 w-8 text-destructive">
                 <CircleAlert className="h-full w-full" />
               </div>
-              <p className="text-red-500 mb-2">Failed to load notifications</p>
-              <button
+              <p className="mb-2 text-destructive">Failed to load notifications</p>
+              <Button
+                variant="link"
+                size="sm"
+                className="text-primary-solid"
                 onClick={() => getNotifications()}
-                className="text-blue-600 hover:text-blue-800 text-sm"
               >
                 Try again
-              </button>
+              </Button>
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <div className="p-8 text-center text-muted-foreground">
+              <Bell className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
               <p>
                 {showUnreadOnly
                   ? "No unread notifications"
@@ -463,32 +456,26 @@ const NotificationModal = ({
               return (
                 <div
                   key={formattedNotification.id}
-                  className={`p-3 border-b hover:bg-gray-50 cursor-pointer transition-colors ${
-                    !formattedNotification.isRead ? "bg-blue-50" : ""
-                  }`}
+                  className={cn(
+                    "cursor-pointer border-b border-border p-3 transition-colors hover:bg-muted/50",
+                    !formattedNotification.isRead && "bg-accent"
+                  )}
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-3">
                     {/* Avatar with Type Badge */}
-                    <div className="relative w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      {formattedNotification?.user?.profileUrl ? (
-                        <Image
-                          src={formattedNotification?.user?.profileUrl}
-                          alt="Profile Picture"
-                          width={40}
-                          height={40}
-                          quality={90}
-                          priority
-                          sizes="40px"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-900 to-gray-900 flex items-center justify-center">
-                          <span className="text-white text-sm font-semibold">
-                            {formattedNotification?.avatar}
-                          </span>
-                        </div>
-                      )}
+                    <div className="relative">
+                      <Avatar size="lg">
+                        {formattedNotification?.user?.profileUrl ? (
+                          <AvatarImage
+                            src={formattedNotification?.user?.profileUrl}
+                            alt="Profile Picture"
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-foreground font-semibold text-background">
+                          {formattedNotification?.avatar}
+                        </AvatarFallback>
+                      </Avatar>
 
                       {/* Type Icon Badge */}
                       <div className="absolute -bottom-0.5 -right-1">
@@ -497,34 +484,37 @@ const NotificationModal = ({
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between">
                         <div className="flex-1">
                           {formattedNotification.title && (
-                            <div className="text-sm font-semibold text-gray-800 mb-1">
+                            <div className="mb-1 text-sm font-semibold text-foreground">
                               {formattedNotification.title}
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 ml-2 mt-1">
-                          <span className="text-gray-800 text-xs whitespace-nowrap">
+                        <div className="ml-2 mt-1 flex items-center gap-2">
+                          <span className="whitespace-nowrap text-xs text-muted-foreground">
                             {formattedNotification.time}
                           </span>
                         </div>
                       </div>
 
                       {formattedNotification.content && (
-                        <div className="text-sm text-gray-800 mb-2">
+                        <div className="mb-2 text-sm text-foreground">
                           {formattedNotification.content}
                         </div>
                       )}
                     </div>
 
                     {/* Action Icons */}
-                    <div className="flex flex-col items-center gap-1 my-auto">
+                    <div className="my-auto flex flex-col items-center gap-1">
                       {/* Navigation Icon - only show if URL exists */}
                       {formattedNotification.url && (
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-full text-primary-solid"
                           onClick={(e) =>
                             handleNavigateToUrl(
                               e,
@@ -532,11 +522,10 @@ const NotificationModal = ({
                               formattedNotification,
                             )
                           }
-                          className="p-1.5 rounded-full hover:bg-blue-100 text-blue-600 transition-colors"
                           title="Open link"
                         >
-                          <ExternalLink className="w-4 h-4" />
-                        </button>
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
                       )}
 
                       {/* Unread Indicator - clickable to mark as read */}
@@ -545,7 +534,7 @@ const NotificationModal = ({
                           onClick={(e) =>
                             handleUnreadDotClick(e, formattedNotification.id)
                           }
-                          className="w-3 h-3 bg-gray-800 rounded-full hover:bg-gray-500 transition-colors"
+                          className="h-3 w-3 rounded-full bg-primary-solid transition-opacity hover:opacity-70"
                           title="Mark as read"
                         />
                       )}
@@ -555,19 +544,21 @@ const NotificationModal = ({
               );
             })
           )}
-        </div>
+        </ScrollArea>
 
         {/* Footer */}
-        <div className="p-3 border-t bg-gray-50 rounded-b-lg">
-          <button
+        <div className="rounded-b-lg border-t border-border bg-muted/40 p-3">
+          <Button
+            variant="link"
+            size="sm"
+            className="px-0 font-medium text-foreground hover:text-muted-foreground"
             onClick={() => {
               // Refresh notifications
               getNotifications();
             }}
-            className="text-gray-800 hover:text-gray-500 text-sm font-medium transition-colors"
           >
             Refresh notifications
-          </button>
+          </Button>
         </div>
       </div>
     </>,

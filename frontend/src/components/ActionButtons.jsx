@@ -1,13 +1,21 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Dialog } from "@headlessui/react";
 import { FolderPlus, X } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { setPortal } from "@/store/services/portalService";
 import { useDispatch } from "react-redux";
-import Button from "./Common/Elements/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ActionButtons({
   onFolderCreated,
@@ -85,78 +93,90 @@ export default function ActionButtons({
   };
 
   return (
-    <div className="flex justify-end space-x-3 mb-4">
+    <div className="mb-4 flex justify-end space-x-3">
 
       <Dialog
         open={isModalOpen}
-        onClose={() => {
-          if (!isLoading) setIsModalOpen(false);
+        onOpenChange={(open) => {
+          if (!open && !isLoading) {
+            setIsModalOpen(false);
+          }
         }}
-        className="relative z-50"
       >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
-            <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-lg text-gray-600 font-medium">
+        <DialogContent
+          className="sm:max-w-sm bg-background"
+          overlayClassName="bg-black/30"
+          showCloseButton={false}
+        >
+            <DialogHeader className="border-b border-border pb-4 text-left">
+              <div className="flex items-center justify-between gap-3">
+                <DialogTitle className="text-lg font-medium text-foreground">
                 Create New Folder
-              </Dialog.Title>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+                </DialogTitle>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-full text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </DialogHeader>
 
             {showSuccess ? (
-              <div className="text-center py-4">
-                <div className="text-green-600 mb-4">
+              <div className="py-4 text-center">
+                <DialogDescription className="mb-4 text-base text-success">
                   Folder successfully created!
-                </div>
-                <div className="flex justify-center space-x-3">
+                </DialogDescription>
+                <DialogFooter className="justify-center">
                   <Button
+                    type="button"
                     onClick={() => setIsModalOpen(false)}
-                    isLoading={isLoading}
-                    type="Primary"
-                    label="Done"
-                  />
-                </div>
+                    disabled={isLoading}
+                    className="px-3 py-3"
+                  >
+                    Done
+                  </Button>
+                </DialogFooter>
               </div>
             ) : (
               <>
-                <input
+                <Input
                   type="text"
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
                   placeholder="Enter folder name"
-                  className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full !bg-background text-foreground"
                   disabled={isLoading}
                 />
-                <div className="flex justify-end space-x-3 mt-4">
+                <DialogFooter className="mt-4 gap-2">
                   <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => {
                       setIsModalOpen(false);
                       setFolderName("");
                     }}
                     disabled={isLoading}
-                    type="Secondary"
-                    Label="Cancel"
-                  />
+                    className="px-3 py-3"
+                  >
+                    Cancel
+                  </Button>
                   <Button
+                    type="button"
                     onClick={handleCreateFolder}
                     disabled={isLoading || !folderName.trim()}
-                    isLoading={isLoading}
-                    type="Primary"
-                    Label="Create"
-                    icon={FolderPlus}
-                  />
-                </div>
+                    className="px-3 py-3"
+                  >
+                    {isLoading ? null : <FolderPlus className="h-4 w-4" />}
+                    Create
+                  </Button>
+                </DialogFooter>
               </>
             )}
-          </Dialog.Panel>
-        </div>
+        </DialogContent>
       </Dialog>
     </div>
   );

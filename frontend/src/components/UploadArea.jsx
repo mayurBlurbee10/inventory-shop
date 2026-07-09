@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { Import, Upload, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function UploadArea({ isForImport, onBrowse, onClose }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -51,48 +53,53 @@ export default function UploadArea({ isForImport, onBrowse, onClose }) {
   };
 
   return (
-    <div className="w-full mb-6 mt-4 z-20">
-      <div
-        className={`relative border-2 border-dashed rounded-lg p-8 transition-all duration-200 ${
+    <div className="z-20 mb-6 mt-4 w-full">
+      <Card
+        className={`relative border-2 border-dashed shadow-none transition-all duration-200 ${
           isDragging 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+            ? 'border-primary bg-primary/5' 
+            : 'border-border bg-muted/30 hover:border-muted-foreground/50'
         }`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <button 
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-3 rounded-full text-muted-foreground hover:text-foreground"
           aria-label="Close upload area"
         >
           <X className="w-5 h-5" />
-        </button>
-        
-        <div className="flex flex-col items-center justify-center space-y-4">
+        </Button>
+
+        <CardContent className="flex flex-col items-center justify-center space-y-4 p-8 text-center">
           {isForImport ?
           (
-            <Import className={`w-12 h-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
+            <Import className={`h-12 w-12 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
           ):(
-            <Upload className={`w-12 h-12 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
+            <Upload className={`h-12 w-12 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
           ) }
-          <div className="text-center">
-            <p className="text-gray-600">
+          <div>
+            <p className="text-sm text-muted-foreground sm:text-base">
               Drag and drop file
               {isForImport ? ' csv ' : ' '}
               here or{' '}
-              <button
+              <Button
+                type="button"
+                variant="link"
                 onClick={onBrowse}
-                className="text-blue-600 hover:text-blue-700 font-medium focus:outline-none focus:underline"
+                className="h-auto px-3 py-3 font-medium text-primary"
               >
                 browse computer
-              </button>
+              </Button>
             </p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

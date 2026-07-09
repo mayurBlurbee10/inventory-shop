@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import StoreProvider from "@/components/ReduxProvider";
 import Script from "next/script";
+import { ThemeLoader } from "@/components/themeLoader";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,7 +34,9 @@ export default function RootLayout({ children }) {
         />
         {/* <SocketProvider> */}
         <StoreProvider>
-          {children}
+          <ThemeLoader>
+            {children}
+          </ThemeLoader>
           <ToastContainer
             position="top-right"
             autoClose={1000}

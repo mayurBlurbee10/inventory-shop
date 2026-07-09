@@ -4,37 +4,61 @@ module.exports = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./Plugins/**/*.jsx",
-    "./Plugins/**/*.js",
+    "./src/**/*.{js,jsx}"
   ],
   theme: {
     extend: {
       colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: 'rgb(0, 0, 0)',  // primaryColor
+          DEFAULT: "var(--primary-bg, hsl(var(--primary)))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: 'rgb(255, 255, 255)',  // secondaryColor
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
-        background: {
-          DEFAULT: 'rgb(255, 255, 255)',  // backgroundColor
-          gray: 'rgb(245, 245, 245)',
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
-        text: {
-          DEFAULT: '#333333',  // textColor
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
-        purple: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-        }
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        link: "hsl(var(--link))",
+
+        // ALIASES for backward compatibility with old custom themes
+        surface: "hsl(var(--card))",
+        surfaceHover: "hsl(var(--accent))",
+        heading: "hsl(var(--foreground))",
+        paragraph: "hsl(var(--muted-foreground))",
+        error: "hsl(var(--destructive))",
+        "error-foreground": "hsl(var(--destructive-foreground))",
       },
       fontFamily: {
         'lato': ['Lato', 'sans-serif'],

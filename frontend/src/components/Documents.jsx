@@ -1,6 +1,5 @@
 "use client";
 import * as React from "react";
-import LinearProgress from "@mui/material/LinearProgress";
 
 import {
   AlignJustify,
@@ -13,6 +12,7 @@ import {
   Search,
   UploadIcon,
   PlusIcon,
+  LayoutGrid,
 } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -39,7 +39,6 @@ import SignRequestModal from "./SignRequestModal";
 import { useDispatch, useSelector } from "react-redux";
 import { setCollaboratedFiles, setFiles } from "@/store/services/fileService";
 import { setCurrentUser } from "@/store/services/userService";
-import Button from "./Common/Elements/Button";
 import { TaskStatus, UserRole } from "@/config/constants";
 import TasksSection from "./Common/TasksSection";
 import MessageSection from "./Common/MessageSection";
@@ -47,6 +46,38 @@ import AdvisorSection from "./Common/AdvisorSection";
 import TickerTape from "./Common/charts/TickerTape";
 import TopStories from "./Common/charts/TopStories";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./ui/card";
+import { Label } from "./ui/label";
+import { Skeleton } from "./ui/skeleton";
+import { ScrollArea } from "./ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Badge } from "./ui/badge";
+import { Slider } from "./ui/slider";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { Progress } from "./ui/progress";
+import { LinearProgress } from "@mui/material";
 
 function Documents({
   fileType,
@@ -151,13 +182,9 @@ function Documents({
 
   const router = useRouter();
 
-  const handleSliderChange = (e) => {
-    const value = Number(e.target.value);
-    setCols(value);
-
-    // Calculate percentage for the custom CSS variable
-    const percentage = ((5 - value) / 4) * 100; // 5 should be 0%, 1 should be 100%
-    e.target.style.setProperty("--value-percent", percentage);
+  const handleSliderChange = (value) => {
+    const nextValue = Array.isArray(value) ? value[0] : value;
+    setCols(nextValue);
   };
 
   const fetchPage = async () => {
@@ -855,7 +882,7 @@ function Documents({
 
   return (
     <div
-      className={`max-w-[1820px] ${fileType === "loan" || fileType === "advisor"
+      className={`max-w-[1820px] bg-background ${fileType === "loan" || fileType === "advisor"
         ? ""
         : `${filterVisibility("Ticker Tape") ? "mx-auto pt-5" : "mx-auto pt-5 sm:pt-14"}`
         }`}
@@ -871,11 +898,11 @@ function Documents({
               : "lg:col-span-3"
               }`}
           >
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="flex flex-wrap items-center gap-3 p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+            <Card className="overflow-hidden shadow-sm border-border">
+              <CardHeader className="flex flex-col gap-3 p-4 border border-border  bg-background space-y-0">
 
                 {/* Title Section */}
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <div className="flex items-center gap-2">
                     <div className={`flex flex-col justify-center w-full gap-2`}>
                       {fileType !== "loan" && fileType !== "advisor" && (
@@ -888,16 +915,16 @@ function Documents({
                         </div>
                       )}
                       <div>
-                        <h4 className="text-lg font-bold text-gray-800 flex items-center gap-3">
+                        <CardTitle className="text-lg font-bold text-secondary-foreground flex items-center gap-3">
 
                           {
                             !content ||
                               !content.portalContent ||
                               !content.defaultContent ? (
                               <div className="flex items-center space-x-2 p-2">
-                                <div className="w-2 h-2 bg-gray-200 rounded-full animate-bounce"></div>
-                                <div className="w-2 h-2 bg-gray-200 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                                <div className="w-2 h-2 bg-gray-200 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                                <Skeleton className="h-2 w-2 rounded-full" />
+                                <Skeleton className="h-2 w-2 rounded-full" />
+                                <Skeleton className="h-2 w-2 rounded-full" />
                               </div>
                             ) : (
                               (() => {
@@ -905,85 +932,99 @@ function Documents({
                                 return customContent && customContent.trim().length > 0 ? (
                                   <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: customContent }} suppressHydrationWarning={true} />
                                 ) : (
-                                  <span>Shared Documents</span>
+                                  <span className="text-secondary-foreground">Shared Documents</span>
                                 );
                               })()
                             )
                           }
-                        </h4>
-                        <div className="text-sm text-gray-600">Securely share content with your advisor and trusted collaborators</div>
+                        </CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground">Securely share content with your advisor and trusted collaborators</CardDescription>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Search and Actions */}
-                <div className="flex flex-col gap-3 w-full md:flex-row lg:items-center lg:gap-2">
+                <div className="flex flex-col gap-3 w-full md:flex-row lg:items-center lg:gap-2 p-0">
                   {/* Search Bar */}
                   <div className={`relative flex-1 min-w-[200px] order-1 lg:order-1 max-w-full`}>
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                      <Search className="w-4 h-4 text-gray-400" />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                      <Search className="w-4 h-4 text-secondary-foreground" />
                     </div>
-                    <input
+                    <Input
                       type="search"
                       placeholder="Search files and folders..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 pr-4 py-2.5 w-full bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      className="pl-10 pr-4 py-2 h-auto w-full border border-border rounded-lg text-sm text-secondary-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     />
                   </div>
 
                   {/* Controls Container */}
-                  <div className="flex flex-wrap items-center gap-2 order-2 lg:order-2">
+                  <div className="flex flex-wrap justify-center items-center gap-2 order-2 lg:order-2">
                     {/* View Toggle */}
-                    <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                      <button
-                        onClick={() => setView("list")}
-                        className={`p-2 rounded-md transition-all duration-200 ${view === "list" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
+                    <ToggleGroup
+                      value={[view]}
+                      onValueChange={(values) => {
+                        const nextView = values[values.length - 1];
+                        if (nextView) setView(nextView);
+                      }}
+                      variant="default"
+                      size="sm"
+                      spacing={1}
+                      className="bg-surface rounded-lg p-1"
+                    >
+                      <ToggleGroupItem
+                        value="list"
+                        aria-label="List view"
                         title="List view"
+                        className={view === "list" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0 bg-transparent text-muted-foreground hover:text-foreground"}
                       >
                         <AlignJustify className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setView("grid")}
-                        className={`p-2 rounded-md transition-all duration-200 ${view === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value="grid"
+                        aria-label="Grid view"
                         title="Grid view"
+                        className={view === "grid" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0  text-muted-foreground hover:text-foreground"}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                          <path d="M22 12.999V20C22 20.5523 21.5523 21 21 21H13V12.999H22ZM11 12.999V21H3C2.44772 21 2 20.5523 2 20V12.999H11ZM11 3V10.999H2V4C2 3.44772 2.44772 3 3 3H11ZM21 3C21.5523 3 22 3.44772 22 4V10.999H13V3H21Z"></path>
-                        </svg>
-                      </button>
-                    </div>
+                        <LayoutGrid className="w-4 h-4" />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
 
 
                     {/* Upload/New Folder Buttons */}
 
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col items-center justify-center sm:flex-row gap-3">
                       <Button
-                        type="Primary"
+                        variant="default"
+                        className="h-10"
                         onClick={() => {
                           setIsOpenNewFolderDrawer(false);
                           setIsOpenUploadArea(true);
                         }}
-                        label='Upload Files'
-                        icon={UploadIcon}
-                      />
+                      >
+                        <UploadIcon className="w-5 h-5" />
+                        Upload Files
+                      </Button>
                       <Button
-                        type="Primary"
+                        variant="default"
+                        className="h-10"
                         onClick={() => {
                           setIsOpenNewFolderDrawer(false);
                           setIsNewFolderModalOpen(true);
                         }}
-                        icon={PlusIcon}
-                        label='New Folder'
-                      />
+                      >
+                        <PlusIcon className="w-5 h-5" />
+                        New Folder
+                      </Button>
                     </div>
 
 
                   </div>
                 </div>
 
-              </div>
+              </CardHeader>
 
               {fileType !== "loan" && selectedBulkItems.length > 0 && (
                 <div>
@@ -993,18 +1034,24 @@ function Documents({
                       }`}
                   >
                     <div className="flex items-center gap-3">
-                      <button
-                        className="h-8 w-8 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 ml-1 outline-none"
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="lg"
+                        className="h-8 w-8 rounded-full text-secondary-foreground hover:text-secondary-foreground/50 ml-1"
                         onClick={clearBulkItem}
                       >
                         <X className="size-5" />
-                      </button>
-                      <p className="text-sm font-medium mr-4 text-gray-800">
+                      </Button>
+                      <p className="text-sm font-medium mr-4 text-secondary-foreground">
                         {selectedBulkItems.length} item(s) selected
                       </p>
-                      <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                          } outline-none`}
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="lg"
+                        className={`h-8 w-8 rounded-full text-secondary-foreground ${fileType === "shared" ? "hidden" : "hover:text-secondary-foreground/50"
+                          }`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           handelToolbarMoveClick()
@@ -1012,10 +1059,13 @@ function Documents({
                         disabled={fileType === "shared"}
                       >
                         <FolderInput className="size-5" />
-                      </button>
-                      <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                          } outline-none`}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="lg"
+                        className={`h-8 w-8 rounded-full text-secondary-foreground ${fileType === "shared" ? "hidden" : "hover:text-secondary-foreground/50"
+                          }`}
                         onClick={
                           () =>
                             selectedBulkItems.length > 0 && handleBulkDownload()
@@ -1023,11 +1073,13 @@ function Documents({
                         disabled={fileType === "shared"}
                       >
                           <Download className="size-5" />
-                        {/* )} */}
-                      </button>
-                      {user?.role !== UserRole.USER && <button
-                        className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-600 ${fileType === "shared" ? "hidden" : "hover:bg-gray-200"
-                          } outline-none`}
+                      </Button>
+                      {user?.role !== UserRole.USER && <Button
+                        type="button"
+                        variant="icons"
+                        size="lg"
+                        className={`h-8 w-8 rounded-full text-secondary-foreground ${fileType === "shared" ? "hidden" : "hover:text-secondary-foreground/50"
+                          }`}
                         onClick={() =>
                           selectedBulkItems.length > 0 &&
                           setIsDeleteModalOpen(true)
@@ -1035,7 +1087,7 @@ function Documents({
                         disabled={fileType === "shared"}
                       >
                         <Trash2 className="size-5" />
-                      </button>}
+                      </Button>}
                     </div>
                   </div>
                 </div>
@@ -1058,31 +1110,39 @@ function Documents({
                   {/* Grid range */}
                   {view === "grid" && (
                     <div className="items-center justify=-center gap-2 hidden md:flex">
-                      <button
-                        className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="hover:text-secondary-foreground/50 text-secondary-foreground"
                         onClick={() =>
                           setCols((prev) => Math.max(prev - 1, 1))
                         }
                       >
                         <Minus className="h-5 w-5" />
-                      </button>
-                      <input
-                        type="range"
-                        min="1" // Set the minimum value for the range
-                        max="5" // Set the maximum value for the range
-                        value={cols} // Bind the current value of `cols` to the input
-                        onChange={(e) => handleSliderChange(e)} // Update `cols` when the range slider changes
-                        className="w-32 range-slider" // Optional styling for the slider width
+                      </Button>
+                      <Slider
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[cols]}
+                        onValueChange={handleSliderChange}
+                        className="w-32"
+                        trackClassName="h-1.5 bg-secondary-foreground/30"
+                        rangeClassName="bg-secondary-foreground"
                       />
 
-                      <button
-                        className="hover:bg-gray-100 p-2 rounded-md text-[#8f8f8f] transition-all ease-in-out duration-200"
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="hover:text-secondary-foreground/50 text-secondary-foreground"
                         onClick={() =>
                           setCols((prev) => Math.min(prev + 1, 5))
                         }
                       >
                         <Plus className="h-5 w-5" />
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -1110,7 +1170,7 @@ function Documents({
                   />
                 </div>
               )}
-              <input
+              <Input
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
@@ -1119,7 +1179,16 @@ function Documents({
               />
 
               <div className={` ${isFilesLoading || isLoading === true ? "visible" : "hidden"}`}>
-                <LinearProgress />
+              <LinearProgress
+                    sx={{
+                      height: 4,
+                      borderRadius: 2,
+                      backgroundColor: "hsl(var(--muted) / 0.2)",
+                      "& .MuiLinearProgress-bar": {
+                        backgroundColor: "hsl(var(--secondary-foreground))",
+                      },
+                    }}
+                  />
               </div>
 
               {/* Table in list view */}
@@ -1187,7 +1256,7 @@ function Documents({
               />
 
               {/* Create folder */}
-            </div>
+            </Card>
             {fileType !== "loan" && fileType !== "advisor" && (
               <div className="flex justify-center mt-5">
                 {filterVisibility("Top Stories") && (
@@ -1228,19 +1297,23 @@ function Documents({
 
                 {/* Collaborators */}
                 {filterVisibility("Collaborator Section") && (
-                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <Card className="overflow-hidden border-gray-200">
                     {/* Header */}
-                    <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
-                      <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                    <CardHeader className="flex flex-row items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl space-y-0">
+                      <CardTitle className="text-lg font-semibold text-gray-800 font-lato">
                         My Collaborators
-                      </h3>
-                    </div>
-                    <div className="p-4">
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
                       <form className="mb-3.5" onSubmit={(e) => {
                         e.preventDefault();
                         addCollaborator(collaborator);
                       }}>
-                        <input
+                        <Label htmlFor="collaborator-email" className="sr-only">
+                          Collaborator email
+                        </Label>
+                        <Input
+                          id="collaborator-email"
                           type="email"
                           value={collaborator.email}
                           onChange={(e) =>
@@ -1251,116 +1324,136 @@ function Documents({
                           }
                           required
                           placeholder="user@example.com"
-                          className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 font-lato"
+                          className="border border-[#dee2e6] mb-2 w-full rounded-md outline-none text-[#495057] text-base py-1.5 px-4 h-auto font-lato"
                         />
 
                         <div className="flex items-center gap-6">
-                          <select
-                            className="text-[#495057] max-w-[335px] w-full py-2  border border-[#dee2e6] px-3 rounded-md font-lato"
+                          <Label htmlFor="collaborator-role" className="sr-only">
+                            Collaborator role
+                          </Label>
+                          <Select
                             value={collaborator.role}
-                            onChange={(e) =>
+                            onValueChange={(role) =>
                               setCollaborator((prev) => ({
                                 ...prev,
-                                role: e.target.value,
+                                role,
                               }))
                             }
                           >
-
-                            <option value={"editor"}>Editor</option>
-                            <option value={"viewer"}>Viewer</option>
-
-                          </select>
+                            <SelectTrigger
+                              id="collaborator-role"
+                              className="text-[#495057] max-w-[335px] w-full py-2 font-lato"
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="editor">Editor</SelectItem>
+                              <SelectItem value="viewer">Viewer</SelectItem>
+                            </SelectContent>
+                          </Select>
 
 
                           <Button
                             onClick={addCollaborator(collaborator)}
-                            type="Secondary"
-                            label="Invite"
-                            buttonType="Submit"
-                          />
+                            variant="outline"
+                            type="submit"
+                            className="text-gray-500 hover:bg-gray-50"
+                          >
+                            Invite
+                          </Button>
                         </div>
                       </form>
 
 
-                      <div className="overflow-auto">
-                        <table className="w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
+                      <ScrollArea className="max-h-[400px]">
+                        <Table>
+                          <TableHeader className="bg-gray-50">
+                            <TableRow className="hover:bg-gray-50">
+                              <TableHead className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                 Name
-                              </th>
-                              <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
+                              </TableHead>
+                              <TableHead className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                 Email
-                              </th>
-                              <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
+                              </TableHead>
+                              <TableHead className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                 Role
-                              </th>
-                              <th className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
+                              </TableHead>
+                              <TableHead className="text-sm font-semibold text-gray-700 font-lato p-3 text-start">
                                 Actions
-                              </th>
-                            </tr>
-                          </thead>
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
 
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            <tr className="hover:bg-gray-50 transition-colors">
-                              <td className="p-3">
+                          <TableBody className="bg-white">
+                            <TableRow className="hover:bg-gray-50 transition-colors">
+                              <TableCell className="p-3">
                                 <p className="font-semibold font-lato text-sm text-gray-900">
                                   Erica Smith
                                 </p>
-                              </td>
-                              <td className="p-3">
+                              </TableCell>
+                              <TableCell className="p-3">
                                 <p className="font-normal font-lato text-sm text-gray-600">
                                   advisor@wealthportal.com
                                 </p>
-                              </td>
-                              <td className="p-3">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              </TableCell>
+                              <TableCell className="p-3">
+                                <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
                                   Editor
-                                </span>
-                              </td>
-                              <td className="p-3">
-                                <button className="text-gray-400 hover:text-red-600 transition-colors">
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="p-3">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  className="text-gray-400 hover:text-red-600"
+                                >
                                   <X className="h-4 w-4" />
-                                </button>
-                              </td>
-                            </tr>
+                                </Button>
+                              </TableCell>
+                            </TableRow>
                             {collaborators &&
                               collaborators.length > 0 &&
                               collaborators.map(({ name, email, role }) => (
-                                <tr className="hover:bg-gray-50 transition-colors" key={email}>
-                                  <td className="p-3">
+                                <TableRow className="hover:bg-gray-50 transition-colors" key={email}>
+                                  <TableCell className="p-3">
                                     <p className="font-semibold font-lato text-sm text-gray-900">
                                       {name}
                                     </p>
-                                  </td>
-                                  <td className="p-3">
+                                  </TableCell>
+                                  <TableCell className="p-3">
                                     <p className="font-normal font-lato text-sm text-gray-600">
                                       {email}
                                     </p>
-                                  </td>
-                                  <td className="p-3">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${role === 'editor'
-                                      ? 'bg-blue-100 text-blue-800'
-                                      : 'bg-gray-100 text-gray-800'
-                                      }`}>
+                                  </TableCell>
+                                  <TableCell className="p-3">
+                                    <Badge
+                                      variant={role === "editor" ? "default" : "secondary"}
+                                      className={role === "editor"
+                                        ? "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                                        : "bg-gray-100 text-gray-800 hover:bg-gray-100"}
+                                    >
                                       {role.charAt(0).toUpperCase() + role.slice(1)}
-                                    </span>
-                                  </td>
-                                  <td className="p-3">
-                                    <button
-                                      className="text-gray-400 hover:text-red-600 transition-colors"
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="p-3">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      className="text-gray-400 hover:text-red-600"
                                       onClick={() => removeCollaborator(email)}
                                     >
                                       <X className="h-4 w-4" />
-                                    </button>
-                                  </td>
-                                </tr>
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
                               ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
+                          </TableBody>
+                        </Table>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
                 )}
 
               </div>

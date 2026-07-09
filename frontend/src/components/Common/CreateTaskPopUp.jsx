@@ -1,7 +1,25 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
-import Button from "./Elements/Button";
+import { Calendar as CalendarIcon, X } from "lucide-react";
+// OLD custom button: import Button from "./Elements/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/app/lib/utils";
+import LoaderSpinner from "./Elements/LoaderSpinner";
 import { useSelector } from 'react-redux';
 import MyTaskFileUploadArea from "../MyTaskFileUploadArea";
 import { toast } from "react-toastify";
@@ -9,6 +27,146 @@ import { useParams } from "next/navigation";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Select from "react-select";
 import { TaskType } from "@/config/constants";
+
+const reactSelectStyles = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: "2.75rem",
+    backgroundColor: "hsl(var(--background))",
+    borderColor: state.isFocused ? "hsl(var(--ring))" : "hsl(var(--border))",
+    boxShadow: state.isFocused ? "0 0 0 3px hsl(var(--ring) / 0.5)" : "none",
+    borderRadius: "0.5rem",
+    "&:hover": {
+      borderColor: "hsl(var(--border))",
+    },
+  }),
+  valueContainer: (base) => ({
+    ...base,
+    padding: "0.25rem 0.75rem",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: "hsl(var(--foreground))",
+  }),
+  input: (base) => ({
+    ...base,
+    color: "hsl(var(--foreground))",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "hsl(var(--muted-foreground))",
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: "hsl(var(--popover))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: "0.5rem",
+    overflow: "hidden",
+    zIndex: 50,
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999,
+  }),
+  menuList: (base) => ({
+    ...base,
+    backgroundColor: "hsl(var(--popover))",
+    padding: "0.25rem",
+  }),
+  option: (base, state) => ({
+    ...base,
+    borderRadius: "0.375rem",
+    backgroundColor: state.isSelected
+      ? "hsl(var(--accent))"
+      : state.isFocused
+        ? "hsl(var(--accent) / 0.7)"
+        : "transparent",
+    color:
+      state.isSelected || state.isFocused
+        ? "hsl(var(--accent-foreground))"
+        : "hsl(var(--foreground))",
+    cursor: "pointer",
+    "&:active": {
+      backgroundColor: "hsl(var(--accent))",
+    },
+  }),
+  clearIndicator: (base) => ({
+    ...base,
+    color: "hsl(var(--muted-foreground))",
+    "&:hover": {
+      color: "hsl(var(--foreground))",
+    },
+  }),
+  dropdownIndicator: (base) => ({
+    ...base,
+    color: "hsl(var(--muted-foreground))",
+    "&:hover": {
+      color: "hsl(var(--foreground))",
+    },
+  }),
+  indicatorSeparator: (base) => ({
+    ...base,
+    backgroundColor: "hsl(var(--border))",
+  }),
+  loadingIndicator: (base) => ({
+    ...base,
+    color: "hsl(var(--muted-foreground))",
+  }),
+};
+
+const toISODate = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+const DueDatePicker = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const selected = value ? new Date(`${value}T00:00:00`) : undefined;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full justify-start !bg-background font-normal !text-secondary-foreground sm:w-[220px]"
+          />
+        }
+      >
+        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+        {selected ? (
+          selected.toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          })
+        ) : (
+          <span className="text-muted-foreground">Pick a due date</span>
+        )}
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={selected}
+          captionLayout="dropdown"
+          disabled={{ before: today }}
+          onSelect={(date) => {
+            if (date) {
+              onChange(toISODate(date));
+              setOpen(false);
+            }
+          }}
+          className="hidden-scrollbar text-secondary-foreground"
+        />
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onTaskUpdated = () => { }, allowedCheckLists = [] }) => {
   const isForImport = false;
@@ -374,102 +532,135 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
   console.log("users:", users);
 
 
+  const taskTypeOptions = [
+    { value: TaskType.GENERAL, label: "General" },
+    { value: TaskType.SIGN, label: "Signature" },
+    { value: TaskType.UPLOAD, label: "Upload" },
+  ];
+
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-30">
-      <div className="bg-white rounded-lg w-full max-w-[800px] ">
-        <div className="flex justify-between items-center mb-4 border-b py-4 px-6">
-          <h2 className="text-xl text-gray-800 font-semibold">{task ? "Edit" : "Create"} Task</h2>
-          <button
-            className="p-1 hover:bg-gray-100 rounded-full text-black"
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className="mx-auto w-[calc(100%-2rem)] max-w-[800px] sm:max-w-[800px] max-h-[90vh] gap-0 overflow-hidden rounded-lg p-0"
+      >
+        <DialogHeader className="flex flex-row justify-between items-center mb-4 border-b border-border py-4 px-6">
+          <DialogTitle className="text-xl text-foreground font-semibold">{task ? "Edit" : "Create"} Task</DialogTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-full text-foreground"
             onClick={onClose}
           >
             <X className="h-5 w-5" />
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
 
         <form className="space-y-4 px-6 pb-6 max-h-[80vh] overflow-y-scroll hidden-scrollbar">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <Label className="block text-sm font-medium text-muted-foreground">
               Please select Task Type
-            </label>
+            </Label>
             <div className="flex gap-3 mt-1 pl-2 ">
-              <div
-                className={`border py-2 px-3 flex items-center justify-center gap-3 rounded-lg cursor-pointer hover:border-[#0061D5] ${formData.type === TaskType.GENERAL ? "text-[#0061D5] border-[#0061D5]" : "text-black"}`}
-                onClick={() => setFormData((prev) => ({ ...prev, type: TaskType.GENERAL }))}
-              >
-                General
-              </div>
-              <div
-                className={`border py-2 px-3 flex items-center justify-center gap-3 rounded-lg cursor-pointer hover:border-[#0061D5] ${formData.type === TaskType.SIGN ? "text-[#0061D5] border-[#0061D5]" : "text-black"}`}
-                onClick={() => setFormData((prev) => ({ ...prev, type: TaskType.SIGN }))}
-              >
-                Signature
-              </div>
-              <div
-                className={`border py-2 px-3 flex items-center justify-center gap-3 rounded-lg cursor-pointer hover:border-[#0061D5] ${formData.type === TaskType.UPLOAD ? "text-[#0061D5] border-[#0061D5]" : "text-black"}`}
-                onClick={() => setFormData((prev) => ({ ...prev, type: TaskType.UPLOAD }))}
-              >
-                Upload
-              </div>
+              {taskTypeOptions.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "hover:border-primary px-3 py-3",
+                    formData.type === option.value
+                      ? "text-secondary-foreground border-primary"
+                      : "text-muted-foreground"
+                  )}
+                  onClick={() => setFormData((prev) => ({ ...prev, type: option.value }))}
+                >
+                  {option.label}
+                </Button>
+              ))}
             </div>
           </div>
           {!user && (
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium text-gray-700 pb-1">
+            <div className="flex w-full flex-col space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">
                 Select User
-              </label>
-              <div>
-                <Select
-                  className="flex-1 bg-white text-[#495057] text-sm focus:outline-none w-full"
-                  isClearable={true}
-                  isSearchable={true}
-                  value={formData.userID}
-                  onChange={(selectedOption) => setFormData((prev) => ({ ...prev, userID: selectedOption || null }))}
-                  options={users}
-                  placeholder="Create task for..."
-                  loadingMessage={() => "Fetching users..."}
-                  isLoading={isLoading}
-                  required
-                />
-              </div>
+              </Label>
+              <Select
+                className="w-full"
+                classNamePrefix="task-select"
+                styles={reactSelectStyles}
+                isClearable={true}
+                isSearchable={true}
+                value={formData.userID || null}
+                onChange={(selectedOption) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    userID: selectedOption || null,
+                  }))
+                }
+                options={users}
+                placeholder="Create task for..."
+                loadingMessage={() => "Fetching users..."}
+                isLoading={isLoading}
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
+                menuPosition="fixed"
+                required
+              />
             </div>
           )}
           {user && user?.id && (
-            <div className="w-full">
-              <label className="block text-sm text-gray-600 mb-1">Selected User</label>
-              <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
-                <div className="text-sm text-[#495057]">
-                  {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()} ({user?.email})
+            <div className="w-full space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">
+                Selected User
+              </Label>
+              <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5">
+                <div className="text-sm text-foreground">
+                  {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()} (
+                  {user?.email})
                 </div>
               </div>
             </div>
           )}
           {!task && !task?.checklist && (
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium text-gray-700 pb-1">
+            <div className="flex w-full flex-col space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">
                 Select Check List
-              </label>
-              <div>
-                <Select
-                  className="flex-1 bg-white text-[#495057] text-sm focus:outline-none w-full"
-                  isClearable={true}
-                  isSearchable={true}
-                  value={formData?.checkList}
-                  onChange={(selectedOption) => setFormData((prev) => ({ ...prev, checkList: selectedOption || null }))}
-                  options={checkLists}
-                  placeholder="Create task in checklist"
-                  loadingMessage={() => "Fetching checklists..."}
-                  isLoading={isChecklistLoading}
-                  required
-                />
-              </div>
+              </Label>
+              <Select
+                className="w-full"
+                classNamePrefix="task-select"
+                styles={reactSelectStyles}
+                isClearable={true}
+                isSearchable={true}
+                value={formData?.checkList || null}
+                onChange={(selectedOption) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    checkList: selectedOption || null,
+                  }))
+                }
+                options={checkLists}
+                placeholder="Create task in checklist"
+                loadingMessage={() => "Fetching checklists..."}
+                isLoading={isChecklistLoading}
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
+                menuPosition="fixed"
+                required
+              />
             </div>
           )}
           {task && task?.checklist && (
-            <div className="w-full">
-              <label className="block text-sm text-gray-600 mb-1">Selected Check List</label>
-              <div className="flex items-center justify-between border border-gray-300 rounded px-3 py-2 bg-white">
-                <div className="text-sm text-[#495057]">
+            <div className="w-full space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">
+                Selected Check List
+              </Label>
+              <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2.5">
+                <div className="text-sm text-foreground">
                   {task?.checklist?.name}
                 </div>
               </div>
@@ -478,14 +669,14 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
           {
             formData.type && (
               <div className="z-10">
-                <label className="block text-sm font-medium text-gray-700">
+                <Label className="block text-sm font-medium text-muted-foreground">
                   Task Title
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   required
                   value={formData.title}
-                  className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 h-auto py-2 text-foreground"
                   onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                 />
               </div>
@@ -494,16 +685,16 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
           {
             formData.type && (
               <div className="z-10">
-                <label className="block text-sm font-medium text-gray-700">
+                <Label className="block text-sm font-medium text-muted-foreground">
                   Task Description
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   required
                   value={formData.description}
-                  className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 max-h-40 overflow-y-auto"
+                  className="mt-1 text-foreground max-h-40 overflow-y-auto"
                   rows="4"
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                ></textarea>
+                ></Textarea>
               </div>
             )
           }
@@ -511,9 +702,9 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
           {
             formData.type === TaskType.SIGN && (
               <div className="z-10">
-                <label className="block text-sm font-medium text-gray-700 pb-1">
+                <Label className="block text-sm font-medium text-muted-foreground pb-1">
                   Document
-                </label>
+                </Label>
                 <MyTaskFileUploadArea reset={resetUpload} isForImport={isForImport} onFileChange={handleFileChange} from={"tasks"} existingFilesToShow={task?.file ? [task?.file] : []} />
               </div>
             )
@@ -522,15 +713,14 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
           {
             formData.type && (
               <div className="z-10">
-                <label className="block text-sm font-medium text-gray-700 pb-1">
+                <Label className="block text-sm font-medium text-muted-foreground pb-1">
                   Due Date
-                </label>
-                <input
-                  type="date"
-                  min={new Date().toISOString().split("T")[0]}
-                  className="border p-2 font-medium text-gray-700 rounded-lg outline-none"
+                </Label>
+                <DueDatePicker
                   value={formData.dueDate}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, dueDate: e.target.value }))}
+                  onChange={(dueDate) =>
+                    setFormData((prev) => ({ ...prev, dueDate }))
+                  }
                 />
               </div>
             )
@@ -538,21 +728,30 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
 
           <div className=" flex gap-3 justify-end">
             <Button
-              type="Secondary"
-              label="Cancel"
+              type="button"
+              variant="outline"
               onClick={onClose}
-            />
+              className="px-3 py-3"
+            >
+              Cancel
+            </Button>
             <Button
-              type="Primary"
-              label={task ? "Save" : "Submit"}
+              type="button"
+              variant="secondary"
+              className="px-3 py-3"
               onClick={handleCreate}
-              isLoading={submitLoading}
-              disabled={!formData.type || !formData.title || !formData.description || !formData.checkList || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
-            />
+              disabled={submitLoading || !formData.type || !formData.title || !formData.description || !formData.checkList || (formData?.type === TaskType.SIGN && filesUploaded.length === 0)}
+            >
+              {submitLoading ? (
+                <LoaderSpinner size={20} />
+              ) : (
+                task ? "Save" : "Submit"
+              )}
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

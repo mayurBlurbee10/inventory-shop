@@ -13,7 +13,7 @@ export const Avatar = ({ src, alt, fallbackText }) => {
           onError={() => setError(true)}
         />
       ) : (
-        <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-lg">
+        <div className="w-9 h-9 rounded-full bg-background flex items-center justify-center text-secondary-foreground font-bold text-lg">
           {fallbackText}
         </div>
       )}

@@ -44,10 +44,10 @@ export const FontSizeControl = ({editor }) => {
     };
   
     return (
-      <div className="flex items-center gap-1 border border-gray-300 rounded px-2 py-1">
+      <div className="flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1">
         <button
           onClick={decreaseFontSize}
-          className="text-gray-600 hover:text-black"
+          className="text-muted-foreground hover:text-foreground"
           type="button"
         >
           <Minus size={16} />
@@ -58,11 +58,11 @@ export const FontSizeControl = ({editor }) => {
           max={maxSize}
           value={currentFontSize}
           onChange={handleInputChange}
-          className="w-10 text-center border-none outline-none bg-transparent"
+          className="w-10 border-none bg-transparent text-center text-foreground outline-none"
         />
         <button
           onClick={increaseFontSize}
-          className="text-gray-600 hover:text-black"
+          className="text-muted-foreground hover:text-foreground"
           type="button"
         >
           <Plus size={16} />

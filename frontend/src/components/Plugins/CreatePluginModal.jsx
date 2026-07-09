@@ -1,19 +1,87 @@
-import { Edit, PlusCircle, Trash2, X } from "lucide-react";
+"use client";
+
+import { Edit, PlusCircle, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import AddPageModal from "./AddPageModal";
 import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { getUserData } from "@/app/lib/auth";
+import { getUserData } from "@/lib/auth";
 import { PluginType } from "@/config/constants";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
-import Button from "../Common/Elements/Button";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const LoadingSpinner = () => (
   <div className="flex justify-center py-8">
-    <LoaderSpinner size={32} className="text-blue-500" />
+    <LoaderSpinner size={32} className="text-secondary-foreground" />
   </div>
+);
+
+const PageListItem = ({
+  page,
+  onEdit,
+  onDelete,
+  deleteTarget,
+  isDeleteModalOpen,
+  setIsDeleteModalOpen,
+  onConfirmDelete,
+  deleteLoading,
+}) => (
+  <>
+    <div className="flex w-full items-center justify-between gap-2 border-b border-border py-2 text-base text-foreground last:border-b-0">
+      <span>
+        {page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
+      </span>
+      <div className="ml-auto flex items-center gap-2">
+        <Button
+          type="button"
+          variant="icons"
+          size="icon"
+          className="rounded-full"
+          onClick={() => onEdit(page)}
+          title="Edit page"
+        >
+          <Edit className="size-5" />
+        </Button>
+        <Button
+          type="button"
+          variant="icons"
+          size="icon"
+          className="rounded-full text-destructive hover:text-destructive"
+          onClick={() => onDelete(page)}
+          title="Delete page"
+        >
+          <Trash2 className="size-5" />
+        </Button>
+      </div>
+    </div>
+    {deleteTarget?.id === page?.id && (
+      <DeleteConfirmDialog
+        isModalOpen={isDeleteModalOpen}
+        setIsModalOpen={setIsDeleteModalOpen}
+        handleDelete={() => onConfirmDelete(page)}
+        title="Delete Page"
+        isLoading={deleteLoading}
+      />
+    )}
+  </>
 );
 
 export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
@@ -28,35 +96,32 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
   const [pageSelected, setPageSelected] = useState(null);
   const [pluginData, setPluginData] = useState({
     type: plugin?.type,
-    pageId: []
+    pageId: [],
   });
 
   const handleModalClose = async () => {
     setPages([]);
     setEditData(null);
     onClose();
-    return;
   };
 
   const handleDone = async () => {
     setPages([]);
     setEditData(null);
     onClose();
-    return;
   };
 
-
   useEffect(() => {
-    if (isOpen && params.portalId && plugin.type) {
+    if (isOpen && params.portalId && plugin?.type) {
       fetchPlugin();
     }
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && plugin?.type) {
       fetchPlugin();
     }
-  }, [isOpen]);
+  }, [isOpen, plugin?.type]);
 
   useEffect(() => {
     if (onPageCreated) {
@@ -66,31 +131,27 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
   }, [onPageCreated]);
 
   const fetchPlugin = async () => {
+    if (!plugin?.type) return;
+
     try {
-     
       const encodedType = encodeURIComponent(plugin?.type);
       const response = await fetchWrapper(
         `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
-        "fetch-plugins"
+        "fetch-plugins",
       );
       if (!response.ok) {
         throw new Error("Failed to fetch plugins");
       }
       const data = await response.json();
       const existingPagesData = data?.data?.[0]?.pages || [];
-      console.log("Existing pages:", existingPagesData);
-
       const customPages = existingPagesData.filter(
-        (item) => item.isCustomPage === true
+        (item) => item.isCustomPage === true,
       );
-      // setPlugin(data.data);
-
       setPages(customPages);
-      // setPages((prev) => [...prev, ...pageCreated]);
     } catch (error) {
       console.error("Error fetching plugins:", error);
-    } 
+    }
   };
 
   const handleDeletePage = async (page) => {
@@ -106,7 +167,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
           },
           body: JSON.stringify({ id: page.id }),
         },
-        "delete-page"
+        "delete-page",
       );
 
       const data = await response.json();
@@ -120,117 +181,88 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
       toast.success("Page deleted successfully");
     } catch (error) {
       toast.error(error.message);
-      setError("Failed to delete Page. Please try again.");
     } finally {
       setDeleteLoading(false);
     }
   };
 
-  const renderPagesList = (pagesList) => {
-    return pagesList?.map((page, index) => (
-      <div
-        className={`py-2 text-base flex gap-2 w-full justify-between items-center`}
-        key={index}
-      >
-        {page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
-          <>
-            <div className="flex items-center ml-auto gap-2">
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => {
-                  if (editData) {
-                    setEditData(null);
-                  }
-                  setEditData(page);
-                  setIsOpenAddPageModal(true);
-                }}
-              >
-                <Edit className="size-5 text-blue-700" />
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => {
-                  setIsDeleteModalOpen((prev) => !prev);
-                  setPageSelected(page);
-                }}
-              >
-                <Trash2 className="size-5 text-red-700" />
-              </button>
-            </div>
-            {pageSelected?.id === page?.id && (
-              <DeleteConfirmDialog
-                isModalOpen={isDeleteModalOpen}
-                setIsModalOpen={setIsDeleteModalOpen}
-                handleDelete={() => handleDeletePage(page)}
-                title="Delete Page"
-                isLoading={deleteLoading}
-              />
-            )}
-          </>
-      </div>
-    ));
-  };
+  const pluginTitle = !plugin?.type
+    ? "Widget"
+    : plugin.type === PluginType.TNC
+      ? plugin.type.toUpperCase()
+      : plugin.type.charAt(0).toUpperCase() + plugin.type.slice(1);
 
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center z-10"
-          style={{ marginTop: 0 }}
-        >
-          <div className="bg-white rounded-lg flex flex-col relative max-w-[500px] w-full">
-            <div className="flex -items-center justify-between border-b border-solid p-4">
-              <label className="text-xl font-semibold text-gray-700">
-                {plugin?.type === PluginType.TNC ? plugin?.type.toUpperCase() : plugin?.type.charAt(0).toUpperCase() + plugin?.type.slice(1)}
-              </label>
-              <button
-                onClick={handleModalClose}
-                className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && handleModalClose()}>
+        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">{pluginTitle}</DialogTitle>
+          </DialogHeader>
 
-            <div className="p-4 text-gray-900 max-h-[40vh] overflow-y-auto">
-              {loading ? (
-                <LoadingSpinner />
-              ) : !pages.length ? (
-                <p>No pages found.</p>
-              ) : (
-                renderPagesList(pages)
-              )}
-            </div>
-
-            <div className="flex justify-between items-center w-full space-x-4 p-4">
-              {(plugin?.type === PluginType.TNC &&
-                plugin.pages &&
-                plugin.pages?.length < 1) ||
-              plugin.type !== PluginType.TNC ? (
-                <Button
-                  onClick={() => {
-                    setEditData(null);
-                    if (!editData) {
-                      setIsOpenAddPageModal((prev) => !prev);
-                    }
+          <div className="max-h-[40vh] overflow-y-auto text-foreground">
+            {loading ? (
+              <LoadingSpinner />
+            ) : !pages.length ? (
+              <p className="text-sm text-muted-foreground">No pages found.</p>
+            ) : (
+              pages.map((page) => (
+                <PageListItem
+                  key={page.id}
+                  page={page}
+                  onEdit={(selectedPage) => {
+                    setEditData(selectedPage);
+                    setIsOpenAddPageModal(true);
                   }}
-                  icon={PlusCircle}
-                  type="Secondary"
-                  label="Add Page"
+                  onDelete={(selectedPage) => {
+                    setIsDeleteModalOpen(true);
+                    setPageSelected(selectedPage);
+                  }}
+                  deleteTarget={pageSelected}
+                  isDeleteModalOpen={isDeleteModalOpen}
+                  setIsDeleteModalOpen={setIsDeleteModalOpen}
+                  onConfirmDelete={handleDeletePage}
+                  deleteLoading={deleteLoading}
                 />
-              ) : null}
-              <Button
-                onClick={handleDone}
-                type="Primary"
-                label="Done"
-                isLoading={loading}
-                className="ml-auto"
-              />
-            </div>
+              ))
+            )}
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="flex w-full items-center justify-between gap-2 sm:justify-between">
+            {(plugin?.type === PluginType.TNC &&
+              plugin?.pages &&
+              plugin.pages?.length < 1) ||
+            plugin?.type !== PluginType.TNC ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEditData(null);
+                  setIsOpenAddPageModal(true);
+                }}
+                className="px-3 py-3"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Add Page
+              </Button>
+            ) : (
+              <span />
+            )}
+            <Button
+              type="button"
+              onClick={handleDone}
+              disabled={loading}
+              className="ml-auto px-3 py-3"
+            >
+              {loading ? (
+                <LoaderSpinner size={18} className="text-primary-foreground" />
+              ) : null}
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AddPageModal
         isOpen={isOpenAddPageModal}
         onClose={() => setIsOpenAddPageModal(false)}
@@ -245,7 +277,12 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
   );
 };
 
-export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOptions }) => {
+export const CreatePluginModal = ({
+  isOpen,
+  onClose,
+  onPluginCreated,
+  pluginOptions,
+}) => {
   const params = useParams();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -260,7 +297,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   const [pluginData, setPluginData] = useState({
     type: "",
-    pageId: []
+    pageId: [],
   });
 
   const handleModalClose = async () => {
@@ -272,7 +309,6 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
     setEditData(null);
     setError("");
     onClose();
-    return;
   };
 
   const handleSubmit = async (e) => {
@@ -289,7 +325,6 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
         createdBy: user.id,
       };
 
-      // Save plugin
       const pluginResponse = await fetchWrapper(
         "/api/plugins",
         {
@@ -299,7 +334,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
           },
           body: JSON.stringify(pluginPayload),
         },
-        "save-plugin"
+        "save-plugin",
       );
 
       if (!pluginResponse.ok) {
@@ -309,11 +344,10 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
 
       const savedPluginData = await pluginResponse.json();
 
-      // Close modal and show success toast
       setPageCreated([]);
       setPluginData({
         type: "",
-        pageId: []
+        pageId: [],
       });
       setPages([]);
       setEditData(null);
@@ -321,13 +355,11 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
       onClose();
       toast.success(`Plugin ${savedPluginData.message} successfully`);
     } catch (error) {
-      // Log and display error
       toast.error(error.message);
       console.error("Error creating plugin:", error);
       setError(error.message || "An unexpected error occurred");
     } finally {
-      // Reset loading state
-      setIsSubmitLoading(false)
+      setIsSubmitLoading(false);
     }
   };
 
@@ -344,7 +376,7 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
           },
           body: JSON.stringify({ id: page.id }),
         },
-        "delete-page"
+        "delete-page",
       );
 
       const data = await response.json();
@@ -377,14 +409,13 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
 
   const fetchPlugin = async () => {
     try {
-      setLoading(true)
-      console.log("Fetching plugins with type:", pluginData.type);
+      setLoading(true);
       setPages([]);
       const encodedType = encodeURIComponent(pluginData.type);
       const response = await fetchWrapper(
         `/api/plugins?portalId=${params?.portalid || "root"}&type=${encodedType}`,
         {},
-        "fetch-plugins"
+        "fetch-plugins",
       );
 
       if (!response.ok) {
@@ -392,23 +423,15 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
       }
 
       const data = await response.json();
-      console.log("API response data:", data);
-      console.log("Page created:", pageCreated);
       const pageToAdd = pageCreated.filter(
-        (item) => item.type === pluginData.type
+        (item) => item.type === pluginData.type,
       );
-      console.log("Filtered pageToAdd:", pageToAdd);
-
       const existingPagesData = data?.data?.[0]?.pages || [];
-      console.log("Existing pages:", existingPagesData);
-
       const customPages = existingPagesData.filter(
-        (item) => item.isCustomPage === true
+        (item) => item.isCustomPage === true,
       );
-
-      // Avoiding duplicates before updating state
       const updatedPages = [...customPages, ...pageToAdd].filter(
-        (page, index, self) => index === self.findIndex((p) => p.id === page.id)
+        (page, index, self) => index === self.findIndex((p) => p.id === page.id),
       );
 
       setPages(updatedPages);
@@ -420,145 +443,120 @@ export const CreatePluginModal = ({ isOpen, onClose, onPluginCreated, pluginOpti
     }
   };
 
-  const renderPagesList = (pagesList) => {
-    return pagesList?.map((page, index) => (
-      <div
-        className={`py-2 text-base flex gap-2 w-full justify-between items-center`}
-        key={index}
-      >
-        {page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
-
-        <>
-          <div className="flex items-center gap-2 ml-auto">
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => {
-                setEditData(page);
-                setIsOpenAddPageModal(true);
-              }}
-            >
-              <Edit className="size-5 text-blue-700" />
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => {
-                setIsDeleteModalOpen(true);
-                setPageSelected(page);
-              }}
-            >
-              <Trash2 className="size-5 text-red-700" />
-            </button>
-          </div>
-          {pageSelected?.id === page?.id && (
-            <DeleteConfirmDialog
-              isModalOpen={isDeleteModalOpen}
-              setIsModalOpen={setIsDeleteModalOpen}
-              handleDelete={() => handleDeletePage(page)}
-              title="Delete Page"
-              isLoading={deleteLoading}
-            />
-          )}
-        </>
-      </div>
-    ));
-  };
-
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 min-h-screen text-gray-700 bg-black/15 bg-opacity-80 flex items-center justify-center"
-          style={{ marginTop: 0 }}
-        >
-          <div className="bg-white rounded-lg flex flex-col relative p-5 max-w-[500px] w-full">
-            <div className="flex -items-center justify-between border-b border-solid">
-              <label className="text-xl font-semibold text-gray-700 mb-3">
-                Add Widget
-              </label>
-              <button
-                onClick={handleModalClose}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="mb-2 pt-3">
-              <div className="w-full mb-3">
-                <label className="text-base font-semibold text-gray-700 ">
-                  Widget Types
-                </label>
-                <select
-                  className="block w-full mt-1 tracking-wide rounded-lg border border-solid border-gray-200 text-gray-600 focus:border-blue-500 focus:ring-blue-500 p-3 outline-none"
-                  value={pluginData.type}
-                  onChange={(e) =>
-                    setPluginData({ ...pluginData, type: e.target.value })
-                  }
-                >
-                  <option value="" disabled>
-                    Select Widget Type
-                  </option>
-                  {pluginOptions &&
-                    pluginOptions.map((opt, idx) => (
-                      <option key={idx} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                </select>
-              </div>
-              {(pluginData.type === PluginType.TNC &&
-                pages &&
-                pages?.length < 1) ||
-              pluginData.type !== PluginType.TNC ? (
-                <div className="flex items-center gap-2 w-full">
-                    {
-                      pluginData?.type && (
-                        <Button
-                          onClick={() => {
-                            setEditData(null);
-                            if (!editData) {
-                              setIsOpenAddPageModal((prev) => !prev);
-                            }
-                          }}
-                          icon={PlusCircle}
-                          type="Primary"
-                          label="Add"
-                        />
-                      )
-                    }
-                </div>
-              ) : null}
+      <Dialog open={isOpen} onOpenChange={(open) => !open && handleModalClose()}>
+        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Add Widget</DialogTitle>
+          </DialogHeader>
 
-              <div className="py-2 text-gray-900 max-h-[40vh] overflow-y-auto">
-                {loading ? (
-                  <LoadingSpinner />
-                ) : !pages.length ? (
-                  <p>No pages found.</p>
-                ) : (
-                  renderPagesList(pages)
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <Alert variant="destructive" className="border-destructive/30">
+                <AlertDescription className="text-destructive">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="widget-type" className="text-foreground">
+                Widget Types
+              </Label>
+              <Select
+                value={pluginData.type || undefined}
+                onValueChange={(value) =>
+                  setPluginData({ ...pluginData, type: value })
+                }
+              >
+                <SelectTrigger id="widget-type" className="!bg-background h-11 w-full">
+                  <SelectValue placeholder="Select Widget Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pluginOptions?.map((opt, idx) => (
+                    <SelectItem key={idx} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(pluginData.type === PluginType.TNC &&
+              pages &&
+              pages?.length < 1) ||
+            pluginData.type !== PluginType.TNC ? (
+              <div className="flex items-center gap-2">
+                {pluginData?.type && (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setEditData(null);
+                      setIsOpenAddPageModal(true);
+                    }}
+                    className="px-3 py-3"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    Add
+                  </Button>
                 )}
               </div>
+            ) : null}
 
-              <div className="flex justify-end w-full space-x-4 mt-12">
-                <Button
-                  onClick={handleModalClose}
-                  disabled={loading}
-                  type="Secondary"
-                  label="Cancel"
-                />
-                <Button
-                  buttonType="submit"
-                  disabled={isSubmitLoading || loading}
-                  isLoading={isSubmitLoading}
-                  type="Primary"
-                  label="Done"
-                />
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <div className="max-h-[40vh] overflow-y-auto text-foreground">
+              {loading ? (
+                <LoadingSpinner />
+              ) : !pages.length ? (
+                <p className="text-sm text-muted-foreground">No pages found.</p>
+              ) : (
+                pages.map((page) => (
+                  <PageListItem
+                    key={page.id}
+                    page={page}
+                    onEdit={(selectedPage) => {
+                      setEditData(selectedPage);
+                      setIsOpenAddPageModal(true);
+                    }}
+                    onDelete={(selectedPage) => {
+                      setIsDeleteModalOpen(true);
+                      setPageSelected(selectedPage);
+                    }}
+                    deleteTarget={pageSelected}
+                    isDeleteModalOpen={isDeleteModalOpen}
+                    setIsDeleteModalOpen={setIsDeleteModalOpen}
+                    onConfirmDelete={handleDeletePage}
+                    deleteLoading={deleteLoading}
+                  />
+                ))
+              )}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleModalClose}
+                disabled={loading}
+                className="px-3 py-3"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitLoading || loading}
+                className="px-3 py-3"
+              >
+                {isSubmitLoading ? (
+                  <LoaderSpinner size={18} className="text-primary-foreground" />
+                ) : null}
+                Done
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <AddPageModal
         isOpen={isOpenAddPageModal}
         onClose={() => setIsOpenAddPageModal(false)}

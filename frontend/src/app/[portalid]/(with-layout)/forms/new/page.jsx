@@ -2,7 +2,6 @@
 import { getUserData } from "@/app/lib/auth";
 import { newLoanData } from "@/app/lib/data/loan-data";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Button from "@/components/Common/Elements/Button";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import Documents from "@/components/Documents";
 import SignRequestModal from "@/components/SignRequestModal";
@@ -20,6 +19,18 @@ import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const getIconForType = (t) =>
   t === "auto" ? "CarFront" : t === "personal" ? "User" : "Home";
@@ -30,6 +41,39 @@ const isRecoverableFolderError = (msg) =>
   /same name|already exists|reserved by another processing|name is in use|wait and retry/i.test(
     msg || ""
   );
+
+// Currency input with a "$" prefix. Defined at module scope so it isn't
+// recreated on every parent render (which would drop focus while typing).
+const MoneyInput = ({ id, value, onChange }) => (
+  <div className="flex h-10 w-3/5 items-center overflow-hidden rounded-lg border border-input bg-background lg:w-1/2">
+    <span className="flex h-full items-center bg-muted px-3 text-sm text-muted-foreground">
+      $
+    </span>
+    <Input
+      id={id}
+      type="text"
+      value={value}
+      onChange={onChange}
+      className="h-full flex-1 rounded-none border-0 border-l border-input !bg-background focus-visible:ring-0"
+    />
+  </div>
+);
+
+// Wrapper that maps the legacy Button API (label / isLoading / type) onto the
+// shadcn Button while showing an inline spinner during loading states.
+const FormButton = ({
+  label,
+  isLoading = false,
+  disabled = false,
+  variant = "default",
+  children,
+  ...props
+}) => (
+  <Button variant={variant} disabled={disabled || isLoading} {...props}>
+    {isLoading && <LoaderSpinner size={16} className="text-current" />}
+    {label ?? children}
+  </Button>
+);
 
 const ApplicationStep = ({
   setActiveStep,
@@ -250,183 +294,180 @@ const ApplicationStep = ({
   };
 
   return (
-    <div className="flex flex-col justify-center w-full font-lato overflow-hidden">
-      <h1 className="text-3xl text-black p-10">Application</h1>
+    <div className="flex w-full flex-col justify-center overflow-hidden">
+      <h1 className="p-10 text-3xl text-foreground">Application</h1>
       <form className="space-y-3">
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="firstName" className="w-2/5">
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="firstName" className="w-2/5">
             First Name
-          </label>
-          <input
+          </Label>
+          <Input
+            id="firstName"
             type="text"
             value={userData.firstName}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, firstName: e.target.value }))
             }
-            className="px-3 py-2 rounded w-3/5 lg:w-1/2 border border-[#ced4da]"
+            className="h-10 w-3/5 lg:w-1/2 !bg-background"
           />
         </div>
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="lastName" className="w-2/5">
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="lastName" className="w-2/5">
             Last Name
-          </label>
-          <input
+          </Label>
+          <Input
+            id="lastName"
             type="text"
             value={userData.lastName}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, lastName: e.target.value }))
             }
-            className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2"
+            className="h-10 w-3/5 lg:w-1/2 !bg-background"
           />
         </div>
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="phoneNumber" className="w-2/5">
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="phoneNumber" className="w-2/5">
             Phone Number
-          </label>
-          <input
+          </Label>
+          <Input
+            id="phoneNumber"
             type="text"
             value={userData.phoneNumber}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, phoneNumber: e.target.value }))
             }
-            className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2"
+            className="h-10 w-3/5 lg:w-1/2 !bg-background"
           />
         </div>
-        <hr className="bg-[#dee2e6] w-full mx-10" />
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="SSN">SSN</label>
-          <div className="flex gap-2  w-3/5 lg:w-1/2">
-            <input
+        <Separator className="mx-10 w-auto" />
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="SSN_1">SSN</Label>
+          <div className="flex w-3/5 gap-2 lg:w-1/2">
+            <Input
+              id="SSN_1"
               type="password"
               value={userData.SSN_1}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, SSN_1: e.target.value }))
               }
-              className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2"
+              className="h-10 w-3/5 lg:w-1/2 !bg-background"
             />
-            <input
+            <Input
               type="password"
               value={userData.SSN_2}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, SSN_2: e.target.value }))
               }
-              className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2"
+              className="h-10 w-3/5 lg:w-1/2 !bg-background"
             />
-            <input
+            <Input
               type="password"
               value={userData.SSN_3}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, SSN_3: e.target.value }))
               }
-              className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2"
+              className="h-10 w-3/5 lg:w-1/2 !bg-background"
             />
           </div>
         </div>
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="employer" className="w-2/5">
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="employer" className="w-2/5">
             Employer
-          </label>
-          <input
+          </Label>
+          <Input
+            id="employer"
             type="text"
             value={userData.employer}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, employer: e.target.value }))
             }
-            className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2"
+            className="h-10 w-3/5 lg:w-1/2 !bg-background"
           />
         </div>
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="annualIncome" className="w-2/5">
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="annualIncome" className="w-2/5">
             Annual Income
-          </label>
-          <div className="rounded flex w-3/5 lg:w-1/2 bg-[#e9ecef] border border-[#ced4da]">
-            <p className="px-3 flex items-center">$</p>
-            <input
-              type="text"
-              value={userData.annualIncome}
-              onChange={(e) =>
-                setUserData((prev) => ({
-                  ...prev,
-                  annualIncome: e.target.value,
-                }))
-              }
-              className="border-l border-[#ced4da] px-3 py-2 rounded-tr rounded-tb w-full"
-            />
-          </div>
-        </div>
-        <hr className="bg-[#dee2e6] w-full mx-10" />
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="purchasePrice" className="w-2/5">
-            Expected Purchase Price
-          </label>
-          <div className="rounded flex w-3/5 lg:w-1/2 bg-[#e9ecef] border border-[#ced4da]">
-            <p className="px-3 flex items-center">$</p>
-            <input
-              type="text"
-              value={userData.purchasePrice}
-              onChange={(e) =>
-                setUserData((prev) => ({
-                  ...prev,
-                  purchasePrice: e.target.value,
-                }))
-              }
-              className="border-l border-[#ced4da] px-3 py-2 rounded-tr rounded-tb w-full"
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="mortgageAmount" className="w-2/5">
-            Desired Mortgage Amount
-          </label>
-          <div className="rounded flex w-3/5 lg:w-1/2 bg-[#e9ecef] border border-[#ced4da]">
-            <p className="px-3 flex items-center">$</p>
-            <input
-              type="text"
-              value={userData.mortgageAmount}
-              onChange={(e) =>
-                setUserData((prev) => ({
-                  ...prev,
-                  mortgageAmount: e.target.value,
-                }))
-              }
-              className="border-l border-[#ced4da] px-3 py-2 rounded-tr rounded-tb w-full"
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-between text-sm text-black pl-10 pr-20 lg:pr-40">
-          <label htmlFor="propertyLocation" className="w-2/5">
-            Property Location
-          </label>
-          <select
-            type="text"
-            value={userData.propertyLocation}
+          </Label>
+          <MoneyInput
+            id="annualIncome"
+            value={userData.annualIncome}
             onChange={(e) =>
               setUserData((prev) => ({
                 ...prev,
-                propertyLocation: e.target.value,
+                annualIncome: e.target.value,
               }))
             }
-            className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2"
+          />
+        </div>
+        <Separator className="mx-10 w-auto" />
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="purchasePrice" className="w-2/5">
+            Expected Purchase Price
+          </Label>
+          <MoneyInput
+            id="purchasePrice"
+            value={userData.purchasePrice}
+            onChange={(e) =>
+              setUserData((prev) => ({
+                ...prev,
+                purchasePrice: e.target.value,
+              }))
+            }
+          />
+        </div>
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="mortgageAmount" className="w-2/5">
+            Desired Mortgage Amount
+          </Label>
+          <MoneyInput
+            id="mortgageAmount"
+            value={userData.mortgageAmount}
+            onChange={(e) =>
+              setUserData((prev) => ({
+                ...prev,
+                mortgageAmount: e.target.value,
+              }))
+            }
+          />
+        </div>
+        <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
+          <Label htmlFor="propertyLocation" className="w-2/5">
+            Property Location
+          </Label>
+          <Select
+            value={userData.propertyLocation}
+            onValueChange={(value) =>
+              setUserData((prev) => ({ ...prev, propertyLocation: value }))
+            }
           >
-            <option value="CA">CA</option>
-            <option value="NY">NY</option>
-          </select>
-          {/* <input className="border border-[#ced4da] px-3 py-2 rounded w-3/5 lg:w-1/2" /> */}
+            <SelectTrigger id="propertyLocation" className="h-10 w-3/5 !bg-background lg:w-1/2">
+              <SelectValue placeholder="Select state" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CA">CA</SelectItem>
+              <SelectItem value="NY">NY</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </form>
 
-      <div className="flex items-center justify-between pl-10 py-10">
-        <div
-          className="bg-[#17a2b8] rounded p-[6px] text-white cursor-pointer"
+      <div className="flex items-center justify-between py-10 pl-10">
+        <Button
+          variant="secondary"
+          size="icon"
+          title="Prefill sample data"
+          aria-label="Prefill sample data"
           onClick={() => setUserData((prev) => ({ ...prev, ...preUserData }))}
         >
           <ListChecks className="size-5" />
-        </div>
-        <Button
+        </Button>
+        <FormButton
+          type="button"
+          variant="default"
+          className="px-3 py-3"
           onClick={handelNext}
           disabled={isLoading || fileListLoading}
           isLoading={isLoading || fileListLoading}
-          type="Primary"
           label="Next"
         />
       </div>
@@ -557,46 +598,51 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
   }, [selectedItems]);
 
   return (
-    <div className="flex flex-col justify-center w-full font-lato px-5 sm:px-10">
-      <h1 className="text-3xl text-black pt-10 pb-3">Documents</h1>
-      <p className="font-light text-xl">
-        We need the <span className="font-normal">most recent</span> versions of
-        these documents to proceed with your application:
+    <div className="flex w-full flex-col justify-center px-5 sm:px-10">
+      <h1 className="pb-3 pt-10 text-3xl text-foreground">Documents</h1>
+      <p className="text-xl font-light text-muted-foreground">
+        We need the{" "}
+        <span className="font-normal text-foreground">most recent</span>{" "}
+        versions of these documents to proceed with your application:
       </p>
-      <div className="flex justify-between gap-5 items-center font-light text-base sm:text-lg md:text-xl text-center py-5 px-4 sm:px-10 md:px-20 lg:px-32 whitespace-nowrap overflow-x-auto">
+      <div className="flex items-center justify-between gap-5 overflow-x-auto whitespace-nowrap px-4 py-5 text-center text-base font-light text-foreground sm:px-10 sm:text-lg md:px-20 md:text-xl lg:px-32">
         <p>W2 Form</p>
         <p>Pay Stub</p>
         <p>Bank Statement</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-y-5 sm:gap-x-5">
+      <div className="grid grid-cols-1 gap-y-5 md:grid-cols-1 lg:grid-cols-2 sm:gap-x-5">
         <div className="flex flex-col gap-3">
-          <h1 className="text-[#007bff] text-center text-xl">
+          <h1 className="text-center text-xl text-primary-solid">
             Select from Shared Documents
           </h1>
-          <div className="border border-blue-500">
+          <div className="rounded-xl border border-border">
             <Documents
               fileType={"loan"}
               setSelectedItems={setSelectedItems}
               selectedItems={selectedItems}
               isRest={isRest}
             />
-            <div className="flex items-center justify-between p-4">
-              <p>{selectedItems.length} Selected</p>
+            <div className="flex items-center justify-between border-t border-border p-4">
+              <p className="text-muted-foreground">
+                {selectedItems.length} Selected
+              </p>
               <div className="flex gap-2">
-                <Button
+                <FormButton
+                  type="button"
+                  variant="outline"
+                  className="px-3 py-3"
                   onClick={() => {
                     setIsRest(true);
                   }}
                   disabled={isLoading}
-                  type="Secondary"
                   label="Cancel"
                 />
-                <Button
+                <FormButton
                   onClick={handelChoose}
                   disabled={isLoading}
                   isLoading={isLoading}
-                  type="Primary"
+                  className="px-3 py-3"
                   label="Choose"
                 />
               </div>
@@ -605,17 +651,17 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
         </div>
 
         <div className="flex flex-col gap-3">
-          <h1 className="text-[#007bff] text-center text-xl">Upload</h1>
+          <h1 className="text-center text-xl text-primary-solid">Upload</h1>
           {/* File Upload Section */}
-          <div className="border  border-[#17a2b8] h-full flex flex-col">
+          <div className="flex h-full flex-col rounded-xl border border-border">
             {uploadSuccess ? (
-              <div className="p-6 flex flex-col flex-1 justif-center items-center text-center border-b text-sm">
-                <CircleCheckBig className="h-12 w-12 text-blue-500 mb-2" />
-                <p className="text-gray-600">
+              <div className="flex flex-1 flex-col items-center border-b border-border p-6 text-center text-sm">
+                <CircleCheckBig className="mb-2 h-12 w-12 text-success" />
+                <p className="text-muted-foreground">
                   Success! Your files have been uploaded.
                 </p>
                 <p
-                  className="text-blue-600 cursor-pointer underline"
+                  className="cursor-pointer text-primary-solid underline"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   Select More Files
@@ -623,17 +669,20 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
               </div>
             ) : (
               <div
-                className={`p-6 flex flex-col min-h-[200px] flex-1 justify-center items-center text-center text-sm ${isDragging ? "bg-blue-50" : "bg-gray-50"
-                  } ${files.length > 0 ? "hidden" : ""}`}
+                className={cn(
+                  "flex min-h-[200px] flex-1 flex-col items-center justify-center p-6 text-center text-sm transition-colors",
+                  isDragging ? "bg-accent" : "bg-muted/40",
+                  files.length > 0 && "hidden"
+                )}
                 onDragEnter={(e) => handleDragEvent(e, true)}
                 onDragLeave={(e) => handleDragEvent(e, false)}
                 onDragOver={(e) => handleDragEvent(e, true)}
                 onDrop={handleDrop}
               >
-                <UploadCloud className="h-12 w-12 text-blue-500 mb-2" />
-                <p className="text-gray-600">Drag and drop files</p>
+                <UploadCloud className="mb-2 h-12 w-12 text-primary-solid" />
+                <p className="text-muted-foreground">Drag and drop files</p>
                 <p
-                  className="text-blue-600 cursor-pointer underline"
+                  className="cursor-pointer text-primary-solid underline"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   Browse your device
@@ -642,15 +691,15 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
             )}
 
             {files.length > 0 && (
-              <div className="p-6 text-sm min-h-[200px] flex flex-1 flex-col">
+              <div className="flex min-h-[200px] flex-1 flex-col p-6 text-sm">
                 {files.map((file, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center border-b py-2"
+                    className="flex items-center justify-between border-b border-border py-2"
                   >
-                    <span>{file.name}</span>
+                    <span className="text-foreground">{file.name}</span>
                     <X
-                      className="cursor-pointer text-black-500"
+                      className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
                       onClick={() => removeFile(index)}
                     />
                   </div>
@@ -666,24 +715,26 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
             />
 
             {/* Footer with Buttons */}
-            <div className="flex justify-between border-t items-center p-4">
-              <Button
+            <div className="flex items-center justify-between border-t border-border p-4">
+              <FormButton
                 disabled={files.length > 0 || isUploadLoading}
-                type="Secondary"
+                variant="outline"
+                className="px-3 py-3"
                 label="Close"
               />
-              <div className="flex space-x-2">
-                <Button
+              <div className="flex gap-2">
+                <FormButton
                   onClick={handleCancel}
                   disabled={isUploadLoading || files.length == 0}
-                  type="Secondary"
+                  variant="outline"
+                  className="px-3 py-3"
                   label="Cancel"
                 />
-                <Button
+                <FormButton
                   onClick={uploadFiles}
                   disabled={isUploadLoading || files.length == 0}
                   isLoading={isUploadLoading}
-                  type="Primary"
+                  className="px-3 py-3"
                   label="Upload"
                 />
               </div>
@@ -691,17 +742,18 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-end py-10 gap-5">
-        <Button
+      <div className="flex items-center justify-end gap-5 py-10">
+        <FormButton
           onClick={() => setActiveStep("application")}
           disabled={isLoading || isUploadLoading}
-          type="Secondary"
+          variant="outline"
+          className="px-3 py-3"
           label="Back"
         />
-        <Button
+        <FormButton
           onClick={() => setActiveStep("loanestimate")}
           disabled={isLoading || isUploadLoading}
-          type="Primary"
+          className="px-3 py-3"
           label="Next"
         />
       </div>
@@ -793,9 +845,9 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
   };
 
   const LoadingSpinner = () => (
-    <div className="w-full inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
-      <div className="text-center space-y-3">
-        <LoaderSpinner size={32} className="text-blue-500" />
+    <div className="inset-0 z-10 flex w-full items-center justify-center bg-background/90">
+      <div className="space-y-3 text-center">
+        <LoaderSpinner size={32} className="text-secondary-foreground" />
       </div>
     </div>
   );
@@ -805,38 +857,38 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
   }, [loanFolderId]);
 
   return (
-    <div className="w-full font-lato px-10">
+    <div className="w-full px-10">
       <div className="w-full">
-        <h1 className="text-3xl text-black pt-10 pb-3">
-          Loan Terms
-        </h1>
-        <p className="font-light text-xl">
+        <h1 className="pb-3 pt-10 text-3xl text-foreground">Loan Terms</h1>
+        <p className="text-xl font-light text-muted-foreground">
           Your Loan Term Form is ready! Please follow the below link to proceed.
         </p>
       </div>
-      <div className="h-full border border-[#ced4da] rounded flex flex-col items-center justify-center pt-20 pb-10 mt-16 space-y-2">
+      <div className="mt-16 flex h-full flex-col items-center justify-center space-y-2 rounded-xl border border-border pb-10 pt-20">
         {isFilesLoading ? (
           <LoadingSpinner />
         ) : (
           filesToSign?.length === 0 && (
-            <h1 className="text-xl mb-3">
+            <h1 className="mb-3 text-xl text-foreground">
               Please select at least one file from previous step
             </h1>
           )
         )}
 
-        <button
-          className="border border-black rounded-md py-3 px-4 text-xl disabled:bg-gray-100 w-48 disabled:text-gray-400"
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-48 py-3 text-xl"
           onClick={handelSelfSign}
           disabled={filesToSign?.length === 0 || isFilesLoading}
         >
           {isLoading ? (
-            <div className="spinner mx-auto"></div>
+            <LoaderSpinner size={20} className="text-current" />
           ) : (
             "Review and Sign"
           )}
-        </button>
-        <Signature className="text-[#0057ca] size-10" />
+        </Button>
+        <Signature className="size-10 text-primary-solid" />
       </div>
       <SignRequestModal
         isOpen={isSignModalOpen}
@@ -844,14 +896,14 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
         signUrl={selectedSignUrl}
         redirect_url={`/${params?.portalid}/forms`}
       />
-      <div className="flex w-full justify-end mt-5">
-        <Button
+      <div className="mt-5 flex w-full justify-end">
+        <FormButton
           onClick={() => setActiveStep("documents")}
-          type="Secondary"
+          variant="outline"
           label="Back"
         />
       </div>
-    </div >
+    </div>
   );
 };
 
@@ -956,28 +1008,31 @@ function NewLoanPage() {
     const isActive = currentStep === step;
 
     return (
-      <div className="flex items-center w-40">
+      <div className="flex w-40 items-center">
         <div
-          className={`
-          w-8 h-8 rounded-full flex items-center justify-center border
-          ${isCompleted
-              ? "bg-[#0061D5]"
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-full border",
+            isCompleted
+              ? "border-transparent bg-primary-solid text-primary-foreground"
               : isActive
-                ? "bg-white border-[#0061D5] text-[#0061D5]"
-                : "bg-white border-gray-300"
-            }
-          ${isCompleted || isActive ? "text-white" : "text-[#0061D5]"}
-        `}
+                ? "border-secondary-foreground bg-background text-secondary-foreground"
+                : "border-border bg-background text-muted-foreground"
+          )}
         >
           {isCompleted ? (
-            <Check size={16} className="text-white" />
+            <Check size={16} className="text-primary-foreground" />
           ) : (
-            <span className={isActive ? "text-[#0061D5]" : "text-gray-500"}>
+            <span className={isActive ? "text-secondary-foreground" : "text-accent"}>
               {step + 1}
             </span>
           )}
         </div>
-        <div className={`ml-3 ${isActive || isCompleted ? "text-[#0061D5]" : "text-gray-500"}`}>
+        <div
+          className={cn(
+            "ml-3",
+            isActive || isCompleted ? "text-secondary-foreground" : "text-accent"
+          )}
+        >
           {["Application", "Documents", "Loan Estimate"][step]}
         </div>
       </div>
@@ -998,31 +1053,38 @@ function NewLoanPage() {
   }, [activeStepIndex]);
 
   return (
-    <div className="bg-white flex flex-col relative w-full min-h-[70vh] lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
-      <div className="flex flex-col justify-between font-lato">
-        <div className="w-full h-full pb-5 sm:pb-0 px-2 bg-white text-gray-700 flex flex-col justify-start">
-          <div className="border-b border-[#dee2e6] pt-12 pb-5">
-            <p className="text-sm font-lato">
-              <span className="block md:inline text-xl font-light sm:text-center text-[#212529] mr-10 font-lato mb-2 md:mb-0">
+    <div className="relative mx-auto flex min-h-[70vh] w-full max-w-[540px] flex-col bg-background text-foreground md:max-w-[720px] lg:max-w-[1140px]">
+      <div className="flex flex-col justify-between">
+        <div className="flex h-full w-full flex-col justify-start px-2 pb-5 text-foreground sm:pb-0">
+          <div className="border-b border-border pb-5 pt-12">
+            <p className="text-sm">
+              <span className="mb-2 mr-10 block text-xl font-light text-foreground sm:text-center md:mb-0 md:inline">
                 New {type.charAt(0).toUpperCase() + type.slice(1)} Loan
               </span>
             </p>
           </div>
 
-          <div ref={scrollContainerRef} className="px-6 py-4 overflow-auto flex w-full sm:justify-center">
-            <div className="flex justify-between items-center space-x-8">
+          <div
+            ref={scrollContainerRef}
+            className="flex w-full overflow-auto px-6 py-4 sm:justify-center"
+          >
+            <div className="flex items-center justify-between space-x-8">
               {[0, 1, 2].map((step) => (
-                <div key={step} className="flex items-center" ref={(el) => (stepRefs.current[step] = el)}>
+                <div
+                  key={step}
+                  className="flex items-center"
+                  ref={(el) => (stepRefs.current[step] = el)}
+                >
                   <WizardStep step={step} currentStep={activeStepIndex} />
                   {step < 2 && (
-                    <ChevronRight size={16} className="mx-2 text-gray-300" />
+                    <ChevronRight size={16} className="mx-2 text-muted-foreground" />
                   )}
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <div className="w-full ">{getActiveStepContent()}</div>
+        <div className="w-full">{getActiveStepContent()}</div>
       </div>
     </div>
   );

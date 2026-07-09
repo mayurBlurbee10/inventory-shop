@@ -1,3 +1,5 @@
+ "use client";
+
 import React, { useEffect, useState } from "react";
 import {
   Trash2,
@@ -17,8 +19,33 @@ import { useParams } from "next/navigation";
 import NDAcreation from "./NDAcreation";
 import PreviewModal from "../FileExplorer/PreviewModal";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
-import Button from "../Common/Elements/Button";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { ThemeSwitch } from "@/components/ui/theme-switch";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const TermsAndConditionCreation = () => {
   const params = useParams();
@@ -228,187 +255,217 @@ const TermsAndConditionCreation = () => {
 
   return (
     <div className="p-2">
-      <div className="flex sm:flex-row flex-col justify-center sm:justify-between items-center gap-2 pb-5">
-        <div className=" text-center sm:text-left">
-          <h3 className="text-lg font-medium text-gray-900">NDA Pages</h3>
-          <p className="text-gray-600 text-sm">Manage your NDA agreements.</p>
+      <div className="flex flex-col items-center justify-center gap-2 pb-5 sm:flex-row sm:justify-between">
+        <div className="text-center sm:text-left">
+          <h3 className="text-lg font-medium text-foreground">NDA Pages</h3>
+          <p className="text-sm text-muted-foreground">
+            Manage your NDA agreements.
+          </p>
         </div>
-        <Button
-          onClick={handleCreate}
-          type="Primary"
-          label="Create NDA"
-          icon={PlusCircle}
-        />
+        <Button type="button" variant="default" onClick={handleCreate} className="px-3 py-3">
+          <PlusCircle className="h-4 w-4" />
+          Create NDA
+        </Button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <LoaderSpinner size={28} className="text-blue-500" />
+        <div className="flex h-64 items-center justify-center">
+          <LoaderSpinner size={28} className="text-secondary-foreground" />
         </div>
       ) : agreements.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <div className="text-gray-500 mb-4">
-            <div className="mx-auto w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-              <Plus
-                className="w-8 h-8 text-gray-400 cursor-pointer"
+        <Card className="bg-muted/40">
+          <CardContent className="py-12 text-center">
+            <div className="mb-4 text-muted-foreground">
+              <Button
+                type="button"
+                variant="icons"
+                size="icon"
+                className="rounded-full text-secondary-foreground hover:text-secondary-foreground"
                 onClick={handleCreate}
-              />
+              >
+                <Plus className="size-4" />
+              </Button>
+              <h3 className="mb-2 text-lg font-medium text-foreground">
+                No NDA agreements found
+              </h3>
+              <p className="text-muted-foreground">
+                Create your first NDA (editor or e-sign) to get started.
+              </p>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No NDA agreements found
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Create your first NDA (editor or e-sign) to get started.
-            </p>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="overflow-x-auto max-h-[400px] overflow-y-auto hidden-scrollbar">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0 z-10">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Default
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {agreements.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {row.title}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {typeLabel(row.ndaType)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(row.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={row.isDefault === true}
-                          onChange={() => handleDefaultToggle(row.id)}
-                          className="sr-only peer"
-                        />
-                        {isToggleDefault === row?.id ? (
-                          <LoaderSpinner size={24} className="text-blue-400" />
-                        ) : (
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        )}
-                        <span className="ml-3 text-sm font-medium text-gray-700">
-                          {row.isDefault ? "Default" : "Set as default"}
+        <Card className="overflow-hidden shadow-sm">
+          <CardContent className="p-0">
+            <div className="hidden-scrollbar max-h-[400px] overflow-x-auto overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 z-10 bg-muted/50">
+                  <TableRow>
+                    <TableHead className="px-6 py-3 text-xs uppercase tracking-wider text-muted-foreground">
+                      Title
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-xs uppercase tracking-wider text-muted-foreground">
+                      Type
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-xs uppercase tracking-wider text-muted-foreground">
+                      Created
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-xs uppercase tracking-wider text-muted-foreground">
+                      Default
+                    </TableHead>
+                    <TableHead className="px-6 py-3 text-right text-xs uppercase tracking-wider text-muted-foreground">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {agreements.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-foreground">
+                          {row.title}
+                        </div>
+                      </TableCell>
+                      <TableCell className="bg-transparent px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                        <span className="inline-flex items-center rounded-sm bg-transparent px-2 py-1 text-secondary-foreground">
+                          {typeLabel(row.ndaType)}
                         </span>
-                      </label>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          onClick={() => handleCopy(row)}
-                          className="p-2 rounded-md hover:bg-gray-100 transition"
-                          title="Copy"
-                          disabled={isCopying === row.id}
-                        >
-                          {isCopying === row.id ? (
-                            <LoaderSpinner size={24} className="text-gray-600" />
+                      </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                        {formatDate(row.createdAt)}
+                      </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          {isToggleDefault === row?.id ? (
+                            <LoaderSpinner size={24} className="text-secondary-foreground" />
                           ) : (
-                            <Copy className="size-4 text-gray-600" />
+                            <ThemeSwitch
+                              checked={row.isDefault === true}
+                              onCheckedChange={() => handleDefaultToggle(row.id)}
+                            />
                           )}
-                        </button>
-                        <button
-                          onClick={() => handleView(row)}
-                          className="p-2 rounded-md hover:bg-blue-100 transition"
-                          title="View"
-                        >
-                          <Eye className="size-4 text-blue-600" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(row)}
-                          className="p-2 rounded-md hover:bg-blue-100 transition"
-                          title="Edit"
-                        >
-                          <Edit className="size-4 text-blue-600" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(row.id)}
-                          className="p-2 rounded-md hover:bg-red-100 transition"
-                          title="Delete"
-                        >
-                          <Trash2 className="size-4 text-red-600" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex flex-wrap justify-center lg:justify-end items-center p-4 gap-5 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-            <div className="flex items-center space-x-2 text-sm">
-              <span className="text-gray-700">Rows per page:</span>
-              <select
-                className="border rounded px-2 py-1 bg-white text-gray-700"
-                value={limit}
-                onChange={(e) => handleLimitChange(Number(e.target.value))}
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-              </select>
+                          <span className="text-sm font-medium text-foreground">
+                            {row.isDefault ? "Default" : "Set as default"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="icons"
+                            size="icon"
+                            className="rounded-full"
+                            onClick={() => handleCopy(row)}
+                            title="Copy"
+                            disabled={isCopying === row.id}
+                          >
+                            {isCopying === row.id ? (
+                              <LoaderSpinner size={18} className="text-muted-foreground" />
+                            ) : (
+                              <Copy className="size-4" />
+                            )}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="icons"
+                            size="icon"
+                            className="rounded-full text-secondary-foreground hover:text-secondary-foreground"
+                            onClick={() => handleView(row)}
+                            title="View"
+                          >
+                            <Eye className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="icons"
+                            size="icon"
+                            className="rounded-full text-secondary-foreground hover:text-secondary-foreground"
+                            onClick={() => handleEdit(row)}
+                            title="Edit"
+                          >
+                            <Edit className="size-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="icons"
+                            size="icon"
+                            className="rounded-full text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(row.id)}
+                            title="Delete"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            <span className="text-gray-700 text-sm">
-              Page {page} of {Math.max(totalPages, 1)}
-            </span>
-            <div className="flex gap-2 items-center">
-              <button
-                className="p-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                onClick={() => setPage(1)}
-                disabled={page === 1 || loading}
-              >
-                <ChevronsLeft className="size-4 text-gray-600" />
-              </button>
-              <button
-                className="p-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={!hasPrev || loading}
-              >
-                <ChevronLeft className="size-4 text-gray-600" />
-              </button>
-              <button
-                className="p-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                onClick={() =>
-                  setPage((prev) => Math.min(prev + 1, Math.max(totalPages, 1)))
-                }
-                disabled={!hasNext || loading}
-              >
-                <ChevronRight className="size-4 text-gray-600" />
-              </button>
-              <button
-                className="p-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 transition-colors"
-                onClick={() => setPage(Math.max(totalPages, 1))}
-                disabled={page === Math.max(totalPages, 1) || loading}
-              >
-                <ChevronsRight className="size-4 text-gray-600" />
-              </button>
+            <div className="flex flex-wrap items-center justify-center gap-5 border-t border-border bg-muted/30 p-4 lg:justify-end">
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="text-foreground">Rows per page:</span>
+                <Select
+                  value={String(limit)}
+                  onValueChange={(value) => handleLimitChange(Number(value))}
+                >
+                  <SelectTrigger className="h-10 w-[80px] !bg-background text-foreground">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <span className="text-sm text-foreground">
+                Page {page} of {Math.max(totalPages, 1)}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setPage(1)}
+                  disabled={page === 1 || loading}
+                >
+                  <ChevronsLeft className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={!hasPrev || loading}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() =>
+                    setPage((prev) => Math.min(prev + 1, Math.max(totalPages, 1)))
+                  }
+                  disabled={!hasNext || loading}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setPage(Math.max(totalPages, 1))}
+                  disabled={page === Math.max(totalPages, 1) || loading}
+                >
+                  <ChevronsRight className="size-4" />
+                </Button>
               </div>
             </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       <NDAcreation
@@ -418,53 +475,43 @@ const TermsAndConditionCreation = () => {
         setEditData={setEditData}
       />
 
-      {isViewModalOpen && viewData && (
-        <div
-          className="fixed inset-0 min-h-screen text-gray-700 bg-black bg-opacity-50 flex items-center justify-center z-10"
-          style={{ marginTop: 0 }}
+      <Dialog
+        open={isViewModalOpen && !!viewData}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsViewModalOpen(false);
+            setViewData(null);
+          }
+        }}
+      >
+        <DialogContent
+          className="max-h-[80vh] w-[90%] max-w-[800px] overflow-y-auto sm:max-w-[800px]"
         >
-          <div className="bg-white rounded-lg w-[90%] max-w-[800px] flex flex-col relative max-h-[80vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-semibold">{viewData.title}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsViewModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
+          {viewData && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl text-foreground">
+                  {viewData.title}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="p-2">
+                <div className="prose max-w-none">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: viewData.description || "",
+                    }}
+                    className="text-foreground"
                   />
-                </svg>
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="prose max-w-none">
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: viewData.description || "",
-                  }}
-                  className="text-gray-700"
-                />
+                </div>
+                <div className="mt-4 border-t border-border pt-2 text-sm text-muted-foreground">
+                  <p>Created: {formatDate(viewData.createdAt)}</p>
+                  <p>Last updated: {formatDate(viewData.updatedAt)}</p>
+                </div>
               </div>
-              <div className="mt-4 pt-2 border-t text-sm text-gray-500">
-                <p>Created: {formatDate(viewData.createdAt)}</p>
-                <p>Last updated: {formatDate(viewData.updatedAt)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <PreviewModal
         isOpen={isPreviewOpen}

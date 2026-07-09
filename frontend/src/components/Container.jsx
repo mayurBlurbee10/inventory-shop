@@ -3,7 +3,7 @@ import { getUserData, setAuthTokens } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { setPortal } from "@/store/services/portalService";
@@ -18,6 +18,7 @@ function Container({ children }) {
   const { data: config } = useSelector((state) => state.portal);
   const { data: content } = useSelector((state) => state.content);
   const dispatch = useDispatch()
+  const hasInitializedRef = useRef(false);
 
   const fetchConfig = async () => {
     try {
@@ -71,11 +72,17 @@ function Container({ children }) {
       });
     } catch (error) {
       console.error("Failed to get user from email:", error);
-      router.push("login");
+      router.push(`/${params.portalid}/login`);
     }
   };
 
   useEffect(() => {
+    // Run the session/config bootstrap only once per portal to avoid a
+    // dispatch loop (router identity can change between renders).
+    if (hasInitializedRef.current) return;
+    if (!params?.portalid) return;
+    hasInitializedRef.current = true;
+
     const fetchSession = async () => {
       const sessionData = await getSession();
       if (sessionData) {
@@ -85,16 +92,17 @@ function Container({ children }) {
     fetchSession().then(() => {
       const userData = getUserData();
       if (!userData) {
-        router.push("login");
+        router.push(`/${params.portalid}/login`);
         return;
       }
       fetchConfig();
     });
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params?.portalid]);
 
   return (
     <div
-      className="bg-white min-h-screen overflow-y-auto flex flex-col justify-between font-lato"
+      className="bg-background min-h-screen overflow-y-auto flex flex-col justify-between font-lato"
       suppressHydrationWarning={true}
     >
       {/* Header */}

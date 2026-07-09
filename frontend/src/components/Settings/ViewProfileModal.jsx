@@ -2,7 +2,6 @@
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { UserRole } from "@/config/constants";
-import { Dialog, DialogBackdrop } from "@headlessui/react";
 import {
   X,
   User,
@@ -16,21 +15,24 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import Button from "../Common/Elements/Button";
-import Select from "react-select";
-
-const customStyles = {
-    menu: (provided) => ({
-      ...provided,
-      zIndex: 1000,
-    }),
-    menuList: (provided) => ({
-      ...provided,
-      zIndex: 1000,
-      maxHeight: "150px",
-      overflowY: "auto",
-    }),
-  };
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const filterRole = (user, portalId) => {
   const permission = user?.permissions?.find(
@@ -259,7 +261,7 @@ function ViewProfileModal({
       handleModelClose();
     } catch (error) {
       console.error("Failed to update user:", error);
-      alert("Failed to update profile: " + error.message);
+      toast.error("Failed to update profile: " + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -339,8 +341,6 @@ function ViewProfileModal({
     }
   };
 
-  console.log(role);
-
   useEffect(() => {
     if (user) {
       setRole(filterRole(user, params?.portalid));
@@ -389,272 +389,289 @@ function ViewProfileModal({
     <>
       <Dialog
         open={isOpen}
-        onClose={() => {
-          setEnteredEmail("");
-          setError("");
-          handleModelClose();
+        onOpenChange={(open) => {
+          if (!open) {
+            setEnteredEmail("");
+            setError("");
+            handleModelClose();
+          }
         }}
-        className="relative z-50 "
       >
-        <DialogBackdrop className="fixed inset-0 bg-black/30 overflow-y-hidden" />
-        <div className="fixed inset-0 flex items-center justify-center">
-          <Dialog.Panel className="mx-2 w-full max-w-2xl max-h-[90vh] overflow-y-auto hidden-scrollbar rounded-xl bg-white shadow-xl">
-            <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white">
-              <Dialog.Title className="text-xl text-gray-600 font-medium">
-                Profile
-              </Dialog.Title>
-              <button
-                onClick={() => {
-                  setEnteredEmail("");
-                  setError("");
-                  handleModelClose();
-                }}
-                className="text-gray-900 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        <DialogContent
+          showCloseButton={false}
+          className="hidden-scrollbar flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-y-auto p-0 sm:max-w-2xl"
+        >
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-popover p-4">
+            <DialogTitle className="text-xl font-medium text-foreground">
+              Profile
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => {
+                setEnteredEmail("");
+                setError("");
+                handleModelClose();
+              }}
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
 
-            <div className={`space-y-4 p-4 lg:p-6`}>
-              <div className="flex gap-4 w-full">
-                <div className="w-1/2">
-                  <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                    <User className="h-4 w-4" />
-                    First Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-                    value={formData.firstName}
-                    onChange={(e) => handleFormChange("firstName", e.target.value)}
-                  />
-                </div>
-                <div className="w-1/2">
-                  <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                    <User className="h-4 w-4" />
-                    Last Name <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-                    value={formData.lastName}
-                    onChange={(e) => handleFormChange("lastName", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                  <Mail className="h-4 w-4" />
-                  Email <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="email"
+          <div className="space-y-4 p-4 lg:p-6">
+            <div className="flex w-full gap-4">
+              <div className="w-1/2 space-y-2">
+                <Label className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  First Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="text"
                   required
-                  disabled={true}
-                  className={`mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed`}
-                  value={user?.email}
+                  className="h-10 !bg-background"
+                  value={formData.firstName}
+                  onChange={(e) => handleFormChange("firstName", e.target.value)}
                 />
               </div>
-              <div>
-                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                  <Phone className="h-4 w-4" />
-                  Phone No
-                </label>
-                <input
+              <div className="w-1/2 space-y-2">
+                <Label className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Last Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
                   type="text"
-                  // maxLength={16}
-                  className={`mt-1 pl-2 block w-full text-gray-500 rounded-md border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 border-gray-30`}
-                  value={formData.phoneNo ?? ""}
-                  onChange={handlePhoneChange}
+                  required
+                  className="h-10 !bg-background"
+                  value={formData.lastName}
+                  onChange={(e) => handleFormChange("lastName", e.target.value)}
                 />
-              </div>
-              {phoneError && (
-                <p className="text-red-500 text-sm mt-1">{phoneError}</p>
-              )}
-              <div>
-                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                  <Briefcase className="h-4 w-4" />
-                  Title <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-                  value={formData.title}
-                  onChange={(e) => handleFormChange("title", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                  <Building className="h-4 w-4" />
-                  Company Name <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="mt-1 pl-2 block w-full rounded-md border-gray-300 text-gray-500 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500"
-                  value={formData.companyName}
-                  onChange={(e) =>
-                    handleFormChange("companyName", e.target.value)
-                  }
-                />
-              </div>
-              <div>
-                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                  <UserPlus className="h-4 w-4" />
-                  Role <span className="text-red-600">*</span>
-                </label>
-                <select
-                  className="mt-1 block w-full rounded-md text-gray-700 border-gray-300 border border-solid py-2 outline-none focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100"
-                  value={formData.role}
-                  onChange={(e) => handleFormChange("role", e.target.value)}
-                  style={{ height: "2.5rem" }}
-                  disabled={loggedInUser?.id === user?.id}
-                >
-                  <option value={UserRole.USER}>User</option>
-                  <option value={UserRole.ADMIN}>Admin</option>
-                  <option value={UserRole.MODERATOR}>Moderator</option>
-                </select>
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Briefcase className="h-4 w-4" />
-                  NDA Pages
-                </label>
-                <Select
-                  className="flex-1 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
-                  classNamePrefix="Choose NDA pages"
-                  isClearable={true}
-                  isSearchable={true}
-                  value={
-                    formData.ndaPages
-                      ? ndaPages?.find(
-                          (page) => page.value === formData.ndaPages,
-                        )
-                      : null
-                  }
-                  onChange={(e) => {
-                    handleFormChange("ndaPages", e ? e.value : null);
-                  }}
-                  options={ndaPages || []}
-                  isLoading={isNdaPagesLoading}
-                  loadingMessage={() => "Fetching NDA pages..."}
-                  placeholder="Select NDA pages..."
-                  isDisabled={loggedInUser?.id === user?.id}
-                  styles={customStyles}
-                />
-              </div>
-              <div>
-                <label className="flex items-center gap-2 block text-sm font-medium text-gray-700">
-                  <Image className="h-4 w-4" />
-                  Company Logo
-                </label>
-                <div className="mt-1 flex items-center space-x-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                </div>
-                {previewUrl && (
-                  <div className="mt-2">
-                    <img
-                      src={previewUrl}
-                      alt="Logo preview"
-                      className="h-20 w-20 object-contain rounded border"
-                    />
-                  </div>
-                )}
               </div>
             </div>
-              <div className="flex flex-wrap justify-end gap-2 sticky bottom-0 bg-white border-t p-4">
-                  <Button
-                    onClick={() => {
-                      setIsDeleteModalOpen(user);
-                      setEnteredEmail("");
-                      setError("");
-                    }}
-                    disabled={loggedInUser?.id === user?.id || isLoading}
-                    isLoading={isDeleteLoading}
-                    label="Delete Account"
-                    type="Delete"
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Email <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                type="email"
+                required
+                disabled={true}
+                className="h-10 !bg-background"
+                value={user?.email}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Phone No
+              </Label>
+              <Input
+                type="text"
+                className={cn("h-10 !bg-background", phoneError && "border-destructive")}
+                value={formData.phoneNo ?? ""}
+                onChange={handlePhoneChange}
+              />
+            </div>
+            {phoneError && (
+              <p className="text-sm text-destructive">{phoneError}</p>
+            )}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                Title <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                type="text"
+                className="h-10 !bg-background"
+                value={formData.title}
+                onChange={(e) => handleFormChange("title", e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Company Name <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                type="text"
+                className="h-10 !bg-background"
+                value={formData.companyName}
+                onChange={(e) => handleFormChange("companyName", e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                Role <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value) => handleFormChange("role", value)}
+                disabled={loggedInUser?.id === user?.id}
+              >
+                <SelectTrigger className="h-11 w-full !bg-background">
+                  <SelectValue placeholder="Select role..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={UserRole.USER}>User</SelectItem>
+                  <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                  <SelectItem value={UserRole.MODERATOR}>Moderator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                NDA Pages
+              </Label>
+              <Select
+                value={formData.ndaPages ?? "none"}
+                onValueChange={(value) =>
+                  handleFormChange("ndaPages", value === "none" ? null : value)
+                }
+                disabled={loggedInUser?.id === user?.id || isNdaPagesLoading}
+              >
+                <SelectTrigger className="h-11 w-full !bg-background">
+                  <SelectValue
+                    placeholder={
+                      isNdaPagesLoading
+                        ? "Fetching NDA pages..."
+                        : "Select NDA pages..."
+                    }
                   />
-                  <Button
-                    onClick={handelUpdateProfile}
-                    disabled={isLoading || !isFormChanged() || !isFormValid() || isDeleteLoading}
-                    isLoading={isLoading}
-                    type="Primary"
-                    label="Update"
-                  />
-               
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No NDA</SelectItem>
+                  {(ndaPages || []).map((page) => (
+                    <SelectItem key={page.value} value={page.value}>
+                      {page.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Image className="h-4 w-4" />
+                Company Logo
+              </Label>
+              <div className="mt-1 flex items-center space-x-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-solid hover:file:bg-accent/70"
+                />
               </div>
-          </Dialog.Panel>
-        </div>
+              {previewUrl && (
+                <div className="mt-2">
+                  <img
+                    src={previewUrl}
+                    alt="Logo preview"
+                    className="h-20 w-20 rounded border border-border object-contain"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-border bg-popover p-4">
+            <Button
+              variant="destructive"
+              className="px-3 py-3"
+              onClick={() => {
+                setIsDeleteModalOpen(user);
+                setEnteredEmail("");
+                setError("");
+              }}
+              disabled={loggedInUser?.id === user?.id || isLoading}
+            >
+              {isDeleteLoading && <LoaderSpinner size={16} className="text-current" />}
+              Delete Account
+            </Button>
+            <Button
+              className="px-3 py-3"
+              onClick={handelUpdateProfile}
+              disabled={isLoading || !isFormChanged() || !isFormValid() || isDeleteLoading}
+            >
+              {isLoading && <LoaderSpinner size={16} className="text-current" />}
+              Update
+            </Button>
+          </div>
+        </DialogContent>
       </Dialog>
+
       {user && isDeleteModalOpen?.id === user?.id && (
         <Dialog
           open={isDeleteModalOpen?.id === user?.id}
-          onClose={() => {
-            setIsDeleteModalOpen(null);
+          onOpenChange={(open) => {
+            if (!open) setIsDeleteModalOpen(null);
           }}
-          className="relative z-50"
         >
-          <DialogBackdrop className="fixed inset-0 bg-black/50 " />
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-md">
-              <div className="flex justify-between items-center mb-4">
-                <Dialog.Title className="text-xl text-gray-600 font-medium">
-                  Delete User Account
-                </Dialog.Title>
-                <button
+          <DialogContent showCloseButton={false} className="max-w-sm p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <DialogTitle className="text-xl font-medium text-foreground">
+                Delete User Account
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setIsDeleteModalOpen(null)}
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="py-4 text-center text-foreground">
+              <p className="font-bold">{`${isDeleteModalOpen?.firstName || ""} ${isDeleteModalOpen?.lastName || ""}`.trim()}</p>
+              <p className="text-muted-foreground">{isDeleteModalOpen?.email}</p>
+              <div className="space-y-2 border-t border-border p-5 text-foreground">
+                <p className="text-sm">
+                  This action CANNOT be undone. This will delete the account
+                  permanently
+                </p>
+                <p className="text-sm font-semibold tracking-tight">
+                  Please type in the email of the user account to confirm
+                </p>
+                <Input
+                  type="text"
+                  id="email"
+                  value={enteredEmail}
+                  onChange={(e) => setEnteredEmail(e.target.value)}
+                  placeholder="Enter Email Address"
+                  className="h-10 border-destructive/40 !bg-background focus-visible:ring-destructive/30"
+                />
+                {error && (
+                  <Alert variant="destructive" className="border-destructive/30 text-left">
+                    <AlertDescription className="text-destructive">
+                      {error}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+
+              <div className="flex justify-center space-x-3">
+                <Button
+                  variant="outline"
+                  className="px-3 py-3"
                   onClick={() => setIsDeleteModalOpen(null)}
-                  className="text-gray-400 hover:text-gray-500"
+                  disabled={isLoading}
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="text-center text-gray-700 py-4">
-                <p className="font-bold">{`${isDeleteModalOpen?.firstName || ""} ${isDeleteModalOpen?.lastName || ""}`.trim()}</p>
-                <p className="">{isDeleteModalOpen?.email}</p>
-                <div className="text-gray-700 p-5 space-y-2 border-t ">
-                  <p className="text-sm">
-                    This action CANNOT be undone. This will delete the account
-                    permanently
-                  </p>
-                  <p className="text-sm font-semibold tracking-tight">
-                    Please type in the email of the user account to confirm
-                  </p>
-                  <input
-                    type="text"
-                    id="email"
-                    value={enteredEmail}
-                    onChange={(e) => setEnteredEmail(e.target.value)}
-                    placeholder="Enter Email Address"
-                    className="w-full px-3 py-2 text-gray-700 border border-red-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
-                  />
-                  {error && <p className="text-red-600 text-sm">{error}</p>}
-                </div>
+                  Close
+                </Button>
 
-                <div className="flex justify-center space-x-3">
-                  <Button
-                    onClick={() => setIsDeleteModalOpen(null)}
-                    disabled={isLoading}
-                    type="Secondary"
-                    label="Close"
-                  />
-
-                  <Button
-                    onClick={handleDeleteAccount}
-                    disabled={isLoading}
-                    isLoading={isDeleteLoading}
-                    type="Delete"
-                    label="Delete This Account"
-                  />
-                </div>
+                <Button
+                  variant="destructive"
+                  className="px-3 py-3"
+                  onClick={handleDeleteAccount}
+                  disabled={isLoading}
+                >
+                  {isDeleteLoading && <LoaderSpinner size={16} className="text-current" />}
+                  Delete This Account
+                </Button>
               </div>
-            </Dialog.Panel>
-          </div>
+            </div>
+          </DialogContent>
         </Dialog>
       )}
     </>

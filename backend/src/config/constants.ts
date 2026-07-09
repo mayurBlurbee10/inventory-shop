@@ -195,3 +195,8 @@ export const NotificationVariables = {
   new_user_joined: ["user_name", "user_email", "user_role", "joined_at", "invited_by", "date"],
   task_assigned: ["recipient_name", "task_name", "assigned_to", "assigned_by", "assigned_at"],
 };
+
+export const ThemeType = {
+  PRESET: "preset",
+  CUSTOM: "custom",
+};

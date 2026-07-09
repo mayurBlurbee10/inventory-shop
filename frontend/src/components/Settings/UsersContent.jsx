@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronDown, ChevronUp, FileSearch, Import, Mail, Plus, PlusCircle, Search, User } from "lucide-react";
+import { ChevronDown, ChevronUp, FileSearch, Mail, PlusCircle, User } from "lucide-react";
 import AddUserModal from "./AddUserModal";
 import FileViewerModal from "./FileViewerModal";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
@@ -8,8 +8,20 @@ import UploadArea from "../UploadArea";
 import { useParams } from "next/navigation";
 import ViewProfileModal from "./ViewProfileModal";
 import { toast } from "react-toastify";
-import Button from "../Common/Elements/Button";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const UsersContent = () => {
   const [users, setUsers] = useState([]);
@@ -151,25 +163,52 @@ const UsersContent = () => {
   };
 
 
+  const renderSortButtons = (key) => (
+    <div className="flex items-center gap-1">
+      <button
+        className="flex items-center justify-center"
+        onClick={() => toggleSort(key)}
+      >
+        <ChevronUp
+          className={cn(
+            "h-4 w-4",
+            sortConfig.key === key && sortConfig.direction === "asc"
+              ? "text-foreground"
+              : "text-muted-foreground/50"
+          )}
+        />
+      </button>
+      <button
+        className="flex items-center justify-center"
+        onClick={() => toggleSort(key)}
+      >
+        <ChevronDown
+          className={cn(
+            "h-4 w-4",
+            sortConfig.key === key && sortConfig.direction === "desc"
+              ? "text-foreground"
+              : "text-muted-foreground/50"
+          )}
+        />
+      </button>
+    </div>
+  );
+
   return (
-    <div className="space-b-6">
-      <div className="flex justify-between items-center space-x-4 ">
-      <div className="flex flex-col sm:flex-row justify-between items-center w-full space-y-3 sm:space-y-0">
-      <div className="text-center sm:text-left">
-            <h3 className="text-lg font-medium text-gray-900">
-              User Management
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Manage user accounts, roles, and permissions efficiently
-            </p>
-          </div>
-          <Button
-          onClick={() => setShowAddModal(true)}
-          type="Primary"
-          label="Add User"
-          icon={PlusCircle}
-          />
+    <div className="space-y-6">
+      <div className="flex w-full flex-col items-center justify-between space-y-3 sm:flex-row sm:space-y-0">
+        <div className="text-center sm:text-left">
+          <h3 className="text-lg font-medium text-foreground">
+            User Management
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Manage user accounts, roles, and permissions efficiently
+          </p>
         </div>
+        <Button onClick={() => setShowAddModal(true)} className="px-3 py-3">
+          <PlusCircle className="h-4 w-4" />
+          Add User
+        </Button>
       </div>
 
       {showUploadArea && (
@@ -191,112 +230,108 @@ const UsersContent = () => {
       />
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-md">{error}</div>
+        <Alert variant="destructive" className="border-destructive/30">
+          <AlertDescription className="text-destructive">
+            {error}
+          </AlertDescription>
+        </Alert>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-8 min-h-[50vh] items-center">
-          <LoaderSpinner size={32} className="text-blue-500" />
+        <div className="flex min-h-[50vh] items-center justify-center py-8">
+          <LoaderSpinner size={32} className="text-secondary-foreground" />
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-x-scroll custom-scrollbar mt-5">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+        <Card className="custom-scrollbar mt-5 overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="uppercase">
                   <div className="flex items-center justify-start gap-2">
-                    <span className="block">Company</span>
-                    <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
-                      <ChevronUp className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                    </button>
-                    <button className="flex items-center justify-center" onClick={() => toggleSort("name")}>
-                      <ChevronDown className={`h-4 w-4 ${sortConfig.key === "name" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                    </button>
+                    <span>Company</span>
+                    {renderSortButtons("name")}
                   </div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                </TableHead>
+                <TableHead className="uppercase">
                   <div className="flex items-center justify-start gap-2">
-                    <span className="block">Email</span>
-                    <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
-                      <ChevronUp className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "asc" ? "text-black" : "text-gray-400"}`} />
-                    </button>
-                    <button className="flex items-center justify-center" onClick={() => toggleSort("email")}>
-                      <ChevronDown className={`h-4 w-4 ${sortConfig.key === "email" && sortConfig.direction === "desc" ? "text-black" : "text-gray-400"}`} />
-                    </button>
+                    <span>Email</span>
+                    {renderSortButtons("email")}
                   </div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
+                </TableHead>
+                <TableHead className="uppercase">Role</TableHead>
+                <TableHead className="text-right uppercase">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {sortedUsers.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {user?.company?.logo ? (
-                        <img
-                          src={user.company.logo}
-                          alt={`${`${user.firstName || ''} ${user.lastName || ''}`.trim()} logo`}
-                          className="h-8 w-8 object-contain rounded-full mr-3"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                          <span className="text-sm font-medium text-blue-600">
-                            {user.firstName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                      <div className="text-sm font-medium text-gray-900">
-                        {`${user.firstName || ''} ${user.lastName || ''}`.trim()}
+                <TableRow key={user.id} className="h-20">
+                  <TableCell className="whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        {user?.company?.logo ? (
+                          <AvatarImage
+                            src={user.company.logo}
+                            alt={`${`${user.firstName || ""} ${user.lastName || ""}`.trim()} logo`}
+                            className="object-contain"
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-accent text-sm font-medium text-primary-solid">
+                          {user.firstName?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-sm font-medium text-foreground">
+                        {`${user.firstName || ""} ${user.lastName || ""}`.trim()}
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                     {user.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                     {user?.permissions?.find(
-                      (permission) => permission.portalId === (params.portalid || "root")
+                      (permission) =>
+                        permission.portalId === (params.portalid || "root"),
                     )?.role || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap space-x-3 text-right text-sm font-medium">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-right">
                     <div className="flex justify-end gap-2">
-                      <button
+                      <Button
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full"
                         title="View Files"
-                        className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
                         onClick={() => handleViewFiles(user)}
                       >
-                        <FileSearch className="w-5 h-5" />
-                      </button>
-                      <button
+                        <FileSearch className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full"
                         title="View Profile"
-                        className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
                         onClick={() => {
                           setSelectedUser(user);
                           setIsViewProfileModal((prev) => !prev);
                         }}
                       >
-                        <User className="w-5 h-5" />
-                      </button>
-                      <button
+                        <User className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full"
                         title="Re-invite"
-                        className="text-[#1A4C8A] hover:text-[#15407A] flex justify-center items-center w-10 h-10 hover:bg-gray-100 rounded-full"
                         onClick={() => handleReInviteUser(user)}
                       >
-                        <Mail className="w-5 h-5" />
-                      </button>
+                        <Mail className="h-5 w-5" />
+                      </Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </Card>
       )}
 
       <ViewProfileModal

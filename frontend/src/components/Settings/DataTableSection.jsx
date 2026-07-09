@@ -1,30 +1,117 @@
 "use client";
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
-import Button from '@/components/Common/Elements/Button';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
-import {
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-  } from "@headlessui/react";
-import { ArrowDownToLine, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown, ChevronUp } from 'lucide-react';
+import { ArrowDownToLine, Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown, ChevronUp } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { getUserData } from '@/app/lib/auth';
 import { saveAs } from 'file-saver';
 import LoaderSpinner from '../Common/Elements/LoaderSpinner';
+import { cn } from '@/app/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleString("en-US", {
-        month: "short",  // Oct
-        day: "2-digit",  // 10
-        year: "numeric", // 2024
-        hour: "2-digit", // 8
-        minute: "2-digit", // 29
-        hour12: true, // AM/PM format
-    });
+  const date = new Date(timestamp);
+  return date.toLocaleString("en-US", {
+    month: "short",  // Oct
+    day: "2-digit",  // 10
+    year: "numeric", // 2024
+    hour: "2-digit", // 8
+    minute: "2-digit", // 29
+    hour12: true, // AM/PM format
+  });
+};
+
+const toISODate = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+const DatePickerField = ({ id, value, onChange, min, placeholder = "Pick a date" }) => {
+  const [open, setOpen] = useState(false);
+  const selected = value ? new Date(`${value}T00:00:00`) : undefined;
+  const minDate = min ? new Date(`${min}T00:00:00`) : undefined;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            id={id}
+            variant="outline"
+            className="h-10 w-[190px] justify-start !bg-background font-normal !text-secondary-foreground"
+          />
+        }
+      >
+        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+        {selected ? (
+          selected.toLocaleDateString("en-US", {
+            month: "short",
+            day: "2-digit",
+            year: "numeric",
+          })
+        ) : (
+          <span className="text-muted-foreground">{placeholder}</span>
+        )}
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={selected}
+          captionLayout="dropdown"
+          disabled={minDate ? { before: minDate } : undefined}
+          onSelect={(date) => {
+            if (date) {
+              onChange(toISODate(date));
+              setOpen(false);
+            }
+          }}
+          className="hidden-scrollbar text-secondary-foreground"
+          classNames={{
+            month_caption: "flex items-center justify-center h-9 w-full px-2",
+            dropdowns: "flex items-center gap-1.5 !text-secondary-foreground",
+            caption_label:
+              "select-none font-medium !text-secondary-foreground flex items-center gap-1 pl-2 pr-1 h-8 rounded-md [&>svg]:text-muted-foreground [&>svg]:size-3.5",
+            dropdown_root:
+              "relative  border border-input rounded-md bg-background has-focus:ring-ring/50 has-focus:ring-[3px]",
+            dropdown:
+              "hidden-scrollbar  bg-popover absolute inset-0 opacity-0 cursor-pointer !text-secondary-foreground [&>option]:bg-popover [&>option]:!text-foreground",
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
 };
 
 const getReportData = async (portalId, startDate, endDate, newPage = 1, newItemsPerPage = 5, params = null, setIsLoading = null, setData = null, setPaginationInfo = null, search = "", sortBy = null, sortOrder = null, filter = "all") => {
@@ -32,7 +119,7 @@ const getReportData = async (portalId, startDate, endDate, newPage = 1, newItems
     if (setIsLoading) setIsLoading(true);
     const user = getUserData();
     let url = `/api/box/events?portalId=${params?.portalid}&userId=${user?.id}`;
-    
+
     // Apply pagination and filter parameters
     if (newItemsPerPage) url += `&limit=${newItemsPerPage}`;
     if (newPage) url += `&page=${newPage}`;
@@ -48,7 +135,7 @@ const getReportData = async (portalId, startDate, endDate, newPage = 1, newItems
     const response = await fetchWrapper(url, { method: "GET", headers: { "Content-Type": "application/json" } }, "get-api-logs");
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Error while getting apiLogs");
-    
+
     if (setData) setData(data?.data);
     if (data?.pagination && setPaginationInfo) setPaginationInfo(data?.pagination);
   } catch (error) {
@@ -58,16 +145,16 @@ const getReportData = async (portalId, startDate, endDate, newPage = 1, newItems
   }
 };
 
-export const PaginatedTable = ({ 
-  data, 
-  isLoading, 
-  paginationInfo, 
-  setIsLoading, 
-  setPaginationInfo, 
-  setData, 
-  currentPage, 
-  itemsPerPage, 
-  handlePageChange, 
+export const PaginatedTable = ({
+  data,
+  isLoading,
+  paginationInfo,
+  setIsLoading,
+  setPaginationInfo,
+  setData,
+  currentPage,
+  itemsPerPage,
+  handlePageChange,
   handleItemsPerPageChange,
   searchRecord,
   handleSearch,
@@ -84,164 +171,173 @@ export const PaginatedTable = ({
 
   const renderSortIcon = (key) => {
     if (sortConfig.key !== key || !sortConfig.direction) {
-      return <ChevronsUpDown className="h-4 w-4 text-gray-400" />;
+      return <ChevronsUpDown className="h-4 w-4 text-muted-foreground/50" />;
     }
 
     if (sortConfig.direction === "asc") {
-      return <ChevronUp className="h-4 w-4 text-blue-600" />;
+      return <ChevronUp className="h-4 w-4 text-primary-solid" />;
     }
 
-    return <ChevronDown className="h-4 w-4 text-blue-600" />;
+    return <ChevronDown className="h-4 w-4 text-primary-solid" />;
   };
 
   const SortableHeader = ({ label, sortKey }) => (
-    <th className="p-4 border-b">
+    <TableHead>
       <button
         type="button"
-        className="flex items-center justify-start gap-2 mx-4"
+        className="flex items-center justify-start gap-2"
         onClick={() => sortBy(sortKey)}
       >
-        <span className="block">{label}</span>
+        <span>{label}</span>
         {renderSortIcon(sortKey)}
       </button>
-    </th>
+    </TableHead>
   );
 
   return (
-    <div className="flex flex-col mx-auto overflow-y-auto hidden-scrollbar text-black rounded-lg min-h-[30vh]">
+    <div className="hidden-scrollbar mx-auto flex min-h-[30vh] flex-col overflow-y-auto rounded-lg text-foreground">
       <div>
-          <div className="py-1">
-            <div className="flex justify-between items-center mb-4 text-gray-600 gap-4 px-2">
-              <input
-                type="text"
-                className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Search records..."
-                value={searchRecord || ""}
-                onChange={handleSearch}
-              />
-              <Menu as="div" className="relative flex-shrink-0">
-                <MenuButton className="flex items-center px-4 py-2 text-gray-600 bg-white border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  {filter === "all" ? "All Records" : "My Records"}
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </MenuButton>
-                <MenuItems className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                  <MenuItem>
-                    <button
-                      onClick={() => handleFilterChange("all")}
-                      className={`block w-full text-left px-4 py-2 text-sm ${filter === "all" ? "bg-blue-100" : ""}`}
-                    >
-                      All Records
-                    </button>
-                  </MenuItem>
-                  <MenuItem>
-                    <button
-                      onClick={() => handleFilterChange("my")}
-                      className={`block w-full text-left px-4 py-2 text-sm ${filter === "my" ? "bg-blue-100" : ""}`}
-                    >
-                      My Records
-                    </button>
-                  </MenuItem>
-                </MenuItems>
-              </Menu>
-            </div>
-          </div>
-          <div className={`border max-h-[50vh] md:max-h-[60vh] hidden-scrollbar border-gray-200 overflow-auto ${totalPages > 0 ? "border-b-0 rounded-t-lg" : "rounded-lg"}`}>
-            <table className={`w-full text-sm font-lato shadow-md overflow-hidden ${totalPages > 0 ? "rounded-t-lg" : "rounded-lg"}`}>
-              <thead className="bg-gray-100 text-gray-700 text-left sticky top-0">
-                <tr>
-                  <SortableHeader label="Date & Time" sortKey="createdAt" />
-                  <SortableHeader label="Name" sortKey="type" />
-                  <SortableHeader label="File" sortKey="fileSource" />
-                  <SortableHeader label="User" sortKey="user" />
-                  <SortableHeader label="Email" sortKey="email" />
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan="5" className="py-8">
-                      <div className="h-[35vh] w-full flex items-center justify-center">
-                        <LoaderSpinner />
-                      </div>
-                    </td>
-                  </tr>
-                ) : paginatedData?.length > 0 ? (
-                  paginatedData.map((d, index) => (
-                    <tr
-                      key={d?.createdAt + index}
-                      className={`border-b text-gray-800 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100 transition`}
-                    >
-                      <td className="py-3 px-4">{formatTimestamp(d?.createdAt)}</td>
-                      <td className="py-3 px-4">{d?.type?.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</td>
-                      <td className="py-3 px-4">{d?.fileSource || "-"}</td>
-                      <td className="py-3 px-4">{getFullName(d?.createdBy)}</td>
-                      <td className="py-3 px-4">{d?.createdBy?.email || "-"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center py-5 text-gray-500">
-                      No records found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          {/* Pagination Controls */}
-           <div className="flex flex-wrap justify-center lg:justify-end items-center p-4 gap-5 border-b border-x border-gray-200 bg-gray-50 rounded-b-lg">
-            <div className="flex items-center space-x-4 text-sm">
-              <div className="flex items-center space-x-2">
-                <span className="text-gray-700">Rows per page:</span>
-                <select
-                  className="border rounded px-2 py-1 bg-white text-gray-700"
-                  value={itemsPerPage}
-                  onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+        <div className="py-1">
+          <div className="mb-4 flex items-center justify-between gap-4 px-2">
+            <Input
+              type="text"
+              className="h-10 w-full !bg-background"
+              placeholder="Search records..."
+              value={searchRecord || ""}
+              onChange={handleSearch}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" className="h-10 flex-shrink-0" />}>
+                {filter === "all" ? "All Records" : "My Records"}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => handleFilterChange("all")}
+                  className={cn(filter === "all" && "bg-accent")}
                 >
-                  <option value="5">5</option>
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                </select>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-gray-700">
-                  Page {paginationInfo?.currentPage || currentPage} of {paginationInfo?.totalPages || totalPages}
-                </span>
-              </div>
-            </div>
-                 <div className="flex items-center gap-2">
-                <button
-                  className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                   onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
+                  All Records
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleFilterChange("my")}
+                  className={cn(filter === "my" && "bg-accent")}
                 >
-                  <ChevronsLeft className="size-5" />
-                </button>
-                <button
-                  className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="size-5" />
-                </button>
-                <button
-                  className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="size-5" />
-                </button>
-                <button
-                  className="p-2 rounded bg-gray-300 hover:bg-gray-400 disabled:opacity-50"
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronsRight className="size-5" />
-                </button>
-              </div>
-            </div>
+                  My Records
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
+        <div
+          className={cn(
+            "hidden-scrollbar max-h-[50vh] overflow-auto border border-border md:max-h-[60vh]",
+            totalPages > 0 ? "rounded-t-lg border-b-0" : "rounded-lg"
+          )}
+        >
+          <Table className="text-sm">
+            <TableHeader className="sticky top-0 z-10 bg-muted">
+              <TableRow>
+                <SortableHeader label="Date & Time" sortKey="createdAt" />
+                <SortableHeader label="Name" sortKey="type" />
+                <SortableHeader label="File" sortKey="fileSource" />
+                <SortableHeader label="User" sortKey="user" />
+                <SortableHeader label="Email" sortKey="email" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-8">
+                    <div className="flex h-[35vh] w-full items-center justify-center">
+                      <LoaderSpinner className="text-secondary-foreground" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedData?.length > 0 ? (
+                paginatedData.map((d, index) => (
+                  <TableRow
+                    key={d?.createdAt + index}
+                    className={cn(index % 2 !== 0 && "bg-muted/30")}
+                  >
+                    <TableCell className="px-4 py-4">{formatTimestamp(d?.createdAt)}</TableCell>
+                    <TableCell className="px-4 py-4">{d?.type?.split("-").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}</TableCell>
+                    <TableCell className="px-4 py-4">{d?.fileSource || "-"}</TableCell>
+                    <TableCell className="px-4 py-4">{getFullName(d?.createdBy)}</TableCell>
+                    <TableCell className="px-4 py-4">{d?.createdBy?.email || "-"}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-5 text-center text-muted-foreground">
+                    No records found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {/* Pagination Controls */}
+        <div className="flex flex-wrap items-center justify-center gap-5 rounded-b-lg border-x border-b border-border bg-muted/50 p-4 lg:justify-end">
+          <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-2">
+              <span className="text-foreground">Rows per page:</span>
+              <Select
+                value={String(itemsPerPage)}
+                onValueChange={(value) => handleItemsPerPageChange(Number(value))}
+              >
+                <SelectTrigger className="h-8 w-[70px] !bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-foreground">
+                Page {paginationInfo?.currentPage || currentPage} of {paginationInfo?.totalPages || totalPages}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronsLeft className="size-5" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="size-5" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="size-5" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronsRight className="size-5" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -380,8 +476,6 @@ const DataTableSection = () => {
     apiCallThisMonth();
   }, []);
 
-  console.log("StartDate:", dateData.startDate);
-  console.log("EndDate:", dateData.endDate);
   const { startDate, endDate } = useSelector((state) => state.pages);
   const handleDateChange = (key, value) => {
     if (key === "startDate") {
@@ -391,43 +485,34 @@ const DataTableSection = () => {
       setDateData((prev) => ({ ...prev, endDate: value }))
     }
   };
-  console.log("start date: ", startDate);
-  console.log("end date: ", endDate);
 
   return (
     <div className='w-full max-w-8xl'>
-      <div className="flex flex-wrap items-end gap-x-5 gap-y-3 mb-5">
+      <div className="mb-5 flex flex-wrap items-end gap-x-5 gap-y-3">
         <div className="flex gap-6">
-          <div className="z-10">
-            <label className="block text-sm font-medium text-gray-700 pb-1">
-              Start Date
-            </label>
-            <input
-              required
-              type="date"
-              className="border p-2 font-medium text-gray-700 rounded-lg outline-none"
-              onChange={(e) => handleDateChange("startDate", e.target.value)}
-              value={dateData.startDate || ""}
+          <div className="z-10 space-y-1">
+            <Label htmlFor="startDate" className="!text-secondary-foreground">Start Date</Label>
+            <DatePickerField
+              id="startDate"
+              value={dateData.startDate}
+              onChange={(value) => handleDateChange("startDate", value)}
+              placeholder="Start date"
             />
           </div>
-          <div className="z-10">
-            <label className="block text-sm font-medium text-gray-700 pb-1">
-              End Date
-            </label>
-            <input
-              required
-              type="date"
-              className="border p-2 font-medium text-gray-700 rounded-lg outline-none"
+          <div className="z-10 space-y-1">
+            <Label htmlFor="endDate" className="!text-secondary-foreground">End Date</Label>
+            <DatePickerField
+              id="endDate"
+              value={dateData.endDate}
+              onChange={(value) => handleDateChange("endDate", value)}
               min={startDate || new Date().toISOString().split("T")[0]}
-              onChange={(e) => handleDateChange("endDate", e.target.value)}
-              value={dateData.endDate || ""}
+              placeholder="End date"
+              className="!bg-background"
             />
           </div>
         </div>
         <div className='flex flex-wrap gap-4'>
           <Button
-            label={"Go"}
-            type={"Primary"}
             onClick={() =>
               getReportData(
                 params?.portalid,
@@ -446,16 +531,22 @@ const DataTableSection = () => {
               )
             }
             disabled={isLoading && dateData.startDate && dateData.endDate}
-          />
+            className="h-10"
+          >
+            Go
+          </Button>
           <Button
             onClick={handleExport}
-            label={'Export CSV'}
-            type={"Primary"}
-            className='ml-auto'
-            icon={ArrowDownToLine}
+            className="ml-auto h-10"
             disabled={isLoading || isExportLoading}
-            isLoading={isExportLoading}
-          />
+          >
+            {isExportLoading ? (
+              <LoaderSpinner size={16} className="text-current" />
+            ) : (
+              <ArrowDownToLine className="h-4 w-4" />
+            )}
+            Export CSV
+          </Button>
         </div>
       </div>
       <PaginatedTable

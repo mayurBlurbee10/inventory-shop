@@ -1,9 +1,9 @@
+"use client";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { X, Pencil, Trash2, Edit } from "lucide-react";
+import { Pencil, Trash2, Edit, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useParams, useRouter, usePathname } from "next/navigation";
-import Button from "../Common/Elements/Button";
 import AddContentModal from "./AddContentModal";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
@@ -12,6 +12,27 @@ import { fontSizes } from "@/app/lib/data/font_size";
 import EditHeadingModal from "../Common/EditHeadingModal";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import { setContent as setReduxContent } from "@/store/services/contentService";
+import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ContentManagementContent = ({
   isAddRequired,
@@ -318,203 +339,140 @@ const ContentManagementContent = ({
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 ">
-          <div className=" text-center sm:text-left">
-            <h3 className="text-lg font-medium text-gray-900">
-              Home Page
-            </h3>
-            <p className="text-gray-600 text-sm">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between">
+          <div className="text-center sm:text-left">
+            <h3 className="text-lg font-medium text-foreground">Home Page</h3>
+            <p className="text-sm text-muted-foreground">
               Organize and edit your home page.
             </p>
           </div>
           {!isManageRequired && contentLength < 14 && (
-            <Button
-              label="Add Content"
-              type="Primary"
-              onClick={addContent}
-              buttonType="button"
-              disabled={loading}
-            />
+            <Button onClick={addContent} disabled={loading} className="px-3 py-3">
+              <PlusCircle className="h-4 w-4" />
+              Add Content
+            </Button>
           )}
-          {/* {isManageRequired && onboardingStatus && ( */}
           {isManageRequired && (
-            <Button
-              label="Edit Home Page"
-              type="Primary"
-              onClick={manageContentNavigate}
-              buttonType="button"
-            />
+            <Button type="button" variant="default" onClick={manageContentNavigate} className="px-3 py-3">
+              Edit Home Page
+            </Button>
           )}
         </div>
-        {
-          isManageRequired ? <></> : (
-            loading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            ) : (
-              <div
-                className={`grid grid-cols-1 gap-6 p-1 md:p-2 lg:p-3 ${onBoarding ? "" : " sm:grid-cols-2 lg:grid-cols-3"
-                  }`}
-              >
-                {content.map((item, idx) => (
-                  <div key={idx} className="border rounded-lg p-4 bg-white relative shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start ">
-                      <div>
-                        <h4 className="text-lg font-medium text-gray-900">
-                          {item.title}
-                        </h4>
-                        <p className="text-sm text-gray-500">Type: {item.type}</p>
-                        <p className="text-sm text-gray-500">
-                          Last Updated: {formatDate(item?.updatedAt)}
-                        </p>
-                      </div>
-
-                      <button
-                        className="text-blue-600 hover:text-blue-900 px-2 absolute top-0 right-0 m-2"
-                        onClick={() => handleModalOpenForEdit(item.id)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          )
-        }
-
-        <hr />
-
-        <div className="max-w-4xl">
-          <h2 className="text-lg font-medium text-gray-900 mb-6">Theme</h2>
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-3 sm:p-6 md:p-8 shadow-lg border border-white/50">
-            <div className="flex items-center justify-center gap-4 flex-wrap flex-col sm:flex-row">
-              <div className="flex-1 sm:mr-8">
-                <label className="block text-base font-medium text-gray-600 mb-4">
-                  Theme colour
-                </label>
-                <div className="space-y-3">
-                  <div className="relative w-48 h-12">
-                    <div
-                      className="absolute w-full h-full rounded-lg shadow-sm cursor-pointer"
-                      style={{ backgroundColor: colors?.primaryColor }}
-                    ></div>
-                    <input
-                      type="color"
-                      name="primaryColor"
-                      value={colors?.primaryColor}
-                      onChange={handleChange}
-                      className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div
-                className="w-full sm:w-0.5 h-0.5 sm:h-20"
-                style={{ backgroundColor: colors?.primaryColor }}
-              ></div>
-              <div className="flex-1 sm:mr-8">
-                <label className="block text-base font-medium text-gray-600 mb-4">
-                  Font colour
-                </label>
-                <div className="space-y-3">
-                  <div className="relative w-48 h-12">
-                    <div
-                      className="absolute w-full h-full rounded-lg shadow-sm cursor-pointer"
-                      style={{ backgroundColor: colors?.secondaryColor }}
-                    ></div>
-                    <input
-                      type="color"
-                      name="secondaryColor"
-                      value={colors?.secondaryColor}
-                      onChange={handleChange}
-                      className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div
-                className="w-full sm:w-0.5 h-0.5 sm:h-20"
-                style={{ backgroundColor: colors?.primaryColor }}
-              ></div>
-
-              <div className="flex-1 sm:mr-8">
-                <label className="block text-base font-medium text-gray-600 mb-4">
-                  Hover colour
-                </label>
-                <div className="space-y-3">
-                  <div className="relative w-48 h-12">
-                    <div
-                      className="absolute w-full h-full rounded-lg shadow-sm cursor-pointer"
-                      style={{ backgroundColor: colors?.accentColor }}
-                    ></div>
-                    <input
-                      type="color"
-                      name="accentColor"
-                      value={colors?.accentColor}
-                      onChange={handleChange}
-                      className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-              {onBoarding ? (
-                <></>
-              ) : (
-                <div className="md:ml-8">
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSubmitting}
-                    label={"Save"}
-                    type="Primary"
-                    className="ml-auto"
-                    isLoading={isSubmitting}
-                  />
-                </div>
-              )}
-            </div>
-
+        {isManageRequired ? (
+          <></>
+        ) : loading ? (
+          <div className="flex justify-center py-8">
+            <LoaderSpinner size={32} className="text-secondary-foreground" />
           </div>
-        </div>
-        <hr />
-        <div className="py-2 text-gray-900">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-5 pt-3">
-            {/* Dashboard Heading */}
-            <div className="pl-3">
-              <div className="border flex justify-center items-center p-4 rounded-md">
-                <h3 className="font-lato font-semibold text-lg">Dashboard Welcome Note</h3>
-                <div className="flex items-center ml-auto gap-2">
-                  <button onClick={() => setEditTarget("dashboard")}>
-                    <Edit className="size-5 text-blue-700" />
-                  </button>
+        ) : (
+          <div
+            className={`grid grid-cols-1 gap-6 p-1 md:p-2 lg:p-3 ${
+              onBoarding ? "" : "sm:grid-cols-2 lg:grid-cols-3"
+            }`}
+          >
+            {content.map((item, idx) => (
+              <Card
+                key={idx}
+                className="relative transition-shadow hover:shadow-md"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="pr-8">
+                      <h4 className="text-lg font-medium text-foreground">
+                        {item.title}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Type: {item.type}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Last Updated: {formatDate(item?.updatedAt)}
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="icons"
+                      size="icon"
+                      className="absolute right-2 top-2 rounded-full"
+                      onClick={() => handleModalOpenForEdit(item.id)}
+                      title="Edit content"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <Separator />
+
+        <div className="py-2 text-foreground">
+          <div className="grid grid-cols-1 gap-3 pt-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+            <Card>
+              <CardContent className="flex items-center p-4">
+                <h3 className="font-lato text-lg font-semibold text-foreground">
+                  Dashboard Welcome Note
+                </h3>
+                <div className="ml-auto flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="icons"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => setEditTarget("dashboard")}
+                    title="Edit welcome note"
+                  >
+                    <Edit className="size-5" />
+                  </Button>
                   {filterValue("Dashboard Heading")?.from === "portalContent" && (
-                    <button onClick={() => setDeleteTarget("dashboard")}>
-                      <Trash2 className="size-5 text-red-700" />
-                    </button>
+                    <Button
+                      type="button"
+                      variant="icons"
+                      size="icon"
+                      className="rounded-full text-destructive hover:text-destructive"
+                      onClick={() => setDeleteTarget("dashboard")}
+                      title="Remove welcome note"
+                    >
+                      <Trash2 className="size-5" />
+                    </Button>
                   )}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-
-            {/* Shared Docs Heading */}
-            <div className="pl-3">
-              <div className="border flex justify-center items-center p-4 rounded-md">
-                <h3 className="font-lato font-semibold text-lg">Shared Docs Welcome Note</h3>
-                <div className="flex items-center ml-auto gap-2">
-                  <button onClick={() => setEditTarget("sharedDocs")}>
-                    <Edit className="size-5 text-blue-700" />
-                  </button>
+            <Card>
+              <CardContent className="flex items-center p-4">
+                <h3 className="font-lato text-lg font-semibold text-foreground">
+                  Shared Docs Welcome Note
+                </h3>
+                <div className="ml-auto flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="icons"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={() => setEditTarget("sharedDocs")}
+                    title="Edit welcome note"
+                  >
+                    <Edit className="size-5" />
+                  </Button>
                   {filterValue("Shared Docs Heading")?.from === "portalContent" && (
-                    <button onClick={() => setDeleteTarget("sharedDocs")}>
-                      <Trash2 className="size-5 text-red-700" />
-                    </button>
+                    <Button
+                      type="button"
+                      variant="icons"
+                      size="icon"
+                      className="rounded-full text-destructive hover:text-destructive"
+                      onClick={() => setDeleteTarget("sharedDocs")}
+                      title="Remove welcome note"
+                    >
+                      <Trash2 className="size-5" />
+                    </Button>
                   )}
-
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {deleteTarget && (
@@ -533,9 +491,8 @@ const ContentManagementContent = ({
               isLoading={isLoadingRemoveContent}
             />
           )}
-
         </div>
-        {/* Dialog Box */}
+
         {isDialogOpen && (
           <AddContentModal
             contentTypes={contentTypes}
@@ -555,79 +512,77 @@ const ContentManagementContent = ({
             setLinkFields={setLinkFields}
           />
         )}
-        {isNewTitleDialogOpen && (
-          <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl text-gray-800 font-semibold">
-                  Add New Title
-                </h2>
-                <button
-                  onClick={handleNewTitleModalClose}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              {titleError && (
-                <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">
+
+        <Dialog
+          open={isNewTitleDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) handleNewTitleModalClose();
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">Add New Title</DialogTitle>
+            </DialogHeader>
+
+            {titleError && (
+              <Alert variant="destructive" className="border-destructive/30">
+                <AlertDescription className="text-destructive">
                   {titleError}
-                </div>
-              )}
-              <div className="mb-4">
-                <label
-                  htmlFor="newTitle"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="newTitle" className="text-foreground">
                   New Title
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   id="newTitle"
                   name="newTitle"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
+                  className="!bg-background"
                   placeholder="Enter new title"
                 />
               </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="newType"
-                  className="block text-sm font-medium text-gray-700"
-                >
+
+              <div className="space-y-2">
+                <Label htmlFor="newType" className="text-foreground">
                   Type
-                </label>
-                <select
-                  id="newType"
-                  name="newType"
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-500"
-                >
-                  <option value="" disabled>
-                    Select a Title Type
-                  </option>
-                  <option value="Text">Text</option>
-                  <option value="Image">Image</option>
-                </select>
-              </div>
-              <div className="flex justify-end space-x-3">
-                <Button
-                  onClick={handleNewTitleModalClose}
-                  type="Secondary"
-                  label="Cancel"
-                />
-                <Button
-                  onClick={handleAddNewTitle}
-                  type="Primary"
-                  label="Add Title"
-                />
+                </Label>
+                <Select value={newType} onValueChange={setNewType}>
+                  <SelectTrigger id="newType" className="!bg-background h-11 w-full">
+                    <SelectValue placeholder="Select a Title Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Text">Text</SelectItem>
+                    <SelectItem value="Image">Image</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </div>
-        )}
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleNewTitleModalClose}
+                className="px-3 py-3"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleAddNewTitle}
+                className="px-3 py-3"
+              >
+                Add Title
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
       {editTarget && (
         <EditHeadingModal

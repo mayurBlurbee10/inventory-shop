@@ -1,7 +1,18 @@
 import React from 'react';
-import { Puzzle, Settings, Power, PowerOff, RefreshCw, Loader } from 'lucide-react';
+import { Puzzle, Power, PowerOff, RefreshCw, Loader } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import usePlugins from '../../../Plugins/hooks/usePlugins';
+import { cn } from '@/app/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 // Plugin Management Page - Admin Interface
 const PluginManagementPage = () => {
@@ -20,11 +31,18 @@ const PluginManagementPage = () => {
     const { data: config } = useSelector((state) => state.portal);
     const portalId = config?.id;
 
+    const handleRefreshPlugins = async () => {
+        if (refreshPlugins) {
+            await refreshPlugins;
+            window.location.reload();
+        }
+    };
+
     if (!pluginsLoaded && loading) {
         return (
             <div className="flex items-center justify-center p-12">
-                <div className="w-full flex justify-center">
-                    <Loader className="w-5 h-5 animate-spin text-gray-600" />
+                <div className="flex w-full justify-center">
+                    <Loader className="h-5 w-5 animate-spin text-muted-foreground" />
                 </div>
             </div>
         );
@@ -33,165 +51,180 @@ const PluginManagementPage = () => {
     if (error) {
         return (
             <div className="p-6">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-                    <h3 className="text-red-800 font-semibold text-lg mb-2">Error Loading Plugins</h3>
-                    <p className="text-red-600 mb-4">{error}</p>
-                    <button
-                        onClick={() => handleRefreshPlugins()}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-                    >
-                        <RefreshCw className="w-4 h-4 inline mr-2" />
+                <Alert variant="destructive" className="border-destructive/30">
+                    <AlertTitle className="text-lg text-destructive">
+                        Error Loading Plugins
+                    </AlertTitle>
+                    <AlertDescription className="mb-4 text-destructive/90">
+                        {error}
+                    </AlertDescription>
+                    <Button variant="destructive" onClick={() => handleRefreshPlugins()}>
+                        <RefreshCw className="h-4 w-4" />
                         Retry
-                    </button>
-                </div>
+                    </Button>
+                </Alert>
             </div>
         );
     }
 
-    const handleRefreshPlugins = async () => {
-        if (refreshPlugins) {
-            await refreshPlugins;
-            window.location.reload();
-        }
-    }
+    const activeCount = portalPluginConfigs.filter(
+        (c) => c.isEnabled && c.portalId === portalId
+    ).length;
+    const inactiveCount = portalPluginConfigs.filter(
+        (c) => !c.isEnabled && c.portalId === portalId
+    ).length;
 
     return (
-        <div className="p-6 max-w-6xl mx-auto">
+        <div className="mx-auto max-w-6xl p-6">
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Plugin Management</h1>
-                        <p className="text-gray-600 text-lg">
+                        <h1 className="mb-2 text-3xl font-bold text-foreground">
+                            Plugin Management
+                        </h1>
+                        <p className="text-lg text-muted-foreground">
                             Manage plugins for this portal. Enable or disable functionality as needed.
                         </p>
                     </div>
-                    <button
-                        onClick={() => handleRefreshPlugins()}
-                        disabled={loading}
-                        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-                    >
-                        <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    <Button onClick={() => handleRefreshPlugins()} disabled={loading} className="px-3 py-3">
+                        <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
                         Refresh
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-center">
-                        <Puzzle className="w-8 h-8 text-blue-500 mr-3" />
+            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+                <Card>
+                    <CardContent className="flex items-center p-6">
+                        <Puzzle className="mr-3 h-8 w-8 text-primary-solid" />
                         <div>
-                            <p className="text-sm text-gray-600">Total Plugins</p>
-                            <p className="text-2xl font-bold text-gray-900">{availablePlugins.length}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-center">
-                        <Power className="w-8 h-8 text-green-500 mr-3" />
-                        <div>
-                            <p className="text-sm text-gray-600">Active Plugins</p>
-                            <p className="text-2xl font-bold text-gray-900">
-                                {portalPluginConfigs.filter(config => config.isEnabled && config.portalId === portalId).length}
+                            <p className="text-sm text-muted-foreground">Total Plugins</p>
+                            <p className="text-2xl font-bold text-foreground">
+                                {availablePlugins.length}
                             </p>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-center">
-                        <PowerOff className="w-8 h-8 text-gray-500 mr-3" />
+                <Card>
+                    <CardContent className="flex items-center p-6">
+                        <Power className="mr-3 h-8 w-8 text-success" />
                         <div>
-                            <p className="text-sm text-gray-600">Inactive Plugins</p>
-                            <p className="text-2xl font-bold text-gray-900">
-                                {portalPluginConfigs.filter(config => !config.isEnabled && config.portalId === portalId).length}
-                            </p>
+                            <p className="text-sm text-muted-foreground">Active Plugins</p>
+                            <p className="text-2xl font-bold text-foreground">{activeCount}</p>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent className="flex items-center p-6">
+                        <PowerOff className="mr-3 h-8 w-8 text-muted-foreground" />
+                        <div>
+                            <p className="text-sm text-muted-foreground">Inactive Plugins</p>
+                            <p className="text-2xl font-bold text-foreground">{inactiveCount}</p>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Plugins List */}
-            <div className="bg-white border border-gray-200 rounded-lg">
-                <div className="p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-900">Available Plugins</h2>
-                    <p className="text-gray-600 mt-1">Manage plugin functionality</p>
-                </div>
+            <Card>
+                <CardHeader className="border-b border-border">
+                    <CardTitle className="text-xl">Available Plugins</CardTitle>
+                    <CardDescription>Manage plugin functionality</CardDescription>
+                </CardHeader>
 
-                <div className="p-6">
+                <CardContent className="p-6">
                     {availablePlugins.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Puzzle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No Plugins Available</h3>
-                            <p className="text-gray-600">Plugins will appear here once they are registered in the system.</p>
+                        <div className="py-12 text-center">
+                            <Puzzle className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                            <h3 className="mb-2 text-lg font-medium text-foreground">
+                                No Plugins Available
+                            </h3>
+                            <p className="text-muted-foreground">
+                                Plugins will appear here once they are registered in the system.
+                            </p>
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {availablePlugins.map(plugin => {
+                            {availablePlugins.map((plugin) => {
                                 const isConfigured = isPluginConfigured(plugin.pluginKey);
                                 const isActive = isPluginActive(plugin.pluginKey);
-                                const config = portalPluginConfigs.find(c => c.pluginKey === plugin.pluginKey);
 
                                 return (
-                                    <div key={plugin.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                                    <div
+                                        key={plugin.id}
+                                        className="rounded-lg border border-border p-6 transition-shadow hover:shadow-md"
+                                    >
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center mb-3">
-                                                    <Puzzle className="w-6 h-6 text-blue-500 mr-3" />
-                                                    <h3 className="text-lg font-semibold text-gray-900">{plugin.pluginName}</h3>
-                                                    <span className={`ml-3 px-2 py-1 text-xs rounded-full ${!isConfigured
-                                                        ? 'bg-yellow-100 text-yellow-800'
-                                                        : isActive
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                        {!isConfigured ? 'Not Added' : isActive ? 'Active' : 'Inactive'}
-                                                    </span>
+                                                <div className="mb-3 flex items-center">
+                                                    <Puzzle className="mr-3 h-6 w-6 text-primary-solid" />
+                                                    <h3 className="text-lg font-semibold text-foreground">
+                                                        {plugin.pluginName}
+                                                    </h3>
+                                                    <Badge
+                                                        className={cn(
+                                                            'ml-3',
+                                                            !isConfigured
+                                                                ? 'bg-warning/15 text-warning-foreground'
+                                                                : isActive
+                                                                    ? 'bg-success/15 text-success'
+                                                                    : 'bg-muted text-muted-foreground'
+                                                        )}
+                                                    >
+                                                        {!isConfigured
+                                                            ? 'Not Added'
+                                                            : isActive
+                                                                ? 'Active'
+                                                                : 'Inactive'}
+                                                    </Badge>
                                                 </div>
 
-                                                <p className="text-gray-600 mb-3">{plugin.description}</p>
+                                                <p className="mb-3 text-muted-foreground">
+                                                    {plugin.description}
+                                                </p>
 
-                                                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                                                     <span>Version: {plugin.version}</span>
                                                     <span>Key: {plugin.pluginKey}</span>
                                                 </div>
                                             </div>
 
                                             <div className="ml-6">
-                                                <button
+                                                <Button
                                                     onClick={() =>
                                                         !isConfigured
                                                             ? addPluginToPortal(plugin.pluginKey)
                                                             : togglePluginStatus(plugin.pluginKey)
                                                     }
                                                     disabled={loading}
-                                                    className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${!isConfigured
-                                                        ? 'bg-green-500 text-white hover:bg-green-600'
-                                                        : isActive
-                                                            ? 'bg-red-500 text-white hover:bg-red-600'
-                                                            : 'bg-blue-500 text-white hover:bg-blue-600'
-                                                        }`}
+                                                    variant={isConfigured && isActive ? 'destructive' : 'default'}
+                                                    className={cn(
+                                                        'px-3 py-3',
+                                                        !isConfigured &&
+                                                            'bg-success text-success-foreground hover:bg-success/90'
+                                                    )}
                                                 >
                                                     {!isConfigured ? (
                                                         <>
-                                                            <Power className="w-4 h-4 mr-2" />
+                                                            <Power className="h-4 w-4" />
                                                             Add Plugin
                                                         </>
                                                     ) : isActive ? (
                                                         <>
-                                                            <PowerOff className="w-4 h-4 mr-2" />
+                                                            <PowerOff className="h-4 w-4" />
                                                             Inactive
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Power className="w-4 h-4 mr-2" />
+                                                            <Power className="h-4 w-4" />
                                                             Activate
                                                         </>
                                                     )}
-                                                </button>
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>
@@ -199,8 +232,8 @@ const PluginManagementPage = () => {
                             })}
                         </div>
                     )}
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         </div>
     );
 };

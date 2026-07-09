@@ -1,34 +1,41 @@
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getUserInitials } from "@/utils/helper";
+import { Button } from "@/components/ui/button";
+
 const UserCard = ({ user, onSelect }) => {
   return (
-    <div
-      className="flex items-center justify-between w-full p-4 border-b border-gray-200 hover:bg-gray-200 transition-colors cursor-pointer"
+    <Button
+      type="button"
+      variant="ghost"
+      className="flex w-full items-center justify-between border-b border-border px-4 py-4 text-left transition-colors hover:bg-accent"
       onClick={() => onSelect(user)}
     >
-      <div className="flex-shrink-0 mr-4 relative">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="relative h-10 w-10 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary)] flex items-center justify-center mr-3">
-            <span className="text-sm font-bold text-[var(--secondary)]">
+      <div className="relative mr-4 shrink-0">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="relative mr-3">
+            <Avatar className="h-10 w-10 bg-primary text-primary-foreground">
+              <AvatarFallback className="bg-primary text-sm font-bold text-primary-foreground">
               {getUserInitials(user?.firstName + " " + user?.lastName)}
-            </span>
+              </AvatarFallback>
+            </Avatar>
             <span
-              className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                user?.online ? "bg-green-500" : "bg-gray-400"
+              className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
+                user?.online ? "bg-success" : "bg-muted-foreground"
               }`}
               aria-label={user?.online ? "Online" : "Offline"}
             />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">
+            <p className="truncate text-sm font-semibold text-foreground">
               {user?.firstName + " " + user?.lastName}
             </p>
-            <p className="text-xs truncate">
+            <p className="truncate text-xs text-muted-foreground">
               {user?.email ?? ""}
             </p>
           </div>
         </div>
       </div>
-    </div>
+    </Button>
   );
 };
 

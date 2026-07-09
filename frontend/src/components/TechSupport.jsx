@@ -1,12 +1,39 @@
-import { X, Phone, FileSearch, Calculator, Upload, Image, Video, File, XCircle } from "lucide-react";
+import {
+  X,
+  Phone,
+  FileSearch,
+  Calculator,
+  Upload,
+  Image,
+  Video,
+  File,
+  XCircle,
+} from "lucide-react";
 import React, { useState } from "react";
-import Button from "./Common/Elements/Button";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 function TechSupport({ isOpen, onClose }) {
-    const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     issueType: "",
     message: "",
     project: "universal_portal",
@@ -85,7 +112,7 @@ function TechSupport({ isOpen, onClose }) {
       requestData.append('submitterEmail', submitterEmail);
       requestData.append('submitterName', submitterName);
       requestData.append('project', formData.project);
-      
+
       // Append files to FormData
       uploadedFiles.forEach(file => {
         requestData.append('files', file);
@@ -123,73 +150,82 @@ function TechSupport({ isOpen, onClose }) {
     // Add your action handling logic here
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-2xl m-2">
-        <div className="flex justify-between items-center relative border-b p-4">
-          <div className="w-full">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl text-gray-800 font-bold">Tech Support</h2>
-              <button
-                onClick={handleModalClose}
-                className="text-gray-600 hover:bg-gray-100 transition-colors p-1 rounded-full"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <p className="text-gray-600 mt-2 text-sm">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !loading) handleModalClose();
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        className="flex w-full max-w-2xl flex-col gap-0 p-0 sm:max-w-2xl"
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-border p-4">
+          <div>
+            <DialogTitle className="text-2xl font-bold text-foreground">
+              Tech Support
+            </DialogTitle>
+            <DialogDescription className="mt-2 text-sm">
               We're here to help! Our team typically responds within 24 hours.
-            </p>
+            </DialogDescription>
           </div>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={handleModalClose}
+            aria-label="Close"
+          >
+            <X className="h-6 w-6" />
+          </Button>
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200">
-            {error}
-          </div>
-        )}
-        <div className="p-4 sm:p-6 h-[60vh] max-h-[500px] overflow-auto">
-          <form onSubmit={handleSubmit} className="space-y-6 mb-8">
-           
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Message
-              </label>
+        <div className="h-[60vh] max-h-[500px] overflow-auto p-4 sm:p-6">
+          {error && (
+            <Alert variant="destructive" className="mb-6 border-destructive/30">
+              <AlertDescription className="text-destructive">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit} className="mb-8 space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
               <textarea
+                id="message"
                 name="message"
                 required
                 rows="4"
-                className="block w-full rounded-lg border-gray-200 border border-solid outline-none focus:border-blue-500 focus:ring-blue-500 p-3 text-gray-700 resize-none"
+                className="block w-full resize-none rounded-lg border border-input bg-background p-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 value={formData.message}
                 onChange={(e) => handleFormChange("message", e.target.value)}
                 placeholder="Please describe your issue or request..."
               ></textarea>
             </div>
 
-             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Issue Type
-              </label>
-              <select
-                className="block w-full rounded-lg border border-solid border-gray-200 text-gray-600 focus:border-blue-500 focus:ring-blue-500 h-11 ps-2 outline-none"
+            <div className="space-y-2">
+              <Label htmlFor="issueType">Issue Type</Label>
+              <Select
                 value={formData.issueType}
-                onChange={(e) => handleFormChange("issueType", e.target.value)}
+                onValueChange={(value) => handleFormChange("issueType", value)}
               >
-                <option value="">Select Issue Type</option>
-                <option value="Bug">Bug Report</option>
-                <option value="Feature">Feature Request</option>
-                <option value="Task">General Request</option>
-                <option value="User Story">Technical Support</option>
-              </select>
+                <SelectTrigger id="issueType" className="h-12 w-full !bg-background">
+                  <SelectValue placeholder="Select Issue Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bug">Bug Report</SelectItem>
+                  <SelectItem value="Feature">Feature Request</SelectItem>
+                  <SelectItem value="Task">General Request</SelectItem>
+                  <SelectItem value="User Story">Technical Support</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Attachments
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+            <div className="space-y-2">
+              <Label>Attachments</Label>
+              <div className="rounded-lg border-2 border-dashed border-border p-6 text-center transition-colors hover:border-primary-solid">
                 <input
                   type="file"
                   id="file-upload"
@@ -200,80 +236,78 @@ function TechSupport({ isOpen, onClose }) {
                 />
                 <label
                   htmlFor="file-upload"
-                  className="cursor-pointer flex flex-col items-center"
+                  className="flex cursor-pointer flex-col items-center"
                 >
-                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-600">
+                  <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
                     Click to upload or drag and drop
                   </span>
-                  <span className="text-xs text-gray-500 mt-1">
+                  <span className="mt-1 text-xs text-muted-foreground">
                     PDF, Images, Videos (MAX. 50MB)
                   </span>
                 </label>
               </div>
 
               {uploadedFiles.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  <div className="">
-                    {uploadedFiles.length > 0 && (
-                      <div className="mt-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-sm font-semibold text-gray-700">
-                              Uploaded file{uploadedFiles.length > 1 ? 's' : ''}
-                            </span>
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-success"></div>
+                    <span className="text-sm font-semibold text-foreground">
+                      Uploaded file{uploadedFiles.length > 1 ? "s" : ""}
+                    </span>
+                  </div>
+
+                  <div className="flex w-full flex-col gap-2">
+                    {uploadedFiles.map((file, index) => {
+                      const fileIcon = file.type.startsWith("image/") ? (
+                        <Image />
+                      ) : file.type.startsWith("video/") ? (
+                        <Video />
+                      ) : (
+                        <File />
+                      );
+
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center gap-4 rounded-xl border border-border bg-muted/40 p-4 shadow-sm transition-all duration-200 hover:border-foreground/20 hover:shadow-md"
+                        >
+                          <div className="flex flex-1 items-center gap-3">
+                            <div className="text-2xl text-muted-foreground">
+                              {fileIcon}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-foreground">
+                                {file.name}
+                              </p>
+                              <div className="mt-1 flex items-center gap-3">
+                                <span className="text-xs text-muted-foreground">
+                                  {formatFileSize(file.size)}
+                                </span>
+                                <span className="text-xs text-muted-foreground/60">
+                                  •
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {file.type.split("/")[1]?.toUpperCase() ||
+                                    "FILE"}
+                                </span>
+                              </div>
+                            </div>
                           </div>
 
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => removeFile(index)}
+                            className="text-muted-foreground hover:text-destructive"
+                            title="Remove file"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
                         </div>
-
-                        <div className="w-full flex flex-col gap-2">
-                          {uploadedFiles.map((file, index) => {
-                            const fileIcon = file.type.startsWith('image/') ? <Image /> :
-                              file.type.startsWith('video/') ? <Video /> :
-                                file.type === 'application/pdf' ? <File /> : <File />;
-
-                            return (
-                              <div
-                                key={index}
-                                className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
-                              >
-                                <div className="flex items-center gap-3 flex-1 ">
-                                  <div className="text-2xl text-gray-600">{fileIcon}</div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800 truncate">
-                                      {file.name}
-                                    </p>
-                                    <div className="flex items-center gap-3 mt-1">
-                                      <span className="text-xs text-gray-500">
-                                        {formatFileSize(file.size)}
-                                      </span>
-                                      <span className="text-xs text-gray-400">
-                                        •
-                                      </span>
-                                      <span className="text-xs text-gray-500">
-                                        {file.type.split('/')[1]?.toUpperCase() || 'FILE'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => removeFile(index)}
-                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                    title="Remove file"
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -281,49 +315,62 @@ function TechSupport({ isOpen, onClose }) {
 
             <div className="flex justify-end space-x-4">
               <Button
+                type="button"
+                variant="outline"
                 onClick={handleModalClose}
                 disabled={loading}
-                type="Secondary"
-                label="Cancel"
-              />
+                className="px-3 py-3"
+              >
+                Cancel
+              </Button>
               <Button
-                buttonType="submit"
+                type="submit"
                 disabled={loading || !formData.issueType || !formData.message}
-                isLoading={loading}
-                type="Primary"
-                label="Submit Request"
-              />
+                className="px-3 py-3"
+              >
+                {loading && (
+                  <LoaderSpinner size={16} className="text-current" />
+                )}
+                Submit Request
+              </Button>
             </div>
           </form>
 
-          <div className="border-t border-gray-200 pt-6">
-            <p className="text-gray-600 mb-4 text-sm">
+          <div className="border-t border-border pt-6">
+            <p className="mb-4 text-sm text-muted-foreground">
               Or choose one of these quick options:
             </p>
             <div className="grid grid-cols-3 gap-4">
               <Button
-                onClick={() => handleActionButton('quote')}
-                icon={Calculator}
-                type="Secondary"
-                label="Get Quote"
-              />
+                variant="outline"
+                onClick={() => handleActionButton("quote")}
+                className="px-3 py-3"
+              >
+                <Calculator className="h-4 w-4" />
+                Get Quote
+              </Button>
               <Button
-                onClick={() => handleActionButton('call')}
-                icon={Phone}
-                type="Secondary"
-                label="Call Us"
-              />
+                type="button"
+                variant="outline"
+                onClick={() => handleActionButton("call")}
+                className="px-3 py-3"
+              >
+                <Phone className="h-4 w-4" />
+                Call Us
+              </Button>
               <Button
-                onClick={() => handleActionButton('status')}
-                icon={FileSearch}
-                type="Secondary"
-                label="Project Status"
-              />
+                variant="outline"
+                onClick={() => handleActionButton("status")}
+                className="px-3 py-3"
+              >
+                <FileSearch className="h-4 w-4" />
+                Project Status
+              </Button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

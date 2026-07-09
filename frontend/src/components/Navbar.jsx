@@ -24,9 +24,11 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  Moon,
   Plug,
   Settings,
   Signature,
+  Sun,
   Users,
   X,
 } from "lucide-react";
@@ -45,6 +47,23 @@ import NotificationConfiguration from "./NotificationConfiguration";
 import NotificationModal from "./InAppNotification/NotificationModel";
 import MessageComponent from "./Message/Message";
 import { useSocket } from "@/app/lib/useSocket";
+import { getStoredMode, toggleGlobalThemeMode } from "@/app/lib/theme-manager";
+import { cn } from "@/app/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+// OLD portal theme: inline styles used config?.primaryColor, config?.accentColor,
+// config?.secondaryColor. Replaced with CSS variables via Tailwind theme tokens
+// (bg-primary, text-primary-foreground, bg-accent, text-foreground, etc.).
 
 function Navbar({ content, config, filterValue }) {
   const pathname = usePathname();
@@ -80,11 +99,28 @@ function Navbar({ content, config, filterValue }) {
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [themeMode, setThemeMode] = useState("light");
   useSocket();
 
   useEffect(() => {
     setLogo(config?.logo || null);
   }, [user, config]);
+
+  useEffect(() => {
+    setThemeMode(getStoredMode());
+    const handleModeChange = (event) => {
+      if (event?.detail) setThemeMode(event.detail);
+    };
+    window.addEventListener("theme-mode-changed", handleModeChange);
+    return () =>
+      window.removeEventListener("theme-mode-changed", handleModeChange);
+  }, []);
+
+  const handleToggleThemeMode = () => {
+    const nextMode = themeMode === "dark" ? "light" : "dark";
+    setThemeMode(nextMode);
+    toggleGlobalThemeMode(nextMode);
+  };
 
   const openMessageDrawer = () => {
     if (!user?.id) {
@@ -115,7 +151,7 @@ function Navbar({ content, config, filterValue }) {
 
     ro.observe(navbarRef.current);
     return () => ro.disconnect();
-  }, [config?.primaryColor, config?.accentColor, config?.secondaryColor]);
+  }, []);
 
 
   useEffect(() => {
@@ -138,6 +174,21 @@ function Navbar({ content, config, filterValue }) {
     };
   }, []);
 
+  const desktopNavItemClass = (isActive) =>
+    cn(
+      "flex items-center px-4 py-2 text-sm font-semibold rounded-md whitespace-nowrap transition-all duration-200",
+      isActive
+        ? "bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/25"
+        : "text-primary-foreground/90 hover:bg-accent hover:text-primary",
+    );
+
+  const mobileNavItemClass = (isActive) =>
+    cn(
+      "relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg font-lato text-sm",
+      isActive
+        ? "bg-accent text-primary font-bold"
+        : "text-foreground font-medium hover:bg-accent hover:text-primary",
+    );
 
   const NavBarItem = ({ title, href, activeRoutes = [], icon: Icon }) => {
     if (!href) {
@@ -148,26 +199,15 @@ function Navbar({ content, config, filterValue }) {
       pathname.includes(href) ||
       activeRoutes.some((route) => pathname.includes(route));
 
-    const [isHovered, setIsHovered] = useState(false);
-    const isActiveOrHovered = isActive || isHovered;
-
     if (isOpenNavbar) {
       return (
         <Link href={href} passHref className="w-full block">
           <div
-            className={`relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg `}
-            style={{ backgroundColor: isActive || isHovered ? config?.accentColor : "transparent",
-             }}
-             onMouseEnter={() => setIsHovered(true)}
-             onMouseLeave={() => setIsHovered(false)}
+            className={mobileNavItemClass(isActive)}
             onClick={() => setIsOpenNavbar(false)}
           >
-            <span
-              className={`font-lato text-sm flex items-center ${isActive ? "font-bold" : "font-medium"
-                }`}
-              style={isActive || isHovered ? { color: config?.primaryColor } : { color: "#374151" }}
-            >
-              {Icon && <Icon className="mr-2 h-4 w-4" style={{ color: isActive || isHovered ? config?.primaryColor : "#374151" }} />}
+            <span className="flex items-center">
+              {Icon && <Icon className="mr-2 h-4 w-4" />}
               {title}
             </span>
           </div>
@@ -182,93 +222,57 @@ function Navbar({ content, config, filterValue }) {
         className="mr-2"
         onClick={() => setIsOpenNavbar(false)}
       >
-        <button
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="flex items-center px-4 py-2 text-sm font-semibold rounded-md whitespace-nowrap hover:scale-105 transition-all duration-200"
-          style={{
-            color: isActiveOrHovered
-              ? config?.primaryColor
-              : config?.secondaryColor,
-            backgroundColor: isHovered
-              ? config?.accentColor
-              : isActive
-                ? config?.accentColor
-                : "transparent",
-          }}
-        >
-          {Icon && <Icon className="mr-2 h-4 w-4" style={{ color: isActiveOrHovered ? config?.primaryColor : config?.secondaryColor }} />}
+        <span className={desktopNavItemClass(isActive)}>
+          {Icon && <Icon className="mr-2 h-4 w-4" />}
           {title}
-        </button>
+        </span>
       </Link>
     );
   };
 
   const NotificationNavButton = ({ variant = "desktop" }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const isActiveOrHovered = isNotificationModalOpen || isHovered;
+    const isActive = isNotificationModalOpen;
     const isMobile = variant === "mobile";
 
     if (isMobile) {
       return (
         <button
           type="button"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
           onClick={() => {
             setIsNotificationModalOpen(true);
             setIsOpenNavbar(false);
           }}
-          className="relative flex w-full cursor-pointer items-center rounded-lg px-4 py-3 transition-all"
-          style={{
-            backgroundColor: isActiveOrHovered ? config?.accentColor : "transparent",
-          }}
+          className={cn(mobileNavItemClass(isActive), "relative")}
         >
-          <span
-            className={`font-lato flex items-center text-sm ${
-              isNotificationModalOpen ? "font-bold" : "font-medium"
-            }`}
-            style={isActiveOrHovered ? { color: config?.primaryColor } : { color: "#374151" }}
-          >
-            <Bell
-              className="mr-2 h-4 w-4"
-              style={{ color: isActiveOrHovered ? config?.primaryColor : "#374151" }}
-            />
+          <span className="flex items-center">
+            <Bell className="mr-2 size-5" />
             Notifications
           </span>
           {notificationCount > 0 && (
-            <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+            <Badge variant="destructive" className="ml-auto size-5 rounded-full p-0 text-xs">
               {notificationCount}
-            </span>
+            </Badge>
           )}
         </button>
       );
     }
 
-    const buttonStyle = {
-      color: isActiveOrHovered ? config?.primaryColor : config?.secondaryColor,
-      backgroundColor: isActiveOrHovered ? config?.accentColor : "transparent",
-    };
-
     return (
-      <button
+      <Button
         type="button"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        variant="ghost"
+        size="icon"
         onClick={() => setIsNotificationModalOpen(true)}
-        className="relative flex items-center rounded-md px-3 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105 cursor-pointer"
-        style={buttonStyle}
-      >
-        <Bell
-          className="h-5 w-5"
-          style={{ color: buttonStyle.color }}
-        />
-        {notificationCount > 0 && (
-          <span className={`absolute ${isHovered ? "right-[2px] -top-[-1px]" : "-right-0 -top-0"} flex size-2.5 items-center justify-center rounded-full bg-red-500 text-xs text-white`}>
-            {notificationCount}
-          </span>
+        className={cn(
+          "relative rounded-md text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground",
+          isActive && "bg-accent text-primary hover:bg-accent hover:text-primary",
         )}
-      </button>
+      >
+        <Bell className="h-5 w-5" />
+        {notificationCount > 0 && (
+          <span className="absolute right-1 top-1 flex size-2.5 items-center justify-center rounded-full bg-destructive" />
+        )}
+      </Button>
     );
   };
 
@@ -390,7 +394,7 @@ function Navbar({ content, config, filterValue }) {
       ? contentItem.theme
       : {
         fontSize: fontSize?.size,
-        color: "#000000e6",
+        // OLD: color: "#000000e6",
         fontWeight: title === "Paragraph" ? 300 : 400,
       };
     return theme;
@@ -444,39 +448,39 @@ function Navbar({ content, config, filterValue }) {
 
   const getNotifications = async (limit = 7, offset = 0) => {
     setIsNotificationLoading(true)
-      try {
-        setError(null);
-        const res = await fetchWrapper(
-          `/api/in-app-notification?limit=${limit}&offset=${offset}`,
-          {},
-          "get-notifications"
-        );
-  
-        if (!res.ok) {
-          throw new Error("Failed to fetch notifications");
-        }
-  
-        const data = await res.json();
-        if (data && data.data) {
-          setNotifications(data?.data);
-        }
-        return data;
-      } catch (error) {
-        setError(error?.message || "Failed to load notifications");
-        return null;
-      } finally {
-        setIsNotificationLoading(false)
-      }
-    };
-  
-    useEffect(() => {
-      getNotifications()
-    }, [])
+    try {
+      setError(null);
+      const res = await fetchWrapper(
+        `/api/in-app-notification?limit=${limit}&offset=${offset}`,
+        {},
+        "get-notifications"
+      );
 
-   useEffect(() => {
-      const unreadCount = notifications.filter(n => n.status?.toLowerCase() !== "read").length > 0;
-      setNotificationCount(unreadCount);
-    }, [notifications, setNotificationCount]);
+      if (!res.ok) {
+        throw new Error("Failed to fetch notifications");
+      }
+
+      const data = await res.json();
+      if (data && data.data) {
+        setNotifications(data?.data);
+      }
+      return data;
+    } catch (error) {
+      setError(error?.message || "Failed to load notifications");
+      return null;
+    } finally {
+      setIsNotificationLoading(false)
+    }
+  };
+
+  useEffect(() => {
+    getNotifications()
+  }, [])
+
+  useEffect(() => {
+    const unreadCount = notifications.filter(n => n.status?.toLowerCase() !== "read").length > 0;
+    setNotificationCount(unreadCount);
+  }, [notifications, setNotificationCount]);
 
   return (
     <>
@@ -493,235 +497,212 @@ function Navbar({ content, config, filterValue }) {
         error={error}
         setError={setError}
       />
-    <div
-      className="border-b border-[#0000001a] relative"
-      style={{ backgroundColor: config?.primaryColor }}
-    >
-      <div className="w-full mx-auto px-2">
-        <nav ref={navbarRef} className="flex justify-between">
-          <div
-            onClick={() => {
-              const dashboardPage = pageData.find((page) => page.title === "dashboard");
-              if (dashboardPage?.isPageVisible) {
-                router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/dashboard`);
-              } else {
-                router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/shared-docs`);
-              }
-            }}
-            className="flex items-center px-[18px] py-1 flex-shrink-0"
-          >
-            {logo ? (
-              <div
-                className="cursor-pointer"
-                onClick={() => {
-                  if (params.portalid) {
-                    const dashboardPage = pages?.find((page) => page.title === "dashboard");
-                    if (dashboardPage?.isPageVisible) {
-                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/dashboard`);
+      <div
+        className="relative border-b border-border bg-primary text-primary-foreground"
+      >
+        {/* OLD: style={{ backgroundColor: config?.primaryColor }} */}
+        <div className="w-full mx-auto px-2">
+          <nav ref={navbarRef} className="flex justify-between">
+            <div
+              onClick={() => {
+                const dashboardPage = pageData.find((page) => page.title === "dashboard");
+                if (dashboardPage?.isPageVisible) {
+                  router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/dashboard`);
+                } else {
+                  router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/shared-docs`);
+                }
+              }}
+              className="flex items-center px-[18px] py-1 flex-shrink-0"
+            >
+              {logo ? (
+                <div
+                  className="cursor-pointer"
+                  onClick={() => {
+                    if (params.portalid) {
+                      const dashboardPage = pages?.find((page) => page.title === "dashboard");
+                      if (dashboardPage?.isPageVisible) {
+                        router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/dashboard`);
+                      } else {
+                        router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-docs`);
+                      }
                     } else {
-                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${params.portalid}/shared-docs`);
+                      const dashboardPage = pages?.find((page) => page.title === "dashboard");
+                      if (dashboardPage?.isPageVisible) {
+                        router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/dashboard`);
+                      } else {
+                        router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-docs`);
+                      }
                     }
-                  } else {
-                    const dashboardPage = pages?.find((page) => page.title === "dashboard");
-                    if (dashboardPage?.isPageVisible) {
-                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/dashboard`);
-                    } else {
-                      router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/shared-docs`);
-                    }
-                  }
+                  }}
+                >
+                  <LogoImage />
+                </div>
+              ) : (
+                <Skeleton className="h-[60px] w-[150px] mr-2" />
+              )}
+
+              <span
+                className="text-3xl text-primary-foreground font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
+                style={{
+                  fontSize: filterTheme("Header Text").fontSize,
+                  fontWeight: filterTheme("Header Text").fontWeight,
+                  lineHeight: "1.2",
+                  paddingBottom: "2px",
+                  paddingInline: "2px",
                 }}
               >
-                <LogoImage />
-              </div>
-            ) : (
-              <div className="h-[60px] w-[150px] mr-2 bg-gray-300 animate-pulse rounded" />
-            )}
-
-            <span
-              className="text-3xl text-[#000000e6] font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
-              style={{
-                fontSize: filterTheme("Header Text").fontSize,
-                fontWeight: filterTheme("Header Text").fontWeight,
-                lineHeight: "1.2",
-                paddingBottom: "2px",
-                paddingInline: "2px",
-              }}
-            >
-              {
-                filterValue("Header Text") &&
-                  filterValue("Header Text") !== "Premier Customer Portal"
-                  ? filterValue("Header Text")
-                  : params?.portalid
-              }
-            </span>
-          </div>
-
-          <div className="hidden lg:flex items-center">
-            {filterPageVisibility("dashboard") && (
-              <NavBarItem
-                title="Dashboard"
-                icon={LayoutDashboard}
-                href={
-                  params.portalid
-                    ? `/${params.portalid}/dashboard`
-                    : `/dashboard`
+                {
+                  filterValue("Header Text") &&
+                    filterValue("Header Text") !== "Premier Customer Portal"
+                    ? filterValue("Header Text")
+                    : params?.portalid
                 }
-              />
-            )}
+              </span>
+            </div>
 
-            {filterPageVisibility("shared-docs") && (
-              <NavBarItem
-                title="Shared Documents"
-                icon={FileText}
-                href={
-                  params.portalid
-                    ? `/${params.portalid}/shared-docs`
-                    : "/shared-docs"
-                }
-              />
-            )}
-            {filterPageVisibility("esignature") && (
-              <NavBarItem
-                title="Sign"
-                icon={Signature}
-                href={
-                  params.portalid
-                    ? `/${params.portalid}/esignature`
-                    : "/esignature"
-                }
-              />
-            )}
-            {(userIsAdmin || userIsModerator) &&
-              filterPageVisibility("advisor dashboard") && (
+            <div className="hidden lg:flex items-center">
+              {filterPageVisibility("dashboard") && (
                 <NavBarItem
-                  title="Advisor Dashboard"
-                  icon={LayoutDashboardIcon}
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/advisor/dashboard`
-                      : "/advisor/dashboard"
-                  }
-                  activeRoutes={[
-                    params.portalid
-                      ? `/${params.portalid}/advisor/shared-docs`
-                      : "/advisor/shared-docs",
-                  ]}
-                />
-              )}
-            {filterPageVisibility("forms") && (
-              <NavBarItem
-                title="Forms"
-                icon={FilePen}
-                href={params.portalid ? `/${params.portalid}/forms` : "/forms"}
-              />
-            )}
-            {customPages?.length > 0 &&
-              customPages?.map((page) => (
-                <NavBarItem
-                  key={page?.id}
+                  title="Dashboard"
                   icon={LayoutDashboard}
-                  title={
-                    page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)
-                  }
                   href={
                     params.portalid
-                      ? `/${params.portalid}/${sanitizeName(page?.title)}`
+                      ? `/${params.portalid}/dashboard`
                       : `/dashboard`
                   }
                 />
-              ))}
-          </div>
-          {/* Profile dropdown */}
-          <div className="hidden lg:flex items-center cursor-pointer">
-            <div className="hidden md:block">
-              <PluginRenderer config={config} pluginKeys={['box_ai']} />
-            </div>
-            <div className="ml-2">
-              <NotificationNavButton />
-            </div>
-            <button
-              type="button"
-              onClick={openMessageDrawer}
-              className={`relative flex items-center justify-center size-10 rounded-full hover:bg-white/25 transition-colors ${isMessageDrawerOpen ? "bg-white/25" : ""}`}
-              title="Messages"
-              aria-label="Messages"
-            >
-              <MessageSquare
-                className="size-5"
-                style={{ color: config?.secondaryColor || "#111827" }}
-              />
-            </button>
-            <div
-              ref={dropdownRef}
-              className="flex items-center space-x-3 pl-4 relative"
-              onClick={() => setAccountDropdown((prev) => !prev)}
-            >
-              {/* ADD CLICK EVENT FOR DROPDOWN DONE*/}
-              <div
-                className={`size-10 rounded-full overflow-hidden flex items-center justify-center shadow-sm font-lato transition-transform hover:scale-105`}
-                style={{
-                  backgroundColor: config?.accentColor ? `${config.accentColor}3A` : '#3b82f61B',
-                  border: `1px solid ${config?.accentColor ? config.accentColor : '#3b82f61B'}`,
-                  color: config?.secondaryColor ? config.secondaryColor : '#ffffff1b',
-                }}
-              >
-                {user?.firstName?.charAt(0).toUpperCase() || "U"}
-              </div>
+              )}
 
-              {/* DROPDOWN SECTION DONE*/}
-              {accountDropdown && (
-                <div className="absolute top-[50px] overflow-hidden right-0 rounded-2xl custom-shadow max-w-60 w-60 bg-indigo-50 py-2 z-20">
-                  <button
-                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                    onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
-                      }}
-                    onMouseLeave={ (e) =>{
-                      e.currentTarget.style.backgroundColor = 'inherit'
-                    }}
-                    onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
-                  >
-                    <CircleUserRound className="h-5 w-5" /> Account Info
-                  </button>
-                  <button
-                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                    onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
-                      }}
-                    onMouseLeave={ (e) =>{
-                      e.currentTarget.style.backgroundColor = 'inherit'
-                    }}
-                    onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
-                  >
-                    <Bell className="h-5 w-5" /> Preferences
-                  </button>
+              {filterPageVisibility("shared-docs") && (
+                <NavBarItem
+                  title="Shared Documents"
+                  icon={FileText}
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/shared-docs`
+                      : "/shared-docs"
+                  }
+                />
+              )}
+              {filterPageVisibility("esignature") && (
+                <NavBarItem
+                  title="Sign"
+                  icon={Signature}
+                  href={
+                    params.portalid
+                      ? `/${params.portalid}/esignature`
+                      : "/esignature"
+                  }
+                />
+              )}
+              {(userIsAdmin || userIsModerator) &&
+                filterPageVisibility("advisor dashboard") && (
+                  <NavBarItem
+                    title="Advisor Dashboard"
+                    icon={LayoutDashboardIcon}
+                    href={
+                      params.portalid
+                        ? `/${params.portalid}/advisor/dashboard`
+                        : "/advisor/dashboard"
+                    }
+                    activeRoutes={[
+                      params.portalid
+                        ? `/${params.portalid}/advisor/shared-docs`
+                        : "/advisor/shared-docs",
+                    ]}
+                  />
+                )}
+              {filterPageVisibility("forms") && (
+                <NavBarItem
+                  title="Forms"
+                  icon={FilePen}
+                  href={params.portalid ? `/${params.portalid}/forms` : "/forms"}
+                />
+              )}
+              {customPages?.length > 0 &&
+                customPages?.map((page) => (
+                  <NavBarItem
+                    key={page?.id}
+                    icon={LayoutDashboard}
+                    title={
+                      page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)
+                    }
+                    href={
+                      params.portalid
+                        ? `/${params.portalid}/${sanitizeName(page?.title)}`
+                        : `/dashboard`
+                    }
+                  />
+                ))}
+            </div>
+            {/* Profile dropdown */}
+            <div className="hidden lg:flex items-center cursor-pointer">
+              <div className="hidden md:block">
+                <PluginRenderer config={config} pluginKeys={['box_ai']} />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleToggleThemeMode}
+                className="ml-2 rounded-full text-primary-foreground hover:bg-primary-foreground/20"
+                title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label="Toggle theme"
+              >
+                {themeMode === "dark" ? (
+                  <Sun className="size-5" />
+                ) : (
+                  <Moon className="size-5" />
+                )}
+              </Button>
+              <div className="ml-2">
+                <NotificationNavButton />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={openMessageDrawer}
+                className={cn(
+                  "ml-2 rounded-full text-primary-foreground hover:bg-primary-foreground/20",
+                  isMessageDrawerOpen && "bg-primary-foreground/20",
+                )}
+                title="Messages"
+                aria-label="Messages"
+              >
+                <MessageSquare className="size-5" />
+              </Button>
+              <DropdownMenu open={accountDropdown} onOpenChange={setAccountDropdown}>
+                <DropdownMenuTrigger
+                  className="nav-icon-btn ml-2 rounded-full p-0 outline-none transition-transform hover:scale-105"
+                  render={
+                    <button type="button" aria-label="Account menu" />
+                  }
+                >
+                  <Avatar className="size-10 shadow-sm">
+                    <AvatarFallback className="size-10 bg-secondary text-secondary-foreground font-black">
+                      {user?.firstName?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60">
+                  <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={() => setIsAccountInfoModalOpen(true)}>
+                    <CircleUserRound className="h-5 w-5" />
+                    Account Info
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={() => setIsNotificationConfigurationOpen(true)}>
+                    <Bell className="h-5 w-5" />
+                    Preferences
+                  </DropdownMenuItem>
                   {userIsAdmin && (
-                    <button
-                      onClick={() =>
-                        setIsTechSupportModalOpen((prev) => !prev)
-                      }
-                      className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                      onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
-                      }}
-                    onMouseLeave={ (e) =>{
-                      e.currentTarget.style.backgroundColor = 'inherit'
-                    }}
-                    >
+                    <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={() => setIsTechSupportModalOpen(true)}>
                       <Headset className="h-5 w-5" />
                       Tech Support
-                    </button>
+                    </DropdownMenuItem>
                   )}
-                  {/* Edit button */}
                   {userIsAdmin && (
-                    <button
-                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
-                    onMouseEnter={ (e) =>{
-                      e.currentTarget.style.backgroundColor = config?.accentColor ? `${config.accentColor}` : '#3b82f633'
-                      }}
-                    onMouseLeave={ (e) =>{
-                      e.currentTarget.style.backgroundColor = 'inherit'
-                    }}  
+                    <DropdownMenuItem
+                      className="gap-2 py-2 px-3 hover:bg-accent"
                       onClick={() =>
                         router.push(
                           params.portalid
@@ -732,429 +713,414 @@ function Navbar({ content, config, filterValue }) {
                     >
                       <Bolt className="h-5 w-5" />
                       Tools
-                    </button>
+                    </DropdownMenuItem>
                   )}
-                  <button
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    className="gap-2 py-2 px-3 hover:bg-accent"
                     onClick={(e) => {
-                      e.stopPropagation();
+                      e.preventDefault();
                       handleLogout();
                     }}
-                    className="flex items-center gap-2 w-full p-3 bg-indigo-50 text-gray-800 text-sm hover:bg-slate-200"
                   >
                     {logoutLoading ? (
-                      <LoaderSpinner size={24} className="text-blue-500" />
+                      <LoaderSpinner size={24} className="text-destructive" />
                     ) : (
                       <LogOut className="h-5 w-5" />
                     )}
                     Sign out
-                  </button>
-                </div>
-              )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </div>
 
-          {/* Mobile Navbar */}
+            {/* Mobile Navbar */}
 
-          <button
-            className="lg:hidden text-text"
-            onClick={() => setIsOpenNavbar(true)}
-          >
-            <Menu className="h-6 w-6 text-headerlink" />
-          </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden text-primary-foreground hover:bg-primary-foreground/20"
+              onClick={() => setIsOpenNavbar(true)}
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
 
-          {isOpenNavbar && (
-            <div className="fixed top-0 right-0 sm:w-2/5 w-4/5 h-full bg-white shadow-lg z-50 transition-all flex flex-col">
-              <div
-                style={{
-                  minHeight: "var(--navbar-height, 56px)",
-                }}
-                className={`flex items-center pr-5 ${isManagePortalView ? "justify-between pl-5" : "justify-end"}`}
-              >
-                {isManagePortalView && (
-                  <button
-                    type="button"
-                    onClick={() => setIsManagePortalView(false)}
-                    className="flex items-center gap-2 px-2 py-2 text-sm text-gray-700 hover:font-semibold"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </button>
-                )}
-                <button
-                  className="text-gray-800 hover:bg-gray-100 rounded-full"
-                  onClick={() => {
-                    setIsOpenNavbar(false);
-                    setAccountDropdown(false);
-                    setIsManagePortalView(false);
-                    setIsIntegrateDropdownOpen(false);
+            {isOpenNavbar && (
+              <div className="fixed top-0 right-0 sm:w-2/5 w-4/5 h-full bg-card text-card-foreground shadow-lg z-50 transition-all flex flex-col border-l border-border">
+                <div
+                  style={{
+                    minHeight: "var(--navbar-height, 56px)",
                   }}
+                  className={`flex items-center pr-5 ${isManagePortalView ? "justify-between pl-5" : "justify-end"}`}
                 >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  {isManagePortalView && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setIsManagePortalView(false)}
+                      className="flex items-center gap-2 px-2 py-2 text-sm text-foreground"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-foreground hover:bg-accent"
+                    onClick={() => {
+                      setIsOpenNavbar(false);
+                      setAccountDropdown(false);
+                      setIsManagePortalView(false);
+                      setIsIntegrateDropdownOpen(false);
+                    }}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
+                    <X className="w-6 h-6" />
+                  </Button>
+                </div>
 
-              <div className="flex flex-col items-start w-full flex-1 min-h-0">
-                {isManagePortalView ? (
-                  <div className="w-full h-full flex flex-col p-5">
-                    <div className="flex justify-between items-center mt-2 mb-4">
-                      <h2 className="text-md text-gray-800 font-semibold">Tools</h2>
-                    </div>
-                    <nav className="space-y-1 overflow-y-auto max-h-[calc(100vh-160px)] w-full">
-                      {managePortalTabs
-                        .slice()
-                        .sort((a, b) => a.label.localeCompare(b.label))
-                        .map(({ id, label, icon: Icon, hasDropdown }) => {
-                          const isActive = hasDropdown
-                            ? isIntegrateDropdownOpen || activeTab === "integrate"
-                            : activeTab === id;
-                          const primaryColor = config?.primaryColor || "#3f3f46";
-                          const accentColor = config?.accentColor || "#ffffff";
-                          return (
-                            <div key={id} className="relative">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  hasDropdown
-                                    ? setIsIntegrateDropdownOpen((prev) => !prev)
-                                    : openManagePortalTab(id)
-                                }
-                                className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${isActive ? "bg-gray-100" : "bg-transparent"
-                                  } ${isActive ? "" : "hover:bg-gray-100"
-                                  }`}
-                                style={{
-                                  color: isActive ? primaryColor : "#3f3f46",
-                                }}
-                              >
-                                <div className="flex items-center space-x-3">
-                                  <Icon
-                                    className="w-4 h-4"
-                                    style={{
-                                      color: isActive ? primaryColor : "#3f3f46",
-                                    }}
-                                  />
-                                  <span className="text-left">{label}</span>
-                                </div>
-                                <div>
-                                  {hasDropdown && (
-                                    <ChevronDown
-                                      className={`w-4 h-4 transition-transform ${isIntegrateDropdownOpen ? "rotate-180" : ""
-                                        }`}
-                                      style={{ color: isActive ? primaryColor : "#3f3f46" }}
-                                    />
+                <div className="flex flex-col items-start w-full flex-1 min-h-0">
+                  {isManagePortalView ? (
+                    <div className="w-full h-full flex flex-col p-5">
+                      <div className="flex justify-between items-center mt-2 mb-4">
+                        <h2 className="text-md text-foreground font-semibold">Tools</h2>
+                      </div>
+                      <nav className="space-y-1 overflow-y-auto max-h-[calc(100vh-160px)] w-full">
+                        {managePortalTabs
+                          .slice()
+                          .sort((a, b) => a.label.localeCompare(b.label))
+                          .map(({ id, label, icon: Icon, hasDropdown }) => {
+                            const isActive = hasDropdown
+                              ? isIntegrateDropdownOpen || activeTab === "integrate"
+                              : activeTab === id;
+                            return (
+                              <div key={id} className="relative">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    hasDropdown
+                                      ? setIsIntegrateDropdownOpen((prev) => !prev)
+                                      : openManagePortalTab(id)
+                                  }
+                                  className={cn(
+                                    "w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out",
+                                    isActive
+                                      ? "bg-accent text-primary"
+                                      : "bg-transparent text-foreground hover:bg-accent hover:text-primary",
                                   )}
-                                </div>
-                              </button>
+                                >
+                                  <div className="flex items-center space-x-3">
+                                    <Icon className="w-4 h-4" />
+                                    <span className="text-left">{label}</span>
+                                  </div>
+                                  <div>
+                                    {hasDropdown && (
+                                      <ChevronDown
+                                        className={cn(
+                                          "w-4 h-4 transition-transform",
+                                          isIntegrateDropdownOpen && "rotate-180",
+                                        )}
+                                      />
+                                    )}
+                                  </div>
+                                </button>
 
-                              {hasDropdown && isIntegrateDropdownOpen && (
-                                <div className="mt-1 ml-3">
-                                  {integrateOptions.map(({ id: optionId, label: optionLabel, icon: OptionIcon }) => {
-                                    const isOptionActive = activeTab === optionId;
-                                    return (
-                                      <button
-                                        key={optionId}
-                                        type="button"
-                                        onClick={() => openManagePortalTab(optionId)}
-                                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out"
-                                        style={{
-                                          backgroundColor: isOptionActive ? accentColor : "transparent",
-                                          color: isOptionActive ? primaryColor : "#3f3f46",
-                                        }}
-                                      >
-                                        <span className="flex items-center gap-3">
-                                          <OptionIcon className="w-4 h-4" />
-                                          {optionLabel}
-                                        </span>
-                                        {/* <ChevronRight className="w-4 h-4" /> */}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                    </nav>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-col items-start gap-2 w-full px-5 flex-1 min-h-0 overflow-y-auto">
-                      {filterPageVisibility("dashboard") && (
-                        <NavBarItem
-                          title="Dashboard"
-                          icon={LayoutDashboard}
-                          href={
-                            params.portalid
-                              ? `/${params.portalid}/dashboard`
-                              : `/dashboard`
-                          }
-                        />
-                      )}
-                      {filterPageVisibility("shared-docs") && (
-                        <NavBarItem
-                          title="Shared Documents"
-                          icon={FileText}
-                          href={
-                            params.portalid
-                              ? `/${params.portalid}/shared-docs`
-                              : "/shared-docs"
-                          }
-                        />
-                      )}
-                      {filterPageVisibility("esignature") && (
-                        <NavBarItem
-                          title="Sign"
-                          icon={Signature}
-                          href={
-                            params.portalid
-                              ? `/${params.portalid}/esignature`
-                              : "/esignature"
-                          }
-                        />
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsOpenNavbar(false);
-                          openMessageDrawer();
-                        }}
-                        className="relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg hover:bg-gray-100"
-                      >
-                        <span
-                          className={`font-lato text-sm flex items-center ${
-                            isMessageDrawerOpen ? "font-bold" : "font-medium"
-                          }`}
-                          style={
-                            isMessageDrawerOpen
-                              ? { color: config?.primaryColor }
-                              : { color: "#374151" }
-                          }
-                        >
-                          <MessageSquare
-                            className="mr-2 h-4 w-4"
-                            style={{
-                              color: isMessageDrawerOpen
-                                ? config?.primaryColor
-                                : "#374151",
-                            }}
-                          />
-                          Messages
-                        </span>
-                      </button>
-                      {(userIsAdmin || userIsModerator) &&
-                        filterPageVisibility("advisor dashboard") && (
+                                {hasDropdown && isIntegrateDropdownOpen && (
+                                  <div className="mt-1 ml-3">
+                                    {integrateOptions.map(({ id: optionId, label: optionLabel, icon: OptionIcon }) => {
+                                      const isOptionActive = activeTab === optionId;
+                                      return (
+                                        <button
+                                          key={optionId}
+                                          type="button"
+                                          onClick={() => openManagePortalTab(optionId)}
+                                          className={cn(
+                                            "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out",
+                                            isOptionActive
+                                              ? "bg-accent text-primary"
+                                              : "text-foreground hover:bg-accent hover:text-primary",
+                                          )}
+                                        >
+                                          <span className="flex items-center gap-3">
+                                            <OptionIcon className="w-4 h-4" />
+                                            {optionLabel}
+                                          </span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                      </nav>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-col items-start gap-2 w-full px-5 flex-1 min-h-0 overflow-y-auto">
+                        {filterPageVisibility("dashboard") && (
                           <NavBarItem
-                            title="Advisor Dashboard"
+                            title="Dashboard"
                             icon={LayoutDashboard}
                             href={
                               params.portalid
-                                ? `/${params.portalid}/advisor/dashboard`
-                                : "/advisor/dashboard"
-                            }
-                            activeRoutes={[
-                              params.portalid
-                                ? `/${params.portalid}/advisor/shared-docs`
-                                : "/advisor/shared-docs",
-                            ]}
-                          />
-                        )}
-                      {filterPageVisibility("forms") && (
-                        <NavBarItem
-                          title="Forms"
-                          icon={FilePen}
-                          href={
-                            params.portalid ? `/${params.portalid}/forms` : "/forms"
-                          }
-                        />
-                      )}
-                      {customPages?.length > 0 &&
-                        customPages?.map((page) => (
-                          <NavBarItem
-                            key={page?.id}
-                            icon={FileText}
-                            title={
-                              page?.title?.charAt(0).toUpperCase() +
-                              page?.title?.slice(1)
-                            }
-                            href={
-                              params.portalid
-                                ? `/${params.portalid}/${sanitizeName(page?.title)}`
+                                ? `/${params.portalid}/dashboard`
                                 : `/dashboard`
                             }
                           />
-                        ))}
-                      <div className="">
-                        <PluginRenderer config={config} pluginKeys={['box_ai']} />
-                      </div>
-                      <div className="relative w-full">
-                        <NotificationNavButton variant="mobile" />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-start space-x-2 w-full mt-auto border-t border-slate-200">
-                      <div ref={dropdownRef} className="w-full">
-                        {accountDropdown && (
-                          <div className="w-full p-5 flex flex-col gap-2">
-                            <button
-                              className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold"
-                              onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
-                            >
-                              <CircleUserRound className="h-4 w-4" />
-                              Account Info
-                            </button>
-                            <button
-                              className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold"
-                              onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
-                            >
-                              <Bell className="h-4 w-4" />
-                              Preferences
-                            </button>
-                            {userIsAdmin && (
-                              <button
-                                onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
-                                className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold"
-                              >
-                                <Headset className="h-4 w-4" />
-                                Tech Support
-                              </button>
-                            )}
-                            {userIsAdmin && (
-                              <button
-                                className={`flex items-center justify-between w-full px-4 py-2 text-left text-sm text-gray-800 hover:font-semibold ${ToolsActive ? "font-semibold" : ""
-                                  }`}
-                                onClick={() => {
-                                  setIsManagePortalView(true);
-                                  setAccountDropdown(false);
-                                }}
-                              >
-                                <span className="flex items-center gap-3">
-                                  <Bolt className={`h-4 w-4`} />
-                                  Tools
-                                </span>
-                                <ChevronRight className="h-4 w-4" />
-                              </button>
-                            )}
-                            <button
-                              onClick={handleLogout}
-                              className="flex items-center gap-3 w-full px-4 py-2 text-left text-sm text-red-500 hover:font-semibold"
-                            >
-                              {logoutLoading ? (
-                                <LoaderSpinner size={24} className="text-blue-500" />
-                              ) : (
-                                <LogOut className="h-4 w-4" />
-                              )}
-                              Sign out
-                            </button>
-                          </div>
+                        )}
+                        {filterPageVisibility("shared-docs") && (
+                          <NavBarItem
+                            title="Shared Documents"
+                            icon={FileText}
+                            href={
+                              params.portalid
+                                ? `/${params.portalid}/shared-docs`
+                                : "/shared-docs"
+                            }
+                          />
+                        )}
+                        {filterPageVisibility("esignature") && (
+                          <NavBarItem
+                            title="Sign"
+                            icon={Signature}
+                            href={
+                              params.portalid
+                                ? `/${params.portalid}/esignature`
+                                : "/esignature"
+                            }
+                          />
                         )}
                         <button
                           type="button"
-                          className="flex items-center gap-3 w-full text-left bg-slate-100 p-3"
-                          onClick={() => setAccountDropdown((prev) => !prev)}
+                          onClick={() => {
+                            setIsOpenNavbar(false);
+                            openMessageDrawer();
+                          }}
+                          className={mobileNavItemClass(isMessageDrawerOpen)}
                         >
-                          <div
-                            className={`size-10 rounded-full overflow-hidden flex items-center justify-center shadow-sm font-lato transition-transform hover:scale-105`}
-                            style={{
-                              backgroundColor: config?.accentColor ? `${config.accentColor}3A` : '#3b82f61B',
-                              border: `1px solid ${config?.accentColor ? config.accentColor : '#3b82f61B'}`,
-                              color: config?.secondaryColor ? config.secondaryColor : '#ffffff1b',
-                            }}
-                          >
-                            {user?.firstName?.charAt(0).toUpperCase() || "U"}
-                          </div>
-
-                          <div className="flex flex-col text-sm xl:text-base">
-                            <span className="font-medium line-clamp-1 text-black">
-                              {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
-                            </span>
-                          </div>
-                          <span className="ml-auto text-black pr-4">
-                            <EllipsisVertical className="h-4 w-4" />
+                          <span className="flex items-center">
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            Messages
                           </span>
                         </button>
+                        <button
+                          type="button"
+                          onClick={handleToggleThemeMode}
+                          className={mobileNavItemClass(false)}
+                        >
+                          <span className="flex items-center">
+                            {themeMode === "dark" ? (
+                              <Sun className="mr-2 h-4 w-4" />
+                            ) : (
+                              <Moon className="mr-2 h-4 w-4" />
+                            )}
+                            {themeMode === "dark" ? "Light Mode" : "Dark Mode"}
+                          </span>
+                        </button>
+                        {(userIsAdmin || userIsModerator) &&
+                          filterPageVisibility("advisor dashboard") && (
+                            <NavBarItem
+                              title="Advisor Dashboard"
+                              icon={LayoutDashboard}
+                              href={
+                                params.portalid
+                                  ? `/${params.portalid}/advisor/dashboard`
+                                  : "/advisor/dashboard"
+                              }
+                              activeRoutes={[
+                                params.portalid
+                                  ? `/${params.portalid}/advisor/shared-docs`
+                                  : "/advisor/shared-docs",
+                              ]}
+                            />
+                          )}
+                        {filterPageVisibility("forms") && (
+                          <NavBarItem
+                            title="Forms"
+                            icon={FilePen}
+                            href={
+                              params.portalid ? `/${params.portalid}/forms` : "/forms"
+                            }
+                          />
+                        )}
+                        {customPages?.length > 0 &&
+                          customPages?.map((page) => (
+                            <NavBarItem
+                              key={page?.id}
+                              icon={FileText}
+                              title={
+                                page?.title?.charAt(0).toUpperCase() +
+                                page?.title?.slice(1)
+                              }
+                              href={
+                                params.portalid
+                                  ? `/${params.portalid}/${sanitizeName(page?.title)}`
+                                  : `/dashboard`
+                              }
+                            />
+                          ))}
+                        <div className="">
+                          <PluginRenderer config={config} pluginKeys={['box_ai']} />
+                        </div>
+                        <div className="relative w-full">
+                          <NotificationNavButton variant="mobile" />
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </nav>
-      </div>
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-      <TechSupport
-        isOpen={isTechSupportModalOpen}
-        onClose={() => setIsTechSupportModalOpen(false)}
-      />
-      <AccountInfo
-        isOpen={isAccountInfoModalOpen}
-        onClose={() => setIsAccountInfoModalOpen(false)}
-        config={config}
-        user={user}
-        userIsAdmin={userIsAdmin}
-      />
+                      <div className="flex items-center justify-start space-x-2 w-full mt-auto border-t border-border">
+                        <div ref={dropdownRef} className="w-full">
+                          {accountDropdown && (
+                            <div className="w-full p-5 flex flex-col gap-2">
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start gap-3 px-4 py-2 text-sm text-foreground"
+                                onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
+                              >
+                                <CircleUserRound className="h-4 w-4" />
+                                Account Info
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start gap-3 px-4 py-2 text-sm text-foreground"
+                                onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
+                              >
+                                <Bell className="h-4 w-4" />
+                                Preferences
+                              </Button>
+                              {userIsAdmin && (
+                                <Button
+                                  variant="ghost"
+                                  className="w-full justify-start gap-3 px-4 py-2 text-sm text-foreground"
+                                  onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
+                                >
+                                  <Headset className="h-4 w-4" />
+                                  Tech Support
+                                </Button>
+                              )}
+                              {userIsAdmin && (
+                                <Button
+                                  variant="ghost"
+                                  className={cn(
+                                    "w-full justify-between px-4 py-2 text-sm text-foreground",
+                                    ToolsActive && "font-semibold",
+                                  )}
+                                  onClick={() => {
+                                    setIsManagePortalView(true);
+                                    setAccountDropdown(false);
+                                  }}
+                                >
+                                  <span className="flex items-center gap-3">
+                                    <Bolt className="h-4 w-4" />
+                                    Tools
+                                  </span>
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start gap-3 px-4 py-2 text-sm text-destructive hover:text-destructive"
+                                onClick={handleLogout}
+                              >
+                                {logoutLoading ? (
+                                  <LoaderSpinner size={24} className="text-destructive" />
+                                ) : (
+                                  <LogOut className="h-4 w-4" />
+                                )}
+                                Sign out
+                              </Button>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            className="flex items-center gap-3 w-full text-left bg-muted p-3"
+                            onClick={() => setAccountDropdown((prev) => !prev)}
+                          >
+                            <Avatar size="lg">
+                              <AvatarFallback className="font-lato">
+                                {user?.firstName?.charAt(0).toUpperCase() || "U"}
+                              </AvatarFallback>
+                            </Avatar>
 
-      {isMessageDrawerOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/30 z-40"
-            aria-hidden
-            onClick={() => setIsMessageDrawerOpen(false)}
-          />
-          <aside
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col"
-            aria-label="Message sidebar"
-            style={{
-              "--accent": config?.accentColor,
-              "--primary": config?.primaryColor,
-              "--secondary": config?.secondaryColor,
-            }}
-          >
+                            <div className="flex flex-col text-sm xl:text-base">
+                              <span className="font-medium line-clamp-1 text-foreground">
+                                {`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
+                              </span>
+                            </div>
+                            <span className="ml-auto text-foreground pr-4">
+                              <EllipsisVertical className="h-4 w-4" />
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </nav>
+        </div>
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+        <TechSupport
+          isOpen={isTechSupportModalOpen}
+          onClose={() => setIsTechSupportModalOpen(false)}
+        />
+        <AccountInfo
+          isOpen={isAccountInfoModalOpen}
+          onClose={() => setIsAccountInfoModalOpen(false)}
+          config={config}
+          user={user}
+          userIsAdmin={userIsAdmin}
+        />
+
+        {isMessageDrawerOpen && (
+          <>
             <div
-              className="flex items-center justify-between border-b px-4 bg-white shrink-0"
-              style={{
-                height: navbarHeight ? `${navbarHeight}px` : undefined,
-              }}
+              className="fixed inset-0 bg-foreground/30 z-40"
+              aria-hidden
+              onClick={() => setIsMessageDrawerOpen(false)}
+            />
+            <aside
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-card text-card-foreground shadow-xl z-50 flex flex-col border-l border-border"
+              aria-label="Message sidebar"
             >
-              <div className="text-sm font-semibold text-black">
-                Messages
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsMessageDrawerOpen(false)}
-                className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-                aria-label="Close messages"
+              <div
+                className="flex items-center justify-between border-b border-border px-4 bg-card shrink-0"
+                style={{
+                  height: navbarHeight ? `${navbarHeight}px` : undefined,
+                }}
               >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <MessageComponent />
-            </div>
-          </aside>
-        </>
-      )}
+                <div className="text-sm font-semibold text-foreground">
+                  Messages
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMessageDrawerOpen(false)}
+                  className="rounded-full text-muted-foreground hover:bg-accent"
+                  aria-label="Close messages"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <MessageComponent />
+              </div>
+            </aside>
+          </>
+        )}
 
-      <NotificationConfiguration
-        isOpen={isNotificationConfigurationOpen}
-        onClose={() => setIsNotificationConfigurationOpen(false)}
-        config={config}
-        user={user}
-      />
-    </div>
+        <NotificationConfiguration
+          isOpen={isNotificationConfigurationOpen}
+          onClose={() => setIsNotificationConfigurationOpen(false)}
+          config={config}
+          user={user}
+        />
+      </div>
     </>
 
   );

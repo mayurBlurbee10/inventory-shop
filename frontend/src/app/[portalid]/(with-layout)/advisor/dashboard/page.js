@@ -20,6 +20,20 @@ import {
 import { useSelector } from "react-redux";
 import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 export default function AdvisorViewDashboard() {
     const [usersList, setUsersList] = useState([]);
@@ -184,6 +198,17 @@ export default function AdvisorViewDashboard() {
         setSortConfig({ key: newDirection ? key : null, direction: newDirection });
     };
 
+    const renderSortIcon = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === "asc" ? (
+                <ChevronUp className="h-4 w-4 text-foreground" />
+            ) : (
+                <ChevronDown className="h-4 w-4 text-foreground" />
+            );
+        }
+        return <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />;
+    };
+
     useEffect(() => {
         const page = pages?.find((page) => page.title === "advisor dashboard");
 
@@ -205,113 +230,95 @@ export default function AdvisorViewDashboard() {
     }, []);
 
     const LoadingSpinner = () => (
-        <div className={`h-[80vh] flex items-center justify-center bg-white`}>
-            <LoaderSpinner size={32} className="text-blue-500" />
+        <div className="flex h-[80vh] items-center justify-center bg-background">
+            <LoaderSpinner size={32} className="text-secondary-foreground" />
         </div>
     );
 
     if (isLoading || isPageLoading) return <LoadingSpinner />;
 
     return (
-        // <Container>
-        <div className="max-w-[1820px] mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 pt-8 gap-10 w-full">
-                <div className="flex flex-col w-full">
+        <div className="mx-auto max-w-[1820px] px-4">
+            <div className="grid w-full grid-cols-1 gap-10 pt-8 lg:grid-cols-2">
+                <div className="flex w-full flex-col">
                     {filterVisibility("Your Clients Section") && (
-                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <Card className="overflow-hidden">
                             {/* Header */}
-                            <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
-                                <h3 className="text-lg font-semibold text-gray-800 font-lato">
-                                    Your Clients
-                                </h3>
-                            </div>
-                            <div className="max-w-[1200px] mx-auto">
-                                {
-                                    !isLoading && sortedClients.length > 0 &&
-                                    <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
-                                        <table className="w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50 sticky top-0">
-                                                <tr>
-                                                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
-                                                        <div className="flex items-center justify-start gap-2">
-                                                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => toggleSort("name")}>Name</span>
-                                                            <div className="cursor-pointer" onClick={() => toggleSort("name")}>
-                                                                {sortConfig.key === "name" ? (
-                                                                    sortConfig.direction === "asc" ? (
-                                                                        <ChevronUp className="h-4 w-4 text-black" />
-                                                                    ) : (
-                                                                        <ChevronDown className="h-4 w-4 text-black" />
-                                                                    )
-                                                                ) : (
-                                                                    <ChevronsUpDown className="h-4 w-4 text-gray-400" />
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </th>
-                                                    <th className="p-4 text-left text-sm font-semibold text-gray-700">
-                                                        <div className="flex items-center justify-start gap-2">
-                                                            <span className="block cursor-pointer hover:text-gray-900" onClick={() => toggleSort("email")}>Email</span>
-                                                            <div className="cursor-pointer" onClick={() => toggleSort("email")}>
-                                                                {sortConfig.key === "email" ? (
-                                                                    sortConfig.direction === "asc" ? (
-                                                                        <ChevronUp className="h-4 w-4 text-black" />
-                                                                    ) : (
-                                                                        <ChevronDown className="h-4 w-4 text-black" />
-                                                                    )
-                                                                ) : (
-                                                                    <ChevronsUpDown className="h-4 w-4 text-gray-400" />
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </th>
-                                                    <th className="p-4 text-left text-sm font-semibold text-gray-700">Phone</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
+                            <CardHeader className="border-b border-border p-3">
+                                <CardTitle className="text-lg">Your Clients</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                {!isLoading && sortedClients.length > 0 && (
+                                    <div className="max-h-[300px] overflow-y-auto">
+                                        <Table>
+                                            <TableHeader className="sticky top-0 z-10 bg-muted/60">
+                                                <TableRow className="hover:bg-transparent">
+                                                    <TableHead className="px-4">
+                                                        <button
+                                                            type="button"
+                                                            className="flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-primary-solid"
+                                                            onClick={() => toggleSort("name")}
+                                                        >
+                                                            <span>Name</span>
+                                                            {renderSortIcon("name")}
+                                                        </button>
+                                                    </TableHead>
+                                                    <TableHead className="px-4">
+                                                        <button
+                                                            type="button"
+                                                            className="flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-primary-solid"
+                                                            onClick={() => toggleSort("email")}
+                                                        >
+                                                            <span>Email</span>
+                                                            {renderSortIcon("email")}
+                                                        </button>
+                                                    </TableHead>
+                                                    <TableHead className="px-4 font-semibold text-foreground">
+                                                        Phone
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
                                                 {sortedClients.map((user) => (
-                                                    <tr key={user?.id} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="py-3 px-4 text-sm">
+                                                    <TableRow key={user?.id}>
+                                                        <TableCell className="px-4 py-3">
                                                             <Link
                                                                 href={`shared-docs?userId=${user?.boxUserId}`}
                                                                 passHref
-                                                                className="text-blue-600 hover:text-blue-800 font-medium"
+                                                                className="font-medium text-secondary-foreground hover:underline"
                                                             >
                                                                 {`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
                                                             </Link>
-                                                        </td>
-                                                        <td className="p-4 text-sm text-gray-600">
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-muted-foreground">
                                                             {user?.email}
-                                                        </td>
-                                                        <td className="p-4 text-sm text-gray-600">
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-muted-foreground">
                                                             {user?.phoneNo}
-                                                        </td>
-                                                    </tr>
+                                                        </TableCell>
+                                                    </TableRow>
                                                 ))}
-                                            </tbody>
-                                        </table>
+                                            </TableBody>
+                                        </Table>
                                     </div>
-                                }
-                                {
-                                    isLoading && (
-                                        <div className="flex justify-center py-8">
-                                            <LoadingSpinner />
-                                        </div>
-                                    )
-                                }
-                            </div>
-                        </div>
+                                )}
+                                {isLoading && (
+                                    <div className="flex justify-center py-8">
+                                        <LoadingSpinner />
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     )}
                     {filterVisibility("Activity Section") && (
-                        <div className="bg-white w-full mx-auto mt-8">
+                        <Card className="mt-8">
                             {/* Title Section */}
-                            <div className="flex items-center justify-between bg-white p-3">
-                                <h3 className="text-lg font-semibold text-gray-800 font-lato">
-                                    Activities
-                                </h3>
-                            </div>
+                            <CardHeader className="p-3">
+                                <CardTitle className="text-lg">Activities</CardTitle>
+                            </CardHeader>
 
                             {/* Chart Section */}
-                            <div className="sm:h-[350px] h-[250px] w-full">
+                            <CardContent className="h-[250px] w-full px-2 sm:h-[350px]">
                                 <ResponsiveContainer width="100%" height={280}>
                                     <LineChart
                                         data={data || []}
@@ -322,39 +329,62 @@ export default function AdvisorViewDashboard() {
                                             bottom: 5,
                                         }}
                                     >
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="name" />
-                                        <YAxis yAxisId="left" />
-                                        <YAxis yAxisId="right" orientation="right" />
-                                        <Tooltip />
+                                        <CartesianGrid
+                                            strokeDasharray="3 3"
+                                            stroke="hsl(var(--border))"
+                                        />
+                                        <XAxis
+                                            dataKey="name"
+                                            stroke="hsl(var(--muted-foreground))"
+                                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                                        />
+                                        <YAxis
+                                            yAxisId="left"
+                                            stroke="hsl(var(--muted-foreground))"
+                                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                                        />
+                                        <YAxis
+                                            yAxisId="right"
+                                            orientation="right"
+                                            stroke="hsl(var(--muted-foreground))"
+                                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                                        />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: "hsl(var(--popover))",
+                                                border: "1px solid hsl(var(--border))",
+                                                borderRadius: "var(--radius)",
+                                                color: "hsl(var(--popover-foreground))",
+                                            }}
+                                            labelStyle={{ color: "hsl(var(--popover-foreground))" }}
+                                        />
                                         <Legend />
                                         <Line
                                             yAxisId="left"
                                             type="monotone"
                                             dataKey="apiCalls"
-                                            stroke="#0061D5"
+                                            stroke="hsl(var(--secondary-foreground))"
                                             name="API Calls"
                                         />
                                         <Line
                                             yAxisId="right"
                                             type="monotone"
                                             dataKey="activeUsers"
-                                            stroke="#16a34a"
+                                            stroke="hsl(var(--success))"
                                             name="Active Users"
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     )}
                 </div>
-                <div className="w-full flex flex-col gap-4">
+                <div className="flex w-full flex-col gap-4">
                     {filterVisibility("My Task Section") && (
                         <TasksSection />
                     )}
                 </div>
             </div>
         </div>
-        // </Container>
     );
 }

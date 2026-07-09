@@ -1,13 +1,23 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { Dialog } from "@headlessui/react";
 import { X } from "lucide-react";
 import { getUserData } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
-import { useSelector } from "react-redux";
-import Button from "./Common/Elements/Button";
+import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function CreateFolder({
   loanFolderId,
@@ -16,12 +26,10 @@ export default function CreateFolder({
   isModalOpen,
   setIsModalOpen,
 }) {
-
   const [folderName, setFolderName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const params = useParams();
-  const { data: config } = useSelector((state) => state.portal);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -33,7 +41,7 @@ export default function CreateFolder({
     };
 
     fetchConfig();
-  }, []);
+  }, [params?.portalid]);
 
   const handleCreateFolder = async () => {
     if (!folderName.trim()) return;
@@ -58,7 +66,7 @@ export default function CreateFolder({
           },
           body: JSON.stringify(obj),
         },
-        "create-folder"
+        "create-folder",
       );
 
       const folderResponse = await response.json();
@@ -84,82 +92,101 @@ export default function CreateFolder({
   };
 
   return (
-    <div className="flex justify-end space-x-3 mb-4">
+    <div className="mb-4 flex justify-end space-x-3">
       <Dialog
         open={isModalOpen}
-        onClose={() => {
-          if (!isLoading) setIsModalOpen(false);
+        onOpenChange={(open) => {
+          if (!open && !isLoading) {
+            setIsModalOpen(false);
+          }
         }}
-        className="relative z-50"
       >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-        <div className="fixed inset-0 flex items-center justify-center">
-          <Dialog.Panel className="mx-auto max-w-[400px] w-full rounded-lg bg-white shadow-xl">
-            <div className="flex justify-between items-center p-4 border-b">
-              <Dialog.Title className="text-lg text-gray-600 font-medium flex items-center">
+        <DialogContent
+          className="w-full max-w-[400px] bg-background sm:max-w-[400px]"
+          overlayClassName="bg-black/30"
+          showCloseButton={false}
+        >
+          <DialogHeader className="border-b border-border pb-4 text-left">
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="text-lg font-medium text-foreground">
                 Create New Folder
-              </Dialog.Title>
-              <button
+              </DialogTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
+                disabled={isLoading}
+                className="rounded-full text-muted-foreground hover:text-foreground"
               >
-                <X className="w-5 h-5" />
-              </button>
+                <X className="h-5 w-5" />
+              </Button>
             </div>
+          </DialogHeader>
 
-            {showSuccess ? (
-              <div className="text-center p-4">
-                <div className="text-green-600 mb-4">
-                  Folder successfully created!
-                  {console.log(config)}
-                </div>
-                <div className="flex justify-center space-x-3">
-                  <Button
-                    onClick={() => setIsModalOpen(false)}
-                    isLoading={isLoading}
-                    type="Primary"
-                    label="Done"
-                  />
-                </div>
-              </div>
-            ) : (
-
-              <div className=" bg-white rounded-lg w-full mx-auto p-6">
-                <label className="text-sm text-black font-medium font-lato block mb-1">
+          {showSuccess ? (
+            <div className="space-y-4 py-2 text-center">
+              <DialogDescription className="text-base font-medium text-success">
+                Folder successfully created!
+              </DialogDescription>
+              <DialogFooter className="m-0 justify-center p-0 sm:justify-center">
+                <Button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isLoading}
+                  className="px-3 py-3"
+                >
+                  Done
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
                   Please enter a name.
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   value={folderName}
                   onChange={(e) => setFolderName(e.target.value)}
-                  className="py-2 px-2 w-full text-black border border-[#D3D3D3] rounded-md text-sm font-[#222] outline-none mb-2 focus:border-[#0061D5] focus:ring-blue-500 hover:border-[#0061D5]"
+                  className="!bg-background text-foreground"
                   disabled={isLoading}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && folderName.trim() && !isLoading) {
+                      handleCreateFolder();
+                    }
+                  }}
                 />
-                <div
-                  className="flex items-center justify-center pt-4 gap-2"
-                >
-                  <Button
-                    disabled={isLoading || !folderName.trim()}
-                    onClick={handleCreateFolder}
-                    label="Create"
-                    type="Primary"
-                    isLoading={isLoading}
-                  />
-                  <Button
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setFolderName("");
-                    }}
-                    disabled={isLoading}
-                    type="Secondary"
-                    label="Cancel"
-                  />
-                </div>
               </div>
-            )}
-          </Dialog.Panel>
-        </div>
+              <DialogFooter className="m-0 gap-2 p-0 sm:justify-center bg-transparent border-0">
+                <Button
+                  type="button"
+                  onClick={handleCreateFolder}
+                  disabled={isLoading || !folderName.trim()}
+                  className="px-3 py-3"
+                >
+                  {isLoading ? (
+                    <LoaderSpinner size={18} className="text-primary-foreground" />
+                  ) : null}
+                  Create
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setFolderName("");
+                  }}
+                  disabled={isLoading}
+                  className="px-3 py-3"
+                >
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
       </Dialog>
     </div>
   );

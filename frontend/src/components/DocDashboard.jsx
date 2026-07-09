@@ -180,8 +180,8 @@ export default function DocDashboard() {
   }, []);
 
   const LoadingSpinner = () => (
-    <div className="h-[80vh] flex items-center justify-center bg-white">
-      <LoaderSpinner size={32} className="text-blue-500" />
+    <div className="h-[80vh] flex items-center justify-center bg-background">
+      <LoaderSpinner size={32} className="text-primary" />
     </div>
   );
 
@@ -191,7 +191,7 @@ export default function DocDashboard() {
 
   return (
     // <Container>
-    <div className="max-w-[1820px] mx-auto px-4">
+    <div className="max-w-[1820px] mx-auto px-4 bg-background">
       <div className={`${filterVisibility("Ticker Tape") ? "pt-5" : "pt-5 sm:pt-14"}`}>
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
           <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3"}`}>
@@ -204,16 +204,16 @@ export default function DocDashboard() {
                 )}
               </div>
               <div className="w-full flex justify-center">
-                <div className="pb-2 border-b w-[96%] md:w-[80%] ">
+                <div className="pb-2 border-b border-border w-[96%] md:w-[80%] ">
                   {filterVisibility("Header Section") && (
                     <div className="w-full">
-                      <div className="text-xl font-light text-black font-lato flex flex-wrap items-center">
+                      <div className="text-xl font-light text-foreground font-lato flex flex-wrap items-center">
                         {
                           filterValue("Dashboard Heading")?.length > 0 ? (
                             <div className="page flex flex-col" dangerouslySetInnerHTML={{ __html: filterValue("Dashboard Heading") }} suppressHydrationWarning={true} />
                           ) : (
-                            <div className="flex items-center justify-between bg-white p-3">
-                              <h3 className="text-lg font-semibold text-gray-800 font-lato">
+                            <div className="flex items-center justify-between bg-background p-3">
+                              <h3 className="text-lg font-semibold text-foreground font-lato">
                                 {`Hello, ${`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}!`}
                               </h3>
                             </div>
@@ -230,7 +230,7 @@ export default function DocDashboard() {
             <div className="mt-3 flex flex-col items-center">
               {filterVisibility("Chart Section") && (
                 <>
-                  <h3 className="text-xl font-semibold text-gray-800 font-lato mb-4">
+                  <h3 className="text-xl font-semibold text-foreground font-lato mb-4">
                     Summary
                   </h3>
 

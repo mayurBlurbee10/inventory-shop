@@ -1,17 +1,36 @@
+"use client";
+
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import Button from "../Common/Elements/Button";
-import { Dialog } from "@headlessui/react";
-import { ChevronDown, ChevronUp, Edit, PlusCircle, Trash2, X } from "lucide-react";
+import { Edit, PlusCircle, Trash2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import CreateTaskPopUp from "../Common/CreateTaskPopUp";
 import { TaskStatus } from "@/config/constants";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
+import { ThemeSwitch } from "@/components/ui/theme-switch";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist = null }) => {
+const AddCheckListModal = ({
+  isOpen,
+  onClose,
+  onChecklistCreate,
+  checklist = null,
+}) => {
   const params = useParams();
   const [checkListName, setCheckListName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,9 +39,9 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist = nul
 
   useEffect(() => {
     if (checklist) {
-      setCheckListName(checklist?.name)
+      setCheckListName(checklist?.name);
     } else {
-      setCheckListName("")
+      setCheckListName("");
     }
   }, [checklist]);
 
@@ -30,13 +49,13 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist = nul
     try {
       setIsLoading(true);
       const isEditMode = !!checklist;
-      const method = isEditMode ? "PUT" : "POST"
+      const method = isEditMode ? "PUT" : "POST";
       const payload = {
         name: checkListName,
-      }
+      };
 
       if (isEditMode) {
-        payload.checklistId = checklist?.id
+        payload.checklistId = checklist?.id;
       } else {
         payload.createdBy = user?.id;
         payload.portalId = params?.portalid;
@@ -44,14 +63,14 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist = nul
       const requestOptions = {
         method: method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       };
       const response = await fetchWrapper(
         "/api/checklists",
         requestOptions,
-        isEditMode ? "update-checklist" : "create-checklist"
+        isEditMode ? "update-checklist" : "create-checklist",
       );
       const data = await response.json();
 
@@ -70,59 +89,62 @@ const AddCheckListModal = ({ isOpen, onClose, onChecklistCreate, checklist = nul
     }
   };
 
+  const handleClose = () => {
+    onClose();
+    setCheckListName("");
+  };
+
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isLoading) handleClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-md bg-background">
+        <DialogHeader>
+          <DialogTitle className="text-foreground">
+            {checklist ? "Edit" : "Add"} Check List
+          </DialogTitle>
+        </DialogHeader>
 
-      <div className="fixed inset-0 flex items-center justify-center">
-        <Dialog.Panel className="mx-auto max-w-[400px] w-full rounded-lg bg-white shadow-xl">
-          <div className="flex justify-between items-center p-4 border-b">
-            <Dialog.Title className="text-lg text-gray-600 font-medium">
-              {checklist ? "Edit" : "Add"} Check List
-            </Dialog.Title>
-            <button
-              onClick={() => {
-                onClose();
-                setCheckListName("");
-              }}
-              className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="checklist-name" className="text-foreground mt-3 mb-1">
+            Enter checklist name
+          </Label>
+          <Input
+            id="checklist-name"
+            type="text"
+            value={checkListName}
+            onChange={(e) => setCheckListName(e.target.value)}
+            className="!bg-background h-10"
+            placeholder="Checklist name"
+          />
+        </div>
 
-          <div className="bg-white rounded-lg w-full mx-auto p-6">
-            <label className="text-sm text-black font-medium block mb-1">
-              Enter checklist name
-            </label>
-            <input
-              type="text"
-              value={checkListName}
-              onChange={(e) => setCheckListName(e.target.value)}
-              className="py-2 px-2 w-full text-black border border-gray-300 rounded-md text-sm outline-none mb-2 focus:border-blue-500 focus:ring-blue-500"
-            />
-            <div className="flex items-center justify-end pt-4 gap-2">
-              <Button
-                onClick={() => {
-                  onClose();
-                  setCheckListName("");
-                }}
-                disabled={isLoading}
-                type="Secondary"
-                label="Cancel"
-              />
-              <Button
-                disabled={isLoading || !checkListName?.trim()}
-                onClick={handleCreateCheckList}
-                label={checklist ? "Save" : "Add"}
-                type="Primary"
-                isLoading={isLoading}
-              />
-
-            </div>
-          </div>
-        </Dialog.Panel>
-      </div>
+        <DialogFooter className="gap-2 sm:gap-0 bg-background">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isLoading}
+            className="px-3 py-3 mx-3"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            disabled={isLoading || !checkListName?.trim()}
+            onClick={handleCreateCheckList}
+            className="px-3 py-3"
+          >
+            {isLoading ? (
+              <LoaderSpinner size={18} className="text-primary-foreground" />
+            ) : null}
+            {checklist ? "Save" : "Add"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };
@@ -133,7 +155,6 @@ const CheckListContent = () => {
   const [isChecklistLoading, setIsChecklistLoading] = useState(false);
   const [isOpenAddCheckListModal, setIsOpenAddCheckListModal] = useState(false);
   const [isUpdateLoading, setIsUpdateLoading] = useState(null);
-  const [expandedChecklist, setExpandedChecklist] = useState(null);
   const [isOpenAddTaskModal, setIsOpenAddTaskModal] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [selectedCheckList, setSelectedCheckList] = useState(null);
@@ -166,7 +187,7 @@ const CheckListContent = () => {
       const requestOptions = {
         method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           checklistId: selectedCheckList?.id,
@@ -175,7 +196,7 @@ const CheckListContent = () => {
       const response = await fetchWrapper(
         "/api/checklists",
         requestOptions,
-        "delete-checklist"
+        "delete-checklist",
       );
       const data = await response.json();
 
@@ -203,14 +224,14 @@ const CheckListContent = () => {
       setIsChecklistLastActive(false);
       setCheckLists((prevLists) =>
         prevLists.map((p) =>
-          p.id === checklist?.id ? { ...p, isActive: !checklist?.isActive } : p
-        )
+          p.id === checklist?.id ? { ...p, isActive: !checklist?.isActive } : p,
+        ),
       );
       setIsUpdateLoading(checklist);
       const requestOptions = {
         method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           checklistId: checklist?.id,
@@ -220,7 +241,7 @@ const CheckListContent = () => {
       const response = await fetchWrapper(
         "/api/checklists",
         requestOptions,
-        "update-checklist"
+        "update-checklist",
       );
       const data = await response.json();
 
@@ -233,8 +254,8 @@ const CheckListContent = () => {
       toast.error(error?.message);
       setCheckLists((prevLists) =>
         prevLists.map((p) =>
-          p.id === checklist?.id ? { ...p, isActive: !checklist?.isActive } : p
-        )
+          p.id === checklist?.id ? { ...p, isActive: !checklist?.isActive } : p,
+        ),
       );
     } finally {
       setIsUpdateLoading(null);
@@ -252,13 +273,13 @@ const CheckListContent = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ taskId: selectedTask?.id })
-      }
+        body: JSON.stringify({ taskId: selectedTask?.id }),
+      };
       setIsDeleteLoading(true);
       const response = await fetchWrapper(
         `/api/tasks`,
         requestOptions,
-        "delete-tasks"
+        "delete-tasks",
       );
       const data = await response.json();
       if (!response.ok) {
@@ -280,171 +301,192 @@ const CheckListContent = () => {
   }, []);
 
   return (
-    <div className="bg-white shadow-none md:shadow rounded-lg overflow-y-auto">
-      <div className="bg-white rounded-lg flex flex-col relative md:p-3 lg:p-5 w-full">
-        <div className="flex justify-center sm:justify-between items-center flex-wrap gap-2 pb-5">
-          <div className=" text-center sm:text-left">
-            <h3 className="text-lg font-medium text-gray-900">Check Lists</h3>
-            <p className="text-gray-600 text-sm">
+    <Card className="overflow-y-auto shadow-none md:shadow-sm">
+      <CardContent className="relative flex w-full flex-col md:p-3 lg:p-5">
+        <div className="flex flex-wrap items-center justify-center gap-2 pb-5 sm:justify-between">
+          <div className="text-center sm:text-left">
+            <h3 className="text-lg font-medium text-foreground">Check Lists</h3>
+            <p className="text-sm text-muted-foreground">
               Easily manage checklists and tasks.
             </p>
           </div>
           <Button
-            label="Add Check List"
-            type="Primary"
+            type="button"
+            variant="default"
             onClick={() => setIsOpenAddCheckListModal((prev) => !prev)}
-            buttonType="button"
-          />
+            className="px-3 py-3"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add Check List
+          </Button>
         </div>
-        <div className="py-2 text-gray-900">
+
+        <div className="py-2 text-foreground">
           {isChecklistLoading ? (
             <div className="flex justify-center py-8">
-              <LoaderSpinner size={28} className="text-blue-500" />
+              <LoaderSpinner size={28} className="text-secondary-foreground" />
             </div>
           ) : (
             <>
               {!checkLists?.length ? (
-                <p>No check list found.</p>
+                <p className="text-sm text-muted-foreground">
+                  No check list found.
+                </p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-5 p-1 md:p-2 lg:p-3">
-                  {checkLists?.map((checklist) => {
-                    const isExpanded = expandedChecklist === checklist?.id;
+                <div className="grid grid-cols-1 gap-3 p-1 md:grid-cols-2 md:p-2 lg:grid-cols-2 lg:gap-5 lg:p-3 xl:grid-cols-3">
+                  {checkLists?.map((checklist) => (
+                    <Card
+                      key={checklist?.id}
+                      className="relative space-y-4 shadow-sm"
+                    >
+                      <CardContent className="space-y-4 p-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-semibold text-foreground">
+                            {checklist?.name}
+                          </h3>
 
-                    return (
-                      <div
-                        key={checklist?.id}
-                        className="border rounded-lg p-4 shadow-md bg-white space-y-4 relative"
-                      >
-                        {/* Header Section */}
-                        <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-gray-800">
-                              {checklist?.name}
-                            </h3>
-                          </div>
-
-                          {/* Toggle Button */}
-                          <div className="flex items-center gap-3">
-                            <div className=" flex items-center justify-end gap-2">
-                              <div
-                                className={`px-2 py-1 cursor-pointer`}
-                                onClick={() => {
-                                  setIsOpenAddCheckListModal((prev) => !prev);
-                                  setSelectedCheckList(checklist);
-                                  setIsChecklistLastActive(false);
-                                }}
-                              >
-                                <Edit className="size-4 text-blue-700" />
-                              </div>
-                              <div
-                                className={`px-2 py-1 cursor-pointer`}
-                                onClick={() => {
-                                  setIsDeleteModalOpen((prev) => !prev);
-                                  setSelectedCheckList(checklist);
-                                  setIsChecklistLastActive(false);
-                                }}
-                              >
-                                <Trash2 className="size-4 text-red-700" />
-                              </div>
-                              {isUpdateLoading?.id === checklist?.id && (
-                                <LoaderSpinner size={24} className="text-blue-500" />
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateCheckList(checklist)}
-                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out 
-                                      ${checklist?.isActive
-                                    ? "bg-blue-600"
-                                    : "bg-gray-200"
-                                  }`}
-                              >
-                                <span
-                                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out 
-                                      ${checklist?.isActive
-                                      ? "translate-x-5"
-                                      : "translate-x-0"
-                                    }`}
-                                />
-                              </button>
-                            </div>
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon"
+                              className="rounded-full"
+                              title="Edit checklist"
+                              onClick={() => {
+                                setIsOpenAddCheckListModal((prev) => !prev);
+                                setSelectedCheckList(checklist);
+                                setIsChecklistLastActive(false);
+                              }}
+                            >
+                              <Edit className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon"
+                              className="rounded-full text-destructive hover:text-destructive"
+                              title="Delete checklist"
+                              onClick={() => {
+                                setIsDeleteModalOpen((prev) => !prev);
+                                setSelectedCheckList(checklist);
+                                setIsChecklistLastActive(false);
+                              }}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                            {isUpdateLoading?.id === checklist?.id && (
+                              <LoaderSpinner
+                                size={24}
+                                className="text-secondary-foreground"
+                              />
+                            )}
+                            <ThemeSwitch
+                              checked={!!checklist?.isActive}
+                              onCheckedChange={() =>
+                                handleUpdateCheckList(checklist)
+                              }
+                            />
                           </div>
                         </div>
 
-                        {/* Tasks List (Expandable) */}
-                        {/* {isExpanded && ( */}
-                        <div className="mt-4 bg-gray-50 p-4 rounded-lg shadow-sm  min-h-[360px] max-h-[360px] overflow-y-auto">
+                        <div className="custom-scrollbar min-h-[360px] max-h-[360px] overflow-y-auto rounded-lg border border-border bg-muted/40 p-4">
                           {checklist?.tasks?.length > 0 ? (
                             <ul className="space-y-3">
                               {checklist?.tasks.map((task) => (
                                 <li
                                   key={task?.id}
-                                  className="bg-white p-3 rounded-lg shadow flex items-center justify-between border border-gray-200"
+                                  className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 shadow-sm"
                                 >
-                                  {/* Task Title */}
-                                  <span className="text-gray-800 text-sm font-medium flex-1 truncate">
+                                  <span className="flex-1 truncate text-sm font-medium text-foreground">
                                     {task?.title}
                                   </span>
-                                  {/* Action Buttons */}
-                                  <div className="flex items-center gap-2">
-                                    {/* Edit Button */}
-                                    <button
-                                      className="p-2 rounded-md hover:bg-blue-100 transition"
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      type="button"
+                                      variant="icons"
+                                      size="icon"
+                                      className="rounded-full"
+                                      title="Edit task"
                                       onClick={() => {
-                                        setIsUpdateTaskModalOpen((prev) => !prev);
+                                        setIsUpdateTaskModalOpen(
+                                          (prev) => !prev,
+                                        );
                                         setSelectedTask(task);
                                         setSelectedCheckList(checklist);
                                       }}
                                     >
-                                      <Edit className="size-4 text-blue-600" />
-                                    </button>
-
-                                    {/* Delete Button */}
-                                    <button
-                                      className="p-2 rounded-md hover:bg-red-100 transition"
+                                      <Edit className="size-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="icons"
+                                      size="icon"
+                                      className="rounded-full text-destructive hover:text-destructive"
+                                      title="Delete task"
                                       onClick={() => {
-                                        setIsDeleteTaskModalOpen((prev) => !prev);
+                                        setIsDeleteTaskModalOpen(
+                                          (prev) => !prev,
+                                        );
                                         setSelectedTask(task);
                                       }}
                                     >
-                                      <Trash2 className="size-4 text-red-600" />
-                                    </button>
+                                      <Trash2 className="size-4" />
+                                    </Button>
                                   </div>
-                                  {/* Task Status */}
-                                  <span
-                                    className={`text-xs font-semibold text-right min-w-[80px] px-2 py-1 ${task?.status === TaskStatus.COMPLETED
-                                      ? " text-green-600"
-                                      : " text-yellow-600"
-                                      }`}
+                                  <Badge
+                                    className={
+                                      task?.status === TaskStatus.COMPLETED
+                                        ? "min-w-[80px] justify-center bg-success/15 text-success rounded-full"
+                                        : "min-w-[80px] justify-center bg-warning/15 text-warning rounded-full"
+                                    }
                                   >
-                                    {task?.status?.charAt(0).toUpperCase() + task?.status?.slice(1)}
-                                  </span>
+                                    {task?.status?.charAt(0).toUpperCase() +
+                                      task?.status?.slice(1)}
+                                  </Badge>
                                 </li>
                               ))}
                             </ul>
                           ) : (
-                            <p className="text-gray-500 text-sm text-center">No tasks available.</p>
+                            <p className="text-center text-sm text-muted-foreground">
+                              No tasks available.
+                            </p>
                           )}
                         </div>
-                        {/* )} */}
+
                         <Button
-                          onClick={() => { setIsOpenAddTaskModal((prev) => !prev); setSelectedCheckList(checklist) }}
-                          label={"Add Task"}
-                          icon={PlusCircle}
-                          type="Secondary"
-                          className="ml-auto"
-                        />
-                      </div>
-                    );
-                  })}
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsOpenAddTaskModal((prev) => !prev);
+                            setSelectedCheckList(checklist);
+                          }}
+                          className="ml-auto px-3 py-3"
+                        >
+                          <PlusCircle className="h-4 w-4" />
+                          Add Task
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </>
           )}
+
           {isChecklistLastActive && (
-            <p className="text-red-600 text-sm p-1 md:p-2 lg:pt-4 lg:px-4"><span className="font-semibold">Note*:</span> Atleast one checklist should be enabled.</p>
+            <Alert
+              variant="destructive"
+              className="mx-1 mt-2 border-destructive/30 md:mx-2 lg:mx-4 lg:mt-4"
+            >
+              <AlertDescription className="text-destructive">
+                <span className="font-semibold">Note*:</span> At least one
+                checklist should be enabled.
+              </AlertDescription>
+            </Alert>
           )}
         </div>
-      </div>
+      </CardContent>
+
       <AddCheckListModal
         isOpen={isOpenAddCheckListModal}
         onClose={() => {
@@ -456,7 +498,10 @@ const CheckListContent = () => {
       />
       {isOpenAddTaskModal && (
         <CreateTaskPopUp
-          onClose={() => { setIsOpenAddTaskModal(false); setSelectedCheckList(null); }}
+          onClose={() => {
+            setIsOpenAddTaskModal(false);
+            setSelectedCheckList(null);
+          }}
           onTaskCreated={fetchChecklists}
           allowedCheckLists={[selectedCheckList]}
         />
@@ -468,7 +513,7 @@ const CheckListContent = () => {
           isLoading={isDeleteLoading}
           setIsModalOpen={(isOpen) => {
             setIsDeleteModalOpen(isOpen);
-            if (!isOpen) setSelectedCheckList(null); // Ensure reset when closing
+            if (!isOpen) setSelectedCheckList(null);
           }}
           isModalOpen={isDeleteModalOpen}
           handleDelete={handleDeleteCheckList}
@@ -486,14 +531,18 @@ const CheckListContent = () => {
       )}
       {isUpdateTaskModalOpen && selectedTask !== null && (
         <CreateTaskPopUp
-          onClose={() => { setIsUpdateTaskModalOpen(false); setSelectedTask(null); setSelectedCheckList(null); }}
+          onClose={() => {
+            setIsUpdateTaskModalOpen(false);
+            setSelectedTask(null);
+            setSelectedCheckList(null);
+          }}
           user={selectedTask?.user}
           onTaskCreated={fetchChecklists}
           task={selectedTask}
           allowedCheckLists={[selectedCheckList]}
         />
       )}
-    </div>
+    </Card>
   );
 };
 

@@ -18,17 +18,18 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import Image from "next/image";
-import { useSelector } from "react-redux";
 import { formatTimeAgo } from "@/utils/helper";
 import { useRouter } from "next/navigation";
-import Button from "../Common/Elements/Button";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 import { decryptMessage } from "@/app/lib/crypto";
+import { cn } from "@/app/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NotificationComponent = () => {
   const [notifications, setNotifications] = useState([]);
-  console.log("notifications", notifications);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
   const [isMarkRead, setIsMarkRead] = useState(null);
@@ -40,21 +41,21 @@ const NotificationComponent = () => {
   const readCount = notifications.filter((n) => n.status === "read").length;
   const router = useRouter();
 
-  const { data: config } = useSelector((state) => state.portal);
-
   const getNotificationTypeIcon = (type) => {
-    const iconClass = "w-2.5 h-2.5 text-white";
+    const iconClass = "w-2.5 h-2.5 text-background";
+    const badgeClass =
+      "w-5 h-5 rounded-full flex items-center justify-center border-2 border-card shadow-sm bg-foreground";
 
     switch (type?.toLowerCase()) {
       case "comment":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <MessageCircleMore className={iconClass} strokeWidth={3} />
           </div>
         );
       case "message":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <MessageSquareMore
               className={iconClass}
               fill="currentColor"
@@ -64,32 +65,32 @@ const NotificationComponent = () => {
         );
       case "connection":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Globe className={iconClass} strokeWidth={3} />
           </div>
         );
       case "endorsement":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Gem className={iconClass} strokeWidth={3} />
           </div>
         );
       case "task":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <CheckSquare className={iconClass} strokeWidth={3} />
           </div>
         );
       case "like":
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Heart className={iconClass} fill="currentColor" strokeWidth={3} />
           </div>
         );
       case "system":
       default:
         return (
-          <div className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm bg-gray-800">
+          <div className={badgeClass}>
             <Info className={iconClass} strokeWidth={3} />
           </div>
         );
@@ -253,182 +254,178 @@ const NotificationComponent = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="px-10 mt-5">
-        <button
-          className="flex items-center justify-center gap-2 text-gray-800"
+    <div className="min-h-screen bg-background">
+      <div className="mt-5 px-10">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2 text-foreground"
           onClick={() => router.back()}
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="h-5 w-5" />
           <span>Back</span>
-        </button>
+        </Button>
       </div>
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-          <header className="flex flex-wrap items-center justify-between gap-4 mb-4">
+      <div className="mx-auto max-w-4xl p-6">
+        <Card className="mb-6 rounded-2xl p-6">
+          <header className="mb-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <Bell className="w-8 h-8 text-gray-800" />
+                <Bell className="h-8 w-8 text-foreground" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-3 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                  <span className="absolute -right-2 -top-3 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-medium text-destructive-foreground">
                     {unreadCount}
                   </span>
                 )}
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">
+                <h1 className="text-2xl font-bold text-foreground">
                   Notifications
                 </h1>
-                <p className="text-sm text-gray-800">
+                <p className="text-sm text-muted-foreground">
                   {unreadCount} unread notifications
                 </p>
               </div>
             </div>
-            <div className="flex flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto max-w-sm">
-              <div
-                className="relative p-2 bg-gray-100 rounded-lg hover:bg-gray-200 cursor-pointer group"
+            <div className="flex w-full max-w-sm flex-row items-stretch gap-2 sm:w-auto sm:items-center">
+              <Button
+                variant="secondary"
+                size="icon"
+                className="group"
                 onClick={() => getNotifications()}
+                title="Refresh"
+                aria-label="Refresh"
               >
-                <RotateCw className="w-5 h-5 text-gray-600 transition-transform duration-300 ease-in-out group-hover:rotate-[360deg]" />
-                {/* Tooltip */}
-                <span className="absolute -left-1/3 -translate-y-1/2 top-0 -mt-4 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                  Refresh
-                </span>
-              </div>
+                <RotateCw className="h-5 w-5 transition-transform duration-300 ease-in-out group-hover:rotate-[360deg]" />
+              </Button>
 
               {unreadCount > 0 && (
                 <Button
                   className="w-full sm:w-auto"
-                  type="Primary"
-                  label={
-                    <span className="hidden sm:inline">Mark all read</span>
-                  }
-                  icon={CheckCheck}
-                  isLoading={isMarkingAllRead}
+                  disabled={isMarkingAllRead}
                   onClick={markAllAsRead}
-                />
+                >
+                  {isMarkingAllRead ? (
+                    <LoaderSpinner size={16} className="text-current" />
+                  ) : (
+                    <CheckCheck className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">Mark all read</span>
+                </Button>
               )}
               {notifications.length > 0 && (
                 <Button
+                  variant="destructive"
                   className="w-full sm:w-auto"
-                  type="Delete"
-                  label={<span className="hidden sm:inline">Clear all</span>}
-                  icon={Trash2}
-                  isLoading={isClearing}
+                  disabled={isClearing}
                   onClick={clearAllNotifications}
-                />
+                >
+                  {isClearing ? (
+                    <LoaderSpinner size={16} className="text-current" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">Clear all</span>
+                </Button>
               )}
             </div>
           </header>
-          <div className="flex items-center space-x-1 bg-gray-100/50 p-1 rounded-2xl">
+          <div className="flex items-center space-x-1 rounded-2xl bg-muted p-1">
             {["all", "unread", "read"].map((filterType) => {
               const isActive = filter === filterType;
-              const baseClasses =
-                "px-4 py-1.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2";
-              const activeClasses =
-                "bg-white text-blue-700 shadow-lg transform";
-              const inactiveClasses =
-                "text-gray-600 hover:bg-white/50 hover:text-gray-800 hover:shadow-md";
 
               return (
                 <button
                   key={filterType}
                   onClick={() => setFilter(filterType)}
-                  className={`${baseClasses} ${
-                    isActive ? activeClasses : inactiveClasses
-                  }`}
+                  className={cn(
+                    "flex items-center space-x-2 rounded-xl px-4 py-1.5 text-sm font-semibold transition-all duration-300",
+                    isActive
+                      ? "bg-card text-muted-foreground shadow"
+                      : "text-muted-foreground hover:bg-card/50 hover:text-foreground"
+                  )}
                 >
                   <span className="capitalize">{filterType}</span>
 
                   {filterType === "all" && (
-                    <span className="bg-gray-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                    <Badge variant="secondary" className="min-w-[20px] justify-center rounded-lg">
                       {notifications.length}
-                    </span>
+                    </Badge>
                   )}
                   {filterType === "unread" && unreadCount > 0 && (
-                    <span className="bg-blue-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                    <Badge className="min-w-[20px] justify-center bg-[var(--primary-solid)] text-primary-foreground">
                       {unreadCount}
-                    </span>
+                    </Badge>
                   )}
                   {filterType === "read" && readCount > 0 && (
-                    <span className="bg-green-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+                    <Badge className="min-w-[20px] justify-center bg-success text-success-foreground">
                       {readCount}
-                    </span>
+                    </Badge>
                   )}
                 </button>
               );
             })}
           </div>
-        </div>
+        </Card>
 
         {/* Notifications List */}
 
         {isNotificationLoading ? (
           <div className="flex items-center justify-center py-12">
-            <LoaderSpinner size={32} className="text-gray-800" />
+            <LoaderSpinner size={32} className="text-secondary-foreground" />
           </div>
         ) : (
           <div className="space-y-3">
             {filteredNotifications.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-                <Bell className="w-16 h-16 text-gray-800 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              <Card className="rounded-2xl p-12 text-center">
+                <Bell className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold text-foreground">
                   No notifications found
                 </h3>
-                <p className="text-gray-800">
+                <p className="text-muted-foreground">
                   {filter === "unread"
                     ? "All caught up! No unread notifications."
                     : filter === "read"
                       ? "No read notifications found."
                       : "You don't have any notifications yet."}
                 </p>
-              </div>
+              </Card>
             ) : (
               filteredNotifications.map((notification) => (
-                <div
+                <Card
                   key={notification?.id}
-                  className={`bg-white rounded-2xl shadow-sm border transition-all duration-200 hover:shadow-md`}
-                  style={{
-                    backgroundColor:
-                      notification?.status === "unread"
-                        ? `${config.primaryColor}10`
-                        : "",
-                    borderColor:
-                      notification?.status === "unread"
-                        ? config?.primaryColor
-                        : "#EEEEEE",
-                  }}
+                  className={cn(
+                    "rounded-2xl transition-all duration-200 hover:shadow-md",
+                    notification?.status === "unread"
+                      ? "border-primary-solid bg-accent"
+                      : "border-border"
+                  )}
                 >
-                  <div className="p-6">
+                  <CardContent className="p-6">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4 flex-1">
-                        <div className="relative w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                          {notification?.referenceData?.author?.profileUrl ||
-                          notification?.referenceData?.sender?.profileUrl ||
-                          notification?.user?.profileUrl ? (
-                            <Image
-                              src={
-                                notification?.referenceData?.author
-                                  ?.profileUrl ||
-                                notification?.referenceData?.sender
-                                  ?.profileUrl ||
-                                notification?.user?.profileUrl
-                              }
-                              alt="Profile Picture"
-                              width={40}
-                              height={40}
-                              quality={90}
-                              priority
-                              sizes="40px"
-                              className="w-full h-full object-cover rounded-full"
-                            />
-                          ) : (
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-900 to-gray-900 flex items-center justify-center">
-                              <span className="text-white text-sm font-semibold">
-                                {getInitials(`${notification?.user?.firstName || ""} ${notification?.user?.lastName || ""}`.trim())}
-                              </span>
-                            </div>
-                          )}
+                      <div className="flex flex-1 items-start space-x-4">
+                        <div className="relative">
+                          <Avatar size="lg">
+                            {notification?.referenceData?.author?.profileUrl ||
+                            notification?.referenceData?.sender?.profileUrl ||
+                            notification?.user?.profileUrl ? (
+                              <AvatarImage
+                                src={
+                                  notification?.referenceData?.author
+                                    ?.profileUrl ||
+                                  notification?.referenceData?.sender
+                                    ?.profileUrl ||
+                                  notification?.user?.profileUrl
+                                }
+                                alt="Profile Picture"
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-foreground font-semibold text-background">
+                              {getInitials(
+                                `${notification?.user?.firstName || ""} ${notification?.user?.lastName || ""}`.trim()
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
 
                           {/* Type Icon Badge */}
                           <div className="absolute -bottom-0.5 -right-1">
@@ -436,37 +433,23 @@ const NotificationComponent = () => {
                           </div>
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h3
-                              className={`font-semibold line-clamp-2 ${
-                                notification?.status === "unread"
-                                  ? "text-gray-800"
-                                  : "text-gray-800"
-                              }`}
-                            >
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <h3 className="line-clamp-2 font-semibold text-foreground">
                               {notification?.title}
                             </h3>
                             {notification?.status === "unread" && (
-                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse p-1"></div>
+                              <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--primary-solid)] p-1"></div>
                             )}
                           </div>
 
-                          <p className="text-gray-800 text-sm mb-2 line-clamp-2">
+                          <p className="mb-2 line-clamp-2 text-sm text-foreground">
                             {notification?.type === "message" ? decryptMessage(notification?.body) : notification?.body}
                           </p>
 
-                          <div className="flex items-center space-x-4 text-xs text-gray-800">
-                            {/* <span className="flex items-center space-x-1">
-                              <User className="w-3 h-3" />
-                              <span>
-                                {notification?.referenceData?.author?.name ||
-                                  notification?.referenceData?.sender?.name ||
-                                  notification?.user?.name}
-                              </span>
-                            </span> */}
+                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                             <span className="flex items-center space-x-1">
-                              <Clock className="w-3 h-3" />
+                              <Clock className="h-3 w-3" />
                               <span>
                                 {formatTimeAgo(notification?.createdAt)}
                               </span>
@@ -475,27 +458,32 @@ const NotificationComponent = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2 ml-4">
+                      <div className="ml-4 flex items-center space-x-2">
                         {notification?.status === "unread" && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-primary-solid"
                             onClick={() => markAsRead(notification)}
-                            className="inline-flex items-center justify-center p-2 text-blue-600 hover:bg-blue-200 bg-blue-100 rounded-lg transition-colors duration-200"
                             title="Mark as read"
                           >
                             {isMarkRead === notification.id ? (
                               <LoaderSpinner
                                 size={12}
-                                className="text-blue-600"
+                                className="text-secondary-foreground"
                                 wrapperClassName="flex h-4 w-4 shrink-0 items-center justify-center"
                                 aria-hidden
                               />
-                            ) : notification.status === "unread" ? (
+                            ) : (
                               <CheckCheck className="h-4 w-4 shrink-0" />
-                            ) : null}
-                          </button>
+                            )}
+                          </Button>
                         )}
                         {notification.url && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-primary-solid"
                             onClick={(e) =>
                               handleNavigateToUrl(
                                 e,
@@ -503,32 +491,32 @@ const NotificationComponent = () => {
                                 notification,
                               )
                             }
-                            className="inline-flex items-center justify-center p-2 text-blue-600 hover:bg-blue-200 bg-blue-100 rounded-lg transition-colors duration-200"
                             title="Open link"
                           >
                             <ExternalLink className="h-4 w-4 shrink-0" />
-                          </button>
+                          </Button>
                         )}
-                        <button
+                        <Button
+                          variant="destructive"
+                          size="icon-sm"
                           onClick={() => removeNotification(notification)}
-                          className="inline-flex items-center justify-center p-2 text-red-500 hover:bg-red-200 bg-red-100 rounded-lg transition-colors duration-200"
                           title="Remove notification"
                         >
                           {isRemoving === notification.id ? (
                             <LoaderSpinner
                               size={12}
-                              className="text-red-500"
+                              className="text-destructive"
                               wrapperClassName="flex h-4 w-4 shrink-0 items-center justify-center"
                               aria-hidden
                             />
                           ) : (
                             <X className="h-4 w-4 shrink-0" />
                           )}
-                        </button>
+                        </Button>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))
             )}
           </div>

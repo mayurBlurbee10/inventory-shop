@@ -1,6 +1,26 @@
 import { fetchWrapper } from '@/app/lib/fetchWrapper';
+import { cn } from '@/app/lib/utils';
 import CreateTaskPopUp from '@/components/Common/CreateTaskPopUp';
-import Button from '@/components/Common/Elements/Button';
+// OLD custom button: import Button from '@/components/Common/Elements/Button';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import CompleteForms from '@/components/CompleteForms';
 import MyTaskPopupBox from '@/components/MyTaskPopupBox';
 import SignRequestModal from '@/components/SignRequestModal';
@@ -79,177 +99,174 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
   
     return (
       <>
-        {isOpen && (
-            <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-6 z-20">
-              <div className="mx-auto max-w-2xl w-full rounded-lg bg-white shadow-lg border border-gray-300 max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-              <div className="sticky top-0 z-10 bg-white rounded-t-lg border-b border-gray-200 mb-4">
-                <div className="flex justify-between items-center p-5">
-                  <h1 className="text-2xl text-gray-700 font-semibold font-lato ">
-                    📝 Task Details
-                  </h1>
-                  <div className="relative" ref={menuRef}>
-                    {user && (user?.id === task?.createdBy?.id || (user?.id === task?.user?.id && task?.status !== TaskStatus?.COMPLETED)) && (
-                      <button
-                        onClick={() => setShowMenu(!showMenu)}
-                        className="text-gray-500 hover:text-gray-700 transition"
+        <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+          <DialogContent
+            showCloseButton={false}
+            className="mx-auto w-[calc(100%-2rem)] max-w-2xl sm:max-w-2xl max-h-[90vh] gap-0 overflow-x-hidden bg-background overflow-y-auto rounded-lg p-0 pb-4"
+          >
+            {/* Header */}
+            <DialogHeader className="sticky top-0 z-10 bg-background rounded-t-xl border-b border-border mb-4">
+              <div className="flex justify-between items-center p-5">
+                <DialogTitle className="text-2xl text-foreground font-semibold font-lato">
+                  📝 Task Details
+                </DialogTitle>
+                <div className="relative" ref={menuRef}>
+                  {user && (user?.id === task?.createdBy?.id || (user?.id === task?.user?.id && task?.status !== TaskStatus?.COMPLETED)) && (
+                    <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
+                      <DropdownMenuTrigger
+                        className="text-muted-foreground hover:text-foreground transition outline-none"
+                        render={<button type="button" aria-label="Task actions" />}
                       >
                         <MoreVertical className="size-5" />
-                      </button>
-                    )}
-                    {showMenu && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg border border-gray-200 z-10">
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
                         {user && user?.id === task?.createdBy?.id && (
-                          <button
-                            onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}
-                            className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
-                          >
-                            <Edit className="size-4 text-blue-500" />
+                          <DropdownMenuItem onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}>
+                            <Edit className="size-4 text-primary" />
                             <span>Edit</span>
-                          </button>
+                          </DropdownMenuItem>
                         )}
                         {task?.status !== TaskStatus?.COMPLETED && (
                           isTaskUpdateLoading ? (
                             <div className='px-4 py-2'>
-                              <LoaderSpinner size={24} className='mx-auto text-blue-500' />
+                              <LoaderSpinner size={24} className='mx-auto text-primary' />
                             </div>
                           ) : (
-                            <button
-                              onClick={() => updateTaskStatus(task)}
-                              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-green-100 flex items-center space-x-2"
-                            >
-                              <Check className="size-4 text-green-500" />
+                            <DropdownMenuItem onClick={() => updateTaskStatus(task)}>
+                              <Check className="size-4 text-success" />
                               <span>Mark Complete</span>
-                            </button>
+                            </DropdownMenuItem>
                           )
                         )}
                         {user && user?.id === task?.createdBy?.id && (
-                          <button
-                            onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}
-                            className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 flex items-center space-x-2"
-                          >
-                            <Trash2 className="size-4 text-red-500" />
+                          <DropdownMenuItem variant="destructive" onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}>
+                            <Trash2 className="size-4" />
                             <span>Delete</span>
-                          </button>
+                          </DropdownMenuItem>
                         )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-                <div className='px-8 max-h-[80vh]'>
-                  <div>
-                    <h3 className='text-gray-800 text-sm font-semibold'>Receiver :</h3>
-                    <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-                      {/* Avatar */}
-                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
-                        {task?.user?.firstName
-                          ?.split(" ")
-                          .map((word) => word.charAt(0).toUpperCase())
-                          .slice(0, 2)
-                          .join("")}
-                      </div>
-
-                      {/* User Info */}
-                      <div>
-                        <p className="text-lg font-semibold text-gray-800">{task?.user?.firstName || "Unknown User"}</p>
-                        <p className="text-gray-500 text-sm">{task?.user?.email || "No Email Provided"}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className='text-gray-800 text-sm font-semibold'>Sender :</h3>
-                    <div className="flex items-center space-x-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-                      {/* Avatar */}
-                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-500 text-white text-lg font-bold">
-                        {task?.createdBy?.firstName
-                          ?.split(" ")
-                          .map((word) => word.charAt(0).toUpperCase())
-                          .slice(0, 2)
-                          .join("")}
-                      </div>
-
-                      {/* User Info */}
-                      <div>
-                        <p className="text-lg font-semibold text-gray-800">{task?.createdBy?.firstName + " " + task?.createdBy?.lastName || "Unknown User"}</p>
-                        <p className="text-gray-500 text-sm">{task?.createdBy?.email || "No Email Provided"}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* Task Content */}
-                <div className="space-y-5 font-lato text-gray-800 px-8">
-                  {/* Title */}
-                  <h3 className="text-xl font-semibold">{task?.title || "Untitled Task"}</h3>
-      
-                  {/* Description */}
-                  <div className="p-4 bg-gray-100 border border-gray-200 rounded-md text-gray-700">
-                    <p className="text-md">{task?.description || "No description provided."}</p>
-                  </div>
-      
-                  {/* Task Details */}
-                  <div className="grid grid-cols-2 gap-6">
-                    {/* Status */}
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span className="font-medium text-gray-600">Status:</span>
-                      <span  className={`px-2 py-1 text-sm font-semibold rounded-md ${
-                            task?.status === TaskStatus.PENDING
-                            ? "text-yellow-600 bg-yellow-100" // Better contrast for Pending
-                            : "text-teal-700 bg-teal-100" // Improved greenish-teal for Completed
-                        }`}>
-                        {task?.status?.charAt(0).toUpperCase() + task?.status?.slice(1) || "Pending"}
-                      </span>
-                    </div>
-      
-                    {/* Due Date */}
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="w-5 h-5 text-blue-500" />
-                      <span className="font-medium text-gray-600">Due Date:</span>
-                      <span>{formatDate(task?.dueDate) || "N/A"}</span>
-                    </div>
-      
-                    {/* File */}
-                    <div className="flex items-center space-x-2 col-span-2">
-                      <FileText className="w-5 h-5 text-gray-500" />
-                      <span className="font-medium text-gray-600">File:</span>
-                      <span className="truncate">{task?.file?.name || "No file attached"}</span>
-                    </div>
-                  </div>
-                </div>
-      
-                {/* Actions */}
-                <div className="mt-6 flex justify-end space-x-4 px-8 pb-4">
-                  <Button onClick={handleClose} type="Secondary" label="Close" />
-      
-                  {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && task?.user?.id === user?.id && (
-                    <Button
-                      onClick={() => router.push("esignature")}
-                      type="Primary"
-                      label="Sign Now"
-                    />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
               </div>
-              {isTaskUpdateModalOpen && (
-                <CreateTaskPopUp
-                  onClose={() => setIsTaskUpdateModalOpen(false)}
-                  user={task?.user}
-                  onTaskCreated={fetchTasks}
-                  task={task}
-                  onTaskUpdated = {handleClose}
-                />
-              )}
-              <DeleteConfirmDialog
-                isModalOpen={isTaskDeleteModalOpen}
-                setIsModalOpen={setIsTaskDeleteModalOpen}
-                title="Delete Task"
-                content="Deleting this task cannot be undone. Do you want to continue?"
-                handleDelete={handleDeleteTask}
-                isLoading={isDeleteTaskLoading}
-              />
+            </DialogHeader>
+            <div className='px-8 max-h-[80vh]'>
+              <div>
+                <h3 className='text-foreground text-sm font-semibold'>Receiver :</h3>
+                <div className="flex items-center space-x-4 mb-6 bg-background  p-4 rounded-md border border-border">
+                  {/* Avatar */}
+                  <Avatar size="lg" className="size-12">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
+                      {task?.user?.firstName
+                        ?.split(" ")
+                        .map((word) => word.charAt(0).toUpperCase())
+                        .slice(0, 2)
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* User Info */}
+                  <div>
+                    <p className="text-lg font-semibold text-foreground">{task?.user?.firstName || "Unknown User"}</p>
+                    <p className="text-muted-foreground text-sm">{task?.user?.email || "No Email Provided"}</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className='text-foreground text-sm font-semibold'>Sender :</h3>
+                <div className="flex items-center space-x-4 mb-6 bg-background p-4 rounded-md border border-border">
+                  {/* Avatar */}
+                  <Avatar size="lg" className="size-12">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
+                      {task?.createdBy?.firstName
+                        ?.split(" ")
+                        .map((word) => word.charAt(0).toUpperCase())
+                        .slice(0, 2)
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* User Info */}
+                  <div>
+                    <p className="text-lg font-semibold text-foreground">{task?.createdBy?.firstName + " " + task?.createdBy?.lastName || "Unknown User"}</p>
+                    <p className="text-muted-foreground text-sm">{task?.createdBy?.email || "No Email Provided"}</p>
+                  </div>
+                </div>
+              </div>
             </div>
-        )}
+            {/* Task Content */}
+            <div className="space-y-5 font-lato text-foreground px-8">
+              {/* Title */}
+              <h3 className="text-xl font-semibold">{task?.title || "Untitled Task"}</h3>
+
+              {/* Description */}
+              <div className="p-4 bg-muted border border-border rounded-md text-muted-foreground">
+                <p className="text-md">{task?.description || "No description provided."}</p>
+              </div>
+
+              {/* Task Details */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Status */}
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5 text-success" />
+                  <span className="font-medium text-muted-foreground">Status:</span>
+                  <Badge
+                    variant={task?.status === TaskStatus.PENDING ? "outline" : "default"}
+                    className={
+                      task?.status === TaskStatus.PENDING
+                        ? "bg-warning/15 text-warning border-transparent"
+                        : "bg-success/15 text-success border-transparent"
+                    }
+                  >
+                    {task?.status?.charAt(0).toUpperCase() + task?.status?.slice(1) || "Pending"}
+                  </Badge>
+                </div>
+
+                {/* Due Date */}
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  <span className="font-medium text-muted-foreground">Due Date:</span>
+                  <span>{formatDate(task?.dueDate) || "N/A"}</span>
+                </div>
+
+                {/* File */}
+                <div className="flex items-center space-x-2 col-span-2">
+                  <FileText className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium text-muted-foreground">File:</span>
+                  <span className="truncate">{task?.file?.name || "No file attached"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <DialogFooter className="mt-6 flex bg-background justify-end gap-4 px-8 pb-4 sm:justify-end">
+              <Button onClick={handleClose} variant="outline" className="py-3 px-3">Close</Button>
+
+              {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && task?.user?.id === user?.id && (
+                <Button onClick={() => router.push("esignature")} className="py-3 px-3">
+                  Sign Now
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+          {isTaskUpdateModalOpen && (
+            <CreateTaskPopUp
+              onClose={() => setIsTaskUpdateModalOpen(false)}
+              user={task?.user}
+              onTaskCreated={fetchTasks}
+              task={task}
+              onTaskUpdated = {handleClose}
+            />
+          )}
+          <DeleteConfirmDialog
+            isModalOpen={isTaskDeleteModalOpen}
+            setIsModalOpen={setIsTaskDeleteModalOpen}
+            title="Delete Task"
+            content="Deleting this task cannot be undone. Do you want to continue?"
+            handleDelete={handleDeleteTask}
+            isLoading={isDeleteTaskLoading}
+          />
+        </Dialog>
       </>
     );
   };
@@ -457,32 +474,35 @@ const sortedTasks =
   });
 
     return (
-      <div className="bg-white rounded-xl border border-gray-200 max-h-[350px]">
+      <Card className="max-h-[350px] overflow-hidden p-0 bg-background">
         {/* Header */}
-        <div className="flex items-center justify-between bg-white p-3 border-b border-gray-200 rounded-t-xl">
-          <h3 className="text-lg font-semibold text-gray-800 font-lato">
+        <div className="flex items-center justify-between bg-secondary p-3 border-b border-border rounded-t-xl">
+          <h3 className="text-lg font-semibold text-foreground font-lato">
             My Tasks
           </h3>
           <Button
-            type='Primary'
-            iconClassName="w-3 h-3"
-            label="Add"
-            icon={Plus}
+            variant='default'
+            type="button"
+            size="lg"
+            className="px-3 py-3"
             onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
-          />
+          >
+            <Plus className="w-4 h-3" />
+            Add
+          </Button>
         </div>
 
         {/* Tasks Container */}
-        <div className="max-h-[280px] overflow-y-auto rounded-b-xl">
+        <ScrollArea className="max-h-[280px] rounded-b-xl overflow-y-auto scrollbar-hide">
           {(isChecklistLoading || isTaskUpdateLoading) ? (
             <div className="min-h-[290px] flex items-center justify-center">
-              <LoaderSpinner size={24} className="text-blue-500" />
+              <LoaderSpinner size={24} className="text-secondary-foreground" />
             </div>
           ) : (
             <>            
               {sortedTasks?.length > 0 ? (
                 sortedTasks?.map((task) => (
-                 <div key={task?.id} className='py-2 hover:bg-gray-50 shadow-sm'>
+                 <div key={task?.id} className='py-2 hover:bg-accent shadow-sm border-b border-border'>
                   {/* Main task row */}
                   <div
                     onClick={(e) => {
@@ -496,16 +516,14 @@ const sortedTasks =
                   >
 
                     <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={task?.status === TaskStatus.COMPLETED}
                         id={`complete-${task?.id}`}
                         disabled={task?.status === TaskStatus.COMPLETED}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        className="cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          if (e.target.checked) {
+                        onCheckedChange={(checked) => {
+                          if (checked) {
                             updateTaskStatus(task);
                           }
                         }}
@@ -514,19 +532,19 @@ const sortedTasks =
                     </div>
 
 
-                    <div className={`flex-1 text-sm ${task?.status === TaskStatus.COMPLETED ? 'text-gray-400' : 'text-gray-800'}`}>
+                    <div className={cn("flex-1 text-sm", task?.status === TaskStatus.COMPLETED ? 'text-muted-foreground' : 'text-foreground')}>
                       {task?.title}
                     </div>
 
                     <div className="flex-shrink-0">
                       {task?.status === TaskStatus.COMPLETED ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <Badge className="rounded-full bg-green-100 text-green-800 border-transparent">
                           Completed
-                        </span>
+                        </Badge>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <Badge className="rounded-full bg-yellow-100 text-yellow-800 border-transparent">
                           {task?.type}
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -534,7 +552,7 @@ const sortedTasks =
                   {/* Due date row with checkbox */}
                   <div className="px-5">
                     <div className="flex items-center justify-between">
-                      <div className={`flex items-center gap-2 text-xs ${task?.status === TaskStatus.COMPLETED ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <div className={cn("flex items-center gap-2 text-xs", task?.status === TaskStatus.COMPLETED ? 'text-muted-foreground' : 'text-muted-foreground')}>
                         <Clock className="h-4 w-4" />
                         <span>Due: {formatDate(task?.dueDate)}</span>
                       </div>
@@ -545,20 +563,20 @@ const sortedTasks =
                 ))
               ) : (
                 <div className="flex flex-col items-center justify-center py-14">
-                  <div className="text-gray-400 mb-4">
+                  <div className="text-muted-foreground mb-4">
                     <FileText className="h-12 w-12" />
                   </div>
-                  <h4 className="text-gray-600 font-medium text-lg mb-1">
+                  <h4 className="text-foreground font-medium text-lg mb-1">
                     No Tasks Yet
                   </h4>
-                  <p className="text-gray-400 text-sm text-center">
+                  <p className="text-muted-foreground text-sm text-center">
                     You don't have any tasks assigned right now.
                   </p>
                 </div>
               )}
             </>            
           )}
-        </div>
+        </ScrollArea>
          {isMyTaskPopupOpen && (
           <MyTaskPopupBox
             onClose={() => setIsMyTaskPopupOpen(false)}
@@ -593,7 +611,7 @@ const sortedTasks =
                 onTaskCreated={fetchChecklists}
             />
         )}
-      </div>
+      </Card>
     );
 }
 
