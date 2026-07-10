@@ -164,7 +164,7 @@ function SettingsPage() {
           })}
         </nav>
       </div>
-      <div className="mt-6 w-full overflow-y-auto p-6 scrollbar-hide lg:mt-0">
+      <div className="mt-6 w-full overflow-y-auto p-6 hidden-scrollbar lg:mt-0">
         {getActiveContent()}
       </div>
     </div>

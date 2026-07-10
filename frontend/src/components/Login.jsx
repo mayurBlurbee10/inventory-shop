@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { setAuthTokens, setUserData } from "@/app/lib/auth";
 import Footer from "@/components/Footer";
@@ -38,18 +38,14 @@ import {
 } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
-import {
-  getStoredMode,
-  previewPresetTheme,
-  reloadThemeAfterLogin,
-} from "@/lib/theme-manager";
+import { waitForLoginThemeLoad, refreshPortalThemeAfterLogin } from "@/lib/theme-manager";
 
 const NavBarItem = ({ title }) => (
   <button className="px-1 py-2 text-gray-500">{title}</button>
 );
 
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="min-h-screen flex items-center justify-center bg-background">
     <LoaderSpinner size={40} className="text-secondary-foreground" />
   </div>
 );
@@ -67,40 +63,23 @@ function Login() {
   const [isTNCOpen, setIsTNCOpen] = useState(false);
   const [tncPage, setTncPage] = useState(null);
   const [ndaPages, setNdaPages] = useState([]);
+  const [isThemeReady, setIsThemeReady] = useState(false);
 
   const { data: config } = useSelector((state) => state.portal);
   const { data: content } = useSelector((state) => state.content);
   const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  const hasCompletedLoginRef = useRef(false);
 
-  const applyGuestSlateTheme = () => {
-    if (hasCompletedLoginRef.current) return;
-    // Visual-only slate so saved user theme in localStorage is not overwritten.
-    previewPresetTheme("slate", getStoredMode());
-  };
-
-  const loadUserThemeAfterLogin = async (userData) => {
-    if (!userData?.id) return;
-
-    hasCompletedLoginRef.current = true;
-    const portalId = params?.portalid || userData.portalId || "root";
-
-    try {
-      await reloadThemeAfterLogin({ portalId });
-    } catch (error) {
-      console.error("Failed to load portal theme after login:", error);
-    }
-  };
-
-  // Guest/login page uses slate until authentication completes.
   useEffect(() => {
-    applyGuestSlateTheme();
+    let active = true;
 
-    // ThemeLoader may apply a cached theme after mount; keep guests on slate.
-    const keepGuestSlate = () => applyGuestSlateTheme();
-    window.addEventListener("theme-applied", keepGuestSlate);
-    return () => window.removeEventListener("theme-applied", keepGuestSlate);
+    waitForLoginThemeLoad().finally(() => {
+      if (active) setIsThemeReady(true);
+    });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const fetchPlugins = async () => {
@@ -253,8 +232,7 @@ function Login() {
       });
       localStorage.setItem("accessToken", data.accessToken);
 
-      // Load shared portal theme after successful login.
-      await loadUserThemeAfterLogin(userData);
+      await refreshPortalThemeAfterLogin(params?.portalid || "root");
 
       if (userData && selectedNdaPage && !userData?.isTNCAccepted) {
         setIsTNCOpen(true);
@@ -272,8 +250,6 @@ function Login() {
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message);
-      hasCompletedLoginRef.current = false;
-      applyGuestSlateTheme();
     } finally {
       setIsLoadingLogin(false);
       setIsLoadingOkta(false);
@@ -324,11 +300,9 @@ function Login() {
         refreshToken: data.refreshToken,
       });
       localStorage.setItem("accessToken", data.accessToken);
-      await loadUserThemeAfterLogin(data.user);
+      await refreshPortalThemeAfterLogin(params?.portalid || "root");
     } catch (error) {
       console.error("Failed to get user from email:", error);
-      hasCompletedLoginRef.current = false;
-      applyGuestSlateTheme();
     }
   };
 
@@ -349,7 +323,7 @@ function Login() {
     fetchSession();
   }, [router]);
 
-  if (!config || !content) return <LoadingSpinner />;
+  if (!isThemeReady || !config || !content) return <LoadingSpinner />;
 
   const iconComponent = (title) => {
     const iconName = filterValue(title);

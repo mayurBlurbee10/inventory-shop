@@ -1,40 +1,26 @@
 "use client";
 
-import { useEffect, useLayoutEffect } from "react";
-import {
-  applyLocalTheme,
-  loadTheme,
-  reloadThemeAfterLogin,
-  USER_AUTHENTICATED_EVENT,
-} from "@/lib/theme-manager";
+import { useLayoutEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { applyThemeForRoute, initializeTheme } from "@/lib/theme-manager";
 
 export function ThemeLoader({ children }) {
+  const pathname = usePathname();
+  const isInitialMountRef = useRef(true);
+
   useLayoutEffect(() => {
-    applyLocalTheme();
-  }, []);
-
-  useEffect(() => {
-    loadTheme().catch((error) => {
-      console.error("Failed to load theme:", error);
-    });
-  }, []);
-
-  useEffect(() => {
-    const handleUserAuthenticated = (event) => {
-      const { portalId } = event.detail || {};
-      reloadThemeAfterLogin({ portalId }).catch((error) => {
-        console.error("Failed to reload theme after login:", error);
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      initializeTheme(pathname).catch((error) => {
+        console.error("Failed to initialize theme:", error);
       });
-    };
+      return;
+    }
 
-    window.addEventListener(USER_AUTHENTICATED_EVENT, handleUserAuthenticated);
-    return () => {
-      window.removeEventListener(
-        USER_AUTHENTICATED_EVENT,
-        handleUserAuthenticated,
-      );
-    };
-  }, []);
+    applyThemeForRoute(pathname).catch((error) => {
+      console.error("Failed to apply theme for route:", error);
+    });
+  }, [pathname]);
 
   return <>{children}</>;
 }

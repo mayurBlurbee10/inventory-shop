@@ -35,7 +35,7 @@ import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <LoaderSpinner size={24} className="text-blue-500" />
+    <LoaderSpinner size={24} className="text-secondary-foreground" />
   </div>
 );
 

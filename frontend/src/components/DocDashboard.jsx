@@ -181,7 +181,7 @@ export default function DocDashboard() {
 
   const LoadingSpinner = () => (
     <div className="h-[80vh] flex items-center justify-center bg-background">
-      <LoaderSpinner size={32} className="text-primary" />
+      <LoaderSpinner size={32} className="text-secondary-foreground" />
     </div>
   );
 

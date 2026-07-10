@@ -519,7 +519,7 @@ const ShareModal = ({
             className="absolute inset-0 flex items-center justify-center rounded-xl bg-foreground/20"
             aria-busy="true"
           >
-            <LoaderSpinner size={24} className="text-sec-solid" />
+            <LoaderSpinner size={24} className="text-secondary-foreground" />
           </div>
         )}
       </DialogContent>

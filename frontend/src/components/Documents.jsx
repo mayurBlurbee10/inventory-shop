@@ -876,7 +876,7 @@ function Documents({
 
   const LoadingSpinner = () => (
     <div className="h-[80vh] flex items-center justify-center bg-white">
-      <LoaderSpinner size={32} className="text-blue-500" />
+      <LoaderSpinner size={32} className="text-secondary-foreground" />
     </div>
   );
 
@@ -945,9 +945,9 @@ function Documents({
                 </div>
 
                 {/* Search and Actions */}
-                <div className="flex flex-col gap-3 w-full md:flex-row lg:items-center lg:gap-2 p-0">
+                <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:gap-2">
                   {/* Search Bar */}
-                  <div className={`relative flex-1 min-w-[200px] order-1 lg:order-1 max-w-full`}>
+                  <div className="relative min-w-0 flex-1 order-1">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
                       <Search className="w-4 h-4 text-secondary-foreground" />
                     </div>
@@ -961,8 +961,7 @@ function Documents({
                   </div>
 
                   {/* Controls Container */}
-                  <div className="flex flex-wrap justify-center items-center gap-2 order-2 lg:order-2">
-                    {/* View Toggle */}
+                  <div className="order-2 flex w-full shrink-0 flex-nowrap items-center gap-2 overflow-x-auto md:w-auto md:justify-end">
                     <ToggleGroup
                       value={[view]}
                       onValueChange={(values) => {
@@ -972,7 +971,7 @@ function Documents({
                       variant="default"
                       size="sm"
                       spacing={1}
-                      className="bg-surface rounded-lg p-1"
+                      className="shrink-0 rounded-lg bg-surface p-1"
                     >
                       <ToggleGroupItem
                         value="list"
@@ -992,35 +991,28 @@ function Documents({
                       </ToggleGroupItem>
                     </ToggleGroup>
 
-
-                    {/* Upload/New Folder Buttons */}
-
-                    <div className="flex flex-col items-center justify-center sm:flex-row gap-3">
-                      <Button
-                        variant="default"
-                        className="h-10"
-                        onClick={() => {
-                          setIsOpenNewFolderDrawer(false);
-                          setIsOpenUploadArea(true);
-                        }}
-                      >
-                        <UploadIcon className="w-5 h-5" />
-                        Upload Files
-                      </Button>
-                      <Button
-                        variant="default"
-                        className="h-10"
-                        onClick={() => {
-                          setIsOpenNewFolderDrawer(false);
-                          setIsNewFolderModalOpen(true);
-                        }}
-                      >
-                        <PlusIcon className="w-5 h-5" />
-                        New Folder
-                      </Button>
-                    </div>
-
-
+                    <Button
+                      variant="default"
+                      className="h-10 shrink-0"
+                      onClick={() => {
+                        setIsOpenNewFolderDrawer(false);
+                        setIsOpenUploadArea(true);
+                      }}
+                    >
+                      <UploadIcon className="w-5 h-5" />
+                      Upload Files
+                    </Button>
+                    <Button
+                      variant="default"
+                      className="h-10 shrink-0"
+                      onClick={() => {
+                        setIsOpenNewFolderDrawer(false);
+                        setIsNewFolderModalOpen(true);
+                      }}
+                    >
+                      <PlusIcon className="w-5 h-5" />
+                      New Folder
+                    </Button>
                   </div>
                 </div>
 

@@ -187,6 +187,16 @@ export default function ThemeContent() {
     return () => window.removeEventListener("theme-mode-changed", handleGlobalModeChange);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+      document.body.style.pointerEvents = "";
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.paddingRight = "";
+    };
+  }, []);
+
   // const handleModeChange = (newMode) => {
   //   if (newMode === mode) return;
 

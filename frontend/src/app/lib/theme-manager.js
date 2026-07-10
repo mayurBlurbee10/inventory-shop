@@ -30,6 +30,12 @@ export const getPortalIdFromPath = () => {
   return firstSegment;
 };
 
+export const isLoginPage = () => {
+  if (typeof window === "undefined") return false;
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  return path === "/login" || path.endsWith("/login");
+};
+
 export const getThemeContext = (portalIdOverride) => {
   const user = getUserData();
   const portalId =
@@ -41,6 +47,13 @@ export const getThemeContext = (portalIdOverride) => {
 export const getStoredMode = () => localStorage.getItem("mode") || "light";
 
 const COLORS_BY_MODE_KEY = "applied-theme-colors-by-mode";
+const CACHED_THEME_PORTAL_KEY = "cached-theme-portal-id";
+
+const markThemeCachedForPortal = (portalId) => {
+  if (portalId) {
+    localStorage.setItem(CACHED_THEME_PORTAL_KEY, portalId);
+  }
+};
 
 const PRIMARY_SURFACE_KEYS_FROM_THEME = [
   "primary",
@@ -294,6 +307,24 @@ export const applyThemeState = (state, { animated = false } = {}) => {
   return { ...state, colorsByMode };
 };
 
+export const hasStoredTheme = (portalId) => {
+  if (typeof window === "undefined") return false;
+
+  const resolvedPortalId = portalId || getThemeContext(portalId).portalId || "root";
+  const cachedPortalId = localStorage.getItem(CACHED_THEME_PORTAL_KEY);
+
+  if (cachedPortalId && cachedPortalId !== resolvedPortalId) {
+    return false;
+  }
+
+  if (localStorage.getItem("applied-theme-colors")) return true;
+  if (localStorage.getItem("custom-applied-theme")) return true;
+  if (localStorage.getItem(COLORS_BY_MODE_KEY)) return true;
+  if (localStorage.getItem("theme")) return true;
+
+  return false;
+};
+
 export const loadThemeFromLocalStorage = (mode = getStoredMode()) => {
   const savedTheme = localStorage.getItem("theme") || "slate";
   const storedColorsByMode = getStoredColorsByMode();
@@ -398,18 +429,7 @@ export const loadDefaultTheme = (mode = "light") => ({
   source: "default",
 });
 
-const canFetchPortalTheme = () => {
-  if (typeof window === "undefined") return false;
-
-  const user = getUserData();
-  if (user?.id) return true;
-  if (localStorage.getItem("accessToken")) return true;
-  if (document.cookie.includes("clientToken=")) return true;
-
-  const path = window.location.pathname.replace(/\/+$/, "");
-  const isLoginPage = path === "/login" || path.endsWith("/login");
-  return !isLoginPage;
-};
+const canFetchPortalTheme = () => typeof window !== "undefined";
 
 export const fetchPortalThemeFromApi = async (portalId) => {
   if (!portalId) return null;
@@ -459,16 +479,152 @@ const loadThemeInternal = async ({ portalId, forcePortalFetch = false } = {}) =>
     return applied;
   };
 
+  if (isLoginPage() && !forcePortalFetch) {
+    if (hasStoredTheme(resolvedPortalId)) {
+      return applyIfCurrent(loadThemeFromLocalStorage());
+    }
+
+    return applyIfCurrent(loadDefaultTheme(getStoredMode()));
+  }
+
   if (resolvedPortalId && (forcePortalFetch || canFetchPortalTheme())) {
     const dbRecord = await fetchPortalThemeFromApi(resolvedPortalId);
     const dbState = normalizeThemeRecord(dbRecord);
     if (dbState) {
       return applyIfCurrent(dbState);
     }
+
+    return applyIfCurrent(loadDefaultTheme(getStoredMode()));
   }
 
   const localState = loadThemeFromLocalStorage();
   return applyIfCurrent(localState);
+};
+
+export const previewThemeState = (state, { animated = false } = {}) => {
+  if (!state?.colors) return null;
+
+  applyTheme(state.colors, { transition: animated });
+  setPreviewState(state);
+  dispatchThemeApplied(state);
+  return state;
+};
+
+let loginThemeLoadPromise = null;
+let loginThemePortalId = null;
+
+export const startLoginThemeLoad = (portalId) => {
+  const resolvedPortalId = portalId || getThemeContext(portalId).portalId || "root";
+
+  if (!loginThemeLoadPromise || loginThemePortalId !== resolvedPortalId) {
+    loginThemePortalId = resolvedPortalId;
+    loginThemeLoadPromise = loadPortalThemeForLogin(resolvedPortalId);
+  }
+
+  return loginThemeLoadPromise;
+};
+
+export const waitForLoginThemeLoad = () =>
+  loginThemeLoadPromise ?? Promise.resolve();
+
+export const isLoginPath = (pathname) => {
+  if (!pathname) return isLoginPage();
+  const path = pathname.replace(/\/+$/, "") || "/";
+  return path === "/login" || path.endsWith("/login");
+};
+
+export const initializeTheme = (pathname) => {
+  const { portalId } = getThemeContext();
+
+  if (isLoginPath(pathname)) {
+    return startLoginThemeLoad(portalId);
+  }
+
+  applyLocalTheme();
+  return loadTheme({ portalId });
+};
+
+export const applyThemeForRoute = (pathname) => {
+  const { portalId } = getThemeContext();
+  const mode = getStoredMode();
+
+  if (isLoginPath(pathname)) {
+    if (hasStoredTheme(portalId)) {
+      const localState = loadThemeFromLocalStorage(mode);
+      if (localState?.colors) {
+        applyTheme(localState.colors);
+        dispatchThemeApplied(localState);
+        return Promise.resolve(localState);
+      }
+    }
+
+    const fallback = loadDefaultTheme(mode);
+    applyTheme(fallback.colors);
+    dispatchThemeApplied(fallback);
+    return Promise.resolve(fallback);
+  }
+
+  const localState = applyLocalTheme();
+  dispatchThemeApplied(localState);
+  return Promise.resolve(localState);
+};
+
+const applyLoginThemeState = (state, portalId) => {
+  const applied = applyThemeState(state);
+  markThemeCachedForPortal(portalId);
+  setUnsavedThemePreview(false);
+  dispatchThemeApplied(applied);
+  return applied;
+};
+
+export const loadPortalThemeForLogin = async (portalId) => {
+  const resolvedPortalId = portalId || getThemeContext(portalId).portalId || "root";
+  const mode = getStoredMode();
+
+  if (hasStoredTheme(resolvedPortalId)) {
+    const localState = loadThemeFromLocalStorage(mode);
+    if (localState?.colors) {
+      applyTheme(localState.colors);
+      dispatchThemeApplied(localState);
+      return localState;
+    }
+  }
+
+  // Bootstrap slate immediately so CSS variables exist before the async fetch.
+  previewPresetTheme("slate", mode);
+
+  try {
+    const dbRecord = await fetchPortalThemeFromApi(resolvedPortalId);
+    const dbState = normalizeThemeRecord(dbRecord);
+    const nextState = dbState || loadDefaultTheme(mode);
+    return applyLoginThemeState(nextState, resolvedPortalId);
+  } catch (error) {
+    console.error("Failed to load portal theme for login:", error);
+    return applyLoginThemeState(loadDefaultTheme(mode), resolvedPortalId);
+  }
+};
+
+export const refreshPortalThemeAfterLogin = async (portalId) => {
+  loadThemePromise = null;
+  loadThemeGeneration += 1;
+
+  const resolvedPortalId = portalId || getThemeContext(portalId).portalId || "root";
+  const mode = getStoredMode();
+
+  try {
+    const dbRecord = await fetchPortalThemeFromApi(resolvedPortalId);
+    const dbState = normalizeThemeRecord(dbRecord);
+    const nextState = dbState || loadDefaultTheme(mode);
+    const applied = applyThemeState(nextState);
+
+    markThemeCachedForPortal(resolvedPortalId);
+    setUnsavedThemePreview(false);
+    dispatchThemeApplied(applied);
+    return applied;
+  } catch (error) {
+    console.error("Failed to refresh portal theme after login:", error);
+    throw error;
+  }
 };
 
 export const loadTheme = (options = {}) => {

@@ -179,15 +179,24 @@ function Navbar({ content, config, filterValue }) {
       "flex items-center px-4 py-2 text-sm font-semibold rounded-md whitespace-nowrap transition-all duration-200",
       isActive
         ? "bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/25"
-        : "text-primary-foreground/90 hover:bg-accent hover:text-primary",
+        : "text-primary-foreground/90 hover:bg-primary-foreground/15 hover:text-primary-foreground",
     );
 
-  const mobileNavItemClass = (isActive) =>
+  const navbarIconBtnClass = (isActive = false) =>
     cn(
-      "relative flex items-center transition-all cursor-pointer w-full px-4 py-3 rounded-lg font-lato text-sm",
+      "relative inline-flex size-9 min-w-9 shrink-0 items-center justify-center rounded-md p-0 text-primary-foreground transition-colors",
+      "[&_svg]:size-6 [&_svg]:shrink-0",
+      "hover:!bg-primary-foreground/20 hover:!text-primary-foreground",
+      isActive &&
+        "bg-primary-foreground/20 text-primary-foreground hover:!bg-primary-foreground/25",
+    );
+
+  const mobileSidebarItemClass = (isActive = false) =>
+    cn(
+      "flex w-full items-center gap-3 h-10 px-3 text-sm font-semibold rounded-md border border-border transition-colors",
       isActive
-        ? "bg-accent text-primary font-bold"
-        : "text-foreground font-medium hover:bg-accent hover:text-primary",
+        ? "bg-accent text-primary border-primary/20"
+        : "bg-muted/50 text-foreground hover:bg-accent hover:text-primary",
     );
 
   const NavBarItem = ({ title, href, activeRoutes = [], icon: Icon }) => {
@@ -203,13 +212,11 @@ function Navbar({ content, config, filterValue }) {
       return (
         <Link href={href} passHref className="w-full block">
           <div
-            className={mobileNavItemClass(isActive)}
+            className={mobileSidebarItemClass(isActive)}
             onClick={() => setIsOpenNavbar(false)}
           >
-            <span className="flex items-center">
-              {Icon && <Icon className="mr-2 h-4 w-4" />}
-              {title}
-            </span>
+            {Icon && <Icon className="h-4 w-4 shrink-0" />}
+            <span className="truncate">{title}</span>
           </div>
         </Link>
       );
@@ -236,24 +243,25 @@ function Navbar({ content, config, filterValue }) {
 
     if (isMobile) {
       return (
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => {
             setIsNotificationModalOpen(true);
             setIsOpenNavbar(false);
           }}
-          className={cn(mobileNavItemClass(isActive), "relative")}
+          className={cn(mobileSidebarItemClass(isActive), "relative justify-between")}
         >
-          <span className="flex items-center">
-            <Bell className="mr-2 size-5" />
+          <span className="flex items-center gap-3">
+            <Bell className="size-4 shrink-0" />
             Notifications
           </span>
           {notificationCount > 0 && (
-            <Badge variant="destructive" className="ml-auto size-5 rounded-full p-0 text-xs">
+            <Badge variant="destructive" className="size-5 rounded-full p-0 text-xs">
               {notificationCount}
             </Badge>
           )}
-        </button>
+        </Button>
       );
     }
 
@@ -261,14 +269,11 @@ function Navbar({ content, config, filterValue }) {
       <Button
         type="button"
         variant="ghost"
-        size="icon"
+        size="lg"
         onClick={() => setIsNotificationModalOpen(true)}
-        className={cn(
-          "relative rounded-md text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground",
-          isActive && "bg-accent text-primary hover:bg-accent hover:text-primary",
-        )}
+        className={navbarIconBtnClass(isActive)}
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="size-4" />
         {notificationCount > 0 && (
           <span className="absolute right-1 top-1 flex size-2.5 items-center justify-center rounded-full bg-destructive" />
         )}
@@ -378,6 +383,89 @@ function Navbar({ content, config, filterValue }) {
       : sanitizeName;
   }
 
+  const isNavLinkActive = (href, activeRoutes = []) =>
+    pathname.includes(href) ||
+    activeRoutes.some((route) => pathname.includes(route));
+
+  const buildDesktopNavLinks = () => {
+    const portalBase = params.portalid ? `/${params.portalid}` : "";
+    const primaryLinks = [];
+    const moreLinks = [];
+
+    if (filterPageVisibility("dashboard")) {
+      primaryLinks.push({
+        key: "dashboard",
+        title: "Dashboard",
+        icon: LayoutDashboard,
+        href: portalBase ? `${portalBase}/dashboard` : "/dashboard",
+      });
+    }
+
+    if (filterPageVisibility("shared-docs")) {
+      primaryLinks.push({
+        key: "shared-docs",
+        title: "Shared Documents",
+        icon: FileText,
+        href: portalBase ? `${portalBase}/shared-docs` : "/shared-docs",
+      });
+    }
+
+    if (filterPageVisibility("esignature")) {
+      primaryLinks.push({
+        key: "esignature",
+        title: "Sign",
+        icon: Signature,
+        href: portalBase ? `${portalBase}/esignature` : "/esignature",
+      });
+    }
+
+    if (
+      (userIsAdmin || userIsModerator) &&
+      filterPageVisibility("advisor dashboard")
+    ) {
+      moreLinks.push({
+        key: "advisor-dashboard",
+        title: "Advisor Dashboard",
+        icon: LayoutDashboardIcon,
+        href: portalBase
+          ? `${portalBase}/advisor/dashboard`
+          : "/advisor/dashboard",
+        activeRoutes: [
+          portalBase
+            ? `${portalBase}/advisor/shared-docs`
+            : "/advisor/shared-docs",
+        ],
+      });
+    }
+
+    if (filterPageVisibility("forms")) {
+      moreLinks.push({
+        key: "forms",
+        title: "Forms",
+        icon: FilePen,
+        href: portalBase ? `${portalBase}/forms` : "/forms",
+      });
+    }
+
+    customPages?.forEach((page) => {
+      moreLinks.push({
+        key: page?.id || page?.title,
+        title: page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1),
+        icon: LayoutDashboard,
+        href: portalBase
+          ? `${portalBase}/${sanitizeName(page?.title)}`
+          : "/dashboard",
+      });
+    });
+
+    return { primaryLinks, moreLinks };
+  };
+
+  const { primaryLinks, moreLinks } = buildDesktopNavLinks();
+  const isMoreNavActive = moreLinks.some((link) =>
+    isNavLinkActive(link.href, link.activeRoutes),
+  );
+
   useEffect(() => {
     setUserIsAdmin(
       user?.role !== UserRole.USER && user?.role !== UserRole.MODERATOR,
@@ -401,23 +489,19 @@ function Navbar({ content, config, filterValue }) {
   };
 
   const LogoImage = () => {
-    const baseSize = 90; // Set a reasonable base size (in pixels)
+    const logoSizeKey = filterTheme("Logo")?.fontSize || "medium";
+    const logoHeightClass = {
+      small: "h-10 sm:h-12 xl:h-[45px]",
+      medium: "h-12 sm:h-14 xl:h-[68px]",
+      large: "h-14 sm:h-16 xl:h-[90px]",
+    }[logoSizeKey in logoSizeRatio ? logoSizeKey : "medium"];
 
-    const logoSize =
-      (filterTheme("Logo")?.fontSize &&
-        logoSizeRatio[filterTheme("Logo")?.fontSize]) ||
-      logoSizeRatio.small;
     return (
-      <div className="block min-w-16">
+      <div className="block shrink-0">
         <img
           src={logo.replace("/api/upload", "/uploads")}
           alt={params.portalid}
-          className="object-contain mr-2"
-          style={{
-            height: `${baseSize * logoSize}px`,
-            width: "auto",
-            maxWidth: "100%",
-          }}
+          className={cn("mr-2 w-auto max-w-[88px] object-contain sm:max-w-[96px] xl:max-w-none", logoHeightClass)}
         />
       </div>
     );
@@ -497,12 +581,12 @@ function Navbar({ content, config, filterValue }) {
         error={error}
         setError={setError}
       />
-      <div
-        className="relative border-b border-border bg-primary text-primary-foreground"
-      >
-        {/* OLD: style={{ backgroundColor: config?.primaryColor }} */}
-        <div className="w-full mx-auto px-2">
-          <nav ref={navbarRef} className="flex justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-primary text-primary-foreground">
+        <div className="mx-auto w-full px-2">
+          <nav
+            ref={navbarRef}
+            className="relative flex min-h-[56px] w-full items-center gap-2"
+          >
             <div
               onClick={() => {
                 const dashboardPage = pageData.find((page) => page.title === "dashboard");
@@ -512,7 +596,7 @@ function Navbar({ content, config, filterValue }) {
                   router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/shared-docs`);
                 }
               }}
-              className="flex items-center px-[18px] py-1 flex-shrink-0"
+              className="relative z-10 flex min-w-0 flex-1 items-center gap-1 px-2 py-1 sm:gap-2 sm:px-[18px] xl:w-auto xl:flex-none xl:flex-shrink-0"
             >
               {logo ? (
                 <div
@@ -542,9 +626,8 @@ function Navbar({ content, config, filterValue }) {
               )}
 
               <span
-                className="text-3xl text-primary-foreground font-lato overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] md:max-w-[300px] lg:max-w-[350px] xl:max-w-[450px]"
+                className="font-lato text-sm leading-tight text-primary-foreground whitespace-normal sm:text-base md:text-lg xl:text-xl 2xl:text-2xl"
                 style={{
-                  fontSize: filterTheme("Header Text").fontSize,
                   fontWeight: filterTheme("Header Text").fontWeight,
                   lineHeight: "1.2",
                   paddingBottom: "2px",
@@ -560,92 +643,80 @@ function Navbar({ content, config, filterValue }) {
               </span>
             </div>
 
-            <div className="hidden lg:flex items-center">
-              {filterPageVisibility("dashboard") && (
+            <div className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 xl:flex">
+              <div className="pointer-events-auto flex items-center">
+              {primaryLinks.map((link) => (
                 <NavBarItem
-                  title="Dashboard"
-                  icon={LayoutDashboard}
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/dashboard`
-                      : `/dashboard`
-                  }
+                  key={link.key}
+                  title={link.title}
+                  icon={link.icon}
+                  href={link.href}
+                  activeRoutes={link.activeRoutes}
                 />
-              )}
+              ))}
 
-              {filterPageVisibility("shared-docs") && (
-                <NavBarItem
-                  title="Shared Documents"
-                  icon={FileText}
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/shared-docs`
-                      : "/shared-docs"
-                  }
-                />
+              {moreLinks.length > 0 && (
+                <div ref={moreLinksDropdownRef}>
+                  <DropdownMenu
+                    open={isOpenMoreLinksDropdown}
+                    onOpenChange={setIsOpenMoreLinksDropdown}
+                  >
+                    <DropdownMenuTrigger
+                      className={cn(desktopNavItemClass(isMoreNavActive), "mr-2")}
+                      render={<button type="button" aria-label="More navigation" />}
+                    >
+                      <span className="flex items-center">
+                        More
+                        <ChevronDown
+                          className={cn(
+                            "ml-1 h-4 w-4 transition-transform",
+                            isOpenMoreLinksDropdown && "rotate-180",
+                          )}
+                        />
+                      </span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      {moreLinks.map((link) => {
+                        const Icon = link.icon;
+                        const isActive = isNavLinkActive(
+                          link.href,
+                          link.activeRoutes,
+                        );
+
+                        return (
+                          <DropdownMenuItem
+                            key={link.key}
+                            className={cn(
+                              "gap-2 py-2 px-3 hover:bg-accent",
+                              isActive && "bg-accent text-primary font-semibold",
+                            )}
+                            onClick={() => {
+                              setIsOpenMoreLinksDropdown(false);
+                              router.push(link.href);
+                            }}
+                          >
+                            <Icon className="h-4 w-4" />
+                            {link.title}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               )}
-              {filterPageVisibility("esignature") && (
-                <NavBarItem
-                  title="Sign"
-                  icon={Signature}
-                  href={
-                    params.portalid
-                      ? `/${params.portalid}/esignature`
-                      : "/esignature"
-                  }
-                />
-              )}
-              {(userIsAdmin || userIsModerator) &&
-                filterPageVisibility("advisor dashboard") && (
-                  <NavBarItem
-                    title="Advisor Dashboard"
-                    icon={LayoutDashboardIcon}
-                    href={
-                      params.portalid
-                        ? `/${params.portalid}/advisor/dashboard`
-                        : "/advisor/dashboard"
-                    }
-                    activeRoutes={[
-                      params.portalid
-                        ? `/${params.portalid}/advisor/shared-docs`
-                        : "/advisor/shared-docs",
-                    ]}
-                  />
-                )}
-              {filterPageVisibility("forms") && (
-                <NavBarItem
-                  title="Forms"
-                  icon={FilePen}
-                  href={params.portalid ? `/${params.portalid}/forms` : "/forms"}
-                />
-              )}
-              {customPages?.length > 0 &&
-                customPages?.map((page) => (
-                  <NavBarItem
-                    key={page?.id}
-                    icon={LayoutDashboard}
-                    title={
-                      page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)
-                    }
-                    href={
-                      params.portalid
-                        ? `/${params.portalid}/${sanitizeName(page?.title)}`
-                        : `/dashboard`
-                    }
-                  />
-                ))}
+              </div>
             </div>
-            {/* Profile dropdown */}
-            <div className="hidden lg:flex items-center cursor-pointer">
+
+            <div className="ml-auto hidden shrink-0 items-center gap-0.5 xl:flex">
               <div className="hidden md:block">
                 <PluginRenderer config={config} pluginKeys={['box_ai']} />
               </div>
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
+                size="lg"
                 onClick={handleToggleThemeMode}
-                className="ml-2 rounded-full text-primary-foreground hover:bg-primary-foreground/20"
+                className={navbarIconBtnClass(false) + " mx-2"}
                 title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
                 aria-label="Toggle theme"
               >
@@ -655,18 +726,13 @@ function Navbar({ content, config, filterValue }) {
                   <Moon className="size-5" />
                 )}
               </Button>
-              <div className="ml-2">
-                <NotificationNavButton />
-              </div>
+              <NotificationNavButton />
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
+                size="lg"
                 onClick={openMessageDrawer}
-                className={cn(
-                  "ml-2 rounded-full text-primary-foreground hover:bg-primary-foreground/20",
-                  isMessageDrawerOpen && "bg-primary-foreground/20",
-                )}
+                className={navbarIconBtnClass(isMessageDrawerOpen) + " mx-2"}
                 title="Messages"
                 aria-label="Messages"
               >
@@ -735,24 +801,53 @@ function Navbar({ content, config, filterValue }) {
               </DropdownMenu>
             </div>
 
-            {/* Mobile Navbar */}
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-primary-foreground hover:bg-primary-foreground/20"
-              onClick={() => setIsOpenNavbar(true)}
-            >
-              <Menu className="h-6 w-6" />
-            </Button>
+            {/* Mobile header actions */}
+            <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 xl:hidden">
+              <Button
+                type="button"
+                variant="ghost"
+                size="lg"
+                onClick={handleToggleThemeMode}
+                className={navbarIconBtnClass(false)}
+                title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label="Toggle theme"
+              >
+                {themeMode === "dark" ? (
+                  <Sun />
+                ) : (
+                  <Moon />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-lg"
+                className={navbarIconBtnClass(isOpenNavbar)}
+                onClick={() => setIsOpenNavbar(true)}
+                aria-label="Open menu"
+              >
+                <Menu />
+              </Button>
+            </div>
 
             {isOpenNavbar && (
-              <div className="fixed top-0 right-0 sm:w-2/5 w-4/5 h-full bg-card text-card-foreground shadow-lg z-50 transition-all flex flex-col border-l border-border">
+              <>
                 <div
-                  style={{
-                    minHeight: "var(--navbar-height, 56px)",
+                  className="fixed inset-0 z-[55] bg-foreground/30 xl:hidden"
+                  aria-hidden
+                  onClick={() => {
+                    setIsOpenNavbar(false);
+                    setAccountDropdown(false);
+                    setIsManagePortalView(false);
+                    setIsIntegrateDropdownOpen(false);
                   }}
-                  className={`flex items-center pr-5 ${isManagePortalView ? "justify-between pl-5" : "justify-end"}`}
+                />
+              <div className="fixed top-0 right-0 z-[60] flex h-full w-4/5 flex-col border-l border-border bg-card text-card-foreground shadow-lg transition-all sm:w-2/5">
+                <div
+                  style={{ minHeight: "var(--navbar-height, 56px)" }}
+                  className={cn(
+                    "flex items-center border-b border-border px-4",
+                    isManagePortalView ? "justify-between" : "justify-end",
+                  )}
                 >
                   {isManagePortalView && (
                     <Button
@@ -768,7 +863,7 @@ function Navbar({ content, config, filterValue }) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-foreground hover:bg-accent"
+                    className="rounded-md text-foreground hover:bg-accent"
                     onClick={() => {
                       setIsOpenNavbar(false);
                       setAccountDropdown(false);
@@ -858,7 +953,7 @@ function Navbar({ content, config, filterValue }) {
                     </div>
                   ) : (
                     <>
-                      <div className="flex flex-col items-start gap-2 w-full px-5 flex-1 min-h-0 overflow-y-auto">
+                      <div className="flex w-full flex-col items-start gap-2 px-5 py-4 flex-1 min-h-0 overflow-y-auto">
                         {filterPageVisibility("dashboard") && (
                           <NavBarItem
                             title="Dashboard"
@@ -898,26 +993,10 @@ function Navbar({ content, config, filterValue }) {
                             setIsOpenNavbar(false);
                             openMessageDrawer();
                           }}
-                          className={mobileNavItemClass(isMessageDrawerOpen)}
+                          className={mobileSidebarItemClass(isMessageDrawerOpen)}
                         >
-                          <span className="flex items-center">
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Messages
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleToggleThemeMode}
-                          className={mobileNavItemClass(false)}
-                        >
-                          <span className="flex items-center">
-                            {themeMode === "dark" ? (
-                              <Sun className="mr-2 h-4 w-4" />
-                            ) : (
-                              <Moon className="mr-2 h-4 w-4" />
-                            )}
-                            {themeMode === "dark" ? "Light Mode" : "Dark Mode"}
-                          </span>
+                          <MessageSquare className="h-4 w-4 shrink-0" />
+                          <span className="truncate">Messages</span>
                         </button>
                         {(userIsAdmin || userIsModerator) &&
                           filterPageVisibility("advisor dashboard") && (
@@ -961,7 +1040,7 @@ function Navbar({ content, config, filterValue }) {
                               }
                             />
                           ))}
-                        <div className="">
+                        <div className="w-full [&_button]:h-10 [&_button]:w-full [&_button]:justify-start [&_button]:rounded-md [&_button]:border [&_button]:border-border [&_button]:bg-muted/50 [&_button]:px-3 [&_button]:text-foreground [&_button]:hover:bg-accent [&_button]:hover:text-primary">
                           <PluginRenderer config={config} pluginKeys={['box_ai']} />
                         </div>
                         <div className="relative w-full">
@@ -1057,70 +1136,82 @@ function Navbar({ content, config, filterValue }) {
                   )}
                 </div>
               </div>
+              </>
             )}
           </nav>
         </div>
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-        />
-        <TechSupport
-          isOpen={isTechSupportModalOpen}
-          onClose={() => setIsTechSupportModalOpen(false)}
-        />
-        <AccountInfo
-          isOpen={isAccountInfoModalOpen}
-          onClose={() => setIsAccountInfoModalOpen(false)}
-          config={config}
-          user={user}
-          userIsAdmin={userIsAdmin}
-        />
+      </header>
 
-        {isMessageDrawerOpen && (
-          <>
+      <div
+        aria-hidden="true"
+        className="w-full shrink-0"
+        style={{
+          height: navbarHeight
+            ? `${navbarHeight}px`
+            : "var(--navbar-height, 64px)",
+        }}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+      <TechSupport
+        isOpen={isTechSupportModalOpen}
+        onClose={() => setIsTechSupportModalOpen(false)}
+      />
+      <AccountInfo
+        isOpen={isAccountInfoModalOpen}
+        onClose={() => setIsAccountInfoModalOpen(false)}
+        config={config}
+        user={user}
+        userIsAdmin={userIsAdmin}
+      />
+
+      {isMessageDrawerOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[60] bg-foreground/30"
+            aria-hidden
+            onClick={() => setIsMessageDrawerOpen(false)}
+          />
+          <aside
+            className="fixed top-0 right-0 z-[70] flex h-full w-full max-w-md flex-col border-l border-border bg-card text-card-foreground shadow-xl"
+            aria-label="Message sidebar"
+          >
             <div
-              className="fixed inset-0 bg-foreground/30 z-40"
-              aria-hidden
-              onClick={() => setIsMessageDrawerOpen(false)}
-            />
-            <aside
-              className="fixed top-0 right-0 h-full w-full max-w-md bg-card text-card-foreground shadow-xl z-50 flex flex-col border-l border-border"
-              aria-label="Message sidebar"
+              className="flex shrink-0 items-center justify-between border-b border-border bg-card px-4"
+              style={{
+                height: navbarHeight ? `${navbarHeight}px` : undefined,
+              }}
             >
-              <div
-                className="flex items-center justify-between border-b border-border px-4 bg-card shrink-0"
-                style={{
-                  height: navbarHeight ? `${navbarHeight}px` : undefined,
-                }}
+              <div className="text-sm font-semibold text-foreground">
+                Messages
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMessageDrawerOpen(false)}
+                className="rounded-full text-muted-foreground hover:bg-accent"
+                aria-label="Close messages"
               >
-                <div className="text-sm font-semibold text-foreground">
-                  Messages
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsMessageDrawerOpen(false)}
-                  className="rounded-full text-muted-foreground hover:bg-accent"
-                  aria-label="Close messages"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-              <div className="flex-1 min-h-0 overflow-hidden">
-                <MessageComponent />
-              </div>
-            </aside>
-          </>
-        )}
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden">
+              <MessageComponent />
+            </div>
+          </aside>
+        </>
+      )}
 
-        <NotificationConfiguration
-          isOpen={isNotificationConfigurationOpen}
-          onClose={() => setIsNotificationConfigurationOpen(false)}
-          config={config}
-          user={user}
-        />
-      </div>
+      <NotificationConfiguration
+        isOpen={isNotificationConfigurationOpen}
+        onClose={() => setIsNotificationConfigurationOpen(false)}
+        config={config}
+        user={user}
+      />
     </>
 
   );

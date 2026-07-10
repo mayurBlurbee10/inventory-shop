@@ -18,6 +18,16 @@ const normalizeHex = (value, fallback) =>
 
 const GRADIENT_WHEEL_SIZE = 250;
 
+const releaseBodyScrollLock = () => {
+  if (typeof document === "undefined") return;
+
+  document.body.style.overflow = "";
+  document.body.style.paddingRight = "";
+  document.body.style.pointerEvents = "";
+  document.documentElement.style.overflow = "";
+  document.documentElement.style.paddingRight = "";
+};
+
 const getWheelSize = () => {
   if (typeof window === "undefined") return GRADIENT_WHEEL_SIZE;
   if (window.innerWidth < 420) return 132;
@@ -28,27 +38,6 @@ const getWheelSize = () => {
 const getWheelLayout = () => {
   if (typeof window === "undefined") return "row";
   return window.innerWidth < 520 ? "column" : "row";
-};
-
-const useScrollLock = (locked) => {
-  useEffect(() => {
-    if (!locked) return;
-
-    const body = document.body;
-    const previousOverflow = body.style.overflow;
-    const previousPaddingRight = body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    return () => {
-      body.style.overflow = previousOverflow;
-      body.style.paddingRight = previousPaddingRight;
-    };
-  }, [locked]);
 };
 
 export default function GradientColorPickerSection({
@@ -71,12 +60,19 @@ export default function GradientColorPickerSection({
   const start = normalizeHex(startColor, "#3B82F6");
   const end = normalizeHex(endColor, "#8B5CF6");
 
+  const handleOpenChange = (nextOpen) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      releaseBodyScrollLock();
+    }
+  };
+
   const openPicker = (element) => {
     anchorRef.current = element ?? editButtonRef.current;
     setOpen(true);
   };
 
-  useScrollLock(open);
+  useEffect(() => () => releaseBodyScrollLock(), []);
 
   useEffect(() => {
     const updateLayout = () => {
@@ -107,7 +103,7 @@ export default function GradientColorPickerSection({
       </Label>
 
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <Popover open={open} onOpenChange={setOpen} modal >
+        <Popover open={open} onOpenChange={handleOpenChange}>
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -170,7 +166,7 @@ export default function GradientColorPickerSection({
           >
             <div
               className={cn(
-                "flex w-fit max-h-[min(70vh,calc(100vh-8rem))] items-start justify-center gap-3 overflow-y-auto overflow-x-hidden px-0.5",
+                "custom-scrollbar flex w-fit max-h-[min(70vh,calc(100vh-8rem))] items-start justify-center gap-3 overflow-y-auto overflow-x-hidden px-0.5",
                 wheelLayout === "column" ? "flex-col" : "flex-row",
               )}
             >
