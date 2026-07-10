@@ -540,11 +540,26 @@ export const initializeTheme = (pathname) => {
     return startLoginThemeLoad(portalId);
   }
 
-  applyLocalTheme();
+  // On full page load, fetch the saved portal theme from the API first,
+  // then cache it to localStorage. Preview state is in-memory only and
+  // is intentionally discarded on reload.
   return loadTheme({ portalId });
 };
 
+const reapplyActivePreviewTheme = () => {
+  if (!hasUnsavedThemePreview || !previewState?.colors) return null;
+
+  applyTheme(previewState.colors);
+  dispatchThemeApplied(previewState);
+  return previewState;
+};
+
 export const applyThemeForRoute = (pathname) => {
+  const activePreview = reapplyActivePreviewTheme();
+  if (activePreview) {
+    return Promise.resolve(activePreview);
+  }
+
   const { portalId } = getThemeContext();
   const mode = getStoredMode();
 

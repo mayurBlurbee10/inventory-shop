@@ -25,6 +25,7 @@ import {
   Menu,
   MessageSquare,
   Moon,
+  Palette,
   Plug,
   Settings,
   Signature,
@@ -73,7 +74,8 @@ function Navbar({ content, config, filterValue }) {
   const [userIsModerator, setUserIsModerator] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTechSupportModalOpen, setIsTechSupportModalOpen] = useState(false);
-  const [accountDropdown, setAccountDropdown] = useState(false);
+  const [mobileAccountMenuOpen, setMobileAccountMenuOpen] = useState(false);
+  const [desktopAccountMenuOpen, setDesktopAccountMenuOpen] = useState(false);
   const [isOpenNavbar, setIsOpenNavbar] = useState(false);
   const [isManagePortalView, setIsManagePortalView] = useState(false);
   const [isIntegrateDropdownOpen, setIsIntegrateDropdownOpen] = useState(false);
@@ -81,7 +83,6 @@ function Navbar({ content, config, filterValue }) {
   const [isNotificationConfigurationOpen, setIsNotificationConfigurationOpen] = useState(false);
   const [isMessageDrawerOpen, setIsMessageDrawerOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const moreLinksDropdownRef = useRef(null);
   const [logo, setLogo] = useState(null);
   const [pages, setPages] = useState([]);
   const [customPages, setCustomPages] = useState([]);
@@ -101,6 +102,41 @@ function Navbar({ content, config, filterValue }) {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [themeMode, setThemeMode] = useState("light");
   useSocket();
+
+  const closeMobileSidebar = () => {
+    setIsOpenNavbar(false);
+    setMobileAccountMenuOpen(false);
+    setIsManagePortalView(false);
+    setIsIntegrateDropdownOpen(false);
+  };
+
+  const openAccountInfo = () => {
+    setIsAccountInfoModalOpen(true);
+    setDesktopAccountMenuOpen(false);
+    closeMobileSidebar();
+  };
+
+  const openNotificationPreferences = () => {
+    setIsNotificationConfigurationOpen(true);
+    setDesktopAccountMenuOpen(false);
+    closeMobileSidebar();
+  };
+
+  const openTechSupport = () => {
+    setIsTechSupportModalOpen(true);
+    setDesktopAccountMenuOpen(false);
+    closeMobileSidebar();
+  };
+
+  const openToolsSettings = () => {
+    setDesktopAccountMenuOpen(false);
+    router.push(
+      params.portalid
+        ? `/${params.portalid}/settings?tab=configuration`
+        : "/settings?tab=configuration",
+    );
+    closeMobileSidebar();
+  };
 
   useEffect(() => {
     setLogo(config?.logo || null);
@@ -157,14 +193,7 @@ function Navbar({ content, config, filterValue }) {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setAccountDropdown(false);
-      }
-
-      if (
-        moreLinksDropdownRef.current &&
-        !moreLinksDropdownRef.current.contains(event.target)
-      ) {
-        setIsOpenMoreLinksDropdown(false);
+        setMobileAccountMenuOpen(false);
       }
     };
 
@@ -516,6 +545,7 @@ function Navbar({ content, config, filterValue }) {
     { id: "identity", label: "Identity Management", icon: Users },
     { id: "reports", label: "Reports", icon: ChartLine },
     { id: "users", label: "User Access", icon: Users },
+    { id: "theme", label: "Theme", icon: Palette },
   ];
   const integrateOptions = [{ id: "integrate", label: "Integrate", icon: Plug }];
 
@@ -525,7 +555,7 @@ function Navbar({ content, config, filterValue }) {
       : `/settings?tab=${encodeURIComponent(tabId)}`;
     router.push(settingsUrl);
     setIsOpenNavbar(false);
-    setAccountDropdown(false);
+    setMobileAccountMenuOpen(false);
     setIsManagePortalView(false);
     setIsIntegrateDropdownOpen(false);
   };
@@ -656,7 +686,7 @@ function Navbar({ content, config, filterValue }) {
               ))}
 
               {moreLinks.length > 0 && (
-                <div ref={moreLinksDropdownRef}>
+                <div>
                   <DropdownMenu
                     open={isOpenMoreLinksDropdown}
                     onOpenChange={setIsOpenMoreLinksDropdown}
@@ -686,14 +716,12 @@ function Navbar({ content, config, filterValue }) {
                         return (
                           <DropdownMenuItem
                             key={link.key}
+                            render={<Link href={link.href} />}
                             className={cn(
                               "gap-2 py-2 px-3 hover:bg-accent",
                               isActive && "bg-accent text-primary font-semibold",
                             )}
-                            onClick={() => {
-                              setIsOpenMoreLinksDropdown(false);
-                              router.push(link.href);
-                            }}
+                            onClick={() => setIsOpenMoreLinksDropdown(false)}
                           >
                             <Icon className="h-4 w-4" />
                             {link.title}
@@ -738,7 +766,10 @@ function Navbar({ content, config, filterValue }) {
               >
                 <MessageSquare className="size-5" />
               </Button>
-              <DropdownMenu open={accountDropdown} onOpenChange={setAccountDropdown}>
+              <DropdownMenu
+                open={desktopAccountMenuOpen}
+                onOpenChange={setDesktopAccountMenuOpen}
+              >
                 <DropdownMenuTrigger
                   className="nav-icon-btn ml-2 rounded-full p-0 outline-none transition-transform hover:scale-105"
                   render={
@@ -752,16 +783,16 @@ function Navbar({ content, config, filterValue }) {
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-60">
-                  <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={() => setIsAccountInfoModalOpen(true)}>
+                  <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={openAccountInfo}>
                     <CircleUserRound className="h-5 w-5" />
                     Account Info
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={() => setIsNotificationConfigurationOpen(true)}>
+                  <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={openNotificationPreferences}>
                     <Bell className="h-5 w-5" />
                     Preferences
                   </DropdownMenuItem>
                   {userIsAdmin && (
-                    <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={() => setIsTechSupportModalOpen(true)}>
+                    <DropdownMenuItem className="gap-2 py-2 px-3 hover:bg-accent" onClick={openTechSupport}>
                       <Headset className="h-5 w-5" />
                       Tech Support
                     </DropdownMenuItem>
@@ -769,13 +800,7 @@ function Navbar({ content, config, filterValue }) {
                   {userIsAdmin && (
                     <DropdownMenuItem
                       className="gap-2 py-2 px-3 hover:bg-accent"
-                      onClick={() =>
-                        router.push(
-                          params.portalid
-                            ? `/${params.portalid}/settings?tab=configuration`
-                            : "/settings?tab=configuration",
-                        )
-                      }
+                      onClick={openToolsSettings}
                     >
                       <Bolt className="h-5 w-5" />
                       Tools
@@ -787,6 +812,7 @@ function Navbar({ content, config, filterValue }) {
                     className="gap-2 py-2 px-3 hover:bg-accent"
                     onClick={(e) => {
                       e.preventDefault();
+                      setDesktopAccountMenuOpen(false);
                       handleLogout();
                     }}
                   >
@@ -834,12 +860,7 @@ function Navbar({ content, config, filterValue }) {
                 <div
                   className="fixed inset-0 z-[55] bg-foreground/30 xl:hidden"
                   aria-hidden
-                  onClick={() => {
-                    setIsOpenNavbar(false);
-                    setAccountDropdown(false);
-                    setIsManagePortalView(false);
-                    setIsIntegrateDropdownOpen(false);
-                  }}
+                  onClick={closeMobileSidebar}
                 />
               <div className="fixed top-0 right-0 z-[60] flex h-full w-4/5 flex-col border-l border-border bg-card text-card-foreground shadow-lg transition-all sm:w-2/5">
                 <div
@@ -864,12 +885,7 @@ function Navbar({ content, config, filterValue }) {
                     variant="ghost"
                     size="icon"
                     className="rounded-md text-foreground hover:bg-accent"
-                    onClick={() => {
-                      setIsOpenNavbar(false);
-                      setAccountDropdown(false);
-                      setIsManagePortalView(false);
-                      setIsIntegrateDropdownOpen(false);
-                    }}
+                    onClick={closeMobileSidebar}
                   >
                     <X className="w-6 h-6" />
                   </Button>
@@ -1049,12 +1065,12 @@ function Navbar({ content, config, filterValue }) {
                       </div>
                       <div className="flex items-center justify-start space-x-2 w-full mt-auto border-t border-border">
                         <div ref={dropdownRef} className="w-full">
-                          {accountDropdown && (
+                          {mobileAccountMenuOpen && (
                             <div className="w-full p-5 flex flex-col gap-2">
                               <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 px-4 py-2 text-sm text-foreground"
-                                onClick={() => setIsAccountInfoModalOpen((prev) => !prev)}
+                                onClick={openAccountInfo}
                               >
                                 <CircleUserRound className="h-4 w-4" />
                                 Account Info
@@ -1062,7 +1078,7 @@ function Navbar({ content, config, filterValue }) {
                               <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 px-4 py-2 text-sm text-foreground"
-                                onClick={() => setIsNotificationConfigurationOpen((prev) => !prev)}
+                                onClick={openNotificationPreferences}
                               >
                                 <Bell className="h-4 w-4" />
                                 Preferences
@@ -1071,7 +1087,7 @@ function Navbar({ content, config, filterValue }) {
                                 <Button
                                   variant="ghost"
                                   className="w-full justify-start gap-3 px-4 py-2 text-sm text-foreground"
-                                  onClick={() => setIsTechSupportModalOpen((prev) => !prev)}
+                                  onClick={openTechSupport}
                                 >
                                   <Headset className="h-4 w-4" />
                                   Tech Support
@@ -1086,7 +1102,7 @@ function Navbar({ content, config, filterValue }) {
                                   )}
                                   onClick={() => {
                                     setIsManagePortalView(true);
-                                    setAccountDropdown(false);
+                                    setMobileAccountMenuOpen(false);
                                   }}
                                 >
                                   <span className="flex items-center gap-3">
@@ -1099,7 +1115,11 @@ function Navbar({ content, config, filterValue }) {
                               <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 px-4 py-2 text-sm text-destructive hover:text-destructive"
-                                onClick={handleLogout}
+                                onClick={() => {
+                                  setDesktopAccountMenuOpen(false);
+                                  closeMobileSidebar();
+                                  handleLogout();
+                                }}
                               >
                                 {logoutLoading ? (
                                   <LoaderSpinner size={24} className="text-destructive" />
@@ -1113,7 +1133,7 @@ function Navbar({ content, config, filterValue }) {
                           <button
                             type="button"
                             className="flex items-center gap-3 w-full text-left bg-muted p-3"
-                            onClick={() => setAccountDropdown((prev) => !prev)}
+                            onClick={() => setMobileAccountMenuOpen((prev) => !prev)}
                           >
                             <Avatar size="lg">
                               <AvatarFallback className="font-lato">
