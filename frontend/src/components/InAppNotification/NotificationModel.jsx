@@ -13,8 +13,8 @@ import {
   CircleAlert,
   Globe,
   Gem,
-} from "lucide-react";
-import { fetchWrapper } from "@/app/lib/fetchWrapper";
+  RotateCw,
+} from "lucide-react";import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { useParams, useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/utils/helper";
 import { toast } from "react-toastify";
@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeSwitch } from "@/components/ui/theme-switch";
-
+import { AppTooltip } from "@/components/ui/tooltip";
 const NotificationModal = ({
   isOpen,
   onClose,
@@ -382,29 +382,51 @@ const NotificationModal = ({
               />
             </div>
 
-            {/* External link icon */}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground"
-              onClick={() => router.push(`/${params.portalid}/notifications`)}
-              aria-label="Open notifications page"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
+            {/* Refresh + open notifications page */}
+            <div className="flex items-center gap-1">
+              <AppTooltip label="Refresh">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground"
+                  onClick={() => getNotifications()}
+                  disabled={isNotificationLoading}
+                  aria-label="Refresh"
+                >
+                  <RotateCw
+                    className={cn(
+                      "h-4 w-4",
+                      isNotificationLoading && "animate-spin",
+                    )}
+                  />
+                </Button>
+              </AppTooltip>
+              <AppTooltip label="Open notifications page">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground"
+                  onClick={() => router.push(`/${params.portalid}/notifications`)}
+                  aria-label="Open notifications page"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </AppTooltip>
+            </div>
 
             {/* Three dots menu (inline dropdown to stay above the portal modal) */}
             <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground"
-                onClick={() => setShowDropdown(!showDropdown)}
-                aria-label="More options"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-              {/* Dropdown menu */}
+              <AppTooltip label="More options">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  aria-label="More options"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </AppTooltip>              {/* Dropdown menu */}
               {showDropdown && (
                 <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-lg">
                   <button
@@ -511,57 +533,44 @@ const NotificationModal = ({
                     <div className="my-auto flex flex-col items-center gap-1">
                       {/* Navigation Icon - only show if URL exists */}
                       {formattedNotification.url && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="rounded-full text-primary-solid"
-                          onClick={(e) =>
-                            handleNavigateToUrl(
-                              e,
-                              formattedNotification.url,
-                              formattedNotification,
-                            )
-                          }
-                          title="Open link"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
+                        <AppTooltip label="Open link">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-full text-primary-solid"
+                            onClick={(e) =>
+                              handleNavigateToUrl(
+                                e,
+                                formattedNotification.url,
+                                formattedNotification,
+                              )
+                            }
+                            aria-label="Open link"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </AppTooltip>
                       )}
 
-                      {/* Unread Indicator - clickable to mark as read */}
                       {!formattedNotification.isRead && (
-                        <button
-                          onClick={(e) =>
-                            handleUnreadDotClick(e, formattedNotification.id)
-                          }
-                          className="h-3 w-3 rounded-full bg-primary-solid transition-opacity hover:opacity-70"
-                          title="Mark as read"
-                        />
-                      )}
-                    </div>
+                        <AppTooltip label="Mark as read">
+                          <button
+                            type="button"
+                            onClick={(e) =>
+                              handleUnreadDotClick(e, formattedNotification.id)
+                            }
+                            className="h-3 w-3 rounded-full bg-primary-solid transition-opacity hover:opacity-70"
+                            aria-label="Mark as read"
+                          />
+                        </AppTooltip>
+                      )}                    </div>
                   </div>
                 </div>
               );
             })
           )}
         </ScrollArea>
-
-        {/* Footer */}
-        <div className="rounded-b-lg border-t border-border bg-muted/40 p-3">
-          <Button
-            variant="link"
-            size="sm"
-            className="px-0 font-medium text-foreground hover:text-muted-foreground"
-            onClick={() => {
-              // Refresh notifications
-              getNotifications();
-            }}
-          >
-            Refresh notifications
-          </Button>
-        </div>
-      </div>
-    </>,
+      </div>    </>,
     document.body,
   );
 };

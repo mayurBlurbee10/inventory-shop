@@ -22,8 +22,13 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    setNewName(item?.name);
-  }, [item]);
+    if (!isOpen) {
+      setNewName("");
+      setShowSuccess(false);
+      return;
+    }
+    setNewName(item?.name ?? "");
+  }, [isOpen, item]);
 
   const handleRename = async () => {
     if (!newName.trim()) return;
@@ -98,7 +103,7 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
             <DialogDescription className="text-base font-medium text-success">
               {item?.type === "file" ? "File" : "Folder"} successfully renamed!
             </DialogDescription>
-            <DialogFooter className="m-0 justify-center p-0 sm:justify-center">
+            <DialogFooter className="m-0 justify-center p-0 sm:justify-center bg-transparent">
               <Button type="button" onClick={onClose} className="px-3 py-3">
                 Done
               </Button>
@@ -112,7 +117,7 @@ const RenameDocumentModal = ({ isOpen, onClose, item, onFileRename }) => {
               </Label>
               <Input
                 type="text"
-                value={newName}
+                value={newName ?? ""}
                 onChange={(e) => setNewName(e.target.value)}
                 className="!bg-background text-foreground h-10"
                 disabled={isLoading}

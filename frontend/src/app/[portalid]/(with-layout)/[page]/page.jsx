@@ -1,9 +1,10 @@
 "use client";
+
 import { getUserData, isAdmin, setAuthTokens } from "@/app/lib/auth";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { getSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "../../../../components/Plugins/RTE/tiptap-style.css";
 import { useDispatch } from "react-redux";
 import { setCurrentUser } from "@/store/services/userService";
@@ -14,12 +15,16 @@ import TickerTape from "@/components/Common/charts/TickerTape";
 import TopStories from "@/components/Common/charts/TopStories";
 import { StockMarketChart } from "@/components/Common/charts/Chart";
 import CollaboratorSection from "@/components/Common/CollaboratorSection";
+import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
+import { cn } from "@/app/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
 
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+  <div className="flex min-h-screen items-center justify-center bg-background">
+    <LoaderSpinner size={32} className="text-secondary-foreground" />
   </div>
 );
+
 function Page() {
   const params = useParams();
   const router = useRouter();
@@ -32,10 +37,11 @@ function Page() {
     try {
       setIsLoading(true);
       const response = await fetchWrapper(
-        `/api/pages?portalId=${params?.portalid || "root"}&page=${reverseSanitizeName(params?.page) || ""
+        `/api/pages?portalId=${params?.portalid || "root"}&page=${
+          reverseSanitizeName(params?.page) || ""
         }`,
         {},
-        "fetch-page"
+        "fetch-page",
       );
       if (!response.ok) {
         throw new Error("Failed to fetch plugins");
@@ -73,11 +79,11 @@ function Page() {
 
   const getUserDetailsByEmail = async (email) => {
     try {
-      let url = `/api/users/loginByProvider`;
+      const url = `/api/users/loginByProvider`;
       const body = {
         method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, portalid: params.portalid }),
       };
@@ -85,10 +91,8 @@ function Page() {
       if (!response.ok) throw new Error("Failed to get user from email");
       const data = await response.json();
       const userData = data.user;
-      // setUserData(userData);
       dispatch(setCurrentUser(userData));
       if (typeof window !== "undefined") {
-        // localStorage.setItem("portal", params.portalid);
         setAuthTokens({
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
@@ -123,7 +127,6 @@ function Page() {
         return;
       }
 
-      // setUser(userData);
       fetchConfig();
     });
   }, [router]);
@@ -131,16 +134,25 @@ function Page() {
   useEffect(() => {
     fetchPlugins();
   }, []);
+
   if (isLoading) {
-    return (
-      <LoadingSpinner />
-    );
+    return <LoadingSpinner />;
   }
+
   const userIsAdmin = isAdmin();
+  const hasSidebarSections =
+    filterVisibility("My Task Section") ||
+    filterVisibility("Collaborator Section") ||
+    filterVisibility("Messaging");
+
   return (
-    <div className="max-w-[1820px] mx-auto px-4 pt-4 bg-white text-gray-800 font-lato">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
-        <div className={`${!filterVisibility("My Task Section") && !filterVisibility("Collaborator Section") && !filterVisibility("Messaging") ? "col-span-5" : " col-span-5 md:col-span-3"}`}>
+    <div className="mx-auto max-w-[1820px] bg-background px-4 pt-4 font-lato text-foreground">
+      <div className="grid grid-cols-1 gap-7 lg:grid-cols-5">
+        <div
+          className={cn(
+            !hasSidebarSections ? "col-span-5" : "col-span-5 md:col-span-3",
+          )}
+        >
           <div>
             <div className="flex justify-center">
               {filterVisibility("Ticker Tape") && (
@@ -149,28 +161,34 @@ function Page() {
                 </div>
               )}
             </div>
-            <div className="flex-1 flex justify-center mt-5 ">
+
+            <div className="mt-5 flex flex-1 justify-center">
               {page && page?.description ? (
-                <div
-                  className="bg-white p-3 page w-[96%] md:w-[80%] max-h-[500px] overflow-y-auto border min-h-[250px]"
-                  dangerouslySetInnerHTML={{
-                    __html: page.description,
-                  }}
-                  suppressHydrationWarning={true}
-                />
+                <Card className="page w-[96%] min-h-[250px] max-h-[500px] overflow-y-auto border-border bg-card md:w-[80%]">
+                  <CardContent
+                    className="p-3 text-secondary-foreground"
+                    dangerouslySetInnerHTML={{
+                      __html: page.description,
+                    }}
+                    suppressHydrationWarning={true}
+                  />
+                </Card>
               ) : (
-                <div>No Content Available</div>
+                <p className="text-sm text-muted-foreground">
+                  No Content Available
+                </p>
               )}
             </div>
-            <div className="flex justify-center w-full mt-5">
+
+            <div className="mt-5 flex w-full justify-center">
               {filterVisibility("Chart Section") && (
                 <div className="w-[96%] md:w-[80%]">
                   <StockMarketChart />
-                  {/* <MarketOverviewChart /> */}
                 </div>
               )}
             </div>
-            <div className="flex justify-center mt-5">
+
+            <div className="mt-5 flex justify-center">
               {filterVisibility("Top Stories") && (
                 <div className="w-[96%] md:w-[80%]">
                   <TopStories />
@@ -178,21 +196,16 @@ function Page() {
               )}
             </div>
           </div>
-
         </div>
-        <div className="col-span-5 md:col-span-2 flex flex-col gap-4">
-          {filterVisibility("My Task Section") && (
-            <TasksSection />
-          )}
-          {filterVisibility("Advisor Section") && (
-            <AdvisorSection />
-          )}
-          {filterVisibility("Collaborator Section") && (
-            <CollaboratorSection />
-          )}
+
+        <div className="col-span-5 flex flex-col gap-4 md:col-span-2">
+          {filterVisibility("My Task Section") && <TasksSection />}
+          {filterVisibility("Advisor Section") && <AdvisorSection />}
+          {filterVisibility("Collaborator Section") && <CollaboratorSection />}
         </div>
       </div>
     </div>
   );
 }
+
 export default Page;

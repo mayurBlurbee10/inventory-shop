@@ -406,7 +406,7 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
               </div>
             )}
 
-            <DialogFooter className="gap-2 border-t border-border bg-muted/30 sm:gap-2">
+            <DialogFooter className="gap-2 border-t border-border sm:gap-2 bg-transparent">
               <Button
                 type="button"
                 variant="outline"
@@ -445,7 +445,7 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
               Your changes will not be saved.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 border-t border-border bg-muted/30 sm:gap-2">
+          <DialogFooter className="gap-2 border-t border-border sm:gap-2 bg-transparent">
             <Button
               type="button"
               variant="outline"

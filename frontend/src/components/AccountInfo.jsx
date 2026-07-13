@@ -284,7 +284,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                   <div className="relative">
                     <Input
                       type="text"
-                      className="w-full px-3 py-2 mt-2 h-10 rounded-lg focus:ring-2 focus:ring-blue-400"
+                      className="w-full px-3 py-2 mt-2 h-10 rounded-lg focus:ring-2 focus:ring-blue-400 !bg-background text-secondary-foreground"
                       placeholder="Enter password"
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
@@ -299,7 +299,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
-                      className="w-full px-4 py-2 mt-2 h-auto rounded-lg focus:ring-2 focus:ring-blue-400 pr-10"
+                      className="w-full px-4 py-2 mt-2 h-auto rounded-lg focus:ring-2 focus:ring-blue-400 pr-10 !bg-background text-secondary-foreground"
                       placeholder="Enter password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -322,7 +322,7 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
                   </Label>
                   <Input
                     type="password"
-                    className="w-full px-3 py-2 mt-2 h-10 rounded-lg focus:ring-2 focus:ring-blue-400 text-gray-700"
+                    className="w-full px-3 py-2 mt-2 h-10 rounded-lg focus:ring-2 focus:ring-blue-400 !bg-background text-secondary-foreground"
                     placeholder="Confirm password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}

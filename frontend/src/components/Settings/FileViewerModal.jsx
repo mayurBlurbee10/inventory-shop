@@ -82,7 +82,13 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
           </Button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div
+          className={
+            loading
+              ? "flex min-h-0 flex-1 items-center justify-center p-6"
+              : "min-h-0 flex-1 overflow-y-auto p-6"
+          }
+        >
           {error && (
             <Alert variant="destructive" className="mb-4 border-destructive/30">
               <AlertDescription className="text-destructive">
@@ -92,9 +98,7 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-8">
-              <LoaderSpinner size={32} className="text-secondary-foreground" />
-            </div>
+            <LoaderSpinner size={32} className="text-secondary-foreground" />
           ) : (
             <div className="rounded-xl border border-border bg-card shadow-sm">
               <FileExplorer data={files} />

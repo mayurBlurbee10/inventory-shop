@@ -239,7 +239,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
             </div>
 
             {/* Actions */}
-            <DialogFooter className="mt-6 flex bg-background justify-end gap-4 px-8 pb-4 sm:justify-end">
+            <DialogFooter className="mt-6 flex bg-transparent justify-end gap-4 px-8 pb-4 sm:justify-end">
               <Button onClick={handleClose} variant="outline" className="py-3 px-3">Close</Button>
 
               {task?.type === TaskType.SIGN && task?.status !== TaskStatus.COMPLETED && user?.role !== UserRole?.MODERATOR && task?.user?.id === user?.id && (

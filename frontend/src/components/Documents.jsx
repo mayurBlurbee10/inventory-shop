@@ -47,6 +47,7 @@ import TickerTape from "./Common/charts/TickerTape";
 import TopStories from "./Common/charts/TopStories";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 import { Button } from "./ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Input } from "./ui/input";
 import {
   Card,
@@ -399,7 +400,9 @@ function Documents({
     // If no searchQuery, reset the currentFilesList to either filesList or path's last child
     if (!searchQuery) {
       setCurrentFilesList(
-        path.length === 0 ? filesList : path[path.length - 1].children
+        path.length === 0
+          ? filesList ?? []
+          : path[path.length - 1]?.children ?? []
       );
       setIsSearching(false);
       return;
@@ -409,6 +412,10 @@ function Documents({
 
     // Recursive function to search the entire file structure
     const recursiveSearch = (files) => {
+      if (!Array.isArray(files)) {
+        return [];
+      }
+
       let results = [];
       files.forEach((file) => {
         // If file name starts with the search query (case-insensitive), add it to results
@@ -427,7 +434,9 @@ function Documents({
     // Debounce logic: wait for 300ms after user stops typing
     const timer = setTimeout(() => {
       const source =
-        path.length === 0 ? filesList : path[path.length - 1].children;
+        path.length === 0
+          ? filesList ?? []
+          : path[path.length - 1]?.children ?? [];
       const results = recursiveSearch(source); // Perform the recursive search
       setCurrentFilesList(results); // Set the filtered results
       setIsSearching(false);
@@ -952,12 +961,24 @@ function Documents({
                       <Search className="w-4 h-4 text-secondary-foreground" />
                     </div>
                     <Input
-                      type="search"
+                      type="text"
                       placeholder="Search files and folders..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 pr-4 py-2 h-auto w-full border border-border rounded-lg text-sm text-secondary-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      className="pl-10 pr-10 py-2 h-auto w-full border border-border rounded-lg text-sm text-secondary-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     />
+                    {searchQuery && (
+                      <AppTooltip label="Clear search">
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center cursor-pointer text-secondary-foreground hover:text-secondary-foreground/70"
+                          aria-label="Clear search"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </AppTooltip>
+                    )}
                   </div>
 
                   {/* Controls Container */}
@@ -973,22 +994,24 @@ function Documents({
                       spacing={1}
                       className="shrink-0 rounded-lg bg-surface p-1"
                     >
-                      <ToggleGroupItem
-                        value="list"
-                        aria-label="List view"
-                        title="List view"
-                        className={view === "list" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0 bg-transparent text-muted-foreground hover:text-foreground"}
-                      >
-                        <AlignJustify className="w-4 h-4" />
-                      </ToggleGroupItem>
-                      <ToggleGroupItem
-                        value="grid"
-                        aria-label="Grid view"
-                        title="Grid view"
-                        className={view === "grid" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0  text-muted-foreground hover:text-foreground"}
-                      >
-                        <LayoutGrid className="w-4 h-4" />
-                      </ToggleGroupItem>
+                      <AppTooltip label="List view">
+                        <ToggleGroupItem
+                          value="list"
+                          aria-label="List view"
+                          className={view === "list" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0 bg-transparent text-muted-foreground hover:text-foreground"}
+                        >
+                          <AlignJustify className="w-4 h-4" />
+                        </ToggleGroupItem>
+                      </AppTooltip>
+                      <AppTooltip label="Grid view">
+                        <ToggleGroupItem
+                          value="grid"
+                          aria-label="Grid view"
+                          className={view === "grid" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0  text-muted-foreground hover:text-foreground"}
+                        >
+                          <LayoutGrid className="w-4 h-4" />
+                        </ToggleGroupItem>
+                      </AppTooltip>
                     </ToggleGroup>
 
                     <Button

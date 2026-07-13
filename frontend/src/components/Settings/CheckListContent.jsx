@@ -24,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AppTooltip } from "@/components/ui/tooltip";
 
 const AddCheckListModal = ({
   isOpen,
@@ -122,7 +123,7 @@ const AddCheckListModal = ({
           />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0 bg-background">
+        <DialogFooter className="gap-2 sm:gap-0 bg-transparent">
           <Button
             type="button"
             variant="outline"
@@ -346,34 +347,38 @@ const CheckListContent = () => {
                           </h3>
 
                           <div className="flex items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="icons"
-                              size="icon"
-                              className="rounded-full"
-                              title="Edit checklist"
-                              onClick={() => {
-                                setIsOpenAddCheckListModal((prev) => !prev);
-                                setSelectedCheckList(checklist);
-                                setIsChecklistLastActive(false);
-                              }}
-                            >
-                              <Edit className="size-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="icons"
-                              size="icon"
-                              className="rounded-full text-destructive hover:text-destructive"
-                              title="Delete checklist"
-                              onClick={() => {
-                                setIsDeleteModalOpen((prev) => !prev);
-                                setSelectedCheckList(checklist);
-                                setIsChecklistLastActive(false);
-                              }}
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
+                            <AppTooltip label="Edit checklist">
+                              <Button
+                                type="button"
+                                variant="icons"
+                                size="icon"
+                                className="rounded-full"
+                                aria-label="Edit checklist"
+                                onClick={() => {
+                                  setIsOpenAddCheckListModal((prev) => !prev);
+                                  setSelectedCheckList(checklist);
+                                  setIsChecklistLastActive(false);
+                                }}
+                              >
+                                <Edit className="size-4" />
+                              </Button>
+                            </AppTooltip>
+                            <AppTooltip label="Delete checklist">
+                              <Button
+                                type="button"
+                                variant="icons"
+                                size="icon"
+                                className="rounded-full text-destructive hover:text-destructive"
+                                aria-label="Delete checklist"
+                                onClick={() => {
+                                  setIsDeleteModalOpen((prev) => !prev);
+                                  setSelectedCheckList(checklist);
+                                  setIsChecklistLastActive(false);
+                                }}
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </AppTooltip>
                             {isUpdateLoading?.id === checklist?.id && (
                               <LoaderSpinner
                                 size={24}
@@ -401,37 +406,41 @@ const CheckListContent = () => {
                                     {task?.title}
                                   </span>
                                   <div className="flex items-center gap-1">
-                                    <Button
-                                      type="button"
-                                      variant="icons"
-                                      size="icon"
-                                      className="rounded-full"
-                                      title="Edit task"
-                                      onClick={() => {
-                                        setIsUpdateTaskModalOpen(
-                                          (prev) => !prev,
-                                        );
-                                        setSelectedTask(task);
-                                        setSelectedCheckList(checklist);
-                                      }}
-                                    >
-                                      <Edit className="size-4" />
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      variant="icons"
-                                      size="icon"
-                                      className="rounded-full text-destructive hover:text-destructive"
-                                      title="Delete task"
-                                      onClick={() => {
-                                        setIsDeleteTaskModalOpen(
-                                          (prev) => !prev,
-                                        );
-                                        setSelectedTask(task);
-                                      }}
-                                    >
-                                      <Trash2 className="size-4" />
-                                    </Button>
+                                    <AppTooltip label="Edit task">
+                                      <Button
+                                        type="button"
+                                        variant="icons"
+                                        size="icon"
+                                        className="rounded-full"
+                                        aria-label="Edit task"
+                                        onClick={() => {
+                                          setIsUpdateTaskModalOpen(
+                                            (prev) => !prev,
+                                          );
+                                          setSelectedTask(task);
+                                          setSelectedCheckList(checklist);
+                                        }}
+                                      >
+                                        <Edit className="size-4" />
+                                      </Button>
+                                    </AppTooltip>
+                                    <AppTooltip label="Delete task">
+                                      <Button
+                                        type="button"
+                                        variant="icons"
+                                        size="icon"
+                                        className="rounded-full text-destructive hover:text-destructive"
+                                        aria-label="Delete task"
+                                        onClick={() => {
+                                          setIsDeleteTaskModalOpen(
+                                            (prev) => !prev,
+                                          );
+                                          setSelectedTask(task);
+                                        }}
+                                      >
+                                        <Trash2 className="size-4" />
+                                      </Button>
+                                    </AppTooltip>
                                   </div>
                                   <Badge
                                     className={

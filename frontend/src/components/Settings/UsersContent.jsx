@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AppTooltip } from "@/components/ui/tooltip";
 
 const UsersContent = () => {
   const [users, setUsers] = useState([]);
@@ -295,36 +296,42 @@ const UsersContent = () => {
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="icons"
-                        size="icon"
-                        className="rounded-full"
-                        title="View Files"
-                        onClick={() => handleViewFiles(user)}
-                      >
-                        <FileSearch className="h-5 w-5" />
-                      </Button>
-                      <Button
-                        variant="icons"
-                        size="icon"
-                        className="rounded-full"
-                        title="View Profile"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setIsViewProfileModal((prev) => !prev);
-                        }}
-                      >
-                        <User className="h-5 w-5" />
-                      </Button>
-                      <Button
-                        variant="icons"
-                        size="icon"
-                        className="rounded-full"
-                        title="Re-invite"
-                        onClick={() => handleReInviteUser(user)}
-                      >
-                        <Mail className="h-5 w-5" />
-                      </Button>
+                      <AppTooltip label="View Files">
+                        <Button
+                          variant="icons"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="View Files"
+                          onClick={() => handleViewFiles(user)}
+                        >
+                          <FileSearch className="h-5 w-5" />
+                        </Button>
+                      </AppTooltip>
+                      <AppTooltip label="View Profile">
+                        <Button
+                          variant="icons"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="View Profile"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsViewProfileModal((prev) => !prev);
+                          }}
+                        >
+                          <User className="h-5 w-5" />
+                        </Button>
+                      </AppTooltip>
+                      <AppTooltip label="Re-invite">
+                        <Button
+                          variant="icons"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Re-invite"
+                          onClick={() => handleReInviteUser(user)}
+                        >
+                          <Mail className="h-5 w-5" />
+                        </Button>
+                      </AppTooltip>
                     </div>
                   </TableCell>
                 </TableRow>

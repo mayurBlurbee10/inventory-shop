@@ -44,7 +44,7 @@ function DeleteConfirmDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="gap-2 border-0 p-0 mb-2 sm:justify-center sm:gap-0 bg-background">
+        <DialogFooter className="gap-2 border-0 p-0 mb-2 sm:justify-center sm:gap-0 bg-transparent">
           <Button
             type="button"
             variant="outline"

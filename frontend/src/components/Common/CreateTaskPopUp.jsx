@@ -149,7 +149,11 @@ const DueDatePicker = ({ value, onChange }) => {
           <span className="text-muted-foreground">Pick a due date</span>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        initialFocus={false}
+      >
         <Calendar
           mode="single"
           selected={selected}
@@ -162,6 +166,16 @@ const DueDatePicker = ({ value, onChange }) => {
             }
           }}
           className="hidden-scrollbar text-secondary-foreground"
+          classNames={{
+            month_caption: "flex items-center justify-center h-9 w-full px-2",
+            dropdowns: "flex items-center gap-1.5 !text-secondary-foreground",
+            caption_label:
+              "select-none font-medium !text-secondary-foreground flex items-center gap-1 pl-2 pr-1 h-8 rounded-md [&>svg]:text-muted-foreground [&>svg]:size-3.5",
+            dropdown_root:
+              "relative border border-input rounded-md bg-background has-focus:ring-ring/50 has-focus:ring-[3px]",
+            dropdown:
+              "hidden-scrollbar bg-popover absolute inset-0 opacity-0 cursor-pointer !text-secondary-foreground [&>option]:bg-popover [&>option]:!text-foreground",
+          }}
         />
       </PopoverContent>
     </Popover>
@@ -676,7 +690,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
                   type="text"
                   required
                   value={formData.title}
-                  className="mt-1 h-auto py-2 text-foreground"
+                  className="mt-1 h-auto py-2 text-secondary-foreground !bg-background"
                   onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                 />
               </div>
@@ -691,7 +705,7 @@ const CreateTaskPopUp = ({ onClose, user = null, onTaskCreated, task = null, onT
                 <Textarea
                   required
                   value={formData.description}
-                  className="mt-1 text-foreground max-h-40 overflow-y-auto"
+                  className="mt-1 text-secondary-foreground max-h-40 overflow-y-auto !bg-background"
                   rows="4"
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 ></Textarea>

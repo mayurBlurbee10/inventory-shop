@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
 import {
@@ -186,24 +187,26 @@ const TrackStatus = ({ trackedRequests }) => {
                             ) : (
                               <div className="flex items-center gap-2">
                                 <StatusBadge status="pending" />
-                                <Button
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  title="Send Reminder"
-                                  onClick={() =>
-                                    handleSendReminder(signer, expandedRow)
-                                  }
-                                >
-                                  {isSendReminderLoading ===
-                                  signer?.embedUrlExternalUserId ? (
-                                    <LoaderSpinner
-                                      size={18}
-                                      className="text-secondary-foreground"
-                                    />
-                                  ) : (
-                                    <Bell className="text-muted-foreground" />
-                                  )}
-                                </Button>
+                                <AppTooltip label="Send Reminder">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    aria-label="Send Reminder"
+                                    onClick={() =>
+                                      handleSendReminder(signer, expandedRow)
+                                    }
+                                  >
+                                    {isSendReminderLoading ===
+                                    signer?.embedUrlExternalUserId ? (
+                                      <LoaderSpinner
+                                        size={18}
+                                        className="text-secondary-foreground"
+                                      />
+                                    ) : (
+                                      <Bell className="text-muted-foreground" />
+                                    )}
+                                  </Button>
+                                </AppTooltip>
                               </div>
                             )}
                           </TableCell>

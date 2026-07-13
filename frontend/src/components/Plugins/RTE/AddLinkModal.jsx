@@ -105,7 +105,7 @@ const AddLinkModal = ({
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0 bg-card">
+        <DialogFooter className="gap-2 sm:gap-0 bg-transparent">
           {initialLink && !isEditMode ? (
             <>
               <Button

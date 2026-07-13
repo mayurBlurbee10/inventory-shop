@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AppTooltip } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -351,51 +352,59 @@ const TermsAndConditionCreation = () => {
                       </TableCell>
                       <TableCell className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="icons"
-                            size="icon"
-                            className="rounded-full"
-                            onClick={() => handleCopy(row)}
-                            title="Copy"
-                            disabled={isCopying === row.id}
-                          >
-                            {isCopying === row.id ? (
-                              <LoaderSpinner size={18} className="text-muted-foreground" />
-                            ) : (
-                              <Copy className="size-4" />
-                            )}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="icons"
-                            size="icon"
-                            className="rounded-full text-secondary-foreground hover:text-secondary-foreground"
-                            onClick={() => handleView(row)}
-                            title="View"
-                          >
-                            <Eye className="size-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="icons"
-                            size="icon"
-                            className="rounded-full text-secondary-foreground hover:text-secondary-foreground"
-                            onClick={() => handleEdit(row)}
-                            title="Edit"
-                          >
-                            <Edit className="size-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="icons"
-                            size="icon"
-                            className="rounded-full text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(row.id)}
-                            title="Delete"
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
+                          <AppTooltip label="Copy">
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon"
+                              className="rounded-full"
+                              aria-label="Copy"
+                              onClick={() => handleCopy(row)}
+                              disabled={isCopying === row.id}
+                            >
+                              {isCopying === row.id ? (
+                                <LoaderSpinner size={18} className="text-muted-foreground" />
+                              ) : (
+                                <Copy className="size-4" />
+                              )}
+                            </Button>
+                          </AppTooltip>
+                          <AppTooltip label="View">
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon"
+                              className="rounded-full text-secondary-foreground hover:text-secondary-foreground"
+                              aria-label="View"
+                              onClick={() => handleView(row)}
+                            >
+                              <Eye className="size-4" />
+                            </Button>
+                          </AppTooltip>
+                          <AppTooltip label="Edit">
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon"
+                              className="rounded-full text-secondary-foreground hover:text-secondary-foreground"
+                              aria-label="Edit"
+                              onClick={() => handleEdit(row)}
+                            >
+                              <Edit className="size-4" />
+                            </Button>
+                          </AppTooltip>
+                          <AppTooltip label="Delete">
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon"
+                              className="rounded-full text-destructive hover:text-destructive"
+                              aria-label="Delete"
+                              onClick={() => handleDelete(row.id)}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </AppTooltip>
                         </div>
                       </TableCell>
                     </TableRow>

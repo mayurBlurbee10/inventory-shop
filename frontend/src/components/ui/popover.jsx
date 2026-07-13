@@ -19,6 +19,7 @@ function PopoverTrigger({
 
 function PopoverContent({
   className,
+  positionerClassName,
   align = "center",
   alignOffset = 0,
   side = "bottom",
@@ -34,7 +35,7 @@ function PopoverContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        className="isolate z-50">
+        className={cn("isolate z-[90]", positionerClassName)}>
         <PopoverPrimitive.Popup
           data-slot="popover-content"
           className={cn(

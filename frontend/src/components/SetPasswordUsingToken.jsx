@@ -192,13 +192,13 @@ export default function SetPasswordUsingToken() {
                   <p className="text-sm text-muted-foreground">Please create a password to sign in. Once completed, you'll be directed to the Universal Portal Wealth Demo homepage.</p>
                 </div>
               <div className="mb-4 space-y-2">
-                <Label className="text-sm font-medium text-foreground">
+                <Label className="text-sm font-medium text-secondary-foreground">
                   Password
                 </Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
-                    className="pr-12 !bg-background text-foreground"
+                    className="pr-12 !bg-background text-secondary-foreground"
                     placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -221,7 +221,7 @@ export default function SetPasswordUsingToken() {
                 </Label>
                 <Input
                   type="password"
-                  className="!bg-background text-foreground"
+                  className="!bg-background text-secondary-foreground"
                   placeholder="Confirm password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

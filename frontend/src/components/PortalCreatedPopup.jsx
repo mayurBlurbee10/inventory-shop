@@ -54,7 +54,7 @@ function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
               Your portal <span className="font-semibold text-foreground">{portalName}</span> has
               been created successfully. Please visit to explore more.
             </DialogDescription>
-            <DialogFooter className="justify-center sm:justify-center">
+            <DialogFooter className="justify-center sm:justify-center bg-transparent">
               <Button
                 type="button"
                 onClick={handleVisitPortal}

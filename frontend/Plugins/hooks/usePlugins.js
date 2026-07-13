@@ -1,6 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import pluginAPIService from '../services/PluginAPIService.js';
+import { BoxAIPluginButton } from '../box-ai/BoxAIPlugin.js';
+
+const PLUGIN_COMPONENT_MAP = {
+  box_ai: BoxAIPluginButton,
+};
 
 // Hook for using the plugin system with backend API
 export const usePlugins = () => {
@@ -116,33 +121,29 @@ export const usePlugins = () => {
   };
 
   // Get active plugin components
-  const getActivePluginComponents = () => {
-    const activePlugins = getActivePlugins();
-    
-    return activePlugins.map(config => {
-      const plugin = availablePlugins.find(p => p.pluginKey === config.pluginKey);
-      
-      if (!plugin) return null;
+  const activePluginComponents = useMemo(() => {
+    if (!pluginsLoaded) return [];
 
-      // Import and return the plugin component
-      switch (plugin.pluginKey) {
-        case 'box_ai':
-          return {
-            key: plugin.pluginKey,
-            component: ({ config: externalConfig = {} }) => {
-              const BoxAIPlugin = require('../box-ai/BoxAIPlugin.js').default;
-              const pluginInstance = new BoxAIPlugin();
-              return pluginInstance.getComponent()({
-                ...externalConfig,
-                pluginData: config
-              });
-            }
-          };
-        default:
-          return null;
-      }
-    }).filter(Boolean);
-  };
+    return portalPluginConfigs
+      .filter((config) => config.isEnabled && config.portalId === portalId)
+      .map((config) => {
+        const plugin = availablePlugins.find(
+          (p) => p.pluginKey === config.pluginKey
+        );
+        if (!plugin) return null;
+
+        const Component = PLUGIN_COMPONENT_MAP[plugin.pluginKey];
+        if (!Component) return null;
+
+        return {
+          key: plugin.pluginKey,
+          component: Component,
+        };
+      })
+      .filter(Boolean);
+  }, [pluginsLoaded, portalPluginConfigs, availablePlugins, portalId]);
+
+  const getActivePluginComponents = () => activePluginComponents;
 
   return {
     pluginsLoaded,
@@ -157,6 +158,7 @@ export const usePlugins = () => {
     addPluginToPortal,
     togglePluginStatus,
     getActivePluginComponents,
+    activePluginComponents,
     refreshPlugins: loadPlugins
   };
 };

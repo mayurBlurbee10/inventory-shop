@@ -129,7 +129,7 @@ export default function CreateFolder({
               <DialogDescription className="text-base font-medium text-success">
                 Folder successfully created!
               </DialogDescription>
-              <DialogFooter className="m-0 justify-center p-0 sm:justify-center">
+              <DialogFooter className="m-0 justify-center p-0 sm:justify-center bg-transparent">
                 <Button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -159,7 +159,7 @@ export default function CreateFolder({
                   }}
                 />
               </div>
-              <DialogFooter className="m-0 gap-2 p-0 sm:justify-center bg-transparent border-0">
+              <DialogFooter className="m-0 gap-2 p-0 sm:justify-center bg-transparent border-0 bg-transparent">
                 <Button
                   type="button"
                   onClick={handleCreateFolder}

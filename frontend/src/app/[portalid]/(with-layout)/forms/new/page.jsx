@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/components/ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -452,15 +453,16 @@ const ApplicationStep = ({
       </form>
 
       <div className="flex items-center justify-between py-10 pl-10">
-        <Button
-          variant="secondary"
-          size="icon"
-          title="Prefill sample data"
-          aria-label="Prefill sample data"
-          onClick={() => setUserData((prev) => ({ ...prev, ...preUserData }))}
-        >
-          <ListChecks className="size-5" />
-        </Button>
+        <AppTooltip label="Prefill sample data">
+          <Button
+            variant="secondary"
+            size="icon"
+            aria-label="Prefill sample data"
+            onClick={() => setUserData((prev) => ({ ...prev, ...preUserData }))}
+          >
+            <ListChecks className="size-5" />
+          </Button>
+        </AppTooltip>
         <FormButton
           type="button"
           variant="default"

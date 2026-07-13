@@ -40,6 +40,7 @@ import RenameDocumentModal from "./Common/RenameDocumentModal";
 import moment from "moment";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
 import { Button } from "./ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { ThemeSwitch } from "./ui/theme-switch";
@@ -785,17 +786,19 @@ const ShareModal = ({
                           </SelectContent>
                         </Select>
                         <div className="sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="icons"
-                            size="icon-sm"
-                            onClick={() => {
-                              handelRemoveCollaborator(content);
-                            }}
-                            className="text-muted-foreground hover:bg-accent"
-                            title="Remove"
-                          >
-                            <Trash2 size={16} />
-                          </Button>
+                          <AppTooltip label="Remove">
+                            <Button
+                              variant="icons"
+                              size="icon-sm"
+                              onClick={() => {
+                                handelRemoveCollaborator(content);
+                              }}
+                              className="text-muted-foreground hover:bg-accent"
+                              aria-label="Remove"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </AppTooltip>
                         </div>
                       </div>
                     </div>
@@ -1498,42 +1501,53 @@ function SharedFolderExplorer({
                                 <div className="flex items-center justify-start gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                                   {/* FOR ONLY FILES */}
                                   {file.type === "file" && !fromAdvisor && (
-                                    <Button variant="icons" size="icon-sm" className="rounded-full text-muted-foreground hover:bg-accent" onClick={(e) => {
-                                        e.stopPropagation();
-                                        handlePreview(file?.id);
-                                      }}
-                                    >
-                                      <Eye className="h-4 w-4 text-muted-foreground" />
-                                    </Button>
+                                    <AppTooltip label="View">
+                                      <Button
+                                        variant="icons"
+                                        size="icon-sm"
+                                        className="rounded-full text-muted-foreground hover:bg-accent"
+                                        aria-label="View"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handlePreview(file?.id);
+                                        }}
+                                      >
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                      </Button>
+                                    </AppTooltip>
                                   )}
 
                                   {file.type === "file" && !fromAdvisor && (
-                                    <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" &&
-                                        file.currentUserRole === "viewer"
-                                          ? "hidden"
-                                          : ""
-                                      }`}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownload(file.id, file.name);
-                                      }}
-                                      title="Download"
-                                    >
-                                      <Download className="h-4 w-4 text-muted-foreground" />
-                                    </Button>
+                                    <AppTooltip label="Download">
+                                      <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" &&
+                                          file.currentUserRole === "viewer"
+                                            ? "hidden"
+                                            : ""
+                                        }`}
+                                        aria-label="Download"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownload(file.id, file.name);
+                                        }}
+                                      >
+                                        <Download className="h-4 w-4 text-muted-foreground" />
+                                      </Button>
+                                    </AppTooltip>
                                   )}
 
                                   {!fromAdvisor && (
-                                    <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" ? "hidden" : ""
-                                      } `}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleShare(file);
-                                      }}
-                                      title="Share"
-                                    >
-                                      <Share2 className="h-4 w-4 text-muted-foreground" />
-                                    </Button>
+                                    <AppTooltip label="Share">
+                                      <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" ? "hidden" : ""
+                                        } `}
+                                        aria-label="Share"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleShare(file);
+                                        }}
+                                      >
+                                        <Share2 className="h-4 w-4 text-muted-foreground" />
+                                      </Button>
+                                    </AppTooltip>
                                   )}
                                 </div>
                               </div>

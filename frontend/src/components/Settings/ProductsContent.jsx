@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AppTooltip } from "@/components/ui/tooltip";
 
 const options = [
   {
@@ -334,32 +335,36 @@ const ProductsContent = () => {
                     </div>
 
                     <div className="flex items-center justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="icons"
-                        size="icon"
-                        className="rounded-full"
-                        onClick={() => {
-                          setIsOpenUpdatePlugin((prev) => !prev);
-                          setPluginEdit(plugin);
-                        }}
-                        title="Edit plugin"
-                      >
-                        <Edit className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="icons"
-                        size="icon"
-                        className="rounded-full text-destructive hover:text-destructive"
-                        onClick={() => {
-                          setIsDeleteModalOpen((prev) => !prev);
-                          setPluginSelected(plugin);
-                        }}
-                        title="Delete plugin"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      <AppTooltip label="Edit plugin">
+                        <Button
+                          type="button"
+                          variant="icons"
+                          size="icon"
+                          className="rounded-full"
+                          aria-label="Edit plugin"
+                          onClick={() => {
+                            setIsOpenUpdatePlugin((prev) => !prev);
+                            setPluginEdit(plugin);
+                          }}
+                        >
+                          <Edit className="size-4" />
+                        </Button>
+                      </AppTooltip>
+                      <AppTooltip label="Delete plugin">
+                        <Button
+                          type="button"
+                          variant="icons"
+                          size="icon"
+                          className="rounded-full text-destructive hover:text-destructive"
+                          aria-label="Delete plugin"
+                          onClick={() => {
+                            setIsDeleteModalOpen((prev) => !prev);
+                            setPluginSelected(plugin);
+                          }}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </AppTooltip>
                     </div>
                   </div>
                   <CardActionLinks />
@@ -391,16 +396,18 @@ const ProductsContent = () => {
                     </div>
                   </div>
 
-                  <Button
-                    type="button"
-                    variant="icons"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={() => setIsAllTaskModalOpen((prev) => !prev)}
-                    title="Edit tasks"
-                  >
-                    <Edit className="size-4" />
-                  </Button>
+                  <AppTooltip label="Edit tasks">
+                    <Button
+                      type="button"
+                      variant="icons"
+                      size="icon"
+                      className="rounded-full"
+                      aria-label="Edit tasks"
+                      onClick={() => setIsAllTaskModalOpen((prev) => !prev)}
+                    >
+                      <Edit className="size-4" />
+                    </Button>
+                  </AppTooltip>
                 </div>
                 <CardActionLinks />
               </CardContent>

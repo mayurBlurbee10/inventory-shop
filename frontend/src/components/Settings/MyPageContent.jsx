@@ -16,6 +16,7 @@ import { ThemeSwitch } from "@/components/ui/theme-switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { AppTooltip } from "@/components/ui/tooltip";
 
 const MyPageContent = () => {
   const params = useParams();
@@ -223,35 +224,39 @@ const MyPageContent = () => {
               {showItem === "pages" && page?.isCustomPage && (
                 <>
                   <div className="ml-auto flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="icons"
-                      size="icon"
-                      className="rounded-full"
-                      onClick={() => {
-                        if (editData) {
-                          setEditData(null);
-                        }
-                        setEditData(page);
-                        setIsOpenAddPageModal(true);
-                      }}
-                      title="Edit page"
-                    >
-                      <Edit className="size-5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="icons"
-                      size="icon"
-                      className="rounded-full text-destructive hover:text-destructive"
-                      onClick={() => {
-                        setIsDeleteModalOpen((prev) => !prev);
-                        setPageSelected(page);
-                      }}
-                      title="Delete page"
-                    >
-                      <Trash2 className="size-5" />
-                    </Button>
+                    <AppTooltip label="Edit page">
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full"
+                        aria-label="Edit page"
+                        onClick={() => {
+                          if (editData) {
+                            setEditData(null);
+                          }
+                          setEditData(page);
+                          setIsOpenAddPageModal(true);
+                        }}
+                      >
+                        <Edit className="size-5" />
+                      </Button>
+                    </AppTooltip>
+                    <AppTooltip label="Delete page">
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full text-destructive hover:text-destructive"
+                        aria-label="Delete page"
+                        onClick={() => {
+                          setIsDeleteModalOpen((prev) => !prev);
+                          setPageSelected(page);
+                        }}
+                      >
+                        <Trash2 className="size-5" />
+                      </Button>
+                    </AppTooltip>
                   </div>
                   {pageSelected?.id === page?.id && (
                     <DeleteConfirmDialog

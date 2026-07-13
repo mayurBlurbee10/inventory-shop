@@ -13,7 +13,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,7 @@ function ViewProfileModal({
     ndaPages: null,
   });
   const [previewUrl, setPreviewUrl] = useState(null);
+  const logoInputRef = useRef(null);
   const handleModelClose = () => {
     handleClose();
     setFormData({
@@ -209,6 +210,10 @@ function ViewProfileModal({
 
         const uploadResult = await uploadResponse.json();
         logoUrl = uploadResult.url;
+      } else if (formData.logo === null && initialFormData.logo) {
+        logoUrl = "";
+      } else if (typeof formData.logo === "string") {
+        logoUrl = formData.logo;
       }
 
       const requestData = {
@@ -370,6 +375,14 @@ function ViewProfileModal({
     }
   };
 
+  const handleRemoveLogo = () => {
+    handleFormChange("logo", null);
+    setPreviewUrl(null);
+    if (logoInputRef.current) {
+      logoInputRef.current.value = "";
+    }
+  };
+
   const validateOnlyDigits = (value) => {
     return /^\d*$/.test(value); // Allows only digits and empty string
   };
@@ -385,6 +398,16 @@ function ViewProfileModal({
     }
   };
 
+  const isRoleDisabled = loggedInUser?.id === user?.id;
+  const isNdaDisabled = loggedInUser?.id === user?.id || isNdaPagesLoading;
+  const enabledFieldClassName = "h-10 !bg-background text-foreground";
+  const readOnlyFieldClassName =
+    "h-10 cursor-not-allowed !bg-muted !text-muted-foreground border-border disabled:pointer-events-auto disabled:opacity-100";
+  const enabledSelectTriggerClassName =
+    "h-11 w-full enabled:!bg-background enabled:text-foreground";
+  const readOnlySelectTriggerClassName =
+    "h-11 w-full cursor-not-allowed !bg-muted !text-muted-foreground border-border [&_svg]:!text-muted-foreground";
+
   return (
     <>
       <Dialog
@@ -399,7 +422,7 @@ function ViewProfileModal({
       >
         <DialogContent
           showCloseButton={false}
-          className="hidden-scrollbar flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-y-auto p-0 sm:max-w-2xl"
+          className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
         >
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-popover p-4">
             <DialogTitle className="text-xl font-medium text-foreground">
@@ -419,7 +442,8 @@ function ViewProfileModal({
             </Button>
           </div>
 
-          <div className="space-y-4 p-4 lg:p-6">
+          <div className="hidden-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+            <div className="space-y-4 p-4 lg:p-6">
             <div className="flex w-full gap-4">
               <div className="w-1/2 space-y-2">
                 <Label className="flex items-center gap-2">
@@ -429,7 +453,7 @@ function ViewProfileModal({
                 <Input
                   type="text"
                   required
-                  className="h-10 !bg-background"
+                  className={cn(enabledFieldClassName)}
                   value={formData.firstName}
                   onChange={(e) => handleFormChange("firstName", e.target.value)}
                 />
@@ -442,22 +466,22 @@ function ViewProfileModal({
                 <Input
                   type="text"
                   required
-                  className="h-10 !bg-background"
+                  className={cn(enabledFieldClassName)}
                   value={formData.lastName}
                   onChange={(e) => handleFormChange("lastName", e.target.value)}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2 text-foreground">
                 <Mail className="h-4 w-4" />
                 Email <span className="text-destructive">*</span>
               </Label>
               <Input
                 type="email"
                 required
-                disabled={true}
-                className="h-10 !bg-background"
+                disabled
+                className={cn(readOnlyFieldClassName)}
                 value={user?.email}
               />
             </div>
@@ -468,7 +492,7 @@ function ViewProfileModal({
               </Label>
               <Input
                 type="text"
-                className={cn("h-10 !bg-background", phoneError && "border-destructive")}
+                className={cn(enabledFieldClassName, phoneError && "border-destructive")}
                 value={formData.phoneNo ?? ""}
                 onChange={handlePhoneChange}
               />
@@ -483,7 +507,7 @@ function ViewProfileModal({
               </Label>
               <Input
                 type="text"
-                className="h-10 !bg-background"
+                className={cn(enabledFieldClassName)}
                 value={formData.title}
                 onChange={(e) => handleFormChange("title", e.target.value)}
               />
@@ -495,69 +519,86 @@ function ViewProfileModal({
               </Label>
               <Input
                 type="text"
-                className="h-10 !bg-background"
+                className={cn(enabledFieldClassName)}
                 value={formData.companyName}
                 onChange={(e) => handleFormChange("companyName", e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2 text-foreground">
                 <UserPlus className="h-4 w-4" />
                 Role <span className="text-destructive">*</span>
               </Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => handleFormChange("role", value)}
-                disabled={loggedInUser?.id === user?.id}
-              >
-                <SelectTrigger className="h-11 w-full !bg-background">
-                  <SelectValue placeholder="Select role..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={UserRole.USER}>User</SelectItem>
-                  <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                  <SelectItem value={UserRole.MODERATOR}>Moderator</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className={cn("w-full", isRoleDisabled && "cursor-not-allowed")}>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) => handleFormChange("role", value)}
+                  disabled={isRoleDisabled}
+                >
+                  <SelectTrigger
+                    disabled={isRoleDisabled}
+                    className={cn(
+                      enabledSelectTriggerClassName,
+                      isRoleDisabled && readOnlySelectTriggerClassName
+                    )}
+                  >
+                    <SelectValue placeholder="Select role..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={UserRole.USER}>User</SelectItem>
+                    <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
+                    <SelectItem value={UserRole.MODERATOR}>Moderator</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2 text-foreground">
                 <Briefcase className="h-4 w-4" />
                 NDA Pages
               </Label>
-              <Select
-                value={formData.ndaPages ?? "none"}
-                onValueChange={(value) =>
-                  handleFormChange("ndaPages", value === "none" ? null : value)
-                }
-                disabled={loggedInUser?.id === user?.id || isNdaPagesLoading}
-              >
-                <SelectTrigger className="h-11 w-full !bg-background">
-                  <SelectValue
-                    placeholder={
-                      isNdaPagesLoading
-                        ? "Fetching NDA pages..."
-                        : "Select NDA pages..."
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No NDA</SelectItem>
-                  {(ndaPages || []).map((page) => (
-                    <SelectItem key={page.value} value={page.value}>
-                      {page.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className={cn("w-full", isNdaDisabled && "cursor-not-allowed")}>
+                <Select
+                  value={formData.ndaPages ?? "none"}
+                  onValueChange={(value) =>
+                    handleFormChange("ndaPages", value === "none" ? null : value)
+                  }
+                  disabled={isNdaDisabled}
+                >
+                  <SelectTrigger
+                    disabled={isNdaDisabled}
+                    className={cn(
+                      enabledSelectTriggerClassName,
+                      isNdaDisabled && readOnlySelectTriggerClassName
+                    )}
+                  >
+                    <SelectValue
+                      placeholder={
+                        isNdaPagesLoading
+                          ? "Fetching NDA pages..."
+                          : "Select NDA pages..."
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No NDA</SelectItem>
+                    {(ndaPages || []).map((page) => (
+                      <SelectItem key={page.value} value={page.value}>
+                        {page.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <Image className="h-4 w-4" />
+                <Image className="h-4 w-4" /> 
                 Company Logo
               </Label>
               <div className="mt-1 flex items-center space-x-4">
                 <input
+                  ref={logoInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileChange}
@@ -565,15 +606,27 @@ function ViewProfileModal({
                 />
               </div>
               {previewUrl && (
-                <div className="mt-2">
-                  <img
-                    src={previewUrl}
-                    alt="Logo preview"
-                    className="h-20 w-20 rounded border border-border object-contain"
-                  />
+                <div className="relative mt-2 w-fit overflow-hidden bg-muted/20">
+                  <div className="flex h-32 items-center justify-center overflow-hidden p-2">
+                    <img
+                      src={previewUrl}
+                      alt="Logo preview"
+                      className="max-h-full max-w-full object-contain rounded-lg"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    title="Remove logo"
+                    aria-label="Remove logo"
+                    className="absolute right-1 top-1 z-10 flex size-7 items-center justify-center rounded-full border-2 border-background bg-card text-secondary-foreground shadow-md transition-colors hover:bg-secondary-foreground/90 hover:text-secondary"
+                  >
+                    <X className="size-3.5" />
+                  </button>
                 </div>
               )}
             </div>
+          </div>
           </div>
           <div className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-border bg-popover p-4">
             <Button

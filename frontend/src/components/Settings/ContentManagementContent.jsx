@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AppTooltip } from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -389,16 +390,18 @@ const ContentManagementContent = ({
                       </p>
                     </div>
 
-                    <Button
-                      type="button"
-                      variant="icons"
-                      size="icon"
-                      className="absolute right-2 top-2 rounded-full"
-                      onClick={() => handleModalOpenForEdit(item.id)}
-                      title="Edit content"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <AppTooltip label="Edit content">
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon"
+                        className="absolute right-2 top-2 rounded-full"
+                        aria-label="Edit content"
+                        onClick={() => handleModalOpenForEdit(item.id)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </AppTooltip>
                   </div>
                 </CardContent>
               </Card>
@@ -416,27 +419,31 @@ const ContentManagementContent = ({
                   Dashboard Welcome Note
                 </h3>
                 <div className="ml-auto flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="icons"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={() => setEditTarget("dashboard")}
-                    title="Edit welcome note"
-                  >
-                    <Edit className="size-5" />
-                  </Button>
-                  {filterValue("Dashboard Heading")?.from === "portalContent" && (
+                  <AppTooltip label="Edit welcome note">
                     <Button
                       type="button"
                       variant="icons"
                       size="icon"
-                      className="rounded-full text-destructive hover:text-destructive"
-                      onClick={() => setDeleteTarget("dashboard")}
-                      title="Remove welcome note"
+                      className="rounded-full"
+                      aria-label="Edit welcome note"
+                      onClick={() => setEditTarget("dashboard")}
                     >
-                      <Trash2 className="size-5" />
+                      <Edit className="size-5" />
                     </Button>
+                  </AppTooltip>
+                  {filterValue("Dashboard Heading")?.from === "portalContent" && (
+                    <AppTooltip label="Remove welcome note">
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full text-destructive hover:text-destructive"
+                        aria-label="Remove welcome note"
+                        onClick={() => setDeleteTarget("dashboard")}
+                      >
+                        <Trash2 className="size-5" />
+                      </Button>
+                    </AppTooltip>
                   )}
                 </div>
               </CardContent>
@@ -448,27 +455,31 @@ const ContentManagementContent = ({
                   Shared Docs Welcome Note
                 </h3>
                 <div className="ml-auto flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="icons"
-                    size="icon"
-                    className="rounded-full"
-                    onClick={() => setEditTarget("sharedDocs")}
-                    title="Edit welcome note"
-                  >
-                    <Edit className="size-5" />
-                  </Button>
-                  {filterValue("Shared Docs Heading")?.from === "portalContent" && (
+                  <AppTooltip label="Edit welcome note">
                     <Button
                       type="button"
                       variant="icons"
                       size="icon"
-                      className="rounded-full text-destructive hover:text-destructive"
-                      onClick={() => setDeleteTarget("sharedDocs")}
-                      title="Remove welcome note"
+                      className="rounded-full"
+                      aria-label="Edit welcome note"
+                      onClick={() => setEditTarget("sharedDocs")}
                     >
-                      <Trash2 className="size-5" />
+                      <Edit className="size-5" />
                     </Button>
+                  </AppTooltip>
+                  {filterValue("Shared Docs Heading")?.from === "portalContent" && (
+                    <AppTooltip label="Remove welcome note">
+                      <Button
+                        type="button"
+                        variant="icons"
+                        size="icon"
+                        className="rounded-full text-destructive hover:text-destructive"
+                        aria-label="Remove welcome note"
+                        onClick={() => setDeleteTarget("sharedDocs")}
+                      >
+                        <Trash2 className="size-5" />
+                      </Button>
+                    </AppTooltip>
                   )}
                 </div>
               </CardContent>
@@ -564,7 +575,7 @@ const ContentManagementContent = ({
               </div>
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="gap-2 sm:gap-0 bg-transparent">
               <Button
                 type="button"
                 variant="outline"

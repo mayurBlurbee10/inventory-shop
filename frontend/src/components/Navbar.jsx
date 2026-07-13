@@ -51,6 +51,7 @@ import { useSocket } from "@/app/lib/useSocket";
 import { getStoredMode, toggleGlobalThemeMode } from "@/app/lib/theme-manager";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/components/ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -295,18 +296,21 @@ function Navbar({ content, config, filterValue }) {
     }
 
     return (
-      <Button
-        type="button"
-        variant="ghost"
-        size="lg"
-        onClick={() => setIsNotificationModalOpen(true)}
-        className={navbarIconBtnClass(isActive)}
-      >
-        <Bell className="size-4" />
-        {notificationCount > 0 && (
-          <span className="absolute right-1 top-1 flex size-2.5 items-center justify-center rounded-full bg-destructive" />
-        )}
-      </Button>
+      <AppTooltip label="Notifications">
+        <Button
+          type="button"
+          variant="ghost"
+          size="lg"
+          onClick={() => setIsNotificationModalOpen(true)}
+          className={navbarIconBtnClass(isActive)}
+          aria-label="Notifications"
+        >
+          <Bell className="size-4" />
+          {notificationCount > 0 && (
+            <span className="absolute right-1 top-1 flex size-2.5 items-center justify-center rounded-full bg-destructive" />
+          )}
+        </Button>
+      </AppTooltip>
     );
   };
 
@@ -739,33 +743,41 @@ function Navbar({ content, config, filterValue }) {
               <div className="hidden md:block">
                 <PluginRenderer config={config} pluginKeys={['box_ai']} />
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="lg"
-                onClick={handleToggleThemeMode}
-                className={navbarIconBtnClass(false) + " mx-2"}
-                title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                aria-label="Toggle theme"
+              <AppTooltip
+                label={
+                  themeMode === "dark"
+                    ? "Switch to light mode"
+                    : "Switch to dark mode"
+                }
               >
-                {themeMode === "dark" ? (
-                  <Sun className="size-5" />
-                ) : (
-                  <Moon className="size-5" />
-                )}
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  onClick={handleToggleThemeMode}
+                  className={navbarIconBtnClass(false) + " mx-2"}
+                  aria-label="Toggle theme"
+                >
+                  {themeMode === "dark" ? (
+                    <Sun className="size-5" />
+                  ) : (
+                    <Moon className="size-5" />
+                  )}
+                </Button>
+              </AppTooltip>
               <NotificationNavButton />
-              <Button
-                type="button"
-                variant="ghost"
-                size="lg"
-                onClick={openMessageDrawer}
-                className={navbarIconBtnClass(isMessageDrawerOpen) + " mx-2"}
-                title="Messages"
-                aria-label="Messages"
-              >
-                <MessageSquare className="size-5" />
-              </Button>
+              <AppTooltip label="Messages">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  onClick={openMessageDrawer}
+                  className={navbarIconBtnClass(isMessageDrawerOpen) + " mx-2"}
+                  aria-label="Messages"
+                >
+                  <MessageSquare className="size-5" />
+                </Button>
+              </AppTooltip>
               <DropdownMenu
                 open={desktopAccountMenuOpen}
                 onOpenChange={setDesktopAccountMenuOpen}
@@ -829,21 +841,28 @@ function Navbar({ content, config, filterValue }) {
 
             {/* Mobile header actions */}
             <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 xl:hidden">
-              <Button
-                type="button"
-                variant="ghost"
-                size="lg"
-                onClick={handleToggleThemeMode}
-                className={navbarIconBtnClass(false)}
-                title={themeMode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                aria-label="Toggle theme"
+              <AppTooltip
+                label={
+                  themeMode === "dark"
+                    ? "Switch to light mode"
+                    : "Switch to dark mode"
+                }
               >
-                {themeMode === "dark" ? (
-                  <Sun />
-                ) : (
-                  <Moon />
-                )}
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  onClick={handleToggleThemeMode}
+                  className={navbarIconBtnClass(false)}
+                  aria-label="Toggle theme"
+                >
+                  {themeMode === "dark" ? (
+                    <Sun />
+                  ) : (
+                    <Moon />
+                  )}
+                </Button>
+              </AppTooltip>
               <Button
                 variant="ghost"
                 size="icon-lg"

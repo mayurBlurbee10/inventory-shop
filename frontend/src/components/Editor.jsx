@@ -574,7 +574,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
           </div>
         </div>
 
-        <DialogFooter className="mx-0 mb-0 gap-2 rounded-none border-t border-border bg-muted/30 px-4 py-3">
+        <DialogFooter className="mx-0 mb-0 gap-2 rounded-none border-t border-border bg-muted/30 px-4 py-3 bg-transparent">
           <Button
             type="button"
             variant="outline"

@@ -301,7 +301,7 @@ function AddPageModal({
               )}
             </div>
 
-            <DialogFooter className="gap-2 border-t border-border bg-card sm:gap-2">
+            <DialogFooter className="gap-2 border-t border-border bg-card sm:gap-2 bg-transparent">
               <Button
                 type="button"
                 variant="outline"
@@ -341,7 +341,7 @@ function AddPageModal({
               This action CANNOT be undone. This will not save your page.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 border-t border-border bg-muted/30 sm:gap-2">
+          <DialogFooter className="gap-2 border-t border-border bg-transparent sm:gap-2">
             <Button
               type="button"
               variant="outline"

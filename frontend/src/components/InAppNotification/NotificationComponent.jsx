@@ -25,6 +25,7 @@ import { decryptMessage } from "@/app/lib/crypto";
 import { cn } from "@/app/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -288,16 +289,17 @@ const NotificationComponent = () => {
               </div>
             </div>
             <div className="flex w-full max-w-sm flex-row items-stretch gap-2 sm:w-auto sm:items-center">
-              <Button
-                variant="secondary"
-                size="icon"
-                className="group"
-                onClick={() => getNotifications()}
-                title="Refresh"
-                aria-label="Refresh"
-              >
-                <RotateCw className="h-5 w-5 transition-transform duration-300 ease-in-out group-hover:rotate-[360deg]" />
-              </Button>
+              <AppTooltip label="Refresh">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="group"
+                  onClick={() => getNotifications()}
+                  aria-label="Refresh"
+                >
+                  <RotateCw className="h-5 w-5 transition-transform duration-300 ease-in-out group-hover:rotate-[360deg]" />
+                </Button>
+              </AppTooltip>
 
               {unreadCount > 0 && (
                 <Button
@@ -460,59 +462,65 @@ const NotificationComponent = () => {
 
                       <div className="ml-4 flex items-center space-x-2">
                         {notification?.status === "unread" && (
+                          <AppTooltip label="Mark as read">
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="text-primary-solid"
+                              aria-label="Mark as read"
+                              onClick={() => markAsRead(notification)}
+                            >
+                              {isMarkRead === notification.id ? (
+                                <LoaderSpinner
+                                  size={12}
+                                  className="text-secondary-foreground"
+                                  wrapperClassName="flex h-4 w-4 shrink-0 items-center justify-center"
+                                  aria-hidden
+                                />
+                              ) : (
+                                <CheckCheck className="h-4 w-4 shrink-0" />
+                              )}
+                            </Button>
+                          </AppTooltip>
+                        )}
+                        {notification.url && (
+                          <AppTooltip label="Open link">
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="text-primary-solid"
+                              aria-label="Open link"
+                              onClick={(e) =>
+                                handleNavigateToUrl(
+                                  e,
+                                  notification.url,
+                                  notification,
+                                )
+                              }
+                            >
+                              <ExternalLink className="h-4 w-4 shrink-0" />
+                            </Button>
+                          </AppTooltip>
+                        )}
+                        <AppTooltip label="Remove notification">
                           <Button
-                            variant="ghost"
+                            variant="destructive"
                             size="icon-sm"
-                            className="text-primary-solid"
-                            onClick={() => markAsRead(notification)}
-                            title="Mark as read"
+                            aria-label="Remove notification"
+                            onClick={() => removeNotification(notification)}
                           >
-                            {isMarkRead === notification.id ? (
+                            {isRemoving === notification.id ? (
                               <LoaderSpinner
                                 size={12}
-                                className="text-secondary-foreground"
+                                className="text-destructive"
                                 wrapperClassName="flex h-4 w-4 shrink-0 items-center justify-center"
                                 aria-hidden
                               />
                             ) : (
-                              <CheckCheck className="h-4 w-4 shrink-0" />
+                              <X className="h-4 w-4 shrink-0" />
                             )}
                           </Button>
-                        )}
-                        {notification.url && (
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-primary-solid"
-                            onClick={(e) =>
-                              handleNavigateToUrl(
-                                e,
-                                notification.url,
-                                notification,
-                              )
-                            }
-                            title="Open link"
-                          >
-                            <ExternalLink className="h-4 w-4 shrink-0" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="destructive"
-                          size="icon-sm"
-                          onClick={() => removeNotification(notification)}
-                          title="Remove notification"
-                        >
-                          {isRemoving === notification.id ? (
-                            <LoaderSpinner
-                              size={12}
-                              className="text-destructive"
-                              wrapperClassName="flex h-4 w-4 shrink-0 items-center justify-center"
-                              aria-hidden
-                            />
-                          ) : (
-                            <X className="h-4 w-4 shrink-0" />
-                          )}
-                        </Button>
+                        </AppTooltip>
                       </div>
                     </div>
                   </CardContent>

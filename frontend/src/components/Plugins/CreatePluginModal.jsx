@@ -11,6 +11,7 @@ import { PluginType } from "@/config/constants";
 import DeleteConfirmDialog from "../DeleteConfirmDialog";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 import { Button } from "@/components/ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -50,26 +51,30 @@ const PageListItem = ({
         {page?.title?.charAt(0).toUpperCase() + page?.title?.slice(1)}
       </span>
       <div className="ml-auto flex items-center gap-2">
-        <Button
-          type="button"
-          variant="icons"
-          size="icon"
-          className="rounded-full"
-          onClick={() => onEdit(page)}
-          title="Edit page"
-        >
-          <Edit className="size-5" />
-        </Button>
-        <Button
-          type="button"
-          variant="icons"
-          size="icon"
-          className="rounded-full text-destructive hover:text-destructive"
-          onClick={() => onDelete(page)}
-          title="Delete page"
-        >
-          <Trash2 className="size-5" />
-        </Button>
+        <AppTooltip label="Edit page">
+          <Button
+            type="button"
+            variant="icons"
+            size="icon"
+            className="rounded-full"
+            aria-label="Edit page"
+            onClick={() => onEdit(page)}
+          >
+            <Edit className="size-5" />
+          </Button>
+        </AppTooltip>
+        <AppTooltip label="Delete page">
+          <Button
+            type="button"
+            variant="icons"
+            size="icon"
+            className="rounded-full text-destructive hover:text-destructive"
+            aria-label="Delete page"
+            onClick={() => onDelete(page)}
+          >
+            <Trash2 className="size-5" />
+          </Button>
+        </AppTooltip>
       </div>
     </div>
     {deleteTarget?.id === page?.id && (
@@ -228,7 +233,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
             )}
           </div>
 
-          <DialogFooter className="flex w-full items-center justify-between gap-2 sm:justify-between">
+          <DialogFooter className="flex w-full items-center justify-between gap-2 sm:justify-between bg-transparent">
             {(plugin?.type === PluginType.TNC &&
               plugin?.pages &&
               plugin.pages?.length < 1) ||
@@ -532,7 +537,7 @@ export const CreatePluginModal = ({
               )}
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="gap-2 sm:gap-0 bg-transparent">
               <Button
                 type="button"
                 variant="outline"

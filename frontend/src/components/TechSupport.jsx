@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/components/ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
@@ -295,16 +296,18 @@ function TechSupport({ isOpen, onClose }) {
                             </div>
                           </div>
 
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => removeFile(index)}
-                            className="text-muted-foreground hover:text-destructive"
-                            title="Remove file"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
+                          <AppTooltip label="Remove file">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => removeFile(index)}
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label="Remove file"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                          </AppTooltip>
                         </div>
                       );
                     })}

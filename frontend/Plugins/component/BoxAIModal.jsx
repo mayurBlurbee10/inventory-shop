@@ -9,6 +9,7 @@ import {
   Link,
   FileText,
   Copy,
+  GripVertical,
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { toast } from "react-toastify";
@@ -20,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/app/lib/utils";
+import { AppTooltip } from "@/components/ui/tooltip";
 
 /** Collapse whitespace / underscores for comparing Box citation snippets to answer text */
 function normalizeForCitationMatch(s) {
@@ -516,9 +518,16 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
   const [expandedCitations, setExpandedCitations] = useState({});
   const [filteredCitations, setFilteredCitations] = useState({});
   const [lastQuery, setLastQuery] = useState(null);
+  const [panelWidth, setPanelWidth] = useState(() => {
+    if (typeof window === "undefined") return 640;
+    return Math.min(1024, Math.max(360, Math.round(window.innerWidth * 0.45)));
+  });
+  const [isResizing, setIsResizing] = useState(false);
   const modalRef = useRef(null);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const resizeRef = useRef({ startX: 0, startWidth: 0 });
+  const openedAtRef = useRef(0);
   const { data: config } = useSelector((state) => state.portal);
   const lastAIErrorMessage = [...messages]
     .reverse()
@@ -527,6 +536,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
+      openedAtRef.current = Date.now();
     } else {
       const timer = setTimeout(() => {
         setIsAnimating(false);
@@ -534,6 +544,51 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const handleResizeStart = (clientX) => {
+    resizeRef.current = { startX: clientX, startWidth: panelWidth };
+    setIsResizing(true);
+  };
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const updateWidth = (clientX) => {
+      const { startX, startWidth } = resizeRef.current;
+      const delta = startX - clientX;
+      const maxWidth = Math.round(window.innerWidth * 0.9);
+      const nextWidth = Math.min(maxWidth, Math.max(360, startWidth + delta));
+      setPanelWidth(nextWidth);
+    };
+
+    const handleMouseMove = (e) => {
+      updateWidth(e.clientX);
+    };
+
+    const handleTouchMove = (e) => {
+      updateWidth(e.touches[0].clientX);
+    };
+
+    const handleResizeEnd = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleResizeEnd);
+    document.addEventListener("touchmove", handleTouchMove, { passive: true });
+    document.addEventListener("touchend", handleResizeEnd);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleResizeEnd);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleResizeEnd);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizing]);
 
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
@@ -683,6 +738,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
   };
 
   const handleBackdropClick = (e) => {
+    if (Date.now() - openedAtRef.current < 300) return;
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -929,11 +985,45 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
       <div
         ref={modalRef}
         className={cn(
-          "flex h-full w-full max-w-5xl flex-col overflow-hidden border-border bg-background shadow-2xl transition-all duration-300 ease-in-out lg:rounded-l-[2%]",
+          "relative flex h-full flex-col overflow-visible border-border bg-background shadow-2xl lg:rounded-l-[2%]",
+          isResizing
+            ? "transition-none"
+            : "transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
-        style={{ maxHeight: "100vh" }}
+        style={{ width: panelWidth, maxHeight: "100vh" }}
       >
+        <AppTooltip label="Resize">
+          <button
+            type="button"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize panel"
+            className={cn(
+              "absolute left-0 top-1/2 z-[60] flex -translate-x-1/2 -translate-y-1/2 cursor-col-resize items-center justify-center rounded-md border border-border bg-card p-1 shadow-md transition-colors group/resizer",
+              isResizing
+                ? "border-primary bg-primary/10"
+                : "hover:border-muted-foreground/50 hover:bg-accent"
+            )}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleResizeStart(e.clientX);
+            }}
+            onTouchStart={(e) => {
+              handleResizeStart(e.touches[0].clientX);
+            }}
+          >
+            <GripVertical
+              className={cn(
+                "h-4 w-4",
+                isResizing
+                  ? "text-primary"
+                  : "text-muted-foreground group-hover/resizer:text-foreground"
+              )}
+            />
+          </button>
+        </AppTooltip>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:rounded-l-[2%]">
         <div className="flex items-center justify-between border-b border-border bg-card p-4">
           <div className="flex items-center gap-3">
             <BrainCog className="h-4 w-4 text-primary-solid" />
@@ -941,37 +1031,40 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
           </div>
           <div className="flex items-center gap-2">
             {messages.length > 0 && !isLoading && (
+              <AppTooltip label="Clear chat">
+                <Button
+                  type="button"
+                  variant="icons"
+                  size="icon-sm"
+                  onClick={clearChat}
+                  className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  aria-label="Clear chat"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AppTooltip>
+            )}
+            <AppTooltip label="Close">
               <Button
                 type="button"
                 variant="icons"
                 size="icon-sm"
-                onClick={clearChat}
+                onClick={onClose}
                 className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
-                title="Clear chat"
+                aria-label="Close"
               >
-                <Trash2 className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </Button>
-            )}
-            <Button
-              type="button"
-              variant="icons"
-              size="icon-sm"
-              onClick={onClose}
-              className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            </AppTooltip>
           </div>
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden">
-          {isHubsLoading && (
-            <div className="flex items-center justify-center py-24">
+          {isHubsLoading ? (
+            <div className="flex flex-1 items-center justify-center">
               <LoaderSpinner size={32} className="text-secondary-foreground" />
             </div>
-          )}
-          {messages.length === 0 && !isHubsLoading ? (
+          ) : messages.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
               <div className="mb-6">
                 <BrainCog className="h-6 w-6 text-secondary-foreground" />
@@ -1058,19 +1151,20 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                                 Copied!
                               </Badge>
                             )}
-                            <Button
-                              type="button"
-                              variant="icons"
-                              size="icon-sm"
-                              onClick={() =>
-                                handleCopyToClipboard(msg.content, msg?.id)
-                              }
-                              className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
-                              title="Copy to clipboard"
-                              aria-label="Copy message to clipboard"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                            <AppTooltip label="Copy to clipboard">
+                              <Button
+                                type="button"
+                                variant="icons"
+                                size="icon-sm"
+                                onClick={() =>
+                                  handleCopyToClipboard(msg.content, msg?.id)
+                                }
+                                className="!px-3 !py-3 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                aria-label="Copy message to clipboard"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </AppTooltip>
                           </div>
                         )}
                       </div>
@@ -1240,43 +1334,45 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
             </div>
           )}
           <div className="border-t border-border bg-card p-4">
-            <div className="relative">
-              <div className="flex items-end gap-2">
-                <div className="relative flex-1">
-                  <Textarea
-                    ref={textareaRef}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={
-                      isHubsLoading
-                        ? "Loading hubs..."
-                        : hubs.length === 0
-                          ? "No hubs available"
-                          : "Ask Box AI"
-                    }
-                    disabled={isHubsLoading}
-                    className="hidden-scrollbar min-h-[48px] max-h-32 resize-none border-border bg-background pr-12 text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                    rows={1}
-                  />
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    onClick={handleSendMessage}
-                    disabled={!message.trim() || isLoading || isHubsLoading}
-                    className="absolute bottom-3 right-2 !h-8 !w-8 !rounded-full !px-0 !py-0"
-                    aria-label="Send message"
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Press Enter to send, Shift+Enter for new line</span>
-                <span>{message.length}/2000</span>
-              </div>
+            <div className="flex items-center gap-2 rounded-lg border border-input px-3 py-2">
+              <Textarea
+                ref={textareaRef}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={
+                  isHubsLoading
+                    ? "Loading hubs..."
+                    : hubs.length === 0
+                      ? "No hubs available"
+                      : "Ask Box AI"
+                }
+                disabled={isHubsLoading || hubs.length === 0}
+                className="hidden-scrollbar min-h-[40px] max-h-32 flex-1 resize-none border-0 bg-transparent p-0 text-foreground shadow-none placeholder:text-muted-foreground focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-transparent"
+                rows={1}
+              />
+              <Button
+                type="button"
+                size="icon-sm"
+                onClick={handleSendMessage}
+                disabled={
+                  !message.trim() ||
+                  isLoading ||
+                  isHubsLoading ||
+                  hubs.length === 0
+                }
+                className="shrink-0 !size-8 !rounded-full !px-0 !py-0 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-primary/50 disabled:text-primary-foreground disabled:opacity-100"
+                aria-label="Send message"
+              >
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Press Enter to send, Shift+Enter for new line</span>
+              <span>{message.length}/2000</span>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

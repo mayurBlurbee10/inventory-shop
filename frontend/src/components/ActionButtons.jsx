@@ -130,7 +130,7 @@ export default function ActionButtons({
                 <DialogDescription className="mb-4 text-base text-success">
                   Folder successfully created!
                 </DialogDescription>
-                <DialogFooter className="justify-center">
+                <DialogFooter className="justify-center bg-transparent">
                   <Button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
@@ -151,7 +151,7 @@ export default function ActionButtons({
                   className="w-full !bg-background text-foreground"
                   disabled={isLoading}
                 />
-                <DialogFooter className="mt-4 gap-2">
+                <DialogFooter className="mt-4 gap-2 bg-transparent">
                   <Button
                     type="button"
                     variant="outline"

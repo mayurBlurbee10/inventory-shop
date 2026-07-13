@@ -22,6 +22,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { ThemeSwitch } from "./ui/theme-switch";
 import { Button } from "@/components/ui/button";
+import { AppTooltip } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -496,16 +497,18 @@ const ShareModal = ({
                       </SelectContent>
                     </Select>
                     <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                      <Button
-                        type="button"
-                        variant="icons"
-                        size="icon-sm"
-                        onClick={() => handelRemoveCollaborator(content)}
-                        className="text-muted-foreground hover:bg-accent"
-                        title="Remove"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
+                      <AppTooltip label="Remove">
+                        <Button
+                          type="button"
+                          variant="icons"
+                          size="icon-sm"
+                          onClick={() => handelRemoveCollaborator(content)}
+                          className="text-muted-foreground hover:bg-accent"
+                          aria-label="Remove"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </AppTooltip>
                     </div>
                   </div>
                 </div>
@@ -854,50 +857,57 @@ function FolderExplorer({
                   <div className="flex items-center justify-end">
                     <div className="flex items-center justify-start gap-2 opacity-0 group-hover:opacity-100">
                       {file.type === "file" && (
-                        <Button
-                          type="button"
-                          variant="icons"
-                          size="icon-sm"
-                          className="rounded-full text-muted-foreground hover:bg-accent"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePreview(file?.id);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {pathName.includes("/home") && (
-                        <Button
-                          type="button"
-                          variant="icons"
-                          size="icon-sm"
-                          className="rounded-full text-muted-foreground hover:bg-accent"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(file);
-                          }}
-                          title="Share"
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {file.type === "file" &&
-                        (listType !== "shared" ||
-                          file.currentUserRole !== "viewer") && (
+                        <AppTooltip label="View">
                           <Button
                             type="button"
                             variant="icons"
                             size="icon-sm"
                             className="rounded-full text-muted-foreground hover:bg-accent"
+                            aria-label="View"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDownload(file.id, file.name);
+                              handlePreview(file?.id);
                             }}
-                            title="Download"
                           >
-                            <Download className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
+                        </AppTooltip>
+                      )}
+                      {pathName.includes("/home") && (
+                        <AppTooltip label="Share">
+                          <Button
+                            type="button"
+                            variant="icons"
+                            size="icon-sm"
+                            className="rounded-full text-muted-foreground hover:bg-accent"
+                            aria-label="Share"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(file);
+                            }}
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        </AppTooltip>
+                      )}
+                      {file.type === "file" &&
+                        (listType !== "shared" ||
+                          file.currentUserRole !== "viewer") && (
+                          <AppTooltip label="Download">
+                            <Button
+                              type="button"
+                              variant="icons"
+                              size="icon-sm"
+                              className="rounded-full text-muted-foreground hover:bg-accent"
+                              aria-label="Download"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(file.id, file.name);
+                              }}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </AppTooltip>
                         )}
                     </div>
 
@@ -1006,50 +1016,57 @@ function FolderExplorer({
                           </div>
                           <div className="flex items-center justify-end">
                             {file.type === "file" && (
-                              <Button
-                                type="button"
-                                variant="icons"
-                                size="icon-sm"
-                                className="rounded-full text-muted-foreground hover:bg-accent"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handlePreview(file?.id);
-                                }}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {pathName.includes("/home") && (
-                              <Button
-                                type="button"
-                                variant="icons"
-                                size="icon-sm"
-                                className="rounded-full text-muted-foreground hover:bg-accent"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleShare(file);
-                                }}
-                                title="Share"
-                              >
-                                <Share2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {file.type === "file" &&
-                              (listType !== "shared" ||
-                                file.currentUserRole !== "viewer") && (
+                              <AppTooltip label="View">
                                 <Button
                                   type="button"
                                   variant="icons"
                                   size="icon-sm"
                                   className="rounded-full text-muted-foreground hover:bg-accent"
+                                  aria-label="View"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDownload(file.id, file.name);
+                                    handlePreview(file?.id);
                                   }}
-                                  title="Download"
                                 >
-                                  <Download className="h-4 w-4" />
+                                  <Eye className="h-4 w-4" />
                                 </Button>
+                              </AppTooltip>
+                            )}
+                            {pathName.includes("/home") && (
+                              <AppTooltip label="Share">
+                                <Button
+                                  type="button"
+                                  variant="icons"
+                                  size="icon-sm"
+                                  className="rounded-full text-muted-foreground hover:bg-accent"
+                                  aria-label="Share"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleShare(file);
+                                  }}
+                                >
+                                  <Share2 className="h-4 w-4" />
+                                </Button>
+                              </AppTooltip>
+                            )}
+                            {file.type === "file" &&
+                              (listType !== "shared" ||
+                                file.currentUserRole !== "viewer") && (
+                                <AppTooltip label="Download">
+                                  <Button
+                                    type="button"
+                                    variant="icons"
+                                    size="icon-sm"
+                                    className="rounded-full text-muted-foreground hover:bg-accent"
+                                    aria-label="Download"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownload(file.id, file.name);
+                                    }}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                </AppTooltip>
                               )}
                             {listType !== "shared" && (
                               <>

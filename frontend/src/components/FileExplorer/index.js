@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AppTooltip } from "@/components/ui/tooltip";
 const ShareModal = ({ isOpen, onClose, fileName }) => {
   const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
@@ -372,41 +373,47 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {}, isInDial
 
           {!isFolder && (
             <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePreview(file.id);
-                }}
-                className="p-1.5 hover:bg-muted rounded-md text-muted-foreground disabled:opacity-50"
-                title="Preview"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <LoaderSpinner size={24} className="text-primary" />
-                ) : (
-                  <Eye size={16} />
-                )}
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleShare(file.name);
-                }}
-                className="p-1.5 hover:bg-muted rounded-md text-muted-foreground"
-                title="Share"
-              >
-                <Share2 size={16} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDownload(file.id, file.name);
-                }}
-                className="p-1.5 hover:bg-muted rounded-md text-muted-foreground"
-                title="Download"
-              >
-                <Download size={16} />
-              </button>
+              <AppTooltip label="Preview">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePreview(file.id);
+                  }}
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-50"
+                  aria-label="Preview"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <LoaderSpinner size={24} className="text-primary" />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
+              </AppTooltip>
+              <AppTooltip label="Share">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShare(file.name);
+                  }}
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
+                  aria-label="Share"
+                >
+                  <Share2 size={16} />
+                </button>
+              </AppTooltip>
+              <AppTooltip label="Download">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload(file.id, file.name);
+                  }}
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
+                  aria-label="Download"
+                >
+                  <Download size={16} />
+                </button>
+              </AppTooltip>
             </div>
           )}
         </div>

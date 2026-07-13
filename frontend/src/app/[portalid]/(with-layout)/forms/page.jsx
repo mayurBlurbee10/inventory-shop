@@ -15,6 +15,7 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { cn } from "@/app/lib/utils";
+import { AppTooltip } from "@/components/ui/tooltip";
 import {
   Card,
   CardContent,
@@ -88,7 +89,7 @@ function LoansPage() {
       <div>
         {/* Header */}
         <Card className="mb-6 mt-12">
-          <CardHeader className="flex-row items-start justify-between gap-3 border-b border-border bg-gradient-to-r from-muted/50 to-card p-4">
+          <CardHeader className="flex-row items-start justify-between gap-3 border-b border-border bg-gradient-to-r from-muted/50 to-card p-4 rounded-lg">
             <div className="min-w-0">
               <CardTitle className="text-lg">Custom Forms</CardTitle>
               <CardDescription>
@@ -130,16 +131,17 @@ function LoansPage() {
       {/* Search + Refresh */}
       <div className="flex flex-col pt-8">
         <div className="flex items-center justify-end pb-5">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-destructive hover:text-destructive"
-            onClick={handleRefresh}
-            title="Refresh"
-            aria-label="Refresh"
-          >
-            <RotateCw className="h-4 w-4" />
-          </Button>
+          <AppTooltip label="Refresh">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-destructive"
+              onClick={handleRefresh}
+              aria-label="Refresh"
+            >
+              <RotateCw className="h-4 w-4" />
+            </Button>
+          </AppTooltip>
         </div>
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

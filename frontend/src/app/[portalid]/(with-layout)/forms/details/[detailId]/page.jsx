@@ -1,12 +1,17 @@
 "use client";
+
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { cn } from "@/app/lib/utils";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import Documents from "@/components/Documents";
 import { getUserData } from "@/lib/auth";
 import { setLoans } from "@/store/services/loanService";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const calculatePercentage = (value, totalValue) => {
@@ -14,6 +19,18 @@ const calculatePercentage = (value, totalValue) => {
     return 0;
   }
   return (value / totalValue) * 100;
+};
+
+const getStatusBadgeClass = (status) => {
+  if (status === "Fully Paid") return "border-success text-success";
+  if (status === "Active") return "border-primary-solid text-primary-solid";
+  return "border-warning text-warning";
+};
+
+const getProgressBarClass = (status) => {
+  if (status === "Fully Paid") return "bg-success";
+  if (status === "Active") return "bg-primary";
+  return "bg-warning";
 };
 
 function DetailsPage() {
@@ -48,7 +65,7 @@ function DetailsPage() {
       const response = await fetchWrapper(
         `/api/box/folders?folderId=${userData?.boxFolderId}`,
         { method: "GET" },
-        "fetch-file"
+        "fetch-file",
       );
       if (!response.ok) throw new Error("Failed to fetch files");
 
@@ -64,10 +81,10 @@ function DetailsPage() {
 
   const isRecoverableFolderError = (errorMsg) =>
     /same name|already exists|reserved by another processing|name is in use|wait and retry/i.test(
-      errorMsg || ""
+      errorMsg || "",
     );
 
-  const handleGetFolderId = async (loan) => {
+  const handleGetFolderId = async (loanItem) => {
     try {
       setIsLoading(true);
       const files = await getFiles();
@@ -91,23 +108,27 @@ function DetailsPage() {
               boxFolderId: userData?.boxFolderId,
             }),
           },
-          "create-folder"
+          "create-folder",
         );
 
         const folderData = await response.json();
         if (!response.ok) {
           const canRecover =
-            response.status === 409 || isRecoverableFolderError(folderData?.error);
+            response.status === 409 ||
+            isRecoverableFolderError(folderData?.error);
           if (canRecover) {
             await sleep(1500);
             const refreshedFiles = await getFiles();
-            const existingForms = findFolderWithName(refreshedFiles || [], "Forms");
+            const existingForms = findFolderWithName(
+              refreshedFiles || [],
+              "Forms",
+            );
             loansId = existingForms?.id;
             if (existingForms) loansFolder = existingForms;
           }
           if (!loansId) {
             throw new Error(
-              folderData?.error || "Failed to create or find Forms folder"
+              folderData?.error || "Failed to create or find Forms folder",
             );
           }
         } else {
@@ -118,7 +139,7 @@ function DetailsPage() {
       let loanFolder = await new Promise((resolve) => {
         const foundItems = findFolderWithName(
           loansFolder?.children || [],
-          loan?.name
+          loanItem?.name,
         );
         resolve(foundItems);
       });
@@ -128,27 +149,34 @@ function DetailsPage() {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: loan?.name, boxFolderId: loansId }),
+            body: JSON.stringify({
+              name: loanItem?.name,
+              boxFolderId: loansId,
+            }),
           },
-          "create-folder"
+          "create-folder",
         );
 
         const loanFolderData = await res.json();
         if (!res.ok) {
           const canRecover =
-            res.status === 409 || isRecoverableFolderError(loanFolderData?.error);
+            res.status === 409 ||
+            isRecoverableFolderError(loanFolderData?.error);
           if (canRecover) {
             await sleep(1500);
             const refreshedFiles = await getFiles();
-            const refreshedForms = findFolderWithName(refreshedFiles || [], "Forms");
+            const refreshedForms = findFolderWithName(
+              refreshedFiles || [],
+              "Forms",
+            );
             loanFolder = findFolderWithName(
               refreshedForms?.children || [],
-              loan?.name
+              loanItem?.name,
             );
           }
           if (!loanFolder) {
             throw new Error(
-              loanFolderData?.error || "Failed to create or find loan folder"
+              loanFolderData?.error || "Failed to create or find loan folder",
             );
           }
         } else {
@@ -171,7 +199,9 @@ function DetailsPage() {
     if (fetchInProgressRef.current) return;
 
     const foundLoan = loanData.find(
-      (d) => String(d.id) === String(params.detailId) || d.id === Number(params.detailId)
+      (d) =>
+        String(d.id) === String(params.detailId) ||
+        d.id === Number(params.detailId),
     );
     if (!foundLoan) return;
     if (foundLoan.folderId) {
@@ -187,8 +217,8 @@ function DetailsPage() {
         const folderId = await handleGetFolderId(foundLoan);
         if (folderId != null) {
           foundLoan.folderId = folderId;
-          const updatedLoans = loanData.map((loan) =>
-            loan.id === foundLoan.id ? foundLoan : loan
+          const updatedLoans = loanData.map((loanItem) =>
+            loanItem.id === foundLoan.id ? foundLoan : loanItem,
           );
           dispatch(setLoans(updatedLoans));
         }
@@ -200,87 +230,105 @@ function DetailsPage() {
     fetchLoanFolder();
   }, [params?.detailId, loanData]);
 
-  if (!loan) return <p>Loading loan details...</p>;
+  if (!loan) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center bg-background font-lato">
+        <LoaderSpinner size={32} className="text-secondary-foreground" />
+      </div>
+    );
+  }
+
+  const detailRows = [
+    { label: "Type", value: loan?.type },
+    { label: "Start Date", value: "11/04/2016" },
+    { label: "End Date", value: "04/04/2025" },
+    { label: "Loan Amount", value: "$56,495" },
+    { label: "Downpayment", value: "$10,000" },
+    { label: "APR", value: "4.70%" },
+  ];
 
   return (
-    <div className="bg-white rounded-lg flex flex-col relative w-full lg:max-w-[1140px] md:max-w-[720px] max-w-[540px] mx-auto text-gray-700">
-      <div className="border-b border-[#dee2e6] font-lato flex items-end justify-center gap-5 py-5">
-        <div
-          className="flex justify-between items-end text-blue-600 cursor-pointer"
-          onClick={() => router.back()}
-        >
-          <ChevronLeft className="size-6" /> Back to Forms
-        </div>
-        <h1 className="text-3xl font-lato font-light text-center">
-          Loan Detail
-        </h1>
-        <p className="italic text-gray-500 text-base">ID:{loan?.id}</p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10">
-        <div className="space-y-3 font-lato p-5">
-          <h1 className="text-6xl font-light italic">{loan?.name}</h1>
-          <div className="w-full bg-gray-200 h-5 rounded">
-            <div
-              className={`h-5 rounded text-xs flex items-center justify-center text-white ${
-                loan?.status === "Fully Paid" && "bg-green-600"
-              } ${loan?.status === "Active" && "bg-[#17a2b8]"} ${
-                loan?.status === "Processing" && "bg-[#ffc107]"
-              }`}
-              style={{ width: `${calculatePercentage(loan?.complete, 100)}%` }}
-            >
-              {loan?.paid}
+    <div className="relative mx-auto flex w-full max-w-[540px] flex-col font-lato text-foreground md:max-w-[720px] lg:max-w-[1140px]">
+      <Card className="border-border bg-card shadow-none">
+        <CardHeader className="flex flex-col items-center justify-center gap-3 border-b border-border py-5 sm:flex-row sm:items-end sm:gap-5">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => router.back()}
+            className="h-auto gap-1 px-0 py-0 text-primary hover:bg-transparent hover:text-primary/80"
+          >
+            <ChevronLeft className="h-6 w-6" />
+            Back to Forms
+          </Button>
+          <CardTitle className="text-center text-3xl font-light">
+            Loan Detail
+          </CardTitle>
+          <p className="text-base italic text-muted-foreground">ID:{loan?.id}</p>
+        </CardHeader>
+
+        <CardContent className="grid grid-cols-1 gap-6 p-0 sm:grid-cols-2 sm:gap-x-10">
+          <div className="space-y-4 p-5">
+            <h2 className="text-4xl font-light italic text-secondary-foreground sm:text-6xl">
+              {loan?.name}
+            </h2>
+
+            <div className="h-5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={cn(
+                  "flex h-5 items-center justify-center rounded-full text-xs text-primary-foreground",
+                  getProgressBarClass(loan?.status),
+                )}
+                style={{
+                  width: `${calculatePercentage(loan?.complete, 100)}%`,
+                }}
+              >
+                {loan?.paid}
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 text-xl">
-            <p>Status:</p>
-            <p
-              className={`font-light ${
-                loan?.status === "Fully Paid" && "text-green-600"
-              } ${loan?.status === "Active" && "text-[#17a2b8]"} ${
-                loan?.status === "Processing" && "text-[#ffc107]"
-              }`}
-            >
-              {loan?.status}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xl">
-            <p>Type:</p>
-            <p className="font-light">{loan?.type}</p>
-          </div>
-          <div className="flex items-center gap-2 text-xl">
-            <p>Start Date:</p>
-            <p className="font-light">11/04/2016</p>
-          </div>
-          <div className="flex items-center gap-2 text-xl">
-            <p>End Date:</p>
-            <p className="font-light">04/04/2025</p>
-          </div>
-          <div className="flex items-center gap-2 text-xl">
-            <p>Loan Amount:</p>
-            <p className="font-light">$56,495</p>
-          </div>
-          <div className="flex items-center gap-2 text-xl">
-            <p>Downpayment:</p>
-            <p className="font-light">$10,000</p>
-          </div>
-          <div className="flex items-center gap-2 text-xl">
-            <p>APR:</p>
-            <p className="font-light">4.70%</p>
-          </div>
-        </div>
-        <div className="flex flex-col font-lato">
-          <h1 className="text-xl text-center font-lato font-light my-5">
-            Loan Documents
-          </h1>
-          {loan?.folderId ? (
-            <Documents fileType={"loan"} loanFolderId={loan.folderId} />
-          ) : (
-            <div className="min-h-[50vh] flex items-center justify-center">
-              <LoaderSpinner size={28} className="text-blue-500" />
+
+            <div className="flex items-center gap-2 text-xl text-secondary-foreground">
+              <span>Status:</span>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-base font-light",
+                  getStatusBadgeClass(loan?.status),
+                )}
+              >
+                {loan?.status}
+              </Badge>
             </div>
-          )}
-        </div>
-      </div>
+
+            {detailRows.map((row) => (
+              <div
+                key={row.label}
+                className="flex items-center gap-2 text-xl text-secondary-foreground"
+              >
+                <span>{row.label}:</span>
+                <span className="font-light text-muted-foreground">
+                  {row.value}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col border-t border-border sm:border-l sm:border-t-0">
+            <h3 className="my-5 text-center text-xl font-light text-secondary-foreground">
+              Loan Documents
+            </h3>
+            {loan?.folderId ? (
+              <Documents fileType={"loan"} loanFolderId={loan.folderId} />
+            ) : (
+              <div className="flex min-h-[50vh] items-center justify-center">
+                <LoaderSpinner
+                  size={28}
+                  className="text-secondary-foreground"
+                />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
