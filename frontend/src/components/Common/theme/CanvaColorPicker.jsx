@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+"use client";
+
 import React, { useState, useEffect, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
-import { Sparkles, Copy, Check, ArrowUpDown } from 'lucide-react';
+import { Sparkles, Copy, Check, ArrowUpDown, Palette } from 'lucide-react';
 import {
   hsvToRgb,
   rgbToHsv,
@@ -25,6 +27,12 @@ import {
   STOPS,
 } from '@/app/lib/colorUtils';
 import { cn } from '@/app/lib/utils';
+import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+} from '@/components/ui/popover';
+import EyeDropperButton from '@/components/Common/theme/EyeDropperButton';
 import './CanvaPicker.css';
 
 const BASE_WHEEL_DIAMETER = 278;
@@ -69,14 +77,22 @@ const getPickerGeometry = (outerSize) => {
   };
 };
 
-export default function CircularColorPicker({
+export function CircularColorPicker({
   maxLightness = 1.0,
   value,
+  fallback,
   onChange,
   size = 320,
   compact = false,
   showHexRow = true,
+  onEyeDropperOpen,
 }) {
+  const resolvedValue =
+    typeof value === 'string' && /^#[0-9A-Fa-f]{6}$/.test(value)
+      ? value
+      : typeof fallback === 'string' && /^#[0-9A-Fa-f]{6}$/.test(fallback)
+        ? fallback
+        : value;
   // Core state of the picker
   const [wheelCoords, setWheelCoords] = useState({ x: 0, y: -90 }); // start at pure Red, saturated
   const [ringT, setRingT] = useState(0.5 * maxLightness); // start in middle (pure color, t = 0.5 * maxLightness)
@@ -209,14 +225,14 @@ export default function CircularColorPicker({
   // coordinate setters bail out once they reach a stable point.
   // -------------------------------------------------------------
   useEffect(() => {
-    if (!value) return;
+    if (!resolvedValue) return;
     // While the user is actively dragging, THIS picker is the source of truth.
     // Ignore the parent's echoed value so it can't fight the cursor mid-drag.
     if (isDraggingWheel.current || isDraggingBar.current) return;
-    if (value.toUpperCase() === finalHex.toUpperCase()) return;
-    applyColor(value, { emit: false, addToHistory: false });
+    if (resolvedValue.toUpperCase() === finalHex.toUpperCase()) return;
+    applyColor(resolvedValue, { emit: false, addToHistory: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [resolvedValue]);
 
   // Sync inputs with final values when NOT actively editing them
   useEffect(() => {
@@ -901,7 +917,14 @@ export default function CircularColorPicker({
         <div className={cn("w-full", compact ? "mt-2" : "my-4")} />
 
         {/* INTEGRATED TOGGLABLE HEX/RGB INPUT PANEL WITH PREVIEW */}
-        <div className={cn("w-full flex items-center", compact ? "ccp-hex-row--compact gap-1.5" : "gap-2.5")}>
+        <div
+          className={cn(
+            "w-full flex justify-center",
+            // Bottom-align so swatch/actions line up with inputs when R/G/B labels sit above
+            isHexMode ? "items-center" : "items-end",
+            compact ? "ccp-hex-row--compact gap-1" : "gap-1.5",
+          )}
+        >
           {/* Elegant Color Preview Box (copyable on click) */}
           <button
             type="button"
@@ -924,7 +947,7 @@ export default function CircularColorPicker({
           </button>
 
           {/* Togglable Input Block */}
-          <div className="flex-1 min-w-0">
+          <div className={cn("min-w-0 shrink-0", isHexMode && (compact ? "w-24" : "w-28"))}>
             {isHexMode ? (
               <div className="ccp-input-shell flex items-center rounded-lg px-2 py-1 font-mono text-[11px] w-full transition-colors focus-within:border-orange-500/50">
                 <span className="text-secondary-foreground font-bold mr-1 font-mono select-none">#</span>
@@ -941,10 +964,10 @@ export default function CircularColorPicker({
                 />
               </div>
             ) : (
-              <div className="flex items-center gap-1 w-full">
+              <div className="flex items-end justify-center gap-1">
                 {/* R */}
-                <div className="flex-1 flex flex-col min-w-0 items-center">
-                  <span className="text-[8px] font-bold text-secondary-foreground font-mono mb-0.5 select-none uppercase">R</span>
+                <div className="flex w-9 shrink-0 flex-col items-center">
+                  <span className="mb-0.5 select-none font-mono text-[8px] font-bold uppercase text-secondary-foreground leading-none">R</span>
                   <input
                     type="text"
                     readOnly
@@ -954,12 +977,15 @@ export default function CircularColorPicker({
                     onBlur={() => setIsRgbFocused(false)}
                     placeholder="255"
                     maxLength={3}
-                    className="ccp-input-field w-full rounded-lg py-1 text-center text-foreground font-mono font-bold text-xs focus:outline-none cursor-default"
+                    className={cn(
+                      "ccp-input-field w-full rounded-md px-0.5 text-center font-mono font-bold text-foreground focus:outline-none cursor-default",
+                      compact ? "h-7 py-0 text-[11px]" : "h-9 py-1 text-xs",
+                    )}
                   />
                 </div>
                 {/* G */}
-                <div className="flex-1 flex flex-col min-w-0 items-center">
-                  <span className="text-[8px] font-bold text-gray-400 font-mono mb-0.5 select-none uppercase">G</span>
+                <div className="flex w-9 shrink-0 flex-col items-center">
+                  <span className="mb-0.5 select-none font-mono text-[8px] font-bold uppercase text-muted-foreground leading-none">G</span>
                   <input
                     type="text"
                     readOnly
@@ -969,12 +995,15 @@ export default function CircularColorPicker({
                     onBlur={() => setIsRgbFocused(false)}
                     placeholder="78"
                     maxLength={3}
-                    className="ccp-input-field w-full rounded-lg py-1 text-center text-foreground font-mono font-bold text-xs focus:outline-none cursor-default"
+                    className={cn(
+                      "ccp-input-field w-full rounded-md px-0.5 text-center font-mono font-bold text-foreground focus:outline-none cursor-default",
+                      compact ? "h-7 py-0 text-[11px]" : "h-9 py-1 text-xs",
+                    )}
                   />
                 </div>
                 {/* B */}
-                <div className="flex-1 flex flex-col min-w-0 items-center">
-                  <span className="text-[8px] font-bold text-gray-400 font-mono mb-0.5 select-none uppercase">B</span>
+                <div className="flex w-9 shrink-0 flex-col items-center">
+                  <span className="mb-0.5 select-none font-mono text-[8px] font-bold uppercase text-muted-foreground leading-none">B</span>
                   <input
                     type="text"
                     readOnly
@@ -984,12 +1013,25 @@ export default function CircularColorPicker({
                     onBlur={() => setIsRgbFocused(false)}
                     placeholder="0"
                     maxLength={3}
-                    className="ccp-input-field w-full rounded-lg py-1 text-center text-foreground font-mono font-bold text-xs focus:outline-none cursor-default"
+                    className={cn(
+                      "ccp-input-field w-full rounded-md px-0.5 text-center font-mono font-bold text-foreground focus:outline-none cursor-default",
+                      compact ? "h-7 py-0 text-[11px]" : "h-9 py-1 text-xs",
+                    )}
                   />
                 </div>
               </div>
             )}
           </div>
+
+          <EyeDropperButton
+            compact={compact}
+            className={cn(
+              "ccp-icon-button border-0 shadow-none hover:bg-accent/40 shrink-0",
+              compact ? "h-7 w-7" : "h-9 w-9",
+            )}
+            onBeforePick={onEyeDropperOpen}
+            onColorPicked={(hex) => setColor(hex)}
+          />
 
           {/* Toggle Button (switch hex/rgb) */}
           <button
@@ -1008,6 +1050,145 @@ export default function CircularColorPicker({
         ) : null}
 
       </section>
+    </div>
+  );
+}
+
+const isValidHexColor = (value) => /^#[0-9A-F]{6}$/i.test(value);
+
+const normalizeHexColor = (value, fallback = "#3B82F6") =>
+  isValidHexColor(value) ? value.toUpperCase() : fallback.toUpperCase();
+
+const releaseBodyScrollLock = () => {
+  if (typeof document === "undefined") return;
+  document.body.style.overflow = "";
+  document.body.style.paddingRight = "";
+  document.body.style.pointerEvents = "";
+  document.documentElement.style.overflow = "";
+  document.documentElement.style.paddingRight = "";
+};
+
+const getSingleWheelSize = () => {
+  if (typeof window === "undefined") return 250;
+  if (window.innerWidth < 420) return 132;
+  if (window.innerWidth < 640) return 160;
+  return 250;
+};
+
+/**
+ * Swatch + hex + screen eyedropper + wheel popover for single primary colors.
+ * Used by ThemeContent as the default export of this module.
+ */
+export default function ColorPickerPopover({
+  label = "Primary Color",
+  pickerLabel = "Pick a color",
+  value,
+  fallback = "#3B82F6",
+  onChange,
+  maxLightness = 1,
+  className,
+}) {
+  const [open, setOpen] = useState(false);
+  const [wheelSize, setWheelSize] = useState(250);
+  const anchorRef = useRef(null);
+  const editButtonRef = useRef(null);
+
+  const color = normalizeHexColor(value, fallback);
+
+  const handleOpenChange = (nextOpen) => {
+    setOpen(nextOpen);
+    if (!nextOpen) releaseBodyScrollLock();
+  };
+
+  const closePicker = () => {
+    setOpen(false);
+    releaseBodyScrollLock();
+  };
+
+  const openPicker = (element) => {
+    anchorRef.current = element ?? editButtonRef.current;
+    setOpen(true);
+  };
+
+  useEffect(() => () => releaseBodyScrollLock(), []);
+
+  useEffect(() => {
+    if (!open) return;
+    setWheelSize(getSingleWheelSize());
+  }, [open]);
+
+  const handleColorChange = (next) => {
+    const nextHex = normalizeHexColor(next, color);
+    onChange?.(nextHex);
+  };
+
+  return (
+    <div className={cn("space-y-2", className)}>
+      {label ? (
+        <Label className="block text-sm font-semibold text-foreground">
+          {label}
+        </Label>
+      ) : null}
+
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <Popover open={open} onOpenChange={handleOpenChange}>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={(event) => openPicker(event.currentTarget)}
+              className="flex items-center gap-2 rounded-lg p-1 transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label={`${pickerLabel}: ${color}`}
+            >
+              <span
+                className="h-10 w-10 shrink-0 rounded-lg border border-black/10 shadow-sm"
+                style={{ backgroundColor: color }}
+              />
+              <div className="min-w-0 text-left">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {pickerLabel}
+                </p>
+                <p className="truncate font-mono text-xs font-semibold text-foreground">
+                  {color}
+                </p>
+              </div>
+            </button>
+
+            <EyeDropperButton
+              onBeforePick={closePicker}
+              onColorPicked={handleColorChange}
+              label="Pick primary color from screen"
+            />
+
+            <button
+              ref={editButtonRef}
+              type="button"
+              onClick={(event) => openPicker(event.currentTarget)}
+              className="group ml-auto inline-flex shrink-0 items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Palette className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+              Edit color
+            </button>
+          </div>
+
+          <PopoverContent
+            anchor={anchorRef}
+            initialFocus={false}
+            className="z-40 !w-auto !max-w-[calc(100vw-1.5rem)] w-fit overflow-hidden rounded-xl border-border bg-popover !p-3 shadow-lg"
+            style={{ width: "fit-content", maxWidth: "none" }}
+          >
+            <CircularColorPicker
+              value={color}
+              fallback={fallback}
+              onChange={handleColorChange}
+              onEyeDropperOpen={closePicker}
+              size={wheelSize}
+              showHexRow
+              compact
+              maxLightness={maxLightness}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   );
 }

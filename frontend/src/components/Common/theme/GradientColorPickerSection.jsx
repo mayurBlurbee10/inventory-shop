@@ -9,7 +9,8 @@ import {
   Popover,
   PopoverContent,
 } from "@/components/ui/popover";
-import ColorWheelPicker from "@/components/Common/theme/CanvaColorPicker";
+import { CircularColorPicker } from "@/components/Common/theme/CanvaColorPicker";
+import EyeDropperButton from "@/components/Common/theme/EyeDropperButton";
 
 const isValidHex = (value) => /^#[0-9A-F]{6}$/i.test(value);
 
@@ -67,6 +68,11 @@ export default function GradientColorPickerSection({
     }
   };
 
+  const closePicker = () => {
+    setOpen(false);
+    releaseBodyScrollLock();
+  };
+
   const openPicker = (element) => {
     anchorRef.current = element ?? editButtonRef.current;
     setOpen(true);
@@ -105,47 +111,61 @@ export default function GradientColorPickerSection({
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <Popover open={open} onOpenChange={handleOpenChange}>
           <div className="mb-5 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={(event) => openPicker(event.currentTarget)}
-              className="flex items-center gap-2 rounded-lg p-1 transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label={`Edit start color ${start}`}
-            >
-              <span
-                className="h-10 w-10 shrink-0 rounded-lg border border-black/10 shadow-sm"
-                style={{ backgroundColor: start }}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={(event) => openPicker(event.currentTarget)}
+                className="flex items-center gap-2 rounded-lg p-1 transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label={`Edit start color ${start}`}
+              >
+                <span
+                  className="h-10 w-10 shrink-0 rounded-lg border border-black/10 shadow-sm"
+                  style={{ backgroundColor: start }}
+                />
+                <div className="min-w-0 text-left">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Start
+                  </p>
+                  <p className="truncate font-mono text-xs font-semibold text-foreground">
+                    {start}
+                  </p>
+                </div>
+              </button>
+              <EyeDropperButton
+                onBeforePick={closePicker}
+                onColorPicked={(hex) => onStartChange?.(hex)}
+                label="Pick start color from screen"
               />
-              <div className="min-w-0 text-left">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Start
-                </p>
-                <p className="truncate font-mono text-xs font-semibold text-foreground">
-                  {start}
-                </p>
-              </div>
-            </button>
+            </div>
 
             <span className="text-muted-foreground">→</span>
 
-            <button
-              type="button"
-              onClick={(event) => openPicker(event.currentTarget)}
-              className="flex items-center gap-2 rounded-lg p-1 transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label={`Edit end color ${end}`}
-            >
-              <span
-                className="h-10 w-10 shrink-0 rounded-lg border border-black/10 shadow-sm"
-                style={{ backgroundColor: end }}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={(event) => openPicker(event.currentTarget)}
+                className="flex items-center gap-2 rounded-lg p-1 transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label={`Edit end color ${end}`}
+              >
+                <span
+                  className="h-10 w-10 shrink-0 rounded-lg border border-black/10 shadow-sm"
+                  style={{ backgroundColor: end }}
+                />
+                <div className="min-w-0 text-left">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    End
+                  </p>
+                  <p className="truncate font-mono text-xs font-semibold text-foreground">
+                    {end}
+                  </p>
+                </div>
+              </button>
+              <EyeDropperButton
+                onBeforePick={closePicker}
+                onColorPicked={(hex) => onEndChange?.(hex)}
+                label="Pick end color from screen"
               />
-              <div className="min-w-0 text-left">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  End
-                </p>
-                <p className="truncate font-mono text-xs font-semibold text-foreground">
-                  {end}
-                </p>
-              </div>
-            </button>
+            </div>
 
             <button
               ref={editButtonRef}
@@ -174,12 +194,12 @@ export default function GradientColorPickerSection({
                 <p className="mb-1 w-full text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                   Start
                 </p>
-                <ColorWheelPicker
+                <CircularColorPicker
                   value={start}
                   fallback="#3B82F6"
                   onChange={onStartChange}
+                  onEyeDropperOpen={closePicker}
                   size={wheelSize}
-                  showLabel={false}
                   showHexRow
                   compact
                   maxLightness={maxLightness}
@@ -194,12 +214,12 @@ export default function GradientColorPickerSection({
                 <p className="mb-1 w-full text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                   End
                 </p>
-                <ColorWheelPicker
+                <CircularColorPicker
                   value={end}
                   fallback="#8B5CF6"
                   onChange={onEndChange}
+                  onEyeDropperOpen={closePicker}
                   size={wheelSize}
-                  showLabel={false}
                   showHexRow
                   compact
                   maxLightness={maxLightness}
