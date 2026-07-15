@@ -22,17 +22,12 @@ import { Label } from "@/components/ui/label";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ReactSelect from "react-select";
+import { getReactSelectStyles } from "../Common/reactSelectStyles";
 
 const filterRole = (user, portalId) => {
   const permission = user?.permissions?.find(
@@ -68,6 +63,7 @@ function ViewProfileModal({
   const [ndaPages, setNdaPages] = useState(null);
   const [isNdaPagesLoading, setIsNdaPagesLoading] = useState(false);
   const [phoneError, setPhoneError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [role, setRole] = useState(filterRole(user, params?.portalid));
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(null);
@@ -124,6 +120,7 @@ function ViewProfileModal({
     setPreviewUrl(null);
     setError("");
     setPhoneError("");
+    setFieldErrors({});
   };
   const isFormChanged = () => {
     const keys = Object.keys(formData);
@@ -184,6 +181,30 @@ function ViewProfileModal({
     setFormData({
       ...formData,
       [key]: val,
+    });
+
+    if (fieldErrors[key]) {
+      const isFilled =
+        typeof val === "string" ? val.trim() !== "" : Boolean(val);
+      if (isFilled) {
+        setFieldErrors((prev) => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+      }
+    }
+  };
+
+  const handleRequiredBlur = (fieldName, value) => {
+    const empty =
+      value == null || (typeof value === "string" && value.trim() === "");
+    setFieldErrors((prev) => {
+      if (empty) return { ...prev, [fieldName]: true };
+      if (!prev[fieldName]) return prev;
+      const next = { ...prev };
+      delete next[fieldName];
+      return next;
     });
   };
 
@@ -403,10 +424,21 @@ function ViewProfileModal({
   const enabledFieldClassName = "h-10 !bg-background text-foreground";
   const readOnlyFieldClassName =
     "h-10 cursor-not-allowed !bg-muted !text-muted-foreground border-border disabled:pointer-events-auto disabled:opacity-100";
-  const enabledSelectTriggerClassName =
-    "h-11 w-full enabled:!bg-background enabled:text-foreground";
-  const readOnlySelectTriggerClassName =
-    "h-11 w-full cursor-not-allowed !bg-muted !text-muted-foreground border-border [&_svg]:!text-muted-foreground";
+  const roleOptions = [
+    { value: UserRole.USER, label: "User" },
+    { value: UserRole.ADMIN, label: "Admin" },
+    { value: UserRole.MODERATOR, label: "Moderator" },
+  ];
+  const ndaOptions = [
+    { value: "none", label: "No NDA" },
+    ...(ndaPages || []),
+  ];
+  const selectedRole =
+    roleOptions.find((option) => option.value === formData.role) || null;
+  const selectedNda =
+    ndaOptions.find(
+      (option) => option.value === (formData.ndaPages ?? "none")
+    ) || null;
 
   return (
     <>
@@ -453,9 +485,13 @@ function ViewProfileModal({
                 <Input
                   type="text"
                   required
-                  className={cn(enabledFieldClassName)}
+                  className={cn(
+                    enabledFieldClassName,
+                    fieldErrors.firstName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                  )}
                   value={formData.firstName}
                   onChange={(e) => handleFormChange("firstName", e.target.value)}
+                  onBlur={(e) => handleRequiredBlur("firstName", e.target.value)}
                 />
               </div>
               <div className="w-1/2 space-y-2">
@@ -466,9 +502,13 @@ function ViewProfileModal({
                 <Input
                   type="text"
                   required
-                  className={cn(enabledFieldClassName)}
+                  className={cn(
+                    enabledFieldClassName,
+                    fieldErrors.lastName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                  )}
                   value={formData.lastName}
                   onChange={(e) => handleFormChange("lastName", e.target.value)}
+                  onBlur={(e) => handleRequiredBlur("lastName", e.target.value)}
                 />
               </div>
             </div>
@@ -507,9 +547,13 @@ function ViewProfileModal({
               </Label>
               <Input
                 type="text"
-                className={cn(enabledFieldClassName)}
+                className={cn(
+                  enabledFieldClassName,
+                  fieldErrors.title && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                )}
                 value={formData.title}
                 onChange={(e) => handleFormChange("title", e.target.value)}
+                onBlur={(e) => handleRequiredBlur("title", e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -519,9 +563,13 @@ function ViewProfileModal({
               </Label>
               <Input
                 type="text"
-                className={cn(enabledFieldClassName)}
+                className={cn(
+                  enabledFieldClassName,
+                  fieldErrors.companyName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                )}
                 value={formData.companyName}
                 onChange={(e) => handleFormChange("companyName", e.target.value)}
+                onBlur={(e) => handleRequiredBlur("companyName", e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -530,26 +578,38 @@ function ViewProfileModal({
                 Role <span className="text-destructive">*</span>
               </Label>
               <div className={cn("w-full", isRoleDisabled && "cursor-not-allowed")}>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value) => handleFormChange("role", value)}
-                  disabled={isRoleDisabled}
-                >
-                  <SelectTrigger
-                    disabled={isRoleDisabled}
-                    className={cn(
-                      enabledSelectTriggerClassName,
-                      isRoleDisabled && readOnlySelectTriggerClassName
-                    )}
-                  >
-                    <SelectValue placeholder="Select role..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={UserRole.USER}>User</SelectItem>
-                    <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                    <SelectItem value={UserRole.MODERATOR}>Moderator</SelectItem>
-                  </SelectContent>
-                </Select>
+                <ReactSelect
+                  className="w-full"
+                  classNamePrefix="user-role-select"
+                  styles={getReactSelectStyles({
+                    isInvalid: !!fieldErrors.role,
+                    isDisabled: isRoleDisabled,
+                  })}
+                  isSearchable
+                  isDisabled={isRoleDisabled}
+                  value={selectedRole}
+                  onChange={(option) => {
+                    handleFormChange("role", option?.value || "");
+                    if (option?.value) {
+                      setFieldErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.role;
+                        return next;
+                      });
+                    }
+                  }}
+                  onBlur={() => {
+                    if (!isRoleDisabled) {
+                      handleRequiredBlur("role", formData.role);
+                    }
+                  }}
+                  options={roleOptions}
+                  placeholder="Select role..."
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  menuPosition="fixed"
+                />
               </div>
             </div>
             <div className="space-y-2">
@@ -558,37 +618,33 @@ function ViewProfileModal({
                 NDA Pages
               </Label>
               <div className={cn("w-full", isNdaDisabled && "cursor-not-allowed")}>
-                <Select
-                  value={formData.ndaPages ?? "none"}
-                  onValueChange={(value) =>
-                    handleFormChange("ndaPages", value === "none" ? null : value)
+                <ReactSelect
+                  className="w-full"
+                  classNamePrefix="user-nda-select"
+                  styles={getReactSelectStyles({ isDisabled: isNdaDisabled })}
+                  isSearchable
+                  isClearable
+                  isDisabled={isNdaDisabled}
+                  isLoading={isNdaPagesLoading}
+                  value={selectedNda}
+                  onChange={(option) =>
+                    handleFormChange(
+                      "ndaPages",
+                      !option || option.value === "none" ? null : option.value
+                    )
                   }
-                  disabled={isNdaDisabled}
-                >
-                  <SelectTrigger
-                    disabled={isNdaDisabled}
-                    className={cn(
-                      enabledSelectTriggerClassName,
-                      isNdaDisabled && readOnlySelectTriggerClassName
-                    )}
-                  >
-                    <SelectValue
-                      placeholder={
-                        isNdaPagesLoading
-                          ? "Fetching NDA pages..."
-                          : "Select NDA pages..."
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No NDA</SelectItem>
-                    {(ndaPages || []).map((page) => (
-                      <SelectItem key={page.value} value={page.value}>
-                        {page.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  options={ndaOptions}
+                  placeholder={
+                    isNdaPagesLoading
+                      ? "Fetching NDA pages..."
+                      : "Select NDA pages..."
+                  }
+                  loadingMessage={() => "Fetching NDA pages..."}
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  menuPosition="fixed"
+                />
               </div>
             </div>
             <div className="space-y-2">
@@ -596,16 +652,7 @@ function ViewProfileModal({
                 <Image className="h-4 w-4" /> 
                 Company Logo
               </Label>
-              <div className="mt-1 flex items-center space-x-4">
-                <input
-                  ref={logoInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-solid hover:file:bg-accent/70"
-                />
-              </div>
-              {previewUrl && (
+              {previewUrl ? (
                 <div className="relative mt-2 w-fit overflow-hidden bg-muted/20">
                   <div className="flex h-32 items-center justify-center overflow-hidden p-2">
                     <img
@@ -623,6 +670,16 @@ function ViewProfileModal({
                   >
                     <X className="size-3.5" />
                   </button>
+                </div>
+              ) : (
+                <div className="mt-1 flex items-center space-x-4">
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-solid hover:file:bg-accent/70"
+                  />
                 </div>
               )}
             </div>

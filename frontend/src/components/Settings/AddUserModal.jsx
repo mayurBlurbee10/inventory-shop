@@ -14,17 +14,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ReactSelect from "react-select";
+import { getReactSelectStyles } from "../Common/reactSelectStyles";
+
+const apiPeriodOptions = [
+  { value: "100 p/m", label: "Daily" },
+  { value: "500 p/m", label: "Weekly" },
+  { value: "1000 p/m", label: "Monthly" },
+];
+
+const retentionAuditOptions = [
+  { value: "30", label: "30 days" },
+  { value: "60", label: "60 days" },
+  { value: "90", label: "90 days" },
+  { value: "180", label: "180 days" },
+  { value: "365", label: "1 year" },
+];
+
+const retentionBackupOptions = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+];
 
 const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, setFormData, handleModalClose, from }) => {
 
@@ -36,6 +51,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [ndaPages, setNdaPages] = useState(null);
   const [isNdaPagesLoading, setIsNdaPagesLoading] = useState(false);
   const{data:user} = useSelector((state) => state.user);
@@ -87,6 +103,30 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
     setFormData({
       ...formData,
       [key]: val,
+    });
+
+    if (fieldErrors[key]) {
+      const isFilled =
+        typeof val === "string" ? val.trim() !== "" : Boolean(val);
+      if (isFilled) {
+        setFieldErrors((prev) => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+      }
+    }
+  };
+
+  const handleRequiredBlur = (fieldName, value) => {
+    const empty =
+      value == null || (typeof value === "string" && value.trim() === "");
+    setFieldErrors((prev) => {
+      if (empty) return { ...prev, [fieldName]: true };
+      if (!prev[fieldName]) return prev;
+      const next = { ...prev };
+      delete next[fieldName];
+      return next;
     });
   };
 
@@ -351,10 +391,16 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
   const enabledFieldClassName = "h-10 !bg-background text-foreground";
   const readOnlyFieldClassName =
     "h-10 cursor-not-allowed !bg-muted !text-muted-foreground border-border disabled:pointer-events-auto disabled:opacity-100";
-  const enabledSelectTriggerClassName =
-    "h-11 w-full enabled:!bg-background enabled:text-foreground";
-  const readOnlySelectTriggerClassName =
-    "h-11 w-full cursor-not-allowed !bg-muted !text-muted-foreground border-border [&_svg]:!text-muted-foreground";
+  const ndaOptions = [
+    { value: "none", label: "No NDA" },
+    ...(ndaPages || []),
+  ];
+  const selectedRole =
+    roleOptions.find((option) => option.value === formData.role) || null;
+  const selectedNda =
+    ndaOptions.find(
+      (option) => option.value === (formData.ndaPages ?? "none")
+    ) || null;
 
   return (
     <form onSubmit={handleSubmit} className={cn("flex min-h-0 flex-col space-y-4 overflow-hidden bg-background", from === "editProfile" && "mt-2")}>
@@ -368,9 +414,13 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
             <Input
               type="text"
               required
-              className={cn(enabledFieldClassName)}
+              className={cn(
+                enabledFieldClassName,
+                fieldErrors.firstName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+              )}
               value={formData.firstName}
               onChange={(e) => handleFormChange("firstName", e.target.value)}
+              onBlur={(e) => handleRequiredBlur("firstName", e.target.value)}
             />
           </div>
           <div className="w-1/2 space-y-2">
@@ -381,9 +431,13 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
             <Input
               type="text"
               required
-              className={cn(enabledFieldClassName)}
+              className={cn(
+                enabledFieldClassName,
+                fieldErrors.lastName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+              )}
               value={formData.lastName}
               onChange={(e) => handleFormChange("lastName", e.target.value)}
+              onBlur={(e) => handleRequiredBlur("lastName", e.target.value)}
             />
           </div>
         </div>
@@ -397,10 +451,28 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
             required
             disabled={isEmailDisabled}
             className={cn(
-              isEmailDisabled ? readOnlyFieldClassName : enabledFieldClassName
+              isEmailDisabled ? readOnlyFieldClassName : enabledFieldClassName,
+              fieldErrors.email && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
             )}
             value={formData.email}
             onChange={handleEmailChange}
+            onBlur={(e) => {
+              if (isEmailDisabled) return;
+              const value = e.target.value;
+              if (!value?.trim()) {
+                handleRequiredBlur("email", value);
+                return;
+              }
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              setFieldErrors((prev) => {
+                if (!emailRegex.test(value.trim())) {
+                  return { ...prev, email: true };
+                }
+                const next = { ...prev };
+                delete next.email;
+                return next;
+              });
+            }}
           />
         </div>
         {emailError && <p className="text-sm text-destructive">{emailError}</p>}
@@ -424,9 +496,13 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           </Label>
           <Input
             type="text"
-            className={cn(enabledFieldClassName)}
+            className={cn(
+              enabledFieldClassName,
+              fieldErrors.title && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+            )}
             value={formData.title}
             onChange={(e) => handleFormChange("title", e.target.value)}
+            onBlur={(e) => handleRequiredBlur("title", e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -436,9 +512,13 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           </Label>
           <Input
             type="text"
-            className={cn(enabledFieldClassName)}
+            className={cn(
+              enabledFieldClassName,
+              fieldErrors.companyName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+            )}
             value={formData.companyName}
             onChange={(e) => handleFormChange("companyName", e.target.value)}
+            onBlur={(e) => handleRequiredBlur("companyName", e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -447,28 +527,38 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
             Role <span className="text-destructive">*</span>
           </Label>
           <div className={cn("w-full", isRoleDisabled && "cursor-not-allowed")}>
-            <Select
-              value={formData.role}
-              onValueChange={(value) => handleFormChange("role", value)}
-              disabled={isRoleDisabled}
-            >
-              <SelectTrigger
-                disabled={isRoleDisabled}
-                className={cn(
-                  enabledSelectTriggerClassName,
-                  isRoleDisabled && readOnlySelectTriggerClassName
-                )}
-              >
-                <SelectValue placeholder="Select role..." />
-              </SelectTrigger>
-              <SelectContent>
-                {roleOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ReactSelect
+              className="w-full"
+              classNamePrefix="user-role-select"
+              styles={getReactSelectStyles({
+                isInvalid: !!fieldErrors.role,
+                isDisabled: isRoleDisabled,
+              })}
+              isSearchable
+              isDisabled={isRoleDisabled}
+              value={selectedRole}
+              onChange={(option) => {
+                handleFormChange("role", option?.value || "");
+                if (option?.value) {
+                  setFieldErrors((prev) => {
+                    const next = { ...prev };
+                    delete next.role;
+                    return next;
+                  });
+                }
+              }}
+              onBlur={() => {
+                if (!isRoleDisabled) {
+                  handleRequiredBlur("role", formData.role);
+                }
+              }}
+              options={roleOptions}
+              placeholder="Select role..."
+              menuPortalTarget={
+                typeof document !== "undefined" ? document.body : null
+              }
+              menuPosition="fixed"
+            />
           </div>
         </div>
         <div className="space-y-2">
@@ -477,35 +567,33 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
             NDA Pages
           </Label>
           <div className={cn("w-full", isNdaDisabled && "cursor-not-allowed")}>
-            <Select
-              value={formData.ndaPages ?? "none"}
-              onValueChange={(value) =>
-                handleFormChange("ndaPages", value === "none" ? null : value)
+            <ReactSelect
+              className="w-full"
+              classNamePrefix="user-nda-select"
+              styles={getReactSelectStyles({ isDisabled: isNdaDisabled })}
+              isSearchable
+              isClearable
+              isDisabled={isNdaDisabled}
+              isLoading={isNdaPagesLoading}
+              value={selectedNda}
+              onChange={(option) =>
+                handleFormChange(
+                  "ndaPages",
+                  !option || option.value === "none" ? null : option.value
+                )
               }
-              disabled={isNdaDisabled}
-            >
-              <SelectTrigger
-                disabled={isNdaDisabled}
-                className={cn(
-                  enabledSelectTriggerClassName,
-                  isNdaDisabled && readOnlySelectTriggerClassName
-                )}
-              >
-                <SelectValue
-                  placeholder={
-                    isNdaPagesLoading ? "Fetching NDA pages..." : "Select NDA pages..."
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No NDA</SelectItem>
-                {(ndaPages || []).map((page) => (
-                  <SelectItem key={page.value} value={page.value}>
-                    {page.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              options={ndaOptions}
+              placeholder={
+                isNdaPagesLoading
+                  ? "Fetching NDA pages..."
+                  : "Select NDA pages..."
+              }
+              loadingMessage={() => "Fetching NDA pages..."}
+              menuPortalTarget={
+                typeof document !== "undefined" ? document.body : null
+              }
+              menuPosition="fixed"
+            />
           </div>
         </div>
         <div className="space-y-2">
@@ -513,16 +601,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
             <Image className="h-4 w-4" />
             Company Logo
           </Label>
-          <div className="mt-2 flex items-center space-x-4">
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-secondary-foreground hover:file:bg-accent/70"
-            />
-          </div>
-          {previewUrl && (
+          {previewUrl ? (
             <div className="relative mt-2 w-fit overflow-hidden rounded-lg border border-border bg-muted/20">
               <div className="flex h-32 items-center justify-center overflow-hidden p-2">
                 <img
@@ -540,6 +619,16 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
               >
                 <X className="size-3.5" />
               </button>
+            </div>
+          ) : (
+            <div className="mt-2 flex items-center space-x-4">
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-secondary-foreground hover:file:bg-accent/70"
+              />
             </div>
           )}
         </div>
@@ -792,21 +881,29 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
                   placeholder="100"
                   className="h-10 !bg-background"
                 />
-                <Select
-                  value={formData.retentionApi}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, retentionApi: value })
+                <ReactSelect
+                  className="w-full"
+                  classNamePrefix="api-period-select"
+                  styles={getReactSelectStyles()}
+                  isSearchable
+                  value={
+                    apiPeriodOptions.find(
+                      (option) => option.value === formData.retentionApi
+                    ) || null
                   }
-                >
-                  <SelectTrigger className="h-11 w-full !bg-background">
-                    <SelectValue placeholder="Daily" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="100 p/m">Daily</SelectItem>
-                    <SelectItem value="500 p/m">Weekly</SelectItem>
-                    <SelectItem value="1000 p/m">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(option) =>
+                    setFormData({
+                      ...formData,
+                      retentionApi: option?.value || "",
+                    })
+                  }
+                  options={apiPeriodOptions}
+                  placeholder="Daily"
+                  menuPortalTarget={
+                    typeof document !== "undefined" ? document.body : null
+                  }
+                  menuPosition="fixed"
+                />
               </div>
             </div>
           </div>
@@ -842,41 +939,55 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-sm font-normal text-muted-foreground">Audit Logs</Label>
-              <Select
-                value={formData.retentionAudit}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, retentionAudit: value })
+              <ReactSelect
+                className="w-full"
+                classNamePrefix="retention-audit-select"
+                styles={getReactSelectStyles()}
+                isSearchable
+                value={
+                  retentionAuditOptions.find(
+                    (option) => option.value === formData.retentionAudit
+                  ) || null
                 }
-              >
-                <SelectTrigger className="h-11 w-full !bg-background">
-                  <SelectValue placeholder="30 days" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">30 days</SelectItem>
-                  <SelectItem value="60">60 days</SelectItem>
-                  <SelectItem value="90">90 days</SelectItem>
-                  <SelectItem value="180">180 days</SelectItem>
-                  <SelectItem value="365">1 year</SelectItem>
-                </SelectContent>
-              </Select>
+                onChange={(option) =>
+                  setFormData({
+                    ...formData,
+                    retentionAudit: option?.value || "",
+                  })
+                }
+                options={retentionAuditOptions}
+                placeholder="30 days"
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
+                menuPosition="fixed"
+              />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-normal text-muted-foreground">System Backups</Label>
-              <Select
-                value={formData.retentionBackup}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, retentionBackup: value })
+              <ReactSelect
+                className="w-full"
+                classNamePrefix="retention-backup-select"
+                styles={getReactSelectStyles()}
+                isSearchable
+                value={
+                  retentionBackupOptions.find(
+                    (option) => option.value === formData.retentionBackup
+                  ) || null
                 }
-              >
-                <SelectTrigger className="h-11 w-full !bg-background">
-                  <SelectValue placeholder="Daily" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
+                onChange={(option) =>
+                  setFormData({
+                    ...formData,
+                    retentionBackup: option?.value || "",
+                  })
+                }
+                options={retentionBackupOptions}
+                placeholder="Daily"
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
+                menuPosition="fixed"
+              />
             </div>
           </div>
         </div>
