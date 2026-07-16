@@ -6,7 +6,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useLayoutEffect, useMemo, useCallback } from 'react';
-import { Sparkles, Copy, Check, ArrowUpDown, Palette } from 'lucide-react';
+import { Sparkles, Copy, Check, ArrowUpDown } from 'lucide-react';
 import {
   hsvToRgb,
   rgbToHsv,
@@ -33,6 +33,7 @@ import {
   PopoverContent,
 } from '@/components/ui/popover';
 import EyeDropperButton from '@/components/Common/theme/EyeDropperButton';
+import ImageColorPickButton from '@/components/Common/theme/ImageColorPickButton';
 import './CanvaPicker.css';
 
 const BASE_WHEEL_DIAMETER = 278;
@@ -1076,8 +1077,11 @@ const getSingleWheelSize = () => {
 };
 
 /**
- * Swatch + hex + screen eyedropper + wheel popover for single primary colors.
+ * Swatch + hex + screen eyedropper + native color input for single primary colors.
  * Used by ThemeContent as the default export of this module.
+ *
+ * NOTE: Custom CircularColorPicker wheel is temporarily commented out in favor of
+ * input type="color". Existing wheel code is preserved below (commented).
  */
 export default function ColorPickerPopover({
   label = "Primary Color",
@@ -1088,34 +1092,34 @@ export default function ColorPickerPopover({
   maxLightness = 1,
   className,
 }) {
-  const [open, setOpen] = useState(false);
-  const [wheelSize, setWheelSize] = useState(250);
-  const anchorRef = useRef(null);
-  const editButtonRef = useRef(null);
+  // --- Custom wheel popover state (kept for restore) ---
+  // const [open, setOpen] = useState(false);
+  // const [wheelSize, setWheelSize] = useState(250);
+  // const anchorRef = useRef(null);
 
   const color = normalizeHexColor(value, fallback);
 
-  const handleOpenChange = (nextOpen) => {
-    setOpen(nextOpen);
-    if (!nextOpen) releaseBodyScrollLock();
-  };
+  // const handleOpenChange = (nextOpen) => {
+  //   setOpen(nextOpen);
+  //   if (!nextOpen) releaseBodyScrollLock();
+  // };
 
-  const closePicker = () => {
-    setOpen(false);
-    releaseBodyScrollLock();
-  };
+  // const closePicker = () => {
+  //   setOpen(false);
+  //   releaseBodyScrollLock();
+  // };
 
-  const openPicker = (element) => {
-    anchorRef.current = element ?? editButtonRef.current;
-    setOpen(true);
-  };
+  // const openPicker = (element) => {
+  //   anchorRef.current = element;
+  //   setOpen(true);
+  // };
 
-  useEffect(() => () => releaseBodyScrollLock(), []);
+  // useEffect(() => () => releaseBodyScrollLock(), []);
 
-  useEffect(() => {
-    if (!open) return;
-    setWheelSize(getSingleWheelSize());
-  }, [open]);
+  // useEffect(() => {
+  //   if (!open) return;
+  //   setWheelSize(getSingleWheelSize());
+  // }, [open]);
 
   const handleColorChange = (next) => {
     const nextHex = normalizeHexColor(next, color);
@@ -1131,6 +1135,41 @@ export default function ColorPickerPopover({
       ) : null}
 
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        {/* --- Native color input + eyedropper (custom wheel commented out) --- */}
+        <div className="flex flex-wrap items-center gap-3">
+          <label
+            className="flex cursor-pointer items-center gap-2 rounded-lg p-1 transition-colors hover:bg-accent/50 focus-within:outline-none focus-within:ring-2 focus-within:ring-primary"
+            aria-label={`${pickerLabel}: ${color}`}
+          >
+            <input
+              type="color"
+              value={color}
+              onChange={(event) => handleColorChange(event.target.value)}
+              className="h-10 w-10 cursor-pointer overflow-hidden rounded-lg border border-black/10 bg-transparent p-0 shadow-sm [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:rounded-lg [&::-moz-color-swatch]:border-none"
+            />
+            <div className="min-w-0 text-left">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                {pickerLabel}
+              </p>
+              <p className="truncate font-mono text-xs font-semibold text-foreground">
+                {color}
+              </p>
+            </div>
+          </label>
+
+          {/* Screen eyedropper trigger — temporarily hidden; feature kept in EyeDropperButton */}
+          {/* <EyeDropperButton
+            onColorPicked={handleColorChange}
+            label="Pick primary color from screen"
+          /> */}
+
+          <ImageColorPickButton
+            onColorPicked={handleColorChange}
+            label="Pick from Image"
+          />
+        </div>
+
+        {/* --- Previous custom color wheel popover (commented out, do not delete) ---
         <Popover open={open} onOpenChange={handleOpenChange}>
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -1159,15 +1198,13 @@ export default function ColorPickerPopover({
               label="Pick primary color from screen"
             />
 
-            <button
-              ref={editButtonRef}
-              type="button"
-              onClick={(event) => openPicker(event.currentTarget)}
-              className="group ml-auto inline-flex shrink-0 items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <Palette className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
-              Edit color
-            </button>
+            <ImageColorPickButton
+              onBeforePick={closePicker}
+              onColorPicked={handleColorChange}
+              label="Upload a photo, then click a pixel to pick the primary color"
+              buttonText="Pick from photo"
+              hint="Upload an image, then click any pixel to sample its color."
+            />
           </div>
 
           <PopoverContent
@@ -1188,6 +1225,7 @@ export default function ColorPickerPopover({
             />
           </PopoverContent>
         </Popover>
+        --- end previous custom wheel --- */}
       </div>
     </div>
   );
