@@ -1,7 +1,7 @@
 import { Server as SocketServer } from "socket.io";
 import { verifyToken } from "../utils/jwt.ts";
 import userService from "../services/user.service.ts";
-import messagesService from "../services/messages.service.ts";
+import messageService from "../services/message.service.ts";
 
 export const getConversationRoomId = (
   portalId: string,
@@ -13,6 +13,14 @@ export const getConversationRoomId = (
 };
 
 const onlineUserConnections = new Map<string, number>();
+
+let socketIo: SocketServer | null = null;
+
+export const emitNewNotification = (userId: string) => {
+  if (socketIo && userId) {
+    socketIo.to(`user_${userId}`).emit("new_notification");
+  }
+};
 
 const getOnlineUserIds = () => Array.from(onlineUserConnections.keys());
 
@@ -35,6 +43,7 @@ const markUserOffline = (io: SocketServer, userId: string) => {
 };
 
 export const initSocket = (io: SocketServer) => {
+  socketIo = io;
   io.use(async (socket, next) => {
     try {
       const token =
@@ -110,9 +119,9 @@ export const initSocket = (io: SocketServer) => {
             });
             return;
           }
-          const newMsg = await messagesService.createMessage({
-            senderId: userId,
-            receiverId,
+          const newMsg = await messageService.createMessage({
+            sender: { id: userId },
+            receiver: { id: receiverId },
             portalId,
             text: text.trim(),
           });
@@ -126,8 +135,7 @@ export const initSocket = (io: SocketServer) => {
             createdAt: (newMsg as any).createdAt,
           };
           io.to(roomId).emit("new_message", messagePayload);
-          // Notify receiver to refresh notification count (message creates in-app notification)
-          io.to(`user_${receiverId}`).emit("new_notification");
+          emitNewNotification(receiverId);
         } catch (err) {
           console.error("[Socket] send_message error:", err);
           socket.emit("error", {

@@ -103,6 +103,7 @@ export const NotificationConfigure = {
   WELCOME_LOGIN_EMAIL: "welcome_login_email",
   INVITE_LINK_EMAIL: "invite_link_email",
   MESSAGE_IN_APP: "message_in_app",
+  TASK_IN_APP: "task_in_app",
 };
 
 export const OnboardingTasksStatus = {

@@ -21,7 +21,7 @@ import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import { formatTimeAgo } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
-import { decryptMessage } from "@/app/lib/crypto";
+import { getNotificationMessagePreview } from "@/utils/notification";
 import { cn } from "@/app/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -446,7 +446,7 @@ const NotificationComponent = () => {
                           </div>
 
                           <p className="mb-2 line-clamp-2 text-sm text-foreground">
-                            {notification?.type === "message" ? decryptMessage(notification?.body) : notification?.body}
+                            {getNotificationMessagePreview(notification)}
                           </p>
 
                           <div className="flex items-center space-x-4 text-xs text-muted-foreground">

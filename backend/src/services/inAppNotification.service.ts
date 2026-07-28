@@ -1,11 +1,13 @@
 import "reflect-metadata";
 import { EntityTarget, ObjectLiteral, Between } from "typeorm";
-import { getConnection } from "../config/db.ts";
+import { connectDatabase, getConnection } from "../config/db.ts";
 import { NotificationStatus, NotificationType } from "../config/constants.ts";
 import { Messages } from "../entities/Messages.ts";
+import { Tasks } from "../entities/Tasks.ts";
 import { InAppNotifications } from "../entities/InAppNotifications.ts";
 
 const getRepository = async (entity: EntityTarget<ObjectLiteral>) => {
+  await connectDatabase();
   const connection = getConnection();
   return connection.getRepository(entity);
 };
@@ -21,14 +23,19 @@ interface CreateNotificationData {
   preferenceKey?: string;
 }
 
+const truncateText = (value: string, maxLength = 500) => {
+  if (!value) return "";
+  return value.length > maxLength ? `${value.slice(0, maxLength - 3)}...` : value;
+};
+
 const createNotification = async (data: CreateNotificationData) => {
   const notificationRepository = await getRepository(InAppNotifications);
   try {
     const notification = notificationRepository.create({
-      user: { id: data.userId },
-      portal: data.portalId,
-      title: data.title,
-      body: data.body,
+      user: { id: String(data.userId) },
+      portal: data.portalId ? { id: data.portalId } : undefined,
+      title: truncateText(data.title, 255),
+      body: truncateText(data.body, 500),
       url: data.url,
       type: data.type || NotificationType.SYSTEM,
       status: NotificationStatus.UNREAD,
@@ -52,18 +59,11 @@ const getUserNotifications = async (
 ) => {
   const notificationRepository = await getRepository(InAppNotifications);
   const messageRepository = await getRepository(Messages);
+  const taskRepository = await getRepository(Tasks);
 
   try {
-    const whereCondition: any = {
-      user: { id: userId },
-    };
-
-    if (portalId) {
-      whereCondition.portal = { id: portalId };
-    }
-
     const notifications = await notificationRepository.find({
-      where: whereCondition,
+      where: { user: { id: userId } },
       relations: ["user", "portal"],
       order: {
         createdAt: "DESC",
@@ -84,6 +84,13 @@ const getUserNotifications = async (
                 referenceData = await messageRepository.findOne({
                   where: { id: notification.referenceId },
                   relations: ["sender"],
+                });
+                break;
+
+              case NotificationType.TASK:
+                referenceData = await taskRepository.findOne({
+                  where: { id: notification.referenceId },
+                  relations: ["user", "createdBy"],
                 });
                 break;
 
@@ -120,17 +127,11 @@ const getUnreadNotificationCount = async (
   const notificationRepository = await getRepository(InAppNotifications);
 
   try {
-    const whereCondition: any = {
-      user: { id: userId },
-      status: NotificationStatus.UNREAD,
-    };
-
-    if (portalId) {
-      whereCondition.portal = { id: portalId };
-    }
-
     const count = await notificationRepository.count({
-      where: whereCondition,
+      where: {
+        user: { id: userId },
+        status: NotificationStatus.UNREAD,
+      },
     });
 
     return count;

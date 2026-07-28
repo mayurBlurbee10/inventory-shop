@@ -103,7 +103,7 @@ function Navbar({ content, config, filterValue }) {
   const [error, setError] = useState(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [themeMode, setThemeMode] = useState("light");
-  useSocket();
+  const { socket } = useSocket();
 
   const closeMobileSidebar = () => {
     setIsOpenNavbar(false);
@@ -579,20 +579,38 @@ function Navbar({ content, config, filterValue }) {
     setIsNotificationLoading(true)
     try {
       setError(null);
-      const res = await fetchWrapper(
-        `/api/in-app-notification?limit=${limit}&offset=${offset}`,
-        {},
-        "get-notifications"
-      );
+      const [listRes, countRes] = await Promise.all([
+        fetchWrapper(
+          `/api/in-app-notification?limit=${limit}&offset=${offset}`,
+          {},
+          "get-notifications"
+        ),
+        fetchWrapper(
+          `/api/in-app-notification/unread-count`,
+          {},
+          "get-unread-notification-count"
+        ),
+      ]);
 
-      if (!res.ok) {
+      if (!listRes.ok) {
         throw new Error("Failed to fetch notifications");
       }
 
-      const data = await res.json();
+      const data = await listRes.json();
       if (data && data.data) {
         setNotifications(data?.data);
       }
+
+      if (countRes.ok) {
+        const countData = await countRes.json();
+        setNotificationCount(countData?.data?.count ?? 0);
+      } else {
+        const unread = (data?.data || []).filter(
+          (n) => (n.status || "").toLowerCase() !== "read"
+        ).length;
+        setNotificationCount(unread);
+      }
+
       return data;
     } catch (error) {
       setError(error?.message || "Failed to load notifications");
@@ -603,13 +621,23 @@ function Navbar({ content, config, filterValue }) {
   };
 
   useEffect(() => {
-    getNotifications()
-  }, [])
+    if (user?.id) {
+      getNotifications();
+    }
+  }, [user?.id, params?.portalid]);
 
   useEffect(() => {
-    const unreadCount = notifications.filter(n => n.status?.toLowerCase() !== "read").length > 0;
-    setNotificationCount(unreadCount);
-  }, [notifications, setNotificationCount]);
+    if (!socket) return;
+
+    const handleNewNotification = () => {
+      getNotifications();
+    };
+
+    socket.on("new_notification", handleNewNotification);
+    return () => {
+      socket.off("new_notification", handleNewNotification);
+    };
+  }, [socket, user?.id, params?.portalid]);
 
   return (
     <>
@@ -623,6 +651,7 @@ function Navbar({ content, config, filterValue }) {
         setNotifications={setNotifications}
         isNotificationLoading={isNotificationLoading}
         setIsNotificationLoading={setIsNotificationLoading}
+        getNotifications={getNotifications}
         error={error}
         setError={setError}
       />

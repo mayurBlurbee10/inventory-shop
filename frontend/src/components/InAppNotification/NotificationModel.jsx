@@ -19,7 +19,7 @@ import { useParams, useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/utils/helper";
 import { toast } from "react-toastify";
 import LoaderSpinner from "../Common/Elements/LoaderSpinner";
-import { decryptMessage } from "@/app/lib/crypto";
+import { getNotificationMessagePreview } from "@/utils/notification";
 import { cn } from "@/app/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -182,6 +182,9 @@ const NotificationModal = ({
     }
   };
 
+  const getNotificationContent = (notification) =>
+    getNotificationMessagePreview(notification);
+
   // Format notification data for display
   const formatNotification = (notification) => {
     const userName = getUserName(notification);
@@ -192,10 +195,14 @@ const NotificationModal = ({
       id: notification.id,
       user: { name: userName, profileUrl: profileUrl },
       avatar: userInitials,
-      action: notification.body || notification.title || "New notification",
+      content: getNotificationContent(notification),
+      action:
+        getNotificationContent(notification) ||
+        notification.body ||
+        notification.title ||
+        "New notification",
       time: formatTimeAgo(notification.createdAt),
       title: notification.title || "",
-      content: notification.type === "message" ? decryptMessage(notification.body) : notification.body || "",
       url: notification.url || "",
       isRead: notification.status === "read" || notification.status === "READ",
       type: notification.type || "SYSTEM",

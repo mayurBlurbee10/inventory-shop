@@ -75,28 +75,50 @@ const fetchWithAuth = async (url, options = {}) => {
   });
 };
 
+const RESERVED_PORTAL_SEGMENTS = new Set([
+  "admin",
+  "master",
+  "login",
+  "register",
+  "api",
+  "_next",
+]);
+
+const getActivePortalId = (user) => {
+  if (isBrowser()) {
+    const segment = window.location.pathname.split("/").filter(Boolean)[0];
+    if (segment && !RESERVED_PORTAL_SEGMENTS.has(segment)) {
+      return segment;
+    }
+
+    const storedPortal = localStorage.getItem("portal");
+    if (storedPortal) return storedPortal;
+  }
+
+  return user?.portalId || "admin";
+};
+
 export const fetchWrapper = async (url, options = {}, type) => {
   // Get dynamic header values (e.g., from localStorage, cookies, or a session)
 
   const user = getUserData() || {
     id: null,
   };
-  const portal = isBrowser() ? localStorage.getItem("portal") : null;
 
-  let portalId = "admin"; // default
+  let portalId = getActivePortalId(user);
 
   if (options.body && typeof options.body === "string") {
     try {
       const parsedBody = JSON.parse(options.body);
-      portalId = user?.portalId || parsedBody.portalid || "admin";
+      portalId =
+        parsedBody.portalId ||
+        parsedBody.portalid ||
+        portalId;
     } catch (error) {
       console.warn("Failed to parse body for portalid:", error);
-      portalId = user?.portalId || "admin";
     }
   } else if (options.body && typeof options.body === "object") {
-    portalId = user?.portalId || options.body.portalid || "admin";
-  } else {
-    portalId = user?.portalId || "admin";
+    portalId = options.body.portalId || options.body.portalid || portalId;
   }
 
   // Default headers

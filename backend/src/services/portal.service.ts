@@ -8,10 +8,44 @@ import { getBoxClient } from "../utils/boxClient.ts";
 import { Users } from "../entities/Users.ts";
 import boxHubService from "../../Plugins/box-ai/box-ai.service.ts"
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const getRepository = async (entity: any) => {
   await connectDatabase();
   const connection = getConnection();
   return connection.getRepository(entity);
+};
+
+/** Resolve portal identifier (UUID, sanitized slug, or legalName) to portal UUID. */
+const resolvePortalIdToUuid = async (
+  portalId: string | undefined,
+): Promise<string | undefined> => {
+  if (!portalId || typeof portalId !== "string" || !portalId.trim())
+    return undefined;
+
+  const trimmed = portalId.trim();
+  if (["admin", "root", "master"].includes(trimmed)) return undefined;
+
+  const portalRepository = await getRepository(Portals);
+
+  if (UUID_REGEX.test(trimmed)) {
+    const byId = await portalRepository.findOne({ where: { id: trimmed } });
+    return byId?.id || trimmed;
+  }
+
+  const candidates = Array.from(
+    new Set([trimmed, reverseSanitizeName(trimmed), sanitizeName(trimmed)]),
+  );
+
+  for (const candidate of candidates) {
+    const portal = await portalRepository.findOne({
+      where: { legalName: ILike(candidate) },
+    });
+    if (portal?.id) return portal.id;
+  }
+
+  return undefined;
 };
 
 const createPortal = async (data: any) => {
@@ -440,6 +474,7 @@ export default {
   getPortalsByUser,
   getPortals,
   getPortalByLegalName,
+  resolvePortalIdToUuid,
   getPortalCreatedAdmin,
   updatePortalThemes,
   updatePortalStatus,

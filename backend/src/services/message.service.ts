@@ -2,15 +2,12 @@ import "reflect-metadata";
 import { IsNull } from "typeorm";
 import { connectDatabase, getConnection } from "../config/db.ts";
 import { Messages } from "../entities/Messages.ts";
-import { Portals } from "../entities/Portals.ts";
 import { Users } from "../entities/Users.ts";
 import { NotificationConfigure, NotificationType } from "../config/constants.ts";
 import inAppNotificationService from "./inAppNotification.service.ts";
 import notificationService from "./notification.service.ts";
-import { reverseSanitizeName } from "../utils/commonUtils.ts";
-
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import portalService from "./portal.service.ts";
+import { decryptMessage } from "../utils/crypto.ts";
 
 const getRepository = async (entity: any) => {
   await connectDatabase();
@@ -18,28 +15,35 @@ const getRepository = async (entity: any) => {
   return connection.getRepository(entity);
 };
 
-/** Resolve portal identifier (UUID, sanitized legalName, or legalName) to portal UUID for notifications. */
-const resolvePortalIdToUuid = async (
-  portalId: string | undefined,
-): Promise<string | undefined> => {
-  if (!portalId || typeof portalId !== "string" || !portalId.trim())
-    return undefined;
-  const trimmed = portalId.trim();
-  if (UUID_REGEX.test(trimmed)) return trimmed;
-  const portalRepository = await getRepository(Portals);
-  const legalNameCandidates = Array.from(
-    new Set([trimmed, reverseSanitizeName(trimmed)])
-  );
-  const portal = await portalRepository.findOne({
-    where: legalNameCandidates.map((legalName) => ({ legalName })),
-  });
-  return portal?.id;
-};
-
 const getFullName = (user: any) =>
   `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
   user?.email ||
   "Someone";
+
+const normalizeUserId = (value: any): string | undefined => {
+  if (!value) return undefined;
+  if (typeof value === "object") return value.id ? String(value.id) : undefined;
+  return String(value);
+};
+
+/** Plain text or decrypted ciphertext for notification preview. */
+const getMessageNotificationBody = (message: any): string => {
+  const rawText = message.text?.trim();
+  if (rawText) {
+    try {
+      const decrypted = decryptMessage(rawText);
+      const preview = (decrypted || rawText).trim();
+      if (preview) return preview;
+    } catch {
+      return rawText;
+    }
+  }
+
+  const subject = message.subject?.trim();
+  if (subject) return subject;
+
+  return "You have a new message";
+};
 
 const getMessages = async (
   senderId: string,
@@ -86,13 +90,15 @@ const createMessage = async (message: any) => {
     await messageRepository.save(newMsg);
 
     // Notify receiver with in-app notification (don't fail message save if this fails)
-    const receiverId =
-      (newMsg as any).receiver?.id ?? message.receiver?.id ?? message.receiver;
-    const senderId =
-      (newMsg as any).sender?.id ?? message.sender?.id ?? message.sender;
+    const receiverId = normalizeUserId(
+      (newMsg as any).receiver ?? message.receiver,
+    );
+    const senderId = normalizeUserId(
+      (newMsg as any).sender ?? message.sender,
+    );
     const portalId = message.portalId || message.portal;
 
-    if (receiverId && senderId !== receiverId) {
+    if (receiverId && senderId && senderId !== receiverId) {
       try {
         const isEnabled = await notificationService.isNotificationEnabled(
           receiverId,
@@ -103,18 +109,27 @@ const createMessage = async (message: any) => {
 
         const userRepository = await getRepository(Users);
         const sender = await userRepository.findOne({
-          where: { id: typeof senderId === "object" ? senderId?.id : senderId },
+          where: { id: senderId },
         });
         const senderName = getFullName(sender);
+        const notificationBody = getMessageNotificationBody({
+          ...message,
+          text: (newMsg as any).text ?? message.text,
+          subject: (newMsg as any).subject ?? message.subject,
+        });
 
-        await inAppNotificationService.createNotification({
+        const notification = await inAppNotificationService.createNotification({
           userId: receiverId,
-          portalId: await resolvePortalIdToUuid(portalId),
+          portalId: await portalService.resolvePortalIdToUuid(portalId),
           title: `${senderName} sent you a message.`,
-          body: message.text,
+          body: notificationBody,
           type: NotificationType.MESSAGE,
           referenceId: (newMsg as any).id,
         });
+
+        if (!notification) {
+          console.warn("Message notification was not created for receiver:", receiverId);
+        }
       } catch (notifErr) {
         console.error("Failed to create message notification:", notifErr);
       }

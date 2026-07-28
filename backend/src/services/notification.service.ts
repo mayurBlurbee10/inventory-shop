@@ -144,6 +144,12 @@ const getAvailableNotificationTypes = () => {
       description: "Receive an when someone sends you a message",
       category: "message",
     },
+    {
+      key: NotificationConfigure.TASK_IN_APP,
+      label: "Task",
+      description: "Receive a notification when a task is assigned to you",
+      category: "task",
+    },
   ];
 };
 

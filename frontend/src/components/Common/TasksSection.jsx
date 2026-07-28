@@ -34,9 +34,9 @@ import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmDialog from '../DeleteConfirmDialog';
 import LoaderSpinner from './Elements/LoaderSpinner';
 
-export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskStatus, isTaskUpdateLoading, setShowMenu, showMenu }) => {
+export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskStatus, isTaskUpdateLoading }) => {
     const router = useRouter();
-    const menuRef = useRef(null);
+    const [showMenu, setShowMenu] = useState(false);
     const [isTaskDeleteModalOpen, setIsTaskDeleteModalOpen] = useState(false);
     const [isTaskUpdateModalOpen, setIsTaskUpdateModalOpen] = useState(false);
     const [isDeleteTaskLoading, setIsDeleteTaskLoading] = useState(false);
@@ -46,21 +46,11 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
         const date = new Date(timestamp);
         return date.toLocaleDateString("en-US");
       };
-    
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (menuRef.current && !menuRef.current.contains(event.target)) {
-            setShowMenu(false);
-        }
-      };
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
 
     const handleClose = () => {
       setIsTaskDeleteModalOpen(false);
       setIsTaskUpdateModalOpen(false);
-      setShowMenu(false)
+      setShowMenu(false);
       onClose();
     }
 
@@ -110,7 +100,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                 <DialogTitle className="text-2xl text-foreground font-semibold font-lato">
                   📝 Task Details
                 </DialogTitle>
-                <div className="relative" ref={menuRef}>
+                <div className="relative">
                   {user && (user?.id === task?.createdBy?.id || (user?.id === task?.user?.id && task?.status !== TaskStatus?.COMPLETED)) && (
                     <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
                       <DropdownMenuTrigger
@@ -121,7 +111,12 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
                         {user && user?.id === task?.createdBy?.id && (
-                          <DropdownMenuItem onClick={() => setIsTaskUpdateModalOpen((prev) => !prev)}>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setShowMenu(false);
+                              setIsTaskUpdateModalOpen(true);
+                            }}
+                          >
                             <Edit className="size-4 text-primary" />
                             <span>Edit</span>
                           </DropdownMenuItem>
@@ -132,14 +127,25 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                               <LoaderSpinner size={24} className='mx-auto text-primary' />
                             </div>
                           ) : (
-                            <DropdownMenuItem onClick={() => updateTaskStatus(task)}>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setShowMenu(false);
+                                updateTaskStatus(task);
+                              }}
+                            >
                               <Check className="size-4 text-success" />
                               <span>Mark Complete</span>
                             </DropdownMenuItem>
                           )
                         )}
                         {user && user?.id === task?.createdBy?.id && (
-                          <DropdownMenuItem variant="destructive" onClick={() => setIsTaskDeleteModalOpen((prev) => !prev)}>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => {
+                              setShowMenu(false);
+                              setIsTaskDeleteModalOpen(true);
+                            }}
+                          >
                             <Trash2 className="size-4" />
                             <span>Delete</span>
                           </DropdownMenuItem>
@@ -297,7 +303,6 @@ const TasksSection = ({ client = null }) => {
     const [isChecklistLoading, setIsChecklistLoading] = useState(false);
     const [error, setError] = useState(null)
     const [sortConfig, setSortConfig] = useState({ key: "title", direction: "asc" });
-    const [showMenu, setShowMenu] = useState(false);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -378,7 +383,6 @@ const TasksSection = ({ client = null }) => {
 
             if (!response.ok) throw new Error("Something went wrong!!");
             setIsOpenTaskModal(false);
-            setShowMenu(false)
             await fetchChecklists();
             
         } catch (error) {
@@ -591,8 +595,6 @@ const sortedTasks =
             fetchTasks={fetchChecklists}
             updateTaskStatus={updateTaskStatus}
             isTaskUpdateLoading={isTaskUpdateLoading}
-            showMenu={showMenu}
-            setShowMenu={setShowMenu}
         />
         <CompleteForms
           onClose={() => setIsCompleteFormPopupOpen(false)}

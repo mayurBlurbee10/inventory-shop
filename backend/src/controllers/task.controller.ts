@@ -3,6 +3,7 @@ import { logApiCall } from "../utils/api-log-middleware.ts";
 import taskService from "../services/task.service.ts";
 import { asyncHandler } from "../utils/helper.ts";
 import { getBoxClient } from "../utils/boxClient.ts";
+import { emitNewNotification } from "../socket/index.ts";
 
 const client = getBoxClient();
 
@@ -21,13 +22,34 @@ const createTask = asyncHandler(async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Title is required" });
     }
 
-    const task = await taskService.createTask(data);
+    const assigneeId =
+      typeof data.user === "object" ? data.user?.id : data.user;
+    const creatorId =
+      (typeof data.createdBy === "object" ? data.createdBy?.id : data.createdBy) ??
+      (req as any).user?.id;
+
+    const payload = {
+      ...data,
+      user: assigneeId ? { id: assigneeId } : data.user,
+      createdBy: creatorId ? { id: creatorId } : data.createdBy,
+    };
+
+    const task = await taskService.createTask(payload);
 
     if (!task) {
       return res.status(404).json({
         error: `Task didn't created. Please try again.`,
       });
     }
+
+    if (
+      assigneeId &&
+      creatorId &&
+      String(assigneeId) !== String(creatorId)
+    ) {
+      emitNewNotification(String(assigneeId));
+    }
+
     return res.status(200).json({
       message: `task assigned successfully.`,
       data: task,

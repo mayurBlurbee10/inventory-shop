@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
 import messageService from "../services/message.service.ts";
 import { asyncHandler } from "../utils/helper.ts";
+import { emitNewNotification } from "../socket/index.ts";
 
 const createMessage = asyncHandler(async (req: Request, res: Response) => {
   try {
@@ -17,11 +18,16 @@ const createMessage = asyncHandler(async (req: Request, res: Response) => {
         error: "Message text is required",
       });
     }
+
+    const rawReceiver = receiverId ?? data.receiver;
+    const normalizedReceiverId =
+      typeof rawReceiver === "object" ? rawReceiver?.id : rawReceiver;
+
     const payload = {
       ...data,
       sender: { id: senderId },
-      receiver: receiverId ? { id: receiverId } : data.receiver,
-      portal: portalId || data.portalId,
+      receiver: normalizedReceiverId ? { id: normalizedReceiverId } : undefined,
+      portalId: portalId || data.portalId,
     };
 
     const message = await messageService.createMessage(payload);
@@ -31,6 +37,16 @@ const createMessage = asyncHandler(async (req: Request, res: Response) => {
         error: `Message didn't send. Please try again.`,
       });
     }
+
+    const resolvedReceiverId =
+      (message as any).receiver?.id ??
+      (payload.receiver as any)?.id ??
+      payload.receiver ??
+      receiverId;
+    if (resolvedReceiverId && resolvedReceiverId !== senderId) {
+      emitNewNotification(String(resolvedReceiverId));
+    }
+
     return res.status(200).json({
       message: `message created successfully.`,
       data: message,

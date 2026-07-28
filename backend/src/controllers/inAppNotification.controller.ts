@@ -5,7 +5,6 @@ import { getConnection } from "../config/db.ts";
 import { NotificationType } from "../config/constants.ts";
 import inAppNotificationService from "../services/inAppNotification.service.ts";
 import portalService from "../services/portal.service.ts";
-import { reverseSanitizeName } from "../utils/commonUtils.ts";
 
 interface NotificationPayload {
   userId: string;
@@ -20,8 +19,8 @@ interface NotificationPayload {
 // Helper function to extract portalId from request headers
 const getPortalIdFromHeaders = async (req: Request): Promise<string | undefined> => {
   const portalId = req.headers["x-portal-id"];
-  const portal = await portalService.getPortalByLegalName(reverseSanitizeName(portalId as string));
-  return portal?.id || undefined;
+  if (!portalId || typeof portalId !== "string") return undefined;
+  return portalService.resolvePortalIdToUuid(portalId);
 };
 
 const getRepository = async (entity: EntityTarget<ObjectLiteral>) => {
@@ -148,14 +147,15 @@ const sendNotificationToUser = async (req: Request, res: Response) => {
 const getUserNotifications = async (req: Request, res: Response) => {
   try {
     const portalId = await getPortalIdFromHeaders(req);
-    const userId = req.user?.id as string;
+    const userId = (req.user as any)?.id as string;
+
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
-
-    // if (!userId) {
-    //   res.status(400).json({ error: "User ID is required" });
-    //   return;
-    // }
 
     const notifications = await inAppNotificationService.getUserNotifications(
       userId,
