@@ -183,6 +183,7 @@ const bulkPages = async (
         isCustomPage: item.isCustomPage,
         visibility: item.sections,
         plugin: pluginId,
+        ...(item.title === "reports" && { isPageVisible: false }),
       };
       const page = await pageService.createPage(obj);
       if (!page) {
