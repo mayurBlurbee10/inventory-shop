@@ -17,6 +17,7 @@ import {
   CircleUserRound,
   EllipsisVertical,
   FilePen,
+  FileSpreadsheet,
   FileText,
   Headset,
   LayoutDashboard,
@@ -406,7 +407,7 @@ function Navbar({ content, config, filterValue }) {
   const filterPageVisibility = (pageTitle) => {
     const page =
       pages?.length && pages?.find((page) => page.title === pageTitle);
-    return page ? page.isPageVisible : true;
+    return page ? !!page.isPageVisible : true;
   };
 
   function sanitizeName(name) {
@@ -449,6 +450,15 @@ function Navbar({ content, config, filterValue }) {
         title: "Sign",
         icon: Signature,
         href: portalBase ? `${portalBase}/esignature` : "/esignature",
+      });
+    }
+
+    if (userIsAdmin && filterPageVisibility("reports")) {
+      primaryLinks.push({
+        key: "reports",
+        title: "Reports",
+        icon: FileSpreadsheet,
+        href: portalBase ? `${portalBase}/reports` : "/reports",
       });
     }
 
@@ -547,7 +557,8 @@ function Navbar({ content, config, filterValue }) {
   const managePortalTabs = [
     { id: "configuration", label: "Configuration", icon: Settings },
     { id: "identity", label: "Identity Management", icon: Users },
-    { id: "reports", label: "Reports", icon: ChartLine },
+    { id: "account-reports", label: "Account Reports", icon: ChartLine },
+    { id: "reports", label: "Reports", icon: FileSpreadsheet },
     { id: "users", label: "User Access", icon: Users },
     { id: "theme", label: "Theme", icon: Palette },
   ];
@@ -1050,6 +1061,17 @@ function Navbar({ content, config, filterValue }) {
                               ]}
                             />
                           )}
+                        {userIsAdmin && filterPageVisibility("reports") && (
+                          <NavBarItem
+                            title="Reports"
+                            icon={FileSpreadsheet}
+                            href={
+                              params.portalid
+                                ? `/${params.portalid}/reports`
+                                : "/reports"
+                            }
+                          />
+                        )}
                         {filterPageVisibility("forms") && (
                           <NavBarItem
                             title="Forms"

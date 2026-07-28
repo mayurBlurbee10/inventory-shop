@@ -49,6 +49,12 @@ export const existingPages = [
     isCustomPage : false,
   },
   {
+    title: "reports",
+    description: "View holdings and sector returns reports.",
+    sections: [],
+    isCustomPage: false,
+  },
+  {
     title: "forms",
     description: "Track and manage loan details.",
     sections: [],

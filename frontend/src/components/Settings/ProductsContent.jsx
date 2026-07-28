@@ -116,7 +116,7 @@ const ProductsContent = () => {
       const filterTncPlugin = data.data.filter(
         (item) => item.type !== PluginType.PAGES,
       );
-
+      console.log('filterTncPlugin', filterTncPlugin);
       setPlugins(filterTncPlugin);
 
       const filterPagePlugin = data.data

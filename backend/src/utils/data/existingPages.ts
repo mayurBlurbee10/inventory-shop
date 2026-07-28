@@ -25,6 +25,11 @@ export const existingPages = [
     sections: [],
   },
   {
+    title: "reports",
+    description: "View holdings and sector returns reports.",
+    sections: [],
+  },
+  {
     title: "esignature",
     description: "Digitally sign and manage agreements.",
     sections: [],

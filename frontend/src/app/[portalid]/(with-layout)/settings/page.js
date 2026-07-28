@@ -2,12 +2,14 @@
 
 import CustomizationContent from "@/components/Settings/CustomizationContent";
 import IdentityManagementContent from "@/components/Settings/IdentityManagementContent";
+import AccountReportsContent from "@/components/Settings/AccountReportsContent";
 import ReportsContent from "@/components/Settings/ReportsContent";
 import UsersContent from "@/components/Settings/UsersContent";
 import { getUserData } from "@/lib/auth";
 import {
   ChartLine,
   ChevronRight,
+  FileSpreadsheet,
   Layout,
   Palette,
   Plug,
@@ -80,7 +82,8 @@ function SettingsPage() {
   const tabs = [
     { id: "configuration", label: "Configuration", icon: Layout },
     { id: "identity", label: "Identity Management", icon: Users },
-    { id: "reports", label: "Reports", icon: ChartLine },
+    { id: "account-reports", label: "Account Reports", icon: ChartLine },
+    { id: "reports", label: "Reports", icon: FileSpreadsheet },
     { id: "users", label: "User Access", icon: Users },
     { id: "plugins", label: "Plugins", icon: Plug },
     { id: "theme", label: "Theme", icon: Palette },
@@ -98,6 +101,8 @@ function SettingsPage() {
         return <UsersContent />;
       case "identity":
         return <IdentityManagementContent />;
+      case "account-reports":
+        return <AccountReportsContent />;
       case "reports":
         return <ReportsContent />;
       case "plugins":

@@ -40,6 +40,7 @@ import inbuildPluginsRoutes from "./routes/inbuildPlugins.route.ts";
 import inAppnotificationRoutes from "./routes/inAppNotification.route.ts";
 import realMessageRoutes from "./routes/messages.route.ts";
 import themeRoutes from "./routes/theme.route.ts";
+import reportsRoutes from "./routes/reports.route.ts";
 
 dotenv.config();
 
@@ -110,5 +111,6 @@ app.use("/api/inbuild-plugins", inbuildPluginsRoutes);
 app.use("/api/real-messages", realMessageRoutes);
 app.use("/api/in-app-notification", inAppnotificationRoutes);
 app.use("/api/theme", themeRoutes);
+app.use("/api/reports", reportsRoutes);
 
 export { app };
