@@ -716,7 +716,7 @@ const ShareModal = ({
                 <SelectTrigger className="!h-10 w-[120px] shrink-0 !bg-background px-3 text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-border bg-popover text-popover-foreground">
+                <SelectContent className="z-[100] border-border bg-popover text-popover-foreground">
                   <SelectItem value="viewer" className="focus:bg-accent focus:text-accent-foreground">
                     Viewer
                   </SelectItem>
@@ -774,7 +774,7 @@ const ShareModal = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent
-                            className="bg-card text-foreground"
+                            className="z-[100] bg-card text-foreground"
                             alignItemWithTrigger={false}
                           >
                             <SelectItem value="viewer" className="bg-card focus:bg-accent">

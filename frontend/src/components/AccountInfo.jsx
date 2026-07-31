@@ -1,7 +1,10 @@
 import { X, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
+import { clearCookieByName } from "@/app/lib/auth";
+import { clearUserStates } from "@/app/lib/userCleanupService";
 import { toast } from "react-toastify";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -28,7 +31,6 @@ import AddUserModal from "./Settings/AddUserModal";
 
 function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
   const params = useParams();
-  const router = useRouter();
   const [isChangePassModalOpen, setIsChangePassModalOpen] = useState(false);
   const [editProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -70,14 +72,30 @@ function AccountInfo({ isOpen, onClose, config, user, userIsAdmin }) {
 
       const data = await response.json();
       if (response.ok) {
-        await fetchWrapper('/api/auth/logout', { method: 'POST' }, "logout");
+        await fetchWrapper(
+          "/api/auth/logout",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ portalId: params.portalid }),
+          },
+          "logout",
+        );
+
+        clearUserStates();
+        clearCookieByName("clientToken");
+        clearCookieByName("clientRefreshToken");
+        await signOut({ redirect: false });
+
+        toast.success("Password set successfully");
         setSuccess(true);
-        setTimeout(() => router.push(`/${params.portalid}/login`), 2000);
+        window.location.href = params.portalid
+          ? `/${params.portalid}/login`
+          : "/login";
       } else {
         setError(data.error || "Failed to set password.");
         throw new Error(data.error || "Failed to set password.");
       }
-      toast.success("Password set successfully");
     } catch (err) {
       toast.error(err.message);
       setError("Something went wrong. Please try again.");
