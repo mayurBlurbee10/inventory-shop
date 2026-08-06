@@ -191,7 +191,7 @@ export async function uploadReportFile(
     );
   }
 
-  const parseResult = parseWorkbookBuffer(file.buffer, reportType);
+  const parseResult = await parseWorkbookBuffer(file.buffer, reportType);
   if (!parseResult.success) {
     throw new Error(parseResult.error);
   }
@@ -290,7 +290,7 @@ export async function getReportData(
   }
 
   const buffer = await downloadFileBuffer(latestFile.id);
-  const parseResult = parseWorkbookBuffer(buffer, reportType);
+  const parseResult = await parseWorkbookBuffer(buffer, reportType);
 
   if (!parseResult.success) {
     return {

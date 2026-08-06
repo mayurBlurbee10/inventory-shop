@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 type RawRow = (string | number | null | undefined)[];
 
@@ -301,26 +301,31 @@ export function parseHoldingsSheet(rows: RawRow[]): ParsedHoldings {
   };
 }
 
-export function parseWorkbookBuffer(
+
+export async function parseWorkbookBuffer(
   buffer: Buffer,
   reportType: "holdings" | "sector_returns",
-): ReportParseResult {
-  const workbook = XLSX.read(buffer, { type: "buffer", cellDates: true });
-  const sheetName = workbook.SheetNames[0];
+): Promise<ReportParseResult> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer as any);
 
-  if (!sheetName) {
+  const worksheet = workbook.worksheets[0];
+
+  if (!worksheet) {
     return {
       success: false,
       error: "The uploaded file does not contain any worksheet data.",
     };
   }
 
-  const worksheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(worksheet, {
-    header: 1,
-    defval: "",
-    raw: true,
-  }) as RawRow[];
+  const rows: RawRow[] = [];
+
+  worksheet.eachRow({ includeEmpty: true }, (row) => {
+    const values = row.values as any[];
+
+    // Remove the first element because ExcelJS rows are 1-indexed
+    rows.push(values.slice(1));
+  });
 
   if (!rows.length) {
     return {
@@ -332,14 +337,17 @@ export function parseWorkbookBuffer(
   if (reportType === "holdings") {
     const data = parseHoldingsSheet(rows);
     const error = validateHoldings(data);
+
     if (error) {
       return { success: false, error };
     }
+
     return { success: true, data };
   }
 
   const data = parseSectorReturnsSheet(rows);
   const error = validateSectorReturns(data);
+
   if (error) {
     return { success: false, error };
   }
