@@ -316,22 +316,11 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    const userPermission =
-      Array.isArray(mainUser.permissions) &&
-      mainUser.permissions.find(
-        (permission: any) => permission.portalId === userData?.portal,
-      );
-
-    let mainUserRole = userPermission?.role;
-
-    if (!userPermission) {
-      const superUserPermission =
-        Array.isArray(mainUser.permissions) &&
-        mainUser.permissions.find(
-          (permission: any) => permission.portalId === null,
-        );
-      mainUserRole = superUserPermission?.role;
-    }
+    const creatorPortalPermission = await userService.getUserPortalPermission(
+      userData?.portal ?? null,
+      mainUser.id,
+    );
+    const mainUserRole = creatorPortalPermission?.role ?? null;
 
     if (userExist) {
       console.log("userExist", userExist);
@@ -691,7 +680,7 @@ const patchUser = asyncHandler(async (req: Request, res: Response) => {
   try {
     await logApiCall(req);
     const body = req.body;
-    const { id, ...updatedData } = body;
+    const { id, portalId: bodyPortalId, portalid, role, ...updatedData } = body;
 
     if (!id) {
       return res.status(400).json({
@@ -699,10 +688,39 @@ const patchUser = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    const updatedUser = await userService.updateUser(id, {
-      ...updatedData,
-      ndaPages: updatedData.ndaPages || null,
-    });
+    const ndaPages = updatedData.ndaPages || null;
+    const userFields = { ...updatedData, ndaPages };
+
+    if (role !== undefined) {
+      const existingUser = await userService.getUserById(id);
+      const portalId =
+        bodyPortalId ||
+        portalid ||
+        userFields.portal ||
+        existingUser?.portalId;
+
+      if (!portalId && role !== UserRole.SUPER_ADMIN && role !== UserRole.MASTER) {
+        return res.status(400).json({
+          error: "portalId is required to update role",
+        });
+      }
+
+      const updatedUser = await permissionService.updatePermission(id, {
+        ...userFields,
+        permissions: {
+          portalId: portalId ?? null,
+          role,
+        },
+      });
+
+      return res.status(200).json({
+        message: "User updated successfully",
+        user: updatedUser,
+      });
+    }
+
+    const { role: _role, ...profileFields } = userFields;
+    const updatedUser = await userService.updateUser(id, profileFields);
 
     return res.status(200).json({
       message: "User updated successfully",
@@ -746,11 +764,12 @@ const updatePassword = asyncHandler(async (req: Request, res: Response) => {
         error: "Invalid credentials!! user not found with this email",
       });
     }
-    const userPermission =
-      Array.isArray(user.permissions) &&
-      user.permissions.find((permission: any) => permission.portalId === portalid);
+    const portalPermission = await userService.getUserPortalPermission(
+      portalid ?? null,
+      user.id,
+    );
 
-    if (!userPermission) {
+    if (!portalPermission) {
       return res.status(403).json({
         error: "This user does not have access to this portal",
       });
@@ -815,24 +834,13 @@ const updateRole = asyncHandler(async (req: Request, res: Response) => {
     console.log("Received userData:", userData);
 
     const role = userData.role;
-    const user = await userService.getUserById(userData.id);
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    const permission = user.permissions.find(
-      (item: any) => item.portalId === userData.portalId,
-    );
-
-    if (permission) {
-      permission.role = role;
-    } else {
-      return res.status(404).json({
-        error: "Permission not found for the provided portalId",
-      });
-    }
-
-    await permissionService.updatePermission(userData.id, { permissions: permission });
+    await permissionService.updatePermission(userData.id, {
+      permissions: {
+        portalId: userData.portalId,
+        role,
+      },
+    });
 
     return res.status(200).json("Permission updated");
   } catch (error) {
@@ -855,13 +863,12 @@ const resendInviteLink = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    const userPermission =
-      Array.isArray(user.permissions) &&
-      user.permissions.find(
-        (permission: any) => permission.portalId === data.portalid,
-      );
+    const portalPermission = await userService.getUserPortalPermission(
+      data.portalid ?? null,
+      user.id,
+    );
 
-    if (!userPermission) {
+    if (!portalPermission) {
       return res.status(403).json({
         error: "This user does not have access to this portal",
       });
@@ -873,7 +880,10 @@ const resendInviteLink = asyncHandler(async (req: Request, res: Response) => {
 
     await userService.setResetPasswordToken(user.email, token);
 
-    if (user.role !== UserRole.SUPER_ADMIN && user.role !== UserRole.MASTER) {
+    if (
+      portalPermission.role !== UserRole.SUPER_ADMIN &&
+      portalPermission.role !== UserRole.MASTER
+    ) {
       // Check if invite_link_email notification is enabled
       const isEmailEnabled = await notificationService.isNotificationEnabled(
         user.id,
@@ -885,7 +895,7 @@ const resendInviteLink = asyncHandler(async (req: Request, res: Response) => {
           user.email,
           `${user.firstName || ""} ${user.lastName || ""}`.trim(),
           token,
-          userPermission.portalId,
+          data.portalid,
           false,
           "reset",
         );
@@ -924,28 +934,18 @@ const handleLoginByProvider = asyncHandler(
           console.warn(`Portal admin not found for portal: ${data.portalid}`);
         }
       }
-      let userRole;
-      const userPermission =
-        Array.isArray(user.permissions) &&
-        user.permissions.find(
-          (permission: any) => permission.portalId === data.portalid,
-        );
-      if (!userPermission) {
-        const userIsSuperAdminPermission =
-          Array.isArray(user.permissions) &&
-          user.permissions.find(
-            (permission: any) => permission.role === UserRole.SUPER_ADMIN,
-          );
-        if (userIsSuperAdminPermission) {
-          userRole = userIsSuperAdminPermission.role;
-        } else {
-          return res.status(403).json({
-            error: "This user does not have access to this portal",
-          });
-        }
-      } else {
-        userRole = userPermission?.role;
+      const portalPermission = await userService.getUserPortalPermission(
+        data.portalid ?? null,
+        user.id,
+      );
+
+      if (!portalPermission) {
+        return res.status(403).json({
+          error: "This user does not have access to this portal",
+        });
       }
+
+      const userRole = portalPermission.role;
 
       const userData = {
         id: user.id,
@@ -972,7 +972,7 @@ const handleLoginByProvider = asyncHandler(
         id: user.id,
         email: user.email,
         role: userRole,
-        portalId: (userPermission as any)?.portalId || "admin",
+        portalId: data?.portalid || "admin",
         boxUserId: user.boxUserId,
         folderId: (userData as any).boxFolderId,
       };

@@ -2,12 +2,36 @@ import "reflect-metadata";
 import { connectDatabase, getConnection } from "../config/db.ts";
 import { Users } from "../entities/Users.ts";
 import userService from "./user.service.ts";
-import { UserRole } from "../config/constants.ts";
+import userPortalService from "./user.portal.service.ts";
 
 const getRepository = async (entity: any) => {
   await connectDatabase();
   const connection = getConnection();
   return connection.getRepository(entity);
+};
+
+const syncUserPortalFromPermission = async (
+  userId: string,
+  permission: { portalId?: string | null; role: string },
+) => {
+  await userPortalService.syncFromPermissionEntry(userId, permission);
+};
+
+const upsertPortalPermissionEntry = (
+  permissions: any[],
+  permission: { portalId?: string | null; role: string },
+) => {
+  const next = Array.isArray(permissions) ? [...permissions] : [];
+  const portalId = permission.portalId ?? null;
+  const index = next.findIndex((entry) => entry.portalId === portalId);
+
+  if (index >= 0) {
+    next[index] = { ...next[index], role: permission.role };
+  } else {
+    next.push({ portalId, role: permission.role });
+  }
+
+  return next;
 };
 
 const removePermission = async (userId: string, portalId: string) => {
@@ -17,15 +41,22 @@ const removePermission = async (userId: string, portalId: string) => {
     if (!userExist) {
       throw new Error("user not exist");
     }
-    if (Array.isArray(userExist.permissions)) {
-      userExist.permissions = userExist.permissions.filter(
-        (item: any) => item.portalId !== portalId
-      );
-    }
+
+    const permissions = Array.isArray(userExist.permissions)
+      ? userExist.permissions
+      : [];
+
+    const remainingPermissions = permissions.filter(
+      (item: any) => item.portalId !== portalId,
+    );
+
+    await userPortalService.deleteUserPortal(portalId, userId);
+
+    userExist.permissions = remainingPermissions;
     await userRepository.save(userExist);
-    return "User deleted successfully.";
+    return "User removed from portal successfully.";
   } catch (error) {
-    throw new Error(`Failed to delete user. ${(error as Error).message}`);
+    throw new Error(`Failed to remove user from portal. ${(error as Error).message}`);
   }
 };
 
@@ -38,45 +69,35 @@ const updatePermission = async (id: string, updatedData: any) => {
     }
 
     if (updatedData.permissions) {
-      const { permissions, ...rest } = updatedData;
+      const { permissions, role: _role, ...rest } = updatedData;
 
-      if (!Array.isArray(mainUser.permissions)) {
-        mainUser.permissions = [];
-      }
-
-      const existingPermission = mainUser.permissions.find(
-        (perm: any) => perm.portalId === permissions.portalId
+      mainUser.permissions = upsertPortalPermissionEntry(
+        mainUser.permissions,
+        permissions,
       );
 
-      if (existingPermission) {
-        if (existingPermission.role !== permissions.role) {
-          existingPermission.role = permissions.role;
-          Object.assign(mainUser, rest);
-          await userRepository.save(mainUser);
-          console.log("User role updated successfully!");
-          return mainUser;
-        } else {
-          throw new Error(
-            permissions.role === UserRole.SUPER_ADMIN
-              ? "Super admin already exists"
-              : "User already exists in this portal"
-          );
-        }
-      } else {
-        mainUser.permissions.push(permissions);
-        Object.assign(mainUser, rest);
-        await userRepository.save(mainUser);
-        console.log("User updated successfully!");
-        return mainUser;
+      const {
+        role: _restRole,
+        permissions: _restPermissions,
+        ...profileFields
+      } = rest;
+
+      if (Object.keys(profileFields).length > 0) {
+        Object.assign(mainUser, profileFields);
       }
+
+      await userRepository.save(mainUser);
+      await syncUserPortalFromPermission(id, permissions);
+      return mainUser;
     }
 
-    Object.assign(mainUser, updatedData);
+    const { role: _role, permissions: _permissions, ...profileOnly } =
+      updatedData;
+    Object.assign(mainUser, profileOnly);
     await userRepository.save(mainUser);
-    console.log("User updated successfully!");
     return mainUser;
   } catch (error) {
-    console.error("Error updating user:", (error as Error).message);
+    console.error("Error updating user permission:", (error as Error).message);
     throw error;
   }
 };
@@ -85,4 +106,3 @@ export default {
   removePermission,
   updatePermission,
 };
-

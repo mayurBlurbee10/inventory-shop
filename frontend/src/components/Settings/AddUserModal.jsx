@@ -334,11 +334,12 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
 
       const requestData = {
         ...formData,
-          company:{
+        portalId: params?.portalid,
+        company: {
           name: formData.companyName,
           logo: logoUrl,
-        }
-      }
+        },
+      };
       delete requestData.companyName;
       delete requestData.logo;
 

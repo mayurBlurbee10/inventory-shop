@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import userService from "../services/user.service.ts";
+import userPortalService from "../services/user.portal.service.ts";
 import portalService from "../services/portal.service.ts";
 import apiLogsService from "../services/apiLogs.service.ts";
 import { reverseSanitizeName } from "../utils/commonUtils.ts";
@@ -33,19 +34,11 @@ export const getEvents = asyncHandler(async (req: Request, res: Response) => {
     let userRole = "";
 
     if (userId && user) {
-      const permission = Array.isArray((user as any).permissions)
-        ? (user as any).permissions.find(
-          (item: any) => item.portalId === portalId
-        )
-        : null;
-      if (!permission) {
-        const superAdmin = Array.isArray((user as any).permissions)
-          ? (user as any).permissions.find((item: any) => item.portalId === null)
-          : null;
-        if (superAdmin) userRole = superAdmin.role;
-      } else {
-        userRole = permission.role;
-      }
+      userRole =
+        (await userPortalService.getPortalRole(
+          user.id as string,
+          portalId as string,
+        )) || "";
     }
     let scopedUserId = null;
     if (filter === "my" || userRole === "user") {
@@ -125,21 +118,11 @@ export const exportEvents = asyncHandler(async (req: Request, res: Response) => 
     let userRole = "";
 
     if (userId && user) {
-      const permission = Array.isArray((user as any).permissions)
-        ? (user as any).permissions.find(
-            (item: any) => item.portalId === portalId
-          )
-        : null;
-      if (!permission) {
-        const superAdmin = Array.isArray((user as any).permissions)
-          ? (user as any).permissions.find(
-              (item: any) => item.portalId === null
-            )
-          : null;
-        if (superAdmin) userRole = superAdmin.role;
-      } else {
-        userRole = permission.role;
-      }
+      userRole =
+        (await userPortalService.getPortalRole(
+          user.id as string,
+          portalId as string,
+        )) || "";
     }
 
     let scopedUserId: string | null = null;

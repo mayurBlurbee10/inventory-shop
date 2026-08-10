@@ -6,6 +6,22 @@ export const UserRole = {
   MODERATOR: "moderator",
 };
 
+export const USER_PORTAL_ROLE_VALUES = Object.values(UserRole);
+
+/** Roles stored with portal = NULL (platform-wide access). */
+export const GLOBAL_USER_ROLES = [UserRole.SUPER_ADMIN, UserRole.MASTER];
+
+export const isGlobalUserRole = (role?: string | null): boolean =>
+  !!role && (GLOBAL_USER_ROLES as readonly string[]).includes(role);
+
+export const UserRoleLabel = {
+  [UserRole.USER]: "User",
+  [UserRole.ADMIN]: "Admin",
+  [UserRole.SUPER_ADMIN]: "Super Admin",
+  [UserRole.MASTER]: "Master",
+  [UserRole.MODERATOR]: "Moderator",
+};
+
 export const PluginType = {
   PAGES: "pages",
   TNC: "t&c",

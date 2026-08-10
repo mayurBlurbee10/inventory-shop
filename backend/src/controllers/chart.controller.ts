@@ -6,6 +6,7 @@ import {
   sanitizeName,
   reverseSanitizeName,
 } from "../utils/commonUtils.ts";
+import userPortalService from "../services/user.portal.service.ts";
 import { asyncHandler } from "../utils/helper.ts";
 
 const getLastNMonthsData = (data: any[], monthsCount: number) => {
@@ -103,9 +104,10 @@ const getReportData = asyncHandler(async (req: Request, res: Response) => {
 
     let userRole = null;
     if (user && portalId) {
-      const portalPermission = Array.isArray((user as any).permissions) &&
-        (user as any).permissions.find((p: any) => p.portalId === portalId);
-      userRole = portalPermission ? portalPermission.role : null;
+      userRole = await userPortalService.getPortalRole(
+        user.id as string,
+        portalId as string,
+      );
     }
 
     const { reverseSanitizeName } = await import("../utils/commonUtils.ts");

@@ -239,6 +239,7 @@ function ViewProfileModal({
 
       const requestData = {
         ...formData,
+        portalId: params?.portalid,
         company: {
           name: formData.companyName,
           logo: logoUrl,

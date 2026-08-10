@@ -4,6 +4,7 @@ import { logApiCall } from "../utils/api-log-middleware.ts";
 import { generateToken, generateRefreshToken } from "../utils/jwt.ts";
 import { decodeJwt } from "jose";
 import userService from "../services/user.service.ts";
+import userPortalService from "../services/user.portal.service.ts";
 import { UserRole } from "../config/constants.ts";
 import portalService from "../services/portal.service.ts";
 import { sanitizeName } from "../utils/commonUtils.ts";
@@ -113,24 +114,23 @@ const login = asyncHandler(async (req: Request, res: Response) => {
 
     console.log("DATA.PORTALID: ", data.portalid, user.portalId);
 
-    // check if this is the same portal's user
-    const userPermission =
-      Array.isArray(user.permissions) &&
-      user.permissions.find(
-        (permission: any) => permission.portalId === data?.portalid
-      );
+    // Resolve portal-scoped role from user_portals (not users.permissions)
+    const portalSpecificPermission = data?.portalid
+      ? await userPortalService.getPortalSpecificUserPortal(
+          data.portalid,
+          user.id,
+        )
+      : null;
 
-    let userRole = userPermission?.role;
+    const portalPermission = await userService.getUserPortalPermission(
+      data?.portalid ?? null,
+      user.id,
+    );
 
-    if (!userPermission) {
-      const superUserPermission =
-        Array.isArray(user.permissions) &&
-        user.permissions.find((permission: any) => permission.portalId === null);
+    let userRole =
+      portalSpecificPermission?.role ?? portalPermission?.role ?? null;
 
-      userRole = superUserPermission?.role;
-    }
-
-    if (data?.portalid && !userPermission) {
+    if (data?.portalid && !portalSpecificPermission) {
       if (userRole === UserRole.SUPER_ADMIN) {
         let allPortals: any[] = [];
         const userData = await userService.getUserById(user.id);
@@ -228,7 +228,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     // Include role in the response and ensure it's properly set
     let userData: any = {
       id: user.id,
-      portalId: userPermission?.portalId || "admin",
+      portalId: data?.portalid || "admin",
       email: user.email,
       firstName: user?.firstName,
       lastName: user?.lastName,
@@ -269,7 +269,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
       id: user.id,
       email: user.email,
       role: userRole,
-      portalId: userPermission?.portalId || "admin",
+      portalId: data?.portalid || "admin",
       boxUserId: user.boxUserId,
       folderId: userData.boxFolderId,
     };
@@ -502,14 +502,15 @@ const refreshToken = asyncHandler(async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Unable to identify user" });
     }
 
-    const portalPermission = user?.permissions?.find(
-      (p: any) => p.portalId === portalId
+    const portalPermission = await userService.getUserPortalPermission(
+      portalId ?? null,
+      user.id,
     );
 
     const userData = {
       id: user.id,
       email: user.email,
-      role: portalPermission?.role,
+      role: portalPermission?.role ?? null,
       portalId,
     };
 

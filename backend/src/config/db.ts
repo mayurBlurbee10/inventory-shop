@@ -15,6 +15,7 @@ import { InbuildPlugins } from "../entities/InbuildPlugins.ts";
 import { PortalPluginConfigs } from "../entities/PortalPluginConfigs.ts";
 import { InAppNotifications } from "../entities/InAppNotifications.ts";
 import { Theme } from "../entities/Theme.ts";
+import { UserPortals } from "../entities/UserPortals.ts";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ export const AppDataSource = new DataSource({
     PortalPluginConfigs,
     InAppNotifications,
     Theme,
+    UserPortals,
   ],
   logging: false,
   synchronize: true,

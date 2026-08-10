@@ -7,7 +7,7 @@ import { In } from "typeorm";
 import { UserRole } from "../config/constants.ts";
 
 import portalService from "./portal.service.ts";
-import { reverseSanitizeName } from "../utils/commonUtils.ts";
+import userPortalService from "./user.portal.service.ts";
 
 const getRepository = async (entity: any) => {
   await connectDatabase();
@@ -43,103 +43,9 @@ const createUser = async (data: any) => {
     const savedUser = await userRepository.save(user);
     const userId = (savedUser as any).id;
 
-    // Create user portal relation
-    try {
-      const userRole = userData.role || UserRole.USER;
-      let portalId = null;
-
-      // For SUPER_ADMIN, portal is null (they have access to all portals)
-      // For other roles, get the portal by portalName
-      if (userRole !== UserRole.SUPER_ADMIN && userRole !== UserRole.MASTER) {
-        // Use portalName if available, otherwise try to use portalId (which might be a sanitized name)
-        const portalSlug =
-          portalName ||
-          (userData.portalId && typeof userData.portalId === "string"
-            ? userData.portalId
-            : null);
-
-        console.log(
-          "Creating user portal relation - portalSlug:",
-          portalSlug,
-          "userRole:",
-          userRole,
-        );
-
-        if (portalSlug) {
-          try {
-            // Try multiple variations to find the portal
-            // 1. Try the original slug as-is (in case it's already the legal name)
-            let portal = await portalService.getPortalByLegalName(portalSlug);
-
-            // 2. If not found, try reverseSanitizeName (converts "qwerty" to "Qwerty")
-            if (!portal) {
-              const portalLegalName = reverseSanitizeName(portalSlug);
-              console.log(
-                "Looking up portal with legal name:",
-                portalLegalName,
-              );
-              portal =
-                await portalService.getPortalByLegalName(portalLegalName);
-            }
-
-            // 3. If still not found, try lowercase version
-            if (!portal) {
-              console.log(
-                "Trying lowercase version:",
-                portalSlug.toLowerCase(),
-              );
-              portal = await portalService.getPortalByLegalName(
-                portalSlug.toLowerCase(),
-              );
-            }
-
-            if (portal && portal.id) {
-              portalId = portal.id;
-              console.log(
-                `Found portal with ID ${portalId} for portal slug: ${portalSlug}`,
-              );
-            } else {
-              console.warn(
-                `Portal not found for portal slug: ${portalSlug} (tried original, reversed, and lowercase)`,
-              );
-            }
-          } catch (portalError) {
-            console.error(
-              "Error fetching portal for user portal relation:",
-              portalError,
-            );
-            // Continue without portal relation if portal not found
-          }
-        } else {
-          console.warn(
-            "No portalName or portalId provided for user portal relation",
-          );
-        }
-      }
-
-      // Create user portal relation
-      console.log("Creating user portal relation with:", {
-        user: userId,
-        portal: portalId,
-        role: userRole,
-      });
-      // NOTE: userPortalService was removed.
-      console.log(
-        `User portal relation created for user ${userId} with role ${userRole} and portal ${portalId || "null"}`,
-      );
-    } catch (portalRelationError) {
-      // Log error but don't fail user creation if portal relation creation fails
-      console.error(
-        "Error creating user portal relation:",
-        portalRelationError,
-      );
-
-      // If it's not a duplicate error, we might want to handle it differently
-      if (!(portalRelationError as Error).message.includes("already exists")) {
-        console.warn(
-          "User created but portal relation failed. User ID:",
-          userId,
-        );
+    if (Array.isArray(userData.permissions) && userData.permissions.length > 0) {
+      for (const permission of userData.permissions) {
+        await userPortalService.syncFromPermissionEntry(userId, permission);
       }
     }
 
@@ -160,11 +66,8 @@ const getUsers = async () => {
   }
 };
 
-const filterRole = (user: any, portalId: string) => {
-  const permission = user?.permissions?.find(
-    (item: any) => item?.portalId === portalId,
-  );
-  return permission?.role || null;
+const filterRole = async (userId: string, portalId: string) => {
+  return userPortalService.getPortalRole(userId, portalId);
 };
 
 const filterAdvisor = (user: any, portalId: string) => {
@@ -175,21 +78,7 @@ const filterAdvisor = (user: any, portalId: string) => {
 };
 
 const getUsersByPortal = async (portalId: string) => {
-  const userRepository = await getRepository(Users);
-  try {
-    const users = await userRepository.find();
-
-    const filteredUsers = users.filter(
-      (user) =>
-        Array.isArray(user.permissions) &&
-        user.permissions.some((permission: any) => permission.portalId === portalId),
-    );
-
-    return filteredUsers;
-  } catch (error) {
-    console.error("Error in getUsersByPortal:", error);
-    throw new Error("Failed to get users: " + (error as Error).message);
-  }
+  return userPortalService.getPortalUsers(portalId);
 };
 
 const getUserByEmail = async (email: string, portalId?: string | null) => {
@@ -201,20 +90,6 @@ const getUserByEmail = async (email: string, portalId?: string | null) => {
       return null;
     }
 
-    if (portalId) {
-      const hasPermission =
-        Array.isArray(user.permissions) &&
-        user.permissions.some((perm: any) => perm.portalId === portalId);
-
-      if (!hasPermission) {
-        const hasSuperAdminPermission =
-          Array.isArray(user.permissions) &&
-          user.permissions.some((perm: any) => perm.role === UserRole.SUPER_ADMIN);
-        if (hasSuperAdminPermission) {
-          return user;
-        }
-      }
-    }
     return user;
   } catch (error) {
     console.error("Error getting user by email:", (error as Error).message);
@@ -264,13 +139,7 @@ const getUserByRole = async (role?: string, userId?: string) => {
       });
       return users;
     } else if (role) {
-      const users = await userRepository.find();
-      const filteredUsers = users.filter(
-        (user) =>
-          Array.isArray(user.permissions) &&
-          user.permissions.some((perm: any) => perm.role === role),
-      );
-      return filteredUsers;
+      return await userPortalService.getPortalUsersByRole(role);
     }
     return [];
   } catch (error) {
@@ -390,6 +259,7 @@ const deleteUser = async (userId: string) => {
     if (!userExist) {
       throw new Error("user not exist");
     }
+    await userPortalService.deleteAllUserPortalsByUser(userId);
     await userRepository.delete({ id: userId });
     return "User deleted successfully.";
   } catch (error) {
@@ -575,6 +445,11 @@ const getUsersByPortalForHub = async (portalId: string) => {
   return await getUsersByPortal(portalId);
 };
 
+const getUserPortalPermission = async (
+  portalSlug: string | null,
+  userId: string,
+) => userPortalService.getUserPortal(portalSlug, userId);
+
 export default {
   createUser,
   getUsers,
@@ -598,5 +473,8 @@ export default {
   updateUserByLeadId,
   setUserTokens,
   getUserByRefreshToken,
-  getUsersByPortalForHub
+  getUsersByPortalForHub,
+  getUserPortalPermission,
+  filterRole,
+  filterAdvisor,
 };

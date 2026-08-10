@@ -2,18 +2,23 @@ import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
 import { asyncHandler } from "../utils/helper.ts";
 import themeService from "../services/theme.service.ts";
+import userPortalService from "../services/user.portal.service.ts";
 import { UserRole } from "../config/constants.ts";
 
-const canEditPortalTheme = (user: any, portalId: string): boolean => {
+const canEditPortalTheme = async (
+  user: any,
+  portalId: string,
+): Promise<boolean> => {
   if (!user) return false;
 
-  if (user.role !== UserRole.USER) {
+  const portalRole = await userPortalService.getPortalRole(user.id, portalId);
+
+  if (portalRole === UserRole.SUPER_ADMIN || portalRole === UserRole.ADMIN) {
     return true;
   }
 
-  if (user.role === UserRole.ADMIN) {
-    if (!portalId || portalId === "root") return true;
-    return user.portalId === portalId;
+  if (portalRole === UserRole.MODERATOR) {
+    return true;
   }
 
   return false;
@@ -64,7 +69,7 @@ const createTheme = asyncHandler(async (req: Request, res: Response) => {
       });
     }
 
-    if (!canEditPortalTheme(user, portalId)) {
+    if (!user || !(await canEditPortalTheme(user, portalId))) {
       return res.status(403).json({
         error: "Only portal admins can change the theme.",
       });
