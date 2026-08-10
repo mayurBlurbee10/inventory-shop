@@ -16,6 +16,7 @@ import { PortalPluginConfigs } from "../entities/PortalPluginConfigs.ts";
 import { InAppNotifications } from "../entities/InAppNotifications.ts";
 import { Theme } from "../entities/Theme.ts";
 import { UserPortals } from "../entities/UserPortals.ts";
+import { isFirewallError, whitelistIp } from "../utils/azureFirewall.ts";
 
 dotenv.config();
 
@@ -60,9 +61,32 @@ export const AppDataSource = new DataSource({
 });
 
 export const connectDatabase = async () => {
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
+  if (AppDataSource?.isInitialized) {
+    return;
+  }
+
+  try {
+    await AppDataSource?.initialize();
+
     console.log("TypeORM connected");
+  } catch (error) {
+    const isDevelopment = process.env.NODE_ENV === "development";
+
+    if (isDevelopment && isFirewallError(error)) {
+      console.log("Azure SQL firewall detected.");
+      console.log("Starting automatic IP whitelist...");
+
+      await whitelistIp(error);
+
+      console.log("Retrying database connection...");
+
+      await AppDataSource.initialize();
+
+      console.log("TypeORM connected");
+      return;
+    }
+
+    throw error;
   }
 };
 

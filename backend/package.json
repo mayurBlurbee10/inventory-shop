@@ -12,7 +12,9 @@
     "migrate:duration": "tsc && node dist/migrations/convert-duration-to-string.js"
   },
   "dependencies": {
+    "@azure/arm-sql": "^11.0.0",
     "@azure/communication-email": "^1.0.0",
+    "@azure/identity": "^4.13.1",
     "@azure/storage-blob": "^12.33.0",
     "@types/pdfkit": "^0.17.4",
     "bcrypt": "^6.0.0",
