@@ -180,7 +180,7 @@ const bulkPages = async (
       const obj = {
         title: item.title,
         description: item.description,
-        isCustomPage: item.isCustomPage,
+        isCustomPage: item.isCustomPage ?? false,
         visibility: item.sections,
         plugin: pluginId,
         ...(item.title === "reports" && { isPageVisible: false }),

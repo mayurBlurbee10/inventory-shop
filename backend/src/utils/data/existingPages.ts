@@ -2,6 +2,7 @@ export const existingPages = [
   {
     title: "dashboard",
     description: "Overview of key metrics and activities.",
+    isCustomPage: false,
     sections: [
       { label: "Chart Section", visible: true },
       { label: "Header Section", visible: true },
@@ -13,6 +14,7 @@ export const existingPages = [
   {
     title: "shared-docs",
     description: "Store and collaborate on documents.",
+    isCustomPage: false,
     sections: [
       { label: "My Task Section", visible: true },
       { label: "Advisor Section", visible: true },
@@ -20,18 +22,42 @@ export const existingPages = [
     ],
   },
   {
+    title: "advisor dashboard",
+    description: "Overview of key metrics and activities.",
+    isCustomPage: false,
+    sections: [
+      { label: "Activity Section", visible: true },
+      { label: "My Task Section", visible: true },
+      { label: "Messaging", visible: true },
+      { label: "Your Clients Section", visible: true },
+    ],
+  },
+  {
+    title: "advisor shared-docs",
+    description: "Store and collaborate on documents.",
+    isCustomPage: false,
+    sections: [
+      { label: "My Task Section", visible: true },
+      { label: "Advisor Section", visible: true },
+      { label: "Messaging", visible: true },
+    ],
+  },
+  {
     title: "loans",
     description: "Track and manage loan details.",
+    isCustomPage: false,
     sections: [],
   },
   {
     title: "reports",
     description: "View holdings and sector returns reports.",
+    isCustomPage: false,
     sections: [],
   },
   {
     title: "esignature",
     description: "Digitally sign and manage agreements.",
+    isCustomPage: false,
     sections: [],
   },
 ];
