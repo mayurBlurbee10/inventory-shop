@@ -204,7 +204,7 @@ function LoansPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="px-2 font-medium text-primary-solid hover:text-primary-solid hover:underline"
+                      className="px-2 font-medium text-secondary-foreground hover:text-muted-foreground hover:underline"
                       onClick={() => router.push(`forms/details/${id}`)}
                     >
                       View Details

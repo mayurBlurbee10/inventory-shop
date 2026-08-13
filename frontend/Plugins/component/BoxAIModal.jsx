@@ -1026,7 +1026,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:rounded-l-[2%]">
         <div className="flex items-center justify-between border-b border-border bg-card p-4">
           <div className="flex items-center gap-3">
-            <BrainCog className="h-4 w-4 text-primary-solid" />
+            <BrainCog className="h-4 w-4 text-secondary-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Box AI Plugin</h2>
           </div>
           <div className="flex items-center gap-2">
@@ -1104,7 +1104,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                   >
                     {msg.type === "ai" && (
                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                        <BrainCog className="h-4 w-4 text-primary-solid" />
+                        <BrainCog className="h-4 w-4 text-secondary-foreground" />
                       </div>
                     )}
 
@@ -1119,12 +1119,12 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                     >
                       <div
                         className={cn(
-                          "relative rounded-lg",
+                          "relative rounded-lg w-fit mx-2",
                           msg.citations && msg.citations.length > 0
                             ? "mb-3 md:flex-1 lg:mb-0"
                             : "",
                           msg.type === "user"
-                            ? "ml-auto max-w-fit bg-primary px-4 py-2 text-primary-foreground"
+                            ? "ml-auto max-w-fit bg-muted px-4 py-2 text-primary-foreground"
                             : msg.isError
                               ? "border border-destructive/30 bg-destructive/10 px-4 py-2 text-destructive"
                               : "border border-border bg-muted/50 px-4 py-2 pr-8 text-foreground"
@@ -1170,7 +1170,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                       </div>
 
                       {msg.citations && msg.citations.length > 0 && (
-                        <Card className="border-border bg-muted/50 md:max-w-[350px] md:shrink-0 md:self-start">
+                        <Card className="border-border bg-muted/50 w-fit mx-2 md:shrink-0 md:self-start">
                           <CardContent className="p-3">
                             <div className="mb-2 flex items-center justify-between">
                               <p className="flex items-center text-xs font-semibold text-foreground">
@@ -1300,7 +1300,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <BrainCog className="h-4 w-4 text-primary-solid" />
+                      <BrainCog className="h-4 w-4 text-secondary-foreground" />
                     </div>
                     <div className="rounded-lg bg-muted px-4 py-2">
                       <div className="flex space-x-1">
