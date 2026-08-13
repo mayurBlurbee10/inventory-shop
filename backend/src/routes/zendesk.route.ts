@@ -14,5 +14,6 @@ router.post(
   upload.array("files") as any,
   zendeskController.createSupportTicket
 );
+router.post("/update",zendeskController.updateZendeskTicketToADO);
 
 export default router;

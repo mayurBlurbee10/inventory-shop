@@ -1,6 +1,8 @@
 import { Request, response, Response } from "express";
-import { ConfidentialClientApplication } from "@azure/msal-node";
 import { asyncHandler } from "../utils/helper.js";
+import { createAzureWorkItem } from "../services/azure.service.js";
+import { updateZendeskTicketWithAzureId } from "../services/zendesk.service.js";
+import { processZendeskAttachments } from "../services/attachment.service.js";
 
 interface AzurePayloadOp {
     op: string;
@@ -9,251 +11,142 @@ interface AzurePayloadOp {
 }
 
 interface Attachment {
-    file_name: string;
+    id: number;
+  file_name: string;
     content_url: string;
+  content_type: string;
 }
 
 const ATTACHMENT_EXTENSIONS =
-    "pdf|png|jpe?g|gif|svg|mp4|mov|avi|webm|mkv|m4v|wmv|flv|3gp";
+  "pdf|png|jpe?g|gif|svg|mp4|mov|avi|webm|mkv|m4v|wmv|flv|3gp";
 const IMAGE_EXTENSIONS = /\.(png|jpe?g|gif|svg)$/i;
 
-const msalConfig = {
-    auth: {
-        clientId: process.env.ZENDESK_AZURE_CLIENT_ID!,
-        authority: `https://login.microsoftonline.com/${process.env.ZENDESK_AZURE_TENANT_ID}`,
-        clientSecret: process.env.ZENDESK_AZURE_CLIENT_SECRET!,
-    },
-};
-
-const cca = new ConfidentialClientApplication(msalConfig);
-
-const getAzureAccessToken = async (): Promise<string> => {
-    const response = await cca.acquireTokenByClientCredential({
-        scopes: ["499b84ac-1321-427f-aa17-267ca6975798/.default"],
-    });
-
-    if (!response?.accessToken) {
-        throw new Error("Failed to get Azure access token");
-    }
-
-    return response.accessToken;
-};
-
-const getZendeskAuthHeaders = (): Record<string, string> => ({
-    Authorization:
-        "Basic " +
-        Buffer.from(
-            `${process.env.ZENDESK_ADMIN_EMAIL}/token:${process.env.ZENDESK_API_TOKEN}`
-        ).toString("base64"),
-});
-
-const downloadZendeskAttachment = async (
-    contentUrl: string
-): Promise<Buffer | null> => {
-    const response = await fetch(contentUrl, {
-        headers: getZendeskAuthHeaders(),
-    });
-
-    if (!response.ok) return null;
-
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-};
-
-const uploadAzureAttachment = async (
-    token: string,
-    fileBuffer: Buffer,
-    fileName: string
-): Promise<string | null> => {
-    const url = `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/attachments?fileName=${encodeURIComponent(
-        fileName
-    )}&api-version=7.1`;
-
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/octet-stream",
-        },
-        body: new Uint8Array(fileBuffer),
-    });
-
-    if (!response.ok) return null;
-
-    const result = await response.json();
-    return result.url;
-};
-
-const createAzureWorkItem = async (
-    payload: AzurePayloadOp[]
+/**
+ * Create Azure DevOps work item from Zendesk ticket payload
+ * This handles the initial ticket creation flow
+ */
+const createAzureWorkItemFromPayload = async (
+  payload: AzurePayloadOp[]
 ): Promise<any> => {
-    const token = await getAzureAccessToken();
 
-    const titleOp = payload.find(
-        (op: AzurePayloadOp) => op.path === "/fields/System.Title"
-    );
+  console.log(payload,'===============')
+  const titleOp = payload.find(
+    (op: AzurePayloadOp) => op.path === "/fields/System.Title"
+  );
 
-    const descriptionOp = payload.find(
-        (op: AzurePayloadOp) => op.path === "/fields/System.Description"
-    );
+  const descriptionOp = payload.find(
+    (op: AzurePayloadOp) => op.path === "/fields/System.Description"
+  );
 
-    const tagsOp = payload.find(
-        (op: AzurePayloadOp) => op.path === "/fields/System.Tags"
-    );
+  const tagsOp = payload.find(
+    (op: AzurePayloadOp) => op.path === "/fields/System.Tags"
+  );
 
-    const zendeskIdMatch = tagsOp?.value?.match(/Zendesk-(\d+)/i);
-    const zendeskTicketId = zendeskIdMatch?.[1] || null;
-
-    const url = `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workitems/$${titleOp?.value}?api-version=7.1-preview.3`;
+  const zendeskIdMatch = tagsOp?.value?.match(/Zendesk-(\d+)/i);
+  const zendeskTicketId = zendeskIdMatch?.[1] || null;
 
     let updatedDescription = descriptionOp?.value || "";
     const attachments: Attachment[] = [];
 
-    const attachmentSection = updatedDescription.match(
-        /Attachment\(s\):([\s\S]*)/i
-    );
-
-    if (attachmentSection) {
-        const attachmentRegex = new RegExp(
-            `(.+?\\.(?:${ATTACHMENT_EXTENSIONS}))\\s-\\s(https:\\/\\/.*?\\.(?:${ATTACHMENT_EXTENSIONS}))`,
-            "gi"
-        );
-
-        let match: RegExpExecArray | null;
-
-        while ((match = attachmentRegex.exec(attachmentSection[1])) !== null) {
-            attachments.push({
-                file_name: match[1].trim(),
-                content_url: match[2].trim(),
-            });
-        }
-    }
-
-
-    updatedDescription = updatedDescription
-        .replace(/Attachment\(s\):[\s\S]*/i, "")
-        .replace(/----------------------------------------------/g, "")
-        .replace(
-            /^[A-Za-z\s]+,\s+[A-Za-z]+\s+\d{1,2},\s+\d{4},\s+\d{1,2}:\d{2}\s+/gm,
-            ""
-        )
-        .trim();
-
-    const attachmentRelations: any[] = [];
-    let attachedHtml = "";
-
-    for (const attachment of attachments) {
-        const fileBuffer = await downloadZendeskAttachment(
-            attachment.content_url
-        );
-
-        if (!fileBuffer) continue;
-
-        const adoAttachmentUrl = await uploadAzureAttachment(
-            token,
-            fileBuffer,
-            attachment.file_name
-        );
-
-        if (!adoAttachmentUrl) continue;
-
-        if (IMAGE_EXTENSIONS.test(attachment.file_name)) {
-            attachedHtml += `<div><img src="${adoAttachmentUrl}" /></div>`;
-        } else {
-            attachmentRelations.push({
-                op: "add",
-                path: "/relations/-",
-                value: {
-                    rel: "AttachedFile",
-                    url: adoAttachmentUrl,
-                    attributes: {
-                        comment: "Attachment from Zendesk",
-                    },
-                },
-            });
-        }
-    }
-
-    updatedDescription += attachedHtml;
-
-  const body = [
-    {
-      op: "add",
-      path: "/fields/System.Title",
-          value: `[Universal Portal] Zendesk - ${zendeskTicketId}`,
-    },
-
-    ...(titleOp?.value?.toLowerCase() === "bug"
-      ? [
-          {
-            op: "add",
-            path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
-            value: updatedDescription,
-          },
-        ]
-      : [
-          {
-            op: "add",
-            path: "/fields/System.Description",
-            value: updatedDescription,
-          },
-        ]),
-
-    {
-      op: "add",
-      path: "/fields/System.AreaPath",
-      value:
-        "MStrategyGroupCore\\Zendesk Support Tickets",
-    },
-
-    ...attachmentRelations,
-  ];
-
-  console.log(
-    body,
-    "body----------------------------"
+  const attachmentSection = updatedDescription.match(
+    /Attachment\(s\):([\s\S]*)/i
   );
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type":
-        "application/json-patch+json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      result.message ||
-        "Azure work item creation failed"
+  if (attachmentSection) {
+    const attachmentRegex = new RegExp(
+      `(.+?\\.(?:${ATTACHMENT_EXTENSIONS}))\\s-\\s(https:\\/\\/.*?\\.(?:${ATTACHMENT_EXTENSIONS}))`,
+      "gi"
     );
+
+    let match: RegExpExecArray | null;
+    let idCounter = 1;
+
+    while ((match = attachmentRegex.exec(attachmentSection[1])) !== null) {
+      attachments.push({
+        id: idCounter++,
+        file_name: match[1].trim(),
+        content_url: match[2].trim(),
+        content_type: "application/octet-stream",
+      });
+    }
   }
 
-  return result;
+  updatedDescription = updatedDescription
+    .replace(/Attachment\(s\):[\s\S]*/i, "")
+    .replace(/----------------------------------------------/g, "")
+    .replace(
+      /^[A-Za-z\s]+,\s+[A-Za-z]+\s+\d{1,2},\s+\d{4},\s+\d{1,2}:\d{2}\s+/gm,
+      ""
+    )
+    .trim();
+
+  // Process attachments
+  const { relations, html } = await processZendeskAttachments(attachments);
+  updatedDescription += html;
+
+  const isBug = titleOp?.value?.toLowerCase() === "bug";
+
+  const azureWorkItem = await createAzureWorkItem(
+    `[Universal Portal] Zendesk - ${zendeskTicketId}`,
+    updatedDescription,
+    tagsOp?.value ? `${tagsOp.value}; Zendesk` : "Zendesk",
+    isBug
+  );
+
+  // Add attachment relations if any
+  if (relations.length > 0) {
+    const { attachFileToWorkItem } = await import("../services/azure.service.js");
+    for (const relation of relations) {
+      await attachFileToWorkItem(
+        azureWorkItem.id,
+        relation.value.url,
+        relation.value.attributes.comment
+      );
+    }
+  }
+
+  return azureWorkItem;
 };
 
+/**
+ * Create Zendesk ticket and sync to Azure DevOps
+ * This is the initial ticket creation endpoint
+ */
 const createZendeskToAzureTicket = asyncHandler(
     async (req: Request, res: Response) => {
         try {
             const payload: AzurePayloadOp[] = req.body;
+            console.log(req.body,'--------------')
 
-            const azureTicket = await createAzureWorkItem(payload);
+      const tagsOp = payload.find(
+        (op: AzurePayloadOp) => op.path === "/fields/System.Tags"
+      );
 
-            return res.status(200).json({
-                success: true,
-                azureWorkItemId: azureTicket.id,
-            });
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: (error as Error).message,
-            });
-        }
+      const zendeskIdMatch = tagsOp?.value?.match(/Zendesk-(\d+)/i);
+      const zendeskTicketId = zendeskIdMatch?.[1];
+
+      console.log(`Creating ADO work item for Zendesk ticket ${zendeskTicketId}`);
+
+      const azureWorkItem = await createAzureWorkItemFromPayload(payload);
+
+      console.log(`Updating Zendesk ticket ${zendeskTicketId} with ADO ID ${azureWorkItem.id}`);
+      await updateZendeskTicketWithAzureId(
+        Number(zendeskTicketId!),
+        azureWorkItem.id
+      );
+
+      return res.status(200).json({
+        success: true,
+        azureWorkItemId: azureWorkItem.id,
+      });
+    } catch (error) {
+      console.error("Error creating Zendesk to Azure ticket:", error);
+      return res.status(500).json({
+        success: false,
+        error: (error as Error).message,
+      });
     }
+  }
 );
 
 export default {

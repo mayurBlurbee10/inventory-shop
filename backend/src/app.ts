@@ -37,6 +37,7 @@ import setPasswordRoutes from "./routes/setPassword.route.ts";
 import zendeskToAzureRoutes from "./routes/zendeskToAzure.route.ts";
 import portalPluginConfigsRoutes from "./routes/portalPluginConfigs.route.ts";
 import inbuildPluginsRoutes from "./routes/inbuildPlugins.route.ts";
+import azureToZendeskRoutes from "./routes/azureToZendesk.routes.ts";
 import inAppnotificationRoutes from "./routes/inAppNotification.route.ts";
 import realMessageRoutes from "./routes/messages.route.ts";
 import themeRoutes from "./routes/theme.route.ts";
@@ -109,6 +110,7 @@ app.use("/api/zendesk-to-azure", zendeskToAzureRoutes);
 app.use("/api/portal-plugin-configs", portalPluginConfigsRoutes);
 app.use("/api/inbuild-plugins", inbuildPluginsRoutes);
 app.use("/api/real-messages", realMessageRoutes);
+app.use("/api/azure", azureToZendeskRoutes); // Matches client documentation
 app.use("/api/in-app-notification", inAppnotificationRoutes);
 app.use("/api/theme", themeRoutes);
 app.use("/api/reports", reportsRoutes);

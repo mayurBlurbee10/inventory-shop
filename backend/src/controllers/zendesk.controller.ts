@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/helper.ts";
+import { syncZendeskToADO } from "../services/sync.service.js";
 
 interface ZendeskTicketResponse {
   ticket: {
@@ -247,6 +248,49 @@ const createSupportTicket = asyncHandler(async (req: Request, res: Response) => 
   }
 });
 
+
+const updateZendeskTicketToADO = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const {
+        ticket_id,
+        azure_work_item_id,
+        status,
+        comment,
+        assignee_email,
+      } = req.body;
+
+      console.log("Zendesk webhook payload received:", {
+        ticket_id,
+        azure_work_item_id,
+        status,
+        hasComment: !!comment,
+        assignee_email,
+      });
+
+      await syncZendeskToADO({
+        ticket_id,
+        azure_work_item_id,
+        status,
+        comment,
+        assignee_email,
+      });
+
+      return res.status(200).json({
+        success: true,
+      });
+    } catch (error) {
+      console.error("Error syncing Zendesk to ADO:", error);
+      return res.status(500).json({
+        success: false,
+        error: (error as Error).message,
+      });
+    }
+  }
+);
+
+
 export default {
   createSupportTicket,
+  updateZendeskTicketToADO,
 };

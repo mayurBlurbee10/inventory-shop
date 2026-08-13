@@ -17,6 +17,7 @@ import { InAppNotifications } from "../entities/InAppNotifications.ts";
 import { Theme } from "../entities/Theme.ts";
 import { UserPortals } from "../entities/UserPortals.ts";
 import { isFirewallError, whitelistIp } from "../utils/azureFirewall.ts";
+import { TicketSync } from "../entities/TicketSync.ts";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ export const AppDataSource = new DataSource({
     InAppNotifications,
     Theme,
     UserPortals,
+    TicketSync
   ],
   logging: false,
   synchronize: true,
