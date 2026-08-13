@@ -132,12 +132,15 @@ const getPortalCreatedAdmin = async (portalId: string) => {
   const portalRepository = await getRepository(Portals);
   try {
     const portal = await portalRepository.findOne({
-      where: { legalName: reverseSanitizeName(portalId) },
+      where: { legalName: ILike(reverseSanitizeName(portalId)) },
     });
     if (!portal) {
       throw new Error("portal not exist");
     }
-    return await userService.getUserById(portal?.portalCreatedAdmin);
+    if (!portal.portalCreatedAdmin) {
+      return null;
+    }
+    return await userService.getUserById(portal.portalCreatedAdmin);
   } catch (error) {
     throw new Error("Failed to get portal created admin.");
   }

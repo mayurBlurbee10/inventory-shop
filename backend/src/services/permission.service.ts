@@ -60,7 +60,11 @@ const removePermission = async (userId: string, portalId: string) => {
   }
 };
 
-const updatePermission = async (id: string, updatedData: any) => {
+const updatePermission = async (
+  id: string,
+  updatedData: any,
+  options?: { skipUserPortalSync?: boolean },
+) => {
   const userRepository = await getRepository(Users);
   try {
     const mainUser = await userService.getUserById(id);
@@ -87,7 +91,9 @@ const updatePermission = async (id: string, updatedData: any) => {
       }
 
       await userRepository.save(mainUser);
-      await syncUserPortalFromPermission(id, permissions);
+      if (!options?.skipUserPortalSync) {
+        await syncUserPortalFromPermission(id, permissions);
+      }
       return mainUser;
     }
 

@@ -398,7 +398,18 @@ const AdminDashboardPage = () => {
         throw new Error(data.error || "Failed to create user data");
       }
 
-      newSubsidiary.portalCreatedAdmin = data?.data?.id
+      const portalAdminId = data?.data?.id;
+      if (!portalAdminId) {
+        const bulkError = Array.isArray(data?.results)
+          ? data.results.find((r) => r.status === "error")?.error
+          : null;
+        throw new Error(
+          bulkError ||
+            "Failed to create portal admin user. Portal was not created.",
+        );
+      }
+
+      newSubsidiary.portalCreatedAdmin = portalAdminId;
       // Create portal
       const saveResponse = await fetchWrapper(
         "/api/portal",

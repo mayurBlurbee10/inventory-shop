@@ -18,8 +18,8 @@ const getRepository = async (entity: any) => {
 const createUser = async (data: any) => {
   const userRepository = await getRepository(Users);
   try {
-    // Remove portalName and portal from data as they're not entity fields
-    const { portalName, portal, ...userData } = data;
+    // Remove non-entity fields (portal may not exist yet during portal-setup bulk)
+    const { portalName, portal, skipUserPortalSync, ...userData } = data;
 
     console.log(
       "createUser - portalName:",
@@ -28,6 +28,8 @@ const createUser = async (data: any) => {
       portal,
       "userData.portalId:",
       userData.portalId,
+      "skipUserPortalSync:",
+      !!skipUserPortalSync,
     );
 
     // If portalId is an object, use portalName instead
@@ -43,7 +45,11 @@ const createUser = async (data: any) => {
     const savedUser = await userRepository.save(user);
     const userId = (savedUser as any).id;
 
-    if (Array.isArray(userData.permissions) && userData.permissions.length > 0) {
+    if (
+      !skipUserPortalSync &&
+      Array.isArray(userData.permissions) &&
+      userData.permissions.length > 0
+    ) {
       for (const permission of userData.permissions) {
         await userPortalService.syncFromPermissionEntry(userId, permission);
       }

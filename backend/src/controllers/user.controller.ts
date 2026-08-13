@@ -578,6 +578,8 @@ const bulkCreateUsers = asyncHandler(async (req: Request, res: Response) => {
         }
 
         const token = await generateNanoToken();
+        // Portal row does not exist yet during portal setup — defer user_portals sync
+        // until after POST /api/portal creates the portal.
         const preparedUser: any = {
           email: userData.email,
           phoneNo: userData.phoneNo || "",
@@ -598,13 +600,17 @@ const bulkCreateUsers = asyncHandler(async (req: Request, res: Response) => {
           isOnboardingRequired: userData.isOnboardingRequired,
           createdBy,
           from: userData.from || null,
+          skipUserPortalSync: true,
         };
 
         if (existingUser) {
-          await permissionService.updatePermission(existingUser.id, {
-            permissions: userData.permissions,
-          });
-          const { password, permissions, ...updateData } = preparedUser;
+          await permissionService.updatePermission(
+            existingUser.id,
+            { permissions: userData.permissions },
+            { skipUserPortalSync: true },
+          );
+          const { password, permissions, skipUserPortalSync, ...updateData } =
+            preparedUser;
           await userService.updateUser(existingUser.id, updateData);
           createdResults.push({ email: userData.email, status: "updated" });
           if (userData.from) {

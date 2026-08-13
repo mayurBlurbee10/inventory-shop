@@ -153,6 +153,11 @@ const createPortal = asyncHandler(async (req: Request, res: Response) => {
   if (!legalName) {
     return res.status(400).json({ error: "Name are required" });
   }
+  if (!data.portalCreatedAdmin) {
+    return res.status(400).json({
+      error: "portalCreatedAdmin is required. Create the portal admin user first.",
+    });
+  }
 
   try {
     const portalExist = await portalService.getPortalByLegalName(legalName);
@@ -172,6 +177,47 @@ const createPortal = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const portalId = sanitizeName(legalName);
+    const userPortalService = (
+      await import("../services/user.portal.service.ts")
+    ).default;
+
+    // Bulk setup stores permissions on users before the portal row exists;
+    // sync user_portals now that the portal is created.
+    const syncUserPortalIfNeeded = async (userId: string) => {
+      const u: any = await userService.getUserById(userId);
+      if (!u) return;
+      const permissions = Array.isArray(u.permissions) ? u.permissions : [];
+      for (const permission of permissions) {
+        if (permission?.portalId === portalId) {
+          await userPortalService.syncFromPermissionEntry(u.id, permission);
+        }
+      }
+    };
+
+    try {
+      await syncUserPortalIfNeeded((portal as any).portalCreatedAdmin);
+      const adminUser: any = await userService.getUserById(
+        (portal as any).portalCreatedAdmin,
+      );
+      const seedEmails = [
+        adminUser?.email ? `user_${adminUser.email}` : null,
+        "briana.walsh@moderator.com",
+        "mike.conti@user.com",
+      ].filter(Boolean) as string[];
+
+      for (const email of seedEmails) {
+        const seedUser: any = await userService.getUserByEmail(email);
+        if (seedUser?.id) {
+          await syncUserPortalIfNeeded(seedUser.id);
+        }
+      }
+    } catch (syncErr) {
+      console.error(
+        "Failed to sync user_portals after portal create:",
+        (syncErr as Error).message,
+      );
+    }
+
     await resetService.createSampleMessage(portalId);
     await resetService.createSampleTasks(portalId);
     await pluginService.createTncPlugin(portalId, (portal as any)?.portalCreatedAdmin);
