@@ -3,6 +3,7 @@ import {
   hexFromArgb,
   themeFromSourceColor,
 } from "@material/material-color-utilities";
+// import { isLightTint } from "./colorUtils";
 
 const toneKeys = ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "95", "99", "100"];
 
@@ -292,6 +293,16 @@ const darkenIfBright = (hex) => {
   return darkenHexBy(hex, 10);
 };
 
+// const resolvePrimaryDefaultHex = (sourceHex, palette, mode) => {
+//   // Keep already-dark shades exactly as picked. Only remap light tints
+//   // onto Material primary tone 40 so buttons still have usable contrast.
+//   if (isLightTint(sourceHex)) {
+//     return getTone(palette, primaryTone[mode]);
+//   }
+//
+//   return sourceHex;
+// };
+
 export const buildProcessedGradient = (
   startColor,
   endColor,
@@ -545,7 +556,16 @@ export const generateMaterialThemeFromPrimary = (
     error: materialTheme.palettes.error,
   };
 
-  const primaryDefault = getTone(palettes.primary, primaryTone[mode]);
+  // Previous calculation: remap primary through Material tone 40 (and
+  // darken light tints). Kept for reference — primary now uses the color
+  // the user selected.
+  // const primaryDefault = getTone(palettes.primary, primaryTone[mode]);
+  // const primaryDefault = resolvePrimaryDefaultHex(
+  //   validPrimary,
+  //   palettes.primary,
+  //   mode,
+  // );
+  const primaryDefault = validPrimary;
   const primaryFg = getTone(palettes.primary, primaryFgTone[mode]);
   const successDefault = getTone(palettes.primary, successTone[mode]);
   const successFg = getTone(palettes.primary, successFgTone[mode]);
@@ -560,6 +580,7 @@ export const generateMaterialThemeFromPrimary = (
     primaryTone[mode],
     primaryFgTone[mode]
   );
+  primaryPalette.DEFAULT = primaryDefault;
 
   primaryPalette.foreground = resolvePrimaryForegroundHsl(
     { isGradient: false, solidHex: validPrimary },

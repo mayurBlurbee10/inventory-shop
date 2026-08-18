@@ -83,8 +83,88 @@ async function loadImageSource(source) {
   }
 }
 
+const PREVIEW_MAX_WIDTH = 920;
+const PREVIEW_PADDING_X = 48;
+const PREVIEW_PADDING_Y = 96;
+const MIN_PREVIEW_LONG_SIDE = 480;
+const MIN_PREVIEW_SHORT_SIDE = 320;
+
+function getPreviewMaxBox() {
+  const maxWidth = Math.max(
+    160,
+    Math.min(PREVIEW_MAX_WIDTH, window.innerWidth - PREVIEW_PADDING_X),
+  );
+  const maxHeight = Math.max(
+    160,
+    Math.min(window.innerHeight * 0.72, window.innerHeight - PREVIEW_PADDING_Y),
+  );
+  return { maxWidth, maxHeight };
+}
+
+/**
+ * Scale the preview so small images are large enough to sample, while large
+ * images still fit in the viewport. Aspect ratio is preserved.
+ */
+export function computeImagePreviewSize(
+  naturalWidth,
+  naturalHeight,
+  maxWidth,
+  maxHeight,
+) {
+  const nw = Math.max(1, naturalWidth);
+  const nh = Math.max(1, naturalHeight);
+  const maxW = Math.max(1, maxWidth);
+  const maxH = Math.max(1, maxHeight);
+
+  const fitScale = Math.min(maxW / nw, maxH / nh);
+  const longSide = Math.max(nw, nh);
+  const shortSide = Math.min(nw, nh);
+  const minScale = Math.max(
+    MIN_PREVIEW_LONG_SIDE / longSide,
+    MIN_PREVIEW_SHORT_SIDE / shortSide,
+  );
+
+  const scale =
+    fitScale < 1
+      ? fitScale
+      : Math.min(Math.max(1, minScale), fitScale);
+
+  return {
+    width: Math.max(1, Math.round(nw * scale)),
+    height: Math.max(1, Math.round(nh * scale)),
+    scale,
+    upscaled: scale > 1.01,
+  };
+}
+
+function applyPreviewSize(display, frame, naturalWidth, naturalHeight) {
+  const { maxWidth, maxHeight } = getPreviewMaxBox();
+  const preview = computeImagePreviewSize(
+    naturalWidth,
+    naturalHeight,
+    maxWidth,
+    maxHeight,
+  );
+
+  Object.assign(display.style, {
+    width: `${preview.width}px`,
+    height: `${preview.height}px`,
+    imageRendering: preview.upscaled ? "pixelated" : "auto",
+  });
+
+  Object.assign(frame.style, {
+    width: `${preview.width}px`,
+    height: `${preview.height}px`,
+    maxWidth: `${maxWidth}px`,
+    maxHeight: `${maxHeight}px`,
+  });
+
+  return preview;
+}
+
 /**
  * Create a full-viewport stage that displays the image (object-fit: contain).
+ * Small images are scaled up so the eyedropper has a usable target.
  * @param {ImageBitmap|HTMLImageElement} bitmap
  * @param {number} width
  * @param {number} height
@@ -123,8 +203,6 @@ function createImageStage(bitmap, width, height) {
   const frame = document.createElement("div");
   Object.assign(frame.style, {
     position: "relative",
-    maxWidth: "min(920px, calc(100vw - 48px))",
-    maxHeight: "min(72vh, calc(100vh - 96px))",
     borderRadius: "12px",
     overflow: "hidden",
     boxShadow: "0 20px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.08)",
@@ -139,17 +217,14 @@ function createImageStage(bitmap, width, height) {
   display.height = height;
   Object.assign(display.style, {
     display: "block",
-    maxWidth: "100%",
-    maxHeight: "min(72vh, calc(100vh - 96px))",
-    width: "auto",
-    height: "auto",
     verticalAlign: "middle",
   });
 
   const dctx = display.getContext("2d", { alpha: true });
   if (!dctx) throw new Error("Could not create image display context.");
-  dctx.imageSmoothingEnabled = true;
+  dctx.imageSmoothingEnabled = false;
   dctx.drawImage(bitmap, 0, 0);
+  applyPreviewSize(display, frame, width, height);
 
   frame.appendChild(display);
   root.appendChild(hint);
@@ -160,6 +235,9 @@ function createImageStage(bitmap, width, height) {
     root,
     frame,
     display,
+    resize(nextWidth, nextHeight) {
+      applyPreviewSize(display, frame, nextWidth, nextHeight);
+    },
     dispose() {
       if (root.parentNode) root.parentNode.removeChild(root);
     },
@@ -337,6 +415,9 @@ export function startImageEyedropper(source, options = {}) {
     };
 
     const onResize = () => {
+      if (stage && loaded) {
+        stage.resize(loaded.width, loaded.height);
+      }
       loop?.requestFrame();
     };
 

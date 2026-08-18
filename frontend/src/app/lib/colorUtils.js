@@ -225,11 +225,23 @@ export function hexToRgb(hex) {
 }
 
 /**
- * Blends a base RGB color according to the tint-shade-ring value `t`.
- * t = 0: Pure Black (HSL L = 0)
- * t = 0.5: Exact Base Color (HSL L = base hsl.l)
- * t = maxLightness: Center Lightness (white/gray, HSL L = maxLightness)
- */
+* Lightness above this (0–1 HSL) is a tint; at or below is a shade.
+* Matches blendTintShade: t <= 0.5 darkens, t > 0.5 lightens.
+*/
+export const TINT_LIGHTNESS_THRESHOLD = 0.5;
+
+export function isLightTint(hex) {
+const rgb = hexToRgb(hex);
+if (!rgb) return false;
+return rgbToHsl(rgb).l > TINT_LIGHTNESS_THRESHOLD;
+}
+
+/**
+* Blends a base RGB color according to the tint-shade-ring value `t`.
+* t = 0: Pure Black (HSL L = 0)
+* t = 0.5: Exact Base Color (HSL L = base hsl.l)
+* t = maxLightness: Center Lightness (white/gray, HSL L = maxLightness)
+*/
 export function blendTintShade(baseRgb, t, maxLightness = 1.0) {
   const hsl = rgbToHsl(baseRgb);
 
