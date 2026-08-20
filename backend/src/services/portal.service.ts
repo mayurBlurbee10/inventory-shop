@@ -187,9 +187,10 @@ const updatePortalStatus = async (portal: string, status: string) => {
 const getPortalById = async (portalId: string) => {
   const portalRepository = await getRepository(Portals);
   try {
+    // portalCreatedAdmin is a UUID column, not a TypeORM relation
     const portal = await portalRepository.findOne({
       where: { id: portalId },
-      relations: ["createdBy", "portalCreatedAdmin"],
+      relations: ["createdBy"],
     });
     return portal;
   } catch (error) {

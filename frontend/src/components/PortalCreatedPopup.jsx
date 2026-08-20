@@ -1,7 +1,7 @@
 'use client'
-import { clearUserData } from "@/app/lib/auth";
+import { logoutAndClearSession } from "@/app/lib/auth";
 import { X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,10 +13,18 @@ import {
 } from "@/components/ui/dialog";
 
 function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
-  const router = useRouter();
-  const handleVisitPortal = () => {
-    clearUserData();
-    router.push(`/${portalId}/login`);
+  const [isVisiting, setIsVisiting] = useState(false);
+
+  const handleVisitPortal = async () => {
+    if (!portalId || isVisiting) return;
+    setIsVisiting(true);
+    try {
+      await logoutAndClearSession();
+      window.location.href = `/${portalId}/login`;
+    } catch (error) {
+      console.error("Failed to visit portal:", error);
+      window.location.href = `/${portalId}/login`;
+    }
   };
 
   if (!isOpen) return null;
@@ -58,9 +66,10 @@ function PortalCreatedPopup({ isOpen, portalName, portalId, onClose }) {
               <Button
                 type="button"
                 onClick={handleVisitPortal}
+                disabled={isVisiting}
                 className="px-3 py-3"
               >
-                Visit your portal
+                {isVisiting ? "Opening portal..." : "Visit your portal"}
               </Button>
             </DialogFooter>
           </div>

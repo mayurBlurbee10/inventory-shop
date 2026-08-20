@@ -27,6 +27,192 @@ import taskService from "../services/task.service.ts";
 import * as boxService from "../services/box.service.ts";
 import Bottleneck from "bottleneck";
 import { getBoxClient } from "../utils/boxClient.ts";
+import { ensureBoxAppUser } from "../utils/boxCreateAppUser.ts";
+
+function getBoxEntries(result: any): any[] {
+  return result?.entries || result?.rawData?.entries || [];
+}
+
+async function listBoxFolders(parentFolderId: string) {
+  const client = getBoxClient();
+  const items = await client.folders.getFolderItems(parentFolderId, {
+    queryParams: {
+      fields: ["id", "name", "type", "parent"],
+      limit: 1000,
+    },
+  });
+  return getBoxEntries(items).filter((item: any) => item.type === "folder");
+}
+
+async function findBoxFolder(parentFolderId: string, name: string) {
+  const folders = await listBoxFolders(parentFolderId);
+  const expectedName = name.trim().toLowerCase();
+  const match = folders.find(
+    (item: any) => item.name?.trim().toLowerCase() === expectedName
+  );
+  if (!match) {
+    return null;
+  }
+
+  const listedParentId = match.parent?.id;
+  if (listedParentId && String(listedParentId) !== String(parentFolderId)) {
+    console.log(
+      `Ignoring "${name}" (${match.id}): parent ${listedParentId} is not ${parentFolderId}`
+    );
+    return null;
+  }
+
+  if (!listedParentId) {
+    const client = getBoxClient();
+    const details: any = await client.folders.getFolderById(String(match.id), {
+      queryParams: { fields: ["id", "name", "parent"] },
+    });
+    if (String(details?.parent?.id) !== String(parentFolderId)) {
+      console.log(
+        `Ignoring "${name}" (${match.id}): verified parent ${details?.parent?.id} is not ${parentFolderId}`
+      );
+      return null;
+    }
+  }
+
+  return match;
+}
+
+async function createBoxFolder(parentFolderId: string, name: string) {
+  const client = getBoxClient();
+  try {
+    return await client.folders.createFolder({
+      name,
+      parent: { id: String(parentFolderId) },
+    });
+  } catch (error: any) {
+    const status = error?.statusCode || error?.response?.statusCode;
+    if (status === 409 || error?.message?.includes("item_name_in_use")) {
+      const conflict = error?.response?.body?.context_info?.conflicts?.[0];
+      if (conflict?.id) {
+        const details: any = await client.folders.getFolderById(
+          String(conflict.id),
+          { queryParams: { fields: ["id", "name", "parent"] } }
+        );
+        if (String(details?.parent?.id) === String(parentFolderId)) {
+          return details;
+        }
+      }
+      const existing = await findBoxFolder(parentFolderId, name);
+      if (existing) {
+        return existing;
+      }
+    }
+    throw error;
+  }
+}
+
+async function findOrCreateBoxFolder(parentFolderId: string, name: string) {
+  const existing = await findBoxFolder(parentFolderId, name);
+  if (existing) {
+    console.log(
+      `Using existing Box folder "${name}" (${existing.id}) under parent ${parentFolderId}`
+    );
+    return existing;
+  }
+  console.log(
+    `Box folder "${name}" not found under parent ${parentFolderId}. Creating it.`
+  );
+  return await createBoxFolder(parentFolderId, name);
+}
+
+async function findExistingDevPortalsFolder() {
+  const configuredId = process.env.DEV_PORTALS_FOLDER_ID?.trim();
+  if (!configuredId) {
+    throw new Error(
+      "DEV_PORTALS_FOLDER_ID is required. Set it to the Box folder ID of the dev-portals folder you use in the Box UI."
+    );
+  }
+
+  const client = getBoxClient();
+  const folder: any = await client.folders.getFolderById(configuredId, {
+    queryParams: { fields: ["id", "name", "parent"] },
+  });
+  console.log("Using DEV_PORTALS_FOLDER_ID from env:", folder.id, folder.name);
+  return folder;
+}
+
+async function setupPortalFoldersForBulk(portalId: string) {
+  const devPortals = await findExistingDevPortalsFolder();
+  if (!devPortals?.id) {
+    throw new Error("dev-portals folder was not found");
+  }
+
+  const universalPortal = await findOrCreateBoxFolder(
+    devPortals.id,
+    "Universal Portal"
+  );
+  const client = getBoxClient();
+  const universalPortalDetails: any = await client.folders.getFolderById(
+    String(universalPortal.id),
+    { queryParams: { fields: ["id", "name", "parent"] } }
+  );
+  console.log("Universal Portal parent check:", {
+    id: universalPortalDetails?.id,
+    name: universalPortalDetails?.name,
+    parentId: universalPortalDetails?.parent?.id,
+    expectedParentId: devPortals.id,
+  });
+  if (String(universalPortalDetails?.parent?.id) !== String(devPortals.id)) {
+    throw new Error(
+      `Universal Portal (${universalPortal.id}) is not inside dev-portals (${devPortals.id})`
+    );
+  }
+  const portalFolder = await findOrCreateBoxFolder(universalPortal.id, portalId);
+  const portalContentFolder = await findOrCreateBoxFolder(
+    portalFolder.id,
+    "Portal Content"
+  );
+  const userUploadsFolder = await findOrCreateBoxFolder(
+    portalFolder.id,
+    "User Uploads"
+  );
+
+  console.log("Bulk portal folder structure:", {
+    devPortalsId: devPortals.id,
+    universalPortalId: universalPortal.id,
+    portalFolderId: portalFolder.id,
+    portalContentFolderId: portalContentFolder.id,
+    userUploadsFolderId: userUploadsFolder.id,
+  });
+
+  return {
+    userUploadFolderId: userUploadsFolder.id,
+    portalContentFolderId: portalContentFolder.id,
+  };
+}
+
+async function addFolderEditor(folderId: string, userId: string) {
+  if (!folderId || !userId) {
+    return;
+  }
+  try {
+    await boxService.addCollaborator(folderId, userId, "editor", "folder");
+  } catch (error: any) {
+    const status = error?.statusCode || error?.response?.statusCode;
+    if (status !== 409) {
+      throw error;
+    }
+  }
+}
+
+async function ensureBoxUserAndFolder(userName: any, isPortalCreatedAdmin: boolean, folderIds: any) {
+  const appUser = await ensureBoxAppUser(userName, Date.now().toString());
+
+  if (isPortalCreatedAdmin) {
+    await addFolderEditor(folderIds.portalContentFolderId, appUser.userId);
+    return { boxUserId: appUser.userId, folderId: folderIds.portalContentFolderId };
+  }
+
+  const userFolder = await findOrCreateBoxFolder(folderIds.userUploadFolderId, userName);
+  await addFolderEditor(userFolder.id, appUser.userId);
+  return { boxUserId: appUser.userId, folderId: userFolder.id };
+}
 
 const limiter = new Bottleneck({
   minTime: 80, // 1000ms / 8 = 125ms
@@ -521,6 +707,10 @@ const bulkCreateUsers = asyncHandler(async (req: Request, res: Response) => {
     const mainUser = await userService.getUserById(createdBy);
     let portalCreatedAdmin = null;
 
+    if (!user.portal) {
+      return res.status(400).json({ error: "portal is required" });
+    }
+
     const users = [
       user,
       {
@@ -559,6 +749,9 @@ const bulkCreateUsers = asyncHandler(async (req: Request, res: Response) => {
     ];
 
     const createdResults = [];
+    console.log("Creating portal folder structure for bulk users:", user.portal);
+    const folderIds = await setupPortalFoldersForBulk(user.portal);
+    console.log("Bulk portal folder ids:", folderIds);
 
     for (const userData of users) {
       try {
@@ -567,11 +760,12 @@ const bulkCreateUsers = asyncHandler(async (req: Request, res: Response) => {
         let folderId = "";
 
         try {
-          const boxUser = await boxService.createBoxAppUser({
-            userName: userData.email,
-            externalId: Date.now().toString(),
-          });
-          boxUserId = boxUser?.userId || "";
+          const boxUser = await ensureBoxUserAndFolder(
+            userData.email,
+            Boolean(userData?.from),
+            folderIds,
+          );
+          boxUserId = boxUser?.boxUserId || "";
           folderId = boxUser?.folderId || "";
         } catch (error) {
           console.error(`Failed to create/get Box user for ${userData.email}:`, error);
@@ -657,11 +851,13 @@ const bulkCreateUsers = asyncHandler(async (req: Request, res: Response) => {
       success: true,
       results: createdResults,
       data: portalCreatedAdmin,
+      folderStructure: folderIds,
     });
   } catch (error) {
     console.error("Bulk user creation error:", error);
     return res.status(500).json({
       error: "Failed to create users",
+      details: (error as Error).message,
     });
   }
 });
@@ -968,10 +1164,10 @@ const handleLoginByProvider = asyncHandler(
         permissions: user.permissions,
       };
 
-      if (portalCreatedAdmin) {
-        (userData as any).boxFolderId = (portalCreatedAdmin as any)?.folderId;
+      if (portalCreatedAdmin && userRole !== UserRole.USER) {
+        (userData as any).boxFolderId = portalCreatedAdmin?.folderId;
       } else {
-        (userData as any).boxFolderId = (user as any).folderId;
+        (userData as any).boxFolderId = user.folderId;
       }
 
       const tokenPayload = {

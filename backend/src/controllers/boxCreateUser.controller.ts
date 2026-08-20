@@ -1,8 +1,13 @@
 import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
 import { asyncHandler } from "../utils/helper.ts";
-import * as boxService from "../services/box.service.ts";
 import { getBoxClient } from "../utils/boxClient.ts";
+import * as boxService from "../services/box.service.ts";
+import {
+  createBoxAppUser as createBoxAppUserInternal,
+  ensurePortalFolderStructure,
+} from "../utils/boxCreateAppUser.ts";
+
 
 const client = getBoxClient();
 
@@ -12,10 +17,41 @@ const createBoxAppUser = asyncHandler(
     try {
       await logApiCall(req);
       const data = req.body;
-      const { userName = "Test User", externalId = Date.now().toString() } =
-        data;
+      const {
+        userName = "Test User",
+        externalId = Date.now().toString(),
+        portalId,
+      } = data;
 
-      const user = await boxService.createBoxAppUser({ userName, externalId });
+      let parentFolderId = "0";
+      if (portalId && portalId !== "root") {
+        const folders = await ensurePortalFolderStructure(portalId);
+        parentFolderId = folders.userUploadsFolderId;
+      }
+
+      const user = await createBoxAppUserInternal({
+        userName,
+        externalId,
+        parentFolderId,
+        folderName: userName,
+      });
+
+      if (user?.folderId && user?.userId) {
+        try {
+          await boxService.addCollaborator(
+            user.folderId,
+            user.userId,
+            "editor",
+            "folder"
+          );
+        } catch (collabError: any) {
+          const status =
+            collabError?.statusCode || collabError?.response?.statusCode;
+          if (status !== 409) {
+            throw collabError;
+          }
+        }
+      }
 
       return res.status(200).json({
         success: true,
@@ -41,7 +77,6 @@ const bulkCreateBoxUsers = asyncHandler(
         return res.status(400).json({ error: "File not provided" });
       }
 
-      // @ts-expect-error - papaparse doesn't have type definitions
       const Papa = await import("papaparse");
       const fileData = file.buffer.toString("utf-8");
 

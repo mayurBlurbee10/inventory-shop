@@ -20,7 +20,7 @@ import {
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { getUserData } from "@/app/lib/auth";
+import { getUserData, logoutAndClearSession } from "@/app/lib/auth";
 import { Dialog, DialogBackdrop } from "@headlessui/react";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
@@ -325,6 +325,13 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
     }
   };
 
+  const visitPortalLogin = async (legalName) => {
+    if (!legalName) return;
+    const url = `/${sanitizeName(legalName)}/login`;
+    await logoutAndClearSession();
+    window.location.href = url;
+  };
+
   const fetchConfig = async () => {
     try {
       const response = await fetchWrapper(
@@ -354,8 +361,12 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
   }, [router]);
 
   useEffect(() => {
-    getChartData(new Date().getFullYear(), subsidiaryId).then((data) => setData(data));
-    apiCallThisMonth();
+    getChartData(new Date().getFullYear(), subsidiaryId)
+      .then((data) => setData(data))
+      .catch((error) => {
+        console.error("Error while getting chart data:", error);
+        setData([]);
+      });
     fetchConfig();
   }, []);
 
@@ -365,7 +376,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
   }, [subsidiaryId]);
 
   if (!config) {
-    <LoadingSpinner />;
+    return <LoadingSpinner />;
   }
 
   return (
@@ -395,10 +406,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
             </ActionButton>
             <ActionButton
               icon={SquareArrowOutUpRight}
-              onClick={() => {
-                const url = `/${sanitizeName(config.legalName)}/login`;
-                window.open(url, "_blank");
-              }}
+              onClick={() => visitPortalLogin(config?.legalName)}
             >
               Visit Portal
             </ActionButton>
@@ -424,10 +432,7 @@ export default function SubsidiaryDashboard({ subsidiaryId }) {
             </h1>
             <SquareArrowOutUpRight
               className="text-black hover:text-blue-500 size-4"
-              onClick={() => {
-                const url = `/${sanitizeName(config.legalName)}/login`;
-                window.open(url, "_blank");
-              }}
+              onClick={() => visitPortalLogin(config?.legalName)}
             />
           </div>
 

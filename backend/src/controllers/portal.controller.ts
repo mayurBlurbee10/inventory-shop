@@ -19,6 +19,7 @@ import resetService from "../services/reset.service.ts";
 import ndaAgreementService from "../services/ndaAgreement.service.ts";
 import { addCollaborator } from "../services/box.service.ts";
 import { getBoxClient } from "../utils/boxClient.ts";
+import { ensurePortalFolderStructure } from "../utils/boxCreateAppUser.ts";
 
 const portalsDir = path.join(process.cwd(), "public", "portals");
 const client = getBoxClient();
@@ -174,6 +175,17 @@ const createPortal = asyncHandler(async (req: Request, res: Response) => {
       return res.status(404).json({
         error: `portal ${legalName} not found.`,
       });
+    }
+
+    try {
+      const portalSlug = sanitizeName(legalName);
+      await ensurePortalFolderStructure(portalSlug);
+      console.log(`Portal folder structure ensured for ${portalSlug}`);
+    } catch (folderError) {
+      console.error(
+        "Error ensuring portal folder structure:",
+        (folderError as Error).message
+      );
     }
 
     const portalId = sanitizeName(legalName);

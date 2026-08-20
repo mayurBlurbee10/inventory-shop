@@ -43,14 +43,13 @@ const getChartData = asyncHandler(async (req: Request, res: Response) => {
     const filterYear = parseInt(year as string, 10) || currentYear;
 
     const portal = await portalService.getPortalById(portalId as string);
-    const users = await userService.getUsersByPortal(
-      portal?.id ?? (portalId as string)
-    );
+    const portalSlug = portal?.legalName
+      ? sanitizeName(portal.legalName)
+      : (portalId as string);
 
-    const apiLogs = await apiLogsService.getApiLogs(
-      portal?.id ?? (portalId as string),
-      filterYear
-    );
+    const users = await userService.getUsersByPortal(portalSlug);
+
+    const apiLogs = await apiLogsService.getApiLogs(portalSlug, filterYear);
 
     const stats = Array(12)
       .fill(null)

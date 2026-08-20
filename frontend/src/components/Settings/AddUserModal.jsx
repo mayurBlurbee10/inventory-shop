@@ -199,6 +199,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
           body: JSON.stringify({
             userName: formData.email,
             externalId: `user_${Date.now()}`,
+            portalId: params.portalid,
           }),
         },
         "create-user-box"
@@ -735,6 +736,7 @@ const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormD
           body: JSON.stringify({
             userName: formData.email,
             externalId: `user_${Date.now()}`,
+            portalId: params.portalid,
           }),
         },
         "create-user-box"

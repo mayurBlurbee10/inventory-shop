@@ -246,7 +246,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
       ndaPages: (user as any).ndaPages,
     };
 
-    if (portalCreatedAdmin) {
+    if (portalCreatedAdmin && userRole !== UserRole.USER) {
       userData.boxFolderId = portalCreatedAdmin?.folderId;
     } else {
       userData.boxFolderId = user?.folderId;
@@ -432,10 +432,25 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     sameSite: "none" as const,
     path: "/",
   };
+  const clientCookieOptions = {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+  };
 
-  res.clearCookie("user", cookieOptions);
-  res.clearCookie("token", cookieOptions);
-  res.clearCookie("refreshToken", cookieOptions);
+  const cookieNames = [
+    "user",
+    "token",
+    "refreshToken",
+    "clientToken",
+    "clientRefreshToken",
+  ];
+  cookieNames.forEach((name) => {
+    res.clearCookie(name, cookieOptions);
+    res.clearCookie(name, clientCookieOptions);
+    res.clearCookie(name, { path: "/" });
+  });
 
   return res.status(200).json({ message: "User logout successfully" });
 });

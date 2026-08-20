@@ -213,6 +213,28 @@ export const clearUserData = () => {
 };
 
 /**
+ * Clear httpOnly cookies via logout API, then local session data.
+ * document.cookie cannot remove httpOnly token/user/refreshToken cookies.
+ */
+export const logoutAndClearSession = async () => {
+  if (!isBrowser()) return;
+
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.warn("Logout API failed while clearing session:", error);
+  }
+
+  clearUserData();
+};
+
+/**
  * Check if user is authenticated
  * @returns {boolean} True if the user is authenticated
  */
