@@ -68,7 +68,7 @@ export const getADOWorkItem = async (
   const token = await getAzureAccessToken();
 
   const response = await fetch(
-    `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workitems/${workItemId}?api-version=7.1`,
+    `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/workitems/${workItemId}?api-version=7.1`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -104,7 +104,7 @@ export const updateADOStatus = async (
   ];
 
   const response = await fetch(
-    `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workitems/${workItemId}?api-version=7.1`,
+    `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/workitems/${workItemId}?api-version=7.1`,
     {
       method: "PATCH",
       headers: {
@@ -131,7 +131,7 @@ export const addADOComment = async (
   const token = await getAzureAccessToken();
 
   const response = await fetch(
-    `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workitems/${workItemId}/comments?api-version=7.1-preview.3`,
+    `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/workitems/${workItemId}/comments?api-version=7.1-preview.3`,
     {
       method: "POST",
       headers: {
@@ -158,7 +158,7 @@ export const addADOComment = async (
  */
 export const getADOUserByEmail = async (email: string): Promise<AzureUser | null> => {
   const token = await getAzureAccessToken();
-  
+
   const response = await fetch(
     `https://vssps.dev.azure.com/mstrategygroup/_apis/identities?searchFilter=General&filterValue=${encodeURIComponent(email)}&api-version=7.1`,
     {
@@ -200,26 +200,26 @@ export const createAzureWorkItem = async (
     },
     isBug
       ? {
-          op: "add",
-          path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
-          value: description,
-        }
+        op: "add",
+        path: "/fields/Microsoft.VSTS.TCM.ReproSteps",
+        value: description,
+      }
       : {
-          op: "add",
-          path: "/fields/System.Description",
-          value: description,
-        },
+        op: "add",
+        path: "/fields/System.Description",
+        value: description,
+      },
     {
       op: "add",
       path: "/fields/System.AreaPath",
-      value: "MStrategyGroupCore\\Zendesk Support Tickets",
+      value: "Universal Portal",
     },
     {
       op: "add",
       path: "/relations/-",
       value: {
         rel: "System.LinkTypes.Hierarchy-Reverse",
-        url: `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workItems/${process.env.ZENDESK_SUPPORT_EPIC_ID || "1710"}`,
+        url: `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/workItems/${process.env.ZENDESK_SUPPORT_EPIC_ID || "1780"}`,
         attributes: {
           comment: "Linked to Zendesk Support Epic",
         },
@@ -227,7 +227,7 @@ export const createAzureWorkItem = async (
     },
   ];
 
-  const url = `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workitems/$${isBug ? "Bug" : "Task"}?api-version=7.1-preview.3`;
+  const url = `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/workitems/$${isBug ? "Bug" : "Task"}?api-version=7.1-preview.3`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -282,7 +282,7 @@ export const attachFileToWorkItem = async (
   ];
 
   const response = await fetch(
-    `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workitems/${workItemId}?api-version=7.1`,
+    `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/workitems/${workItemId}?api-version=7.1`,
     {
       method: "PATCH",
       headers: {
@@ -308,7 +308,7 @@ export const getADOComments = async (
   const token = await getAzureAccessToken();
 
   const response = await fetch(
-    `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/workitems/${workItemId}/comments?api-version=7.1-preview.3`,
+    `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/workitems/${workItemId}/comments?api-version=7.1-preview.3`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

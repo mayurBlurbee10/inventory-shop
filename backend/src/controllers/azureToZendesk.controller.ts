@@ -68,7 +68,8 @@ const handleADOUpdate = asyncHandler(
         throw new Error("Missing work item ID in ADO webhook payload");
       }
 
-      await syncADOToZendesk(workItemId);
+      const syncComments = payload.eventType === "workitem.commented";
+      await syncADOToZendesk(workItemId, syncComments);
 
       return res.status(200).json({
         success: true,

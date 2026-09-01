@@ -9,7 +9,6 @@ import {
   getZendeskComments,
   updateZendeskTicketStatus,
   addZendeskComment,
-  getAzureWorkItemIdFromZendeskTicket,
 } from "./zendesk.service.js";
 import {
   getADOWorkItem,
@@ -19,12 +18,50 @@ import {
   getZendeskTicketIdFromADOWorkItem,
   getADOComments,
 } from "./azure.service.js";
-import {
-  processZendeskAttachments,
-  downloadAzureAttachment,
-  uploadZendeskAttachment,
-} from "./attachment.service.js";
+import { processZendeskAttachments } from "./attachment.service.js";
 import { mapZendeskStatusToADO, mapADOStateToZendesk } from "../utils/statusMapping.js";
+
+/**
+ * Normalize text for HTML/plain string comparison by removing HTML tags, entities, and excess whitespace
+ */
+export const normalizeCommentText = (text: string | null | undefined): string => {
+  if (!text) return "";
+  return text
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+};
+
+/**
+ * Atomic claim for ADO comment sync to prevent concurrent execution duplicate comments
+ */
+const tryClaimADOCommentSync = async (
+  ticketSyncId: string,
+  adoCommentId: string
+): Promise<{ claimed: boolean; previousLastADOCommentId: string | null }> => {
+  const ticketSyncRepo = AppDataSource.getRepository(TicketSync);
+  const record = await ticketSyncRepo.findOne({ where: { id: ticketSyncId } });
+  if (!record) return { claimed: false, previousLastADOCommentId: null };
+
+  if (String(record.lastADOCommentId) === String(adoCommentId)) {
+    return { claimed: false, previousLastADOCommentId: record.lastADOCommentId };
+  }
+
+  const previousLastADOCommentId = record.lastADOCommentId;
+  record.lastADOCommentId = String(adoCommentId);
+  record.lastSyncedAt = new Date();
+  record.lastSyncSource = "azure";
+  await ticketSyncRepo.save(record);
+
+  return { claimed: true, previousLastADOCommentId };
+};
 
 /**
  * Sync Zendesk ticket update to Azure DevOps
@@ -37,7 +74,7 @@ export const syncZendeskToADO = async (payload: {
   comment?: string;
   assignee_email?: string;
 }): Promise<void> => {
-  const { ticket_id, azure_work_item_id, status, comment, assignee_email } = payload;
+  const { ticket_id, azure_work_item_id, status, assignee_email } = payload;
 
   if (!azure_work_item_id) {
     throw new Error("Azure Work Item ID missing");
@@ -76,94 +113,148 @@ export const syncZendeskToADO = async (payload: {
     }
   }
 
-  // Sync comment if provided
-  if (comment?.trim()) {
-    const user = assignee_email ? await getADOUserByEmail(assignee_email) : null;
+  // Fetch comments directly from Zendesk API (do NOT rely on payload.comment)
+  if (!ticket_id) return;
 
-    // Fetch latest comment with attachments
-    let formattedComment = comment.replace(/\n/g, "<br>");
-    let attachedHtml = "";
-    let attachmentRelations: any[] = [];
+  let comments: any[] = [];
+  try {
+    comments = await getZendeskComments(ticket_id);
+  } catch (err) {
+    console.error("Error fetching Zendesk comments:", err);
+    return;
+  }
 
-    if (ticket_id) {
-      try {
-        const comments = await getZendeskComments(ticket_id);
-        if (comments && comments.length > 0) {
-          const latestComment = comments[comments.length - 1];
+  if (!comments || comments.length === 0) {
+    return;
+  }
 
-          // Loop prevention: If the Zendesk comment was created by our ADO sync, it will contain this signature
-          if (
-            (latestComment.body && latestComment.body.includes("From Developer:")) ||
-            (latestComment.html_body && latestComment.html_body.includes("From Developer:")) ||
-            (comment && comment.includes("From Developer:"))
-          ) {
-            console.log("Loop prevention: Skipping Zendesk comment because it originated from ADO");
-            return;
-          }
+  const firstComment = comments[0];
+  const firstCommentId = String(firstComment.id);
+  const latestComment = comments[comments.length - 1];
+  const latestCommentId = String(latestComment.id);
 
-          // Check if this comment has already been synced
-          if (String(ticketSync.lastZendeskCommentId) === String(latestComment.id)) {
-            console.log("Comment already synced, skipping");
-            return;
-          }
+  // Always ensure lastZendeskCommentId is initialized (at minimum to firstCommentId - the ticket description)
+  if (!ticketSync.lastZendeskCommentId) {
+    ticketSync.lastZendeskCommentId = firstCommentId;
+    await ticketSyncRepo.save(ticketSync);
+  }
 
-          if (latestComment.attachments && latestComment.attachments.length > 0) {
-            const { relations, html } = await processZendeskAttachments(
-              latestComment.attachments
-            );
-            attachmentRelations = relations;
-            attachedHtml = html;
-          }
+  // 1. Skip if latest comment has already been synced
+  if (String(ticketSync.lastZendeskCommentId) === latestCommentId) {
+    console.log(`Zendesk comment ${latestCommentId} already synced, skipping`);
+    return;
+  }
 
-          // Update last synced comment ID
-          ticketSync.lastZendeskCommentId = String(latestComment.id);
-          ticketSync.lastSyncSource = "zendesk";
-          ticketSync.lastSyncedAt = new Date();
-          await ticketSyncRepo.save(ticketSync);
-        }
-      } catch (err) {
-        console.error("Error fetching/processing attachments:", err);
-      }
+  // 2. Skip if latest comment is the first comment (initial ticket description)
+  if (latestCommentId === firstCommentId) {
+    console.log(`Skipping Zendesk comment ${latestCommentId} because it is the initial ticket description (first comment)`);
+    ticketSync.lastZendeskCommentId = firstCommentId;
+    ticketSync.lastSyncSource = "zendesk";
+    ticketSync.lastSyncedAt = new Date();
+    await ticketSyncRepo.save(ticketSync);
+    return;
+  }
+
+  // Fetch Zendesk ticket to check description text if needed
+  let zendeskTicket: any = null;
+  try {
+    zendeskTicket = await getZendeskTicket(ticket_id);
+  } catch (e) {
+    console.error("Error fetching Zendesk ticket details:", e);
+  }
+
+  // 3. Skip if latest comment text matches initial ticket description
+  const normLatestBody = normalizeCommentText(latestComment.body || latestComment.html_body);
+  const normPayloadComment = normalizeCommentText(payload.comment);
+  const normTicketDesc = normalizeCommentText(zendeskTicket?.description);
+  const normFirstBody = normalizeCommentText(firstComment.body || firstComment.html_body);
+
+  const isDescriptionMatch =
+    (normTicketDesc && (normLatestBody === normTicketDesc || normPayloadComment === normTicketDesc || normLatestBody.includes(normTicketDesc))) ||
+    (normFirstBody && (normLatestBody === normFirstBody || normPayloadComment === normFirstBody || normLatestBody.includes(normFirstBody)));
+
+  if (isDescriptionMatch) {
+    console.log(`Skipping Zendesk comment ${latestCommentId} because text matches initial ticket description`);
+    ticketSync.lastZendeskCommentId = latestCommentId;
+    ticketSync.lastSyncSource = "zendesk";
+    ticketSync.lastSyncedAt = new Date();
+    await ticketSyncRepo.save(ticketSync);
+    return;
+  }
+
+  // 4. Skip comments containing "From Developer" (ADO-originated)
+  const isFromDeveloper =
+    (latestComment.body && latestComment.body.includes("From Developer")) ||
+    (latestComment.html_body && latestComment.html_body.includes("From Developer"));
+
+  if (isFromDeveloper) {
+    console.log(`Loop prevention: Skipping Zendesk comment ${latestCommentId} because it originated from ADO ("From Developer")`);
+    ticketSync.lastZendeskCommentId = latestCommentId;
+    ticketSync.lastSyncSource = "zendesk";
+    ticketSync.lastSyncedAt = new Date();
+    await ticketSyncRepo.save(ticketSync);
+    return;
+  }
+
+  // Process attachments on latestComment
+  let attachedHtml = "";
+  let attachmentRelations: any[] = [];
+  if (latestComment.attachments && latestComment.attachments.length > 0) {
+    try {
+      const { relations, html } = await processZendeskAttachments(latestComment.attachments);
+      attachmentRelations = relations;
+      attachedHtml = html;
+    } catch (err) {
+      console.error("Error processing Zendesk comment attachments:", err);
     }
+  }
 
-    formattedComment += attachedHtml;
+  // Mark comment as synced in ticketSync before sending to ADO
+  ticketSync.lastZendeskCommentId = latestCommentId;
+  ticketSync.lastSyncSource = "zendesk";
+  ticketSync.lastSyncedAt = new Date();
+  await ticketSyncRepo.save(ticketSync);
 
-    let commentText = "";
-    if (user) {
-      commentText = `
-        <div>
-          <b>From:</b> ${user.providerDisplayName}
-          <br>
-          ${formattedComment}
-        </div>
-      `;
-    } else {
-      commentText = `
-        <div>
-          <b>From Client</b>
-          <br>
-          ${formattedComment}
-        </div>
-      `;
-    }
+  // Format comment
+  const rawCommentText = latestComment.body || latestComment.html_body || "";
+  let formattedComment = rawCommentText.replace(/\n/g, "<br>") + attachedHtml;
 
-    const newAdoCommentId = await addADOComment(workItemId, commentText);
+  const user = assignee_email ? await getADOUserByEmail(assignee_email) : null;
+  let commentText = "";
+  if (user) {
+    commentText = `
+      <div>
+        <b>From:</b> ${user.providerDisplayName}
+        <br>
+        ${formattedComment}
+      </div>
+    `;
+  } else {
+    commentText = `
+      <div>
+        <b>From Client</b>
+        <br>
+        ${formattedComment}
+      </div>
+    `;
+  }
 
-    if (newAdoCommentId) {
-      ticketSync.lastADOCommentId = String(newAdoCommentId);
-      await ticketSyncRepo.save(ticketSync);
-    }
+  const newAdoCommentId = await addADOComment(workItemId, commentText);
 
-    // Add attachment relations if any
-    if (attachmentRelations.length > 0) {
-      const { attachFileToWorkItem } = await import("./azure.service.js");
-      for (const relation of attachmentRelations) {
-        await attachFileToWorkItem(
-          workItemId,
-          relation.value.url,
-          relation.value.attributes.comment
-        );
-      }
+  if (newAdoCommentId) {
+    ticketSync.lastADOCommentId = String(newAdoCommentId);
+    await ticketSyncRepo.save(ticketSync);
+  }
+
+  // Add attachment relations if any
+  if (attachmentRelations.length > 0) {
+    const { attachFileToWorkItem } = await import("./azure.service.js");
+    for (const relation of attachmentRelations) {
+      await attachFileToWorkItem(
+        workItemId,
+        relation.value.url,
+        relation.value.attributes.comment
+      );
     }
   }
 };
@@ -223,34 +314,57 @@ export const syncADOToZendesk = async (
       const adoComments = await getADOComments(workItemId);
       const zendeskComments = await getZendeskComments(zendeskTicketId);
 
-      // Find the latest ADO comment
-      if (adoComments.length > 0) {
+      if (adoComments && adoComments.length > 0) {
         // Sort comments by ID descending to guarantee we always grab the newest comment
         const sortedAdoComments = [...adoComments].sort((a, b) => Number(b.id) - Number(a.id));
         const latestADOComment = sortedAdoComments[0];
 
+        const adoText = latestADOComment.text || "";
+
         // Loop prevention: If the ADO comment was created by our Zendesk sync, it will contain this signature
-        if (latestADOComment.text.includes("From:") || latestADOComment.text.includes("Comment From Client")) {
+        if (
+          adoText.includes("From Client") ||
+          adoText.includes("<b>From:</b>") ||
+          adoText.includes("From:") ||
+          adoText.includes("Comment From Client")
+        ) {
           console.log("Loop prevention: Skipping ADO comment because it originated from Zendesk");
           return;
         }
 
-        // Check if this comment has already been synced
+        // Check if this comment has already been claimed/synced
         if (String(ticketSync.lastADOCommentId) === String(latestADOComment.id)) {
           console.log("ADO comment already synced, skipping");
           return;
         }
 
-        // Check if this comment has already been synced to Zendesk
-        // by comparing with the latest Zendesk comment
-        const latestZendeskComment = zendeskComments.length > 0
-          ? zendeskComments[zendeskComments.length - 1]
-          : null;
+        // Duplicate check: scan all Zendesk comments for "From Developer" + matching normalized comment text
+        const normAdoText = normalizeCommentText(adoText);
+        const duplicateInZendesk = zendeskComments.some((zComment) => {
+          const zBody = zComment.body || zComment.html_body || "";
+          return (
+            zBody.includes("From Developer") &&
+            normalizeCommentText(zBody).includes(normAdoText)
+          );
+        });
 
-        // Simple check: if the ADO comment text is not in the latest Zendesk comment, sync it
-        const commentAlreadySynced = latestZendeskComment?.body?.includes(latestADOComment.text);
+        if (duplicateInZendesk) {
+          console.log(`Duplicate comment detected in Zendesk for ADO comment ${latestADOComment.id}, marking synced`);
+          ticketSync.lastADOCommentId = String(latestADOComment.id);
+          ticketSync.lastSyncSource = "azure";
+          ticketSync.lastSyncedAt = new Date();
+          await ticketSyncRepo.save(ticketSync);
+          return;
+        }
 
-        if (!commentAlreadySynced && latestADOComment.text.trim()) {
+        if (adoText.trim()) {
+          // Atomic claim before posting
+          const claim = await tryClaimADOCommentSync(ticketSync.id, String(latestADOComment.id));
+          if (!claim.claimed) {
+            console.log(`ADO comment ${latestADOComment.id} was already claimed by another process, skipping`);
+            return;
+          }
+
           console.log(
             `Syncing ADO comment ${latestADOComment.id} to Zendesk ticket ${zendeskTicketId}`
           );
@@ -259,31 +373,31 @@ export const syncADOToZendesk = async (
             <div>
               <b>From Developer</b>
               <br>
-              ${latestADOComment.text.replace(/\n/g, "<br>")}
+              ${adoText.replace(/\n/g, "<br>")}
             </div>
           `;
 
-          const result = await addZendeskComment(zendeskTicketId, formattedComment, false);
+          try {
+            const result = await addZendeskComment(zendeskTicketId, formattedComment, false);
 
-          // Bulletproof loop prevention: Save the newly created Zendesk comment ID
-          // so that when the Zendesk webhook fires a second later, we instantly recognize and ignore it!
-          if (result?.audit?.events) {
-            const commentEvent = result.audit.events.find((e: any) => e.type === "Comment");
-            if (commentEvent?.id) {
-              ticketSync.lastZendeskCommentId = String(commentEvent.id);
+            if (result?.audit?.events) {
+              const commentEvent = result.audit.events.find((e: any) => e.type === "Comment");
+              if (commentEvent?.id) {
+                ticketSync.lastZendeskCommentId = String(commentEvent.id);
+                await ticketSyncRepo.save(ticketSync);
+              }
             }
+          } catch (postErr) {
+            console.error("Failed to post comment to Zendesk, reverting lastADOCommentId claim:", postErr);
+            // Revert claim on failure
+            ticketSync.lastADOCommentId = claim.previousLastADOCommentId;
+            await ticketSyncRepo.save(ticketSync);
+            throw postErr;
           }
-
-          // Update last synced comment ID
-          ticketSync.lastADOCommentId = String(latestADOComment.id);
-          ticketSync.lastSyncSource = "azure";
-          ticketSync.lastSyncedAt = new Date();
-          await ticketSyncRepo.save(ticketSync);
         }
       }
     } catch (error) {
       console.error("Error syncing ADO comments to Zendesk:", error);
-      // Don't throw - comment sync failure shouldn't break status sync
     }
   }
 };

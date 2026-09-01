@@ -34,7 +34,7 @@ export const uploadAzureAttachment = async (
 ): Promise<string | null> => {
   const token = await getAzureAccessToken();
 
-  const url = `https://dev.azure.com/mstrategygroup/MStrategyGroupCore/_apis/wit/attachments?fileName=${encodeURIComponent(
+  const url = `https://dev.azure.com/mstrategygroup/Universal%20Portal/_apis/wit/attachments?fileName=${encodeURIComponent(
     fileName
   )}&api-version=7.1`;
 

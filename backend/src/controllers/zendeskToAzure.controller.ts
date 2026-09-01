@@ -1,8 +1,10 @@
 import { Request, response, Response } from "express";
 import { asyncHandler } from "../utils/helper.js";
 import { createAzureWorkItem } from "../services/azure.service.js";
-import { updateZendeskTicketWithAzureId } from "../services/zendesk.service.js";
+import { updateZendeskTicketWithAzureId, getZendeskComments } from "../services/zendesk.service.js";
 import { processZendeskAttachments } from "../services/attachment.service.js";
+import { AppDataSource } from "../config/db.js";
+import { TicketSync } from "../entities/TicketSync.js";
 
 interface AzurePayloadOp {
     op: string;
@@ -134,6 +136,38 @@ const createZendeskToAzureTicket = asyncHandler(
         Number(zendeskTicketId!),
         azureWorkItem.id
       );
+
+      if (zendeskTicketId) {
+        try {
+          const zTicketId = Number(zendeskTicketId);
+          const comments = await getZendeskComments(zTicketId);
+          const firstCommentId = comments && comments.length > 0 ? String(comments[0].id) : null;
+
+          const ticketSyncRepo = AppDataSource.getRepository(TicketSync);
+          let ticketSync = await ticketSyncRepo.findOne({
+            where: { zendeskTicketId: zTicketId },
+          });
+
+          if (!ticketSync) {
+            ticketSync = ticketSyncRepo.create({
+              zendeskTicketId: zTicketId,
+              azureWorkItemId: azureWorkItem.id,
+              lastZendeskCommentId: firstCommentId,
+              lastSyncSource: "zendesk",
+              lastSyncedAt: new Date(),
+            });
+          } else {
+            ticketSync.azureWorkItemId = azureWorkItem.id;
+            ticketSync.lastZendeskCommentId = firstCommentId;
+            ticketSync.lastSyncSource = "zendesk";
+            ticketSync.lastSyncedAt = new Date();
+          }
+          await ticketSyncRepo.save(ticketSync);
+          console.log(`Initialized TicketSync for Zendesk ticket ${zTicketId} with lastZendeskCommentId ${firstCommentId}`);
+        } catch (err) {
+          console.error("Error initializing TicketSync record on creation:", err);
+        }
+      }
 
       return res.status(200).json({
         success: true,
