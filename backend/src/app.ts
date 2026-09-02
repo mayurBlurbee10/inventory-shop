@@ -42,6 +42,7 @@ import inAppnotificationRoutes from "./routes/inAppNotification.route.ts";
 import realMessageRoutes from "./routes/messages.route.ts";
 import themeRoutes from "./routes/theme.route.ts";
 import reportsRoutes from "./routes/reports.route.ts";
+import { encryptionMiddleware } from "./middlewares/encryption.middleware.ts";
 
 dotenv.config();
 
@@ -60,6 +61,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(encryptionMiddleware);
 
 app.get("/api", async (_, res) => {
   res.status(200).send({ message: `Api is running: ${process.env.NEXT_PUBLIC_APP_BASE_URL}` });

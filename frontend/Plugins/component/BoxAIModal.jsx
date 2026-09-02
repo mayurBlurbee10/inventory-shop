@@ -993,14 +993,15 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
         )}
         style={{ width: panelWidth, maxHeight: "100vh" }}
       >
-        <AppTooltip label="Resize">
+        <AppTooltip label="Resize" side="left">
           <button
             type="button"
             role="separator"
             aria-orientation="vertical"
             aria-label="Resize panel"
+            style={{ width: "20px", maxWidth: "20px", display: "flex", justifyContent: "center", alignItems: "center", padding: 0 }}
             className={cn(
-              "absolute left-0 top-1/2 z-[60] flex -translate-x-1/2 -translate-y-1/2 cursor-col-resize items-center justify-center rounded-md border border-border bg-card p-1 shadow-md transition-colors group/resizer",
+              "absolute left-0 top-1/2 z-[60] !w-[20px] !max-w-[20px] h-8 !p-0 flex !justify-center !items-center -translate-x-1/2 -translate-y-1/2 cursor-col-resize rounded-md border border-border bg-card shadow-md transition-colors group/resizer",
               isResizing
                 ? "border-primary bg-primary/10"
                 : "hover:border-muted-foreground/50 hover:bg-accent"
@@ -1015,10 +1016,10 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
           >
             <GripVertical
               className={cn(
-                "h-4 w-4",
+                "h-4 w-4 shrink-0 text-foreground mx-auto my-auto",
                 isResizing
                   ? "text-primary"
-                  : "text-muted-foreground group-hover/resizer:text-foreground"
+                  : "text-foreground/80 group-hover/resizer:text-foreground"
               )}
             />
           </button>
@@ -1361,10 +1362,11 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                   isHubsLoading ||
                   hubs.length === 0
                 }
-                className="shrink-0 !size-8 !rounded-full !px-0 !py-0 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-primary/50 disabled:text-primary-foreground disabled:opacity-100"
+                style={{ width: "32px", height: "32px", minWidth: "32px", maxWidth: "32px", display: "flex", justifyContent: "center", alignItems: "center", padding: 0 }}
+                className="shrink-0 !w-[32px] !h-[32px] !min-w-[32px] !max-w-[32px] flex !justify-center !items-center !rounded-full !px-0 !py-0 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-primary/50 disabled:text-primary-foreground disabled:opacity-100"
                 aria-label="Send message"
               >
-                <ArrowUp className="h-4 w-4" />
+                <ArrowUp className="h-4 w-4 shrink-0 mx-auto my-auto" />
               </Button>
             </div>
             <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">

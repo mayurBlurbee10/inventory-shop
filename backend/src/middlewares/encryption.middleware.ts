@@ -1,0 +1,72 @@
+import { Request, Response, NextFunction } from "express";
+import {
+  decryptApiRequest,
+  decryptSessionKey,
+  getDefaultSessionKey,
+  encryptAESPayload,
+} from "../utils/asymmetricCrypto.util.ts";
+
+/**
+ * Middleware to intercept incoming requests and outgoing responses for API encryption.
+ * Decrypts incoming request payloads and encrypts outgoing res.json responses using the session key.
+ */
+export const encryptionMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  // Override res.json to handle response encryption transparently
+  const originalJson = res.json.bind(res);
+
+  res.json = function (body: any) {
+    if (res.locals.sessionKey && body !== undefined && body !== null) {
+      try {
+        const encryptedPayload = encryptAESPayload(body, res.locals.sessionKey);
+        res.setHeader("x-api-encrypted", "true");
+        return originalJson(encryptedPayload);
+      } catch (err) {
+        console.error(
+          "[Encryption Middleware] Failed to encrypt response payload:",
+          err
+        );
+        return originalJson(body);
+      }
+    }
+    return originalJson(body);
+  };
+
+  try {
+    const isEncryptedHeader = req.headers["x-api-encrypted"] === "true";
+    const xSessionKeyHeader = req.headers["x-session-key"] as string | undefined;
+    const bodyIsEncryptedFormat =
+      req.body &&
+      typeof req.body === "object" &&
+      req.body.iv &&
+      req.body.data &&
+      req.body.tag;
+
+    if (bodyIsEncryptedFormat) {
+      const { sessionKeyBuffer, decryptedData } = decryptApiRequest(req.body);
+      res.locals.sessionKey = sessionKeyBuffer;
+      req.body = decryptedData;
+    } else if (xSessionKeyHeader) {
+      try {
+        res.locals.sessionKey = decryptSessionKey(xSessionKeyHeader);
+      } catch (err) {
+        console.warn(
+          "[Encryption Middleware] Failed to decrypt x-session-key header, using default key fallback:",
+          err
+        );
+        res.locals.sessionKey = getDefaultSessionKey();
+      }
+    } else if (isEncryptedHeader) {
+      res.locals.sessionKey = getDefaultSessionKey();
+    }
+  } catch (err) {
+    console.error("[Encryption Middleware] Failed to process incoming request decryption:", err);
+    res.status(400).json({ error: "Invalid encrypted payload or session key." });
+    return;
+  }
+
+  next();
+};

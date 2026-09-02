@@ -1,5 +1,10 @@
 import { getRefreshToken, getUserData, setAuthTokens } from "./auth";
 import { clearUserStates } from "./userCleanupService";
+import {
+  encryptApiPayload,
+  decryptApiPayload,
+  encryptSessionKeyWithRSA,
+} from "./cryptoAsymmetric";
 
 let isRefreshing = false;
 let refreshPromise = null;
@@ -36,21 +41,21 @@ const refreshAccessToken = async (portalId) => {
         {
           method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           credentials: "include",
           body: JSON.stringify({
             portalId,
             refreshToken: getRefreshToken(),
           }),
-        },
+        }
       );
 
       if (!res.ok) {
         throw new Error("REFRESH_FAILED");
       }
 
-      const data = await res.json();  
+      const data = await res.json();
       setAuthTokens({
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
@@ -98,9 +103,21 @@ const getActivePortalId = (user) => {
   return user?.portalId || "admin";
 };
 
-export const fetchWrapper = async (url, options = {}, type) => {
-  // Get dynamic header values (e.g., from localStorage, cookies, or a session)
+const wrapResponseWithDecryption = (response, rawSessionKey) => {
+  if (!response || !response.json) return response;
 
+  const originalJson = response.json.bind(response);
+  response.json = async () => {
+    const data = await originalJson();
+    if (data && typeof data === "object" && data.iv && data.data && data.tag && rawSessionKey) {
+      return await decryptApiPayload(data, rawSessionKey);
+    }
+    return data;
+  };
+  return response;
+};
+
+export const fetchWrapper = async (url, options = {}, type) => {
   const user = getUserData() || {
     id: null,
   };
@@ -126,7 +143,7 @@ export const fetchWrapper = async (url, options = {}, type) => {
   const defaultHeaders = {
     "x-user-id": user.id,
     "x-portal-id": portalId,
-    "x-api-type": type, // Replace with your API type logic
+    "x-api-type": type,
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
   };
 
@@ -136,17 +153,52 @@ export const fetchWrapper = async (url, options = {}, type) => {
     ...(options.headers || {}),
   };
 
+  // Request Encryption Flow
+  let rawSessionKey = null;
+  const method = (options.method || "GET").toUpperCase();
+
+  if (["POST", "PUT", "PATCH"].includes(method) && options.body) {
+    let bodyData = options.body;
+    if (typeof bodyData === "string") {
+      try {
+        bodyData = JSON.parse(bodyData);
+      } catch (err) {
+        // Keep string if non-JSON
+      }
+    }
+    if (typeof bodyData === "object" && !(bodyData instanceof FormData)) {
+      const { payload, rawSessionKey: key } = await encryptApiPayload(bodyData);
+      rawSessionKey = key;
+      options.body = JSON.stringify(payload);
+      options.headers = {
+        ...options.headers,
+        "Content-Type": "application/json",
+        "x-api-encrypted": "true",
+      };
+    }
+  } else if (method === "GET" && isBrowser()) {
+    const sessionKeyRaw = window.crypto.getRandomValues(new Uint8Array(32));
+    rawSessionKey = sessionKeyRaw;
+    const publicKeyPem = process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY;
+    if (publicKeyPem) {
+      const encryptedKey = await encryptSessionKeyWithRSA(sessionKeyRaw, publicKeyPem);
+      if (encryptedKey) {
+        options.headers = {
+          ...options.headers,
+          "x-session-key": encryptedKey,
+          "x-api-encrypted": "true",
+        };
+      }
+    }
+  }
+
   try {
-    // Make the fetch call
-    // console.log(`🛠️ API Call from fetchWrapper → URL: ${url} | Type: ${type}`);
-    // console.trace();  // This prints the function call stack
     const response = await fetchWithAuth(url, options);
 
     if (response.status === 401) {
-      // If the request is to the login endpoint, do not attempt token refresh or redirect.
-      const isLoginRequest = url.includes('/auth/login') || url.includes('/login');
+      const isLoginRequest = url.includes("/auth/login") || url.includes("/login");
       if (isLoginRequest) {
-        return response;
+        return wrapResponseWithDecryption(response, rawSessionKey);
       }
 
       try {
@@ -160,15 +212,13 @@ export const fetchWrapper = async (url, options = {}, type) => {
           let loginPath = portalId !== "admin" ? `/${portalId}/login` : "/login";
 
           try {
-            // Use raw fetch instead of fetchWrapper to avoid infinite recursion on 401
             const portalResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/portal?portalid=${portalId}`,
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/portal?portalid=${portalId}`
             );
 
             if (portalResponse.ok) {
               const result = await portalResponse.json();
               const portalData = result?.data;
-              // Use slug if available, fallback to sanitized legalName
               const slug =
                 portalData?.slug ||
                 (portalData?.legalName
@@ -181,7 +231,7 @@ export const fetchWrapper = async (url, options = {}, type) => {
           } catch (error) {
             console.warn(
               "Failed to fetch portal details for redirect:",
-              error.message,
+              error.message
             );
           }
 
@@ -194,17 +244,15 @@ export const fetchWrapper = async (url, options = {}, type) => {
           }
         }
 
-        // ✅ Retry request once
+        // Retry request once
         const retryResponse = await fetchWithAuth(url, options);
-
-        return retryResponse;
+        return wrapResponseWithDecryption(retryResponse, rawSessionKey);
       } catch (err) {
         console.error("[Auth] Refresh failed");
-        return response; // fallback
+        return wrapResponseWithDecryption(response, rawSessionKey);
       }
-    }
-    else {
-      return response;
+    } else {
+      return wrapResponseWithDecryption(response, rawSessionKey);
     }
   } catch (error) {
     console.error("Fetch error:", error.message);
