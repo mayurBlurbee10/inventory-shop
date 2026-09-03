@@ -18,15 +18,15 @@ export function decryptSessionKey(encryptedKeyBase64: string): Buffer {
   const privateKeyPem = getPrivateKey();
   const bufferToDecrypt = Buffer.from(encryptedKeyBase64, "base64");
 
-  return crypto.privateDecrypt(
-    {
-      key: privateKeyPem,
-      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-      oaepHash: "sha256",
-    },
-    bufferToDecrypt
-  );
-}
+    return crypto.privateDecrypt(
+      {
+        key: privateKeyPem,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+        oaepHash: "sha256",
+      },
+      bufferToDecrypt
+    );
+  }
 
 /**
  * Gets default fallback AES-256 session key derived from API_ENCRYPTION_SECRET.
