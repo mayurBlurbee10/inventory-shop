@@ -15,6 +15,22 @@ export const encryptionMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
+  const isEncryptionEnabled = process.env.NODE_ENV === "production";
+
+  const isEncryptedHeader = req.headers["x-api-encrypted"] === "true";
+  const xSessionKeyHeader = req.headers["x-session-key"] as string | undefined;
+  const bodyIsEncryptedFormat =
+    req.body &&
+    typeof req.body === "object" &&
+    req.body.iv &&
+    req.body.data &&
+    req.body.tag;
+
+  // If encryption is disabled (local/development) and request is unencrypted, skip encryption flow
+  if (!isEncryptionEnabled && !bodyIsEncryptedFormat && !isEncryptedHeader && !xSessionKeyHeader) {
+    return next();
+  }
+
   // Override res.json to handle response encryption transparently
   const originalJson = res.json.bind(res);
 
@@ -34,17 +50,7 @@ export const encryptionMiddleware = (
     }
     return originalJson(body);
   };
-
   try {
-    const isEncryptedHeader = req.headers["x-api-encrypted"] === "true";
-    const xSessionKeyHeader = req.headers["x-session-key"] as string | undefined;
-    const bodyIsEncryptedFormat =
-      req.body &&
-      typeof req.body === "object" &&
-      req.body.iv &&
-      req.body.data &&
-      req.body.tag;
-
     if (bodyIsEncryptedFormat) {
       const { sessionKeyBuffer, decryptedData } = decryptApiRequest(req.body);
       res.locals.sessionKey = sessionKeyBuffer;

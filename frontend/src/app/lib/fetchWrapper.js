@@ -156,44 +156,47 @@ export const fetchWrapper = async (url, options = {}, type) => {
   // Request Encryption Flow
   let rawSessionKey = null;
   const method = (options.method || "GET").toUpperCase();
+  const isEncryptionEnabled = process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_ENABLE_ENCRYPTION === "true";
 
-  if (["POST", "PUT", "PATCH"].includes(method) && options.body) {
-    let bodyData = options.body;
-    if (typeof bodyData === "string") {
-      try {
-        bodyData = JSON.parse(bodyData);
-      } catch (err) {
-        // Keep string if non-JSON
+  if (isEncryptionEnabled) {
+    if (["POST", "PUT", "PATCH"].includes(method) && options.body) {
+      let bodyData = options.body;
+      if (typeof bodyData === "string") {
+        try {
+          bodyData = JSON.parse(bodyData);
+        } catch (err) {
+          // Keep string if non-JSON
+        }
       }
-    }
-    if (typeof bodyData === "object" && bodyData !== null && !(bodyData instanceof FormData)) {
-      try {
-        const { payload, rawSessionKey: key } = await encryptApiPayload(bodyData);
-        rawSessionKey = key;
-        options.body = JSON.stringify(payload);
-        options.headers = {
-          ...options.headers,
-          "Content-Type": "application/json",
-          "x-api-encrypted": "true",
-        };
-      } catch (encryptError) {
-        console.warn("[fetchWrapper] Request encryption warning:", encryptError.message);
+      if (typeof bodyData === "object" && bodyData !== null && !(bodyData instanceof FormData)) {
+        try {
+          const { payload, rawSessionKey: key } = await encryptApiPayload(bodyData);
+          rawSessionKey = key;
+          options.body = JSON.stringify(payload);
+          options.headers = {
+            ...options.headers,
+            "Content-Type": "application/json",
+            "x-api-encrypted": "true",
+          };
+        } catch (encryptError) {
+          console.warn("[fetchWrapper] Request encryption warning:", encryptError.message);
+        }
       }
-    }
-  } else if (method === "GET" && isBrowser()) {
-    const sessionKeyRaw = window.crypto.getRandomValues(new Uint8Array(32));
-    rawSessionKey = sessionKeyRaw;
-    const publicKeyPem =
-      process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY ||
-      process.env.NEXT_PUBLIC_SERVER_PUBLIC_ENCRYPTION_KEY;
-    if (publicKeyPem) {
-      const encryptedKey = await encryptSessionKeyWithRSA(sessionKeyRaw, publicKeyPem);
-      if (encryptedKey) {
-        options.headers = {
-          ...options.headers,
-          "x-session-key": encryptedKey,
-          "x-api-encrypted": "true",
-        };
+    } else if (method === "GET" && isBrowser()) {
+      const sessionKeyRaw = window.crypto.getRandomValues(new Uint8Array(32));
+      rawSessionKey = sessionKeyRaw;
+      const publicKeyPem =
+        process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY ||
+        process.env.NEXT_PUBLIC_SERVER_PUBLIC_ENCRYPTION_KEY;
+      if (publicKeyPem) {
+        const encryptedKey = await encryptSessionKeyWithRSA(sessionKeyRaw, publicKeyPem);
+        if (encryptedKey) {
+          options.headers = {
+            ...options.headers,
+            "x-session-key": encryptedKey,
+            "x-api-encrypted": "true",
+          };
+        }
       }
     }
   }
