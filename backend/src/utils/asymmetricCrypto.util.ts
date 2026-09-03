@@ -93,26 +93,43 @@ export function decryptApiRequest(payload: any): {
   sessionKeyBuffer: Buffer;
   decryptedData: any;
 } {
-  let sessionKeyBuffer: Buffer;
+  let sessionKeyBuffer: Buffer | null = null;
 
   if (payload && payload.key) {
-    sessionKeyBuffer = decryptSessionKey(payload.key);
-  } else {
-    sessionKeyBuffer = getDefaultSessionKey();
+    try {
+      sessionKeyBuffer = decryptSessionKey(payload.key);
+    } catch (err) {
+      console.warn("[decryptApiRequest] RSA session key decryption failed, trying fallback default key:", err);
+      sessionKeyBuffer = null;
+    }
   }
 
-  if (!payload || !payload.iv || !payload.data || !payload.tag) {
-    return { sessionKeyBuffer, decryptedData: payload };
+  if (sessionKeyBuffer) {
+    try {
+      const decryptedData = decryptAESPayload(
+        {
+          iv: payload.iv,
+          data: payload.data,
+          tag: payload.tag,
+        },
+        sessionKeyBuffer
+      );
+      return { sessionKeyBuffer, decryptedData };
+    } catch (err) {
+      console.warn("[decryptApiRequest] Primary AES decryption failed, attempting default key fallback:", err);
+    }
   }
 
+  // Fallback to default session key
+  const fallbackKey = getDefaultSessionKey();
   const decryptedData = decryptAESPayload(
     {
       iv: payload.iv,
       data: payload.data,
       tag: payload.tag,
     },
-    sessionKeyBuffer
+    fallbackKey
   );
 
-  return { sessionKeyBuffer, decryptedData };
+  return { sessionKeyBuffer: fallbackKey, decryptedData };
 }

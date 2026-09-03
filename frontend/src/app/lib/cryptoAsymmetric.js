@@ -10,8 +10,9 @@ function arrayBufferToBase64(buffer) {
 }
 
 function base64ToArrayBuffer(base64) {
+  if (!base64) return new ArrayBuffer(0);
   if (isBrowser()) {
-    const binaryString = atob(base64);
+    const binaryString = atob(base64.trim());
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
@@ -23,9 +24,11 @@ function base64ToArrayBuffer(base64) {
 }
 
 function pemToArrayBuffer(pem) {
+  if (!pem) return new ArrayBuffer(0);
   const b64Lines = pem
-    .replace(/-----BEGIN PUBLIC KEY-----/, "")
-    .replace(/-----END PUBLIC KEY-----/, "")
+    .replace(/\\n/g, "")
+    .replace(/-----BEGIN PUBLIC KEY-----/g, "")
+    .replace(/-----END PUBLIC KEY-----/g, "")
     .replace(/\s+/g, "");
   return base64ToArrayBuffer(b64Lines);
 }
@@ -101,7 +104,9 @@ export async function encryptApiPayload(data) {
   const ciphertextBuffer = cipherBuffer.slice(0, cipherBuffer.byteLength - tagLength);
   const tagBuffer = cipherBuffer.slice(cipherBuffer.byteLength - tagLength);
 
-  const publicKeyPem = process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY;
+  const publicKeyPem =
+    process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY ||
+    process.env.NEXT_PUBLIC_SERVER_PUBLIC_ENCRYPTION_KEY;
   let encryptedSessionKey = null;
 
   if (publicKeyPem) {
@@ -119,53 +124,74 @@ export async function encryptApiPayload(data) {
 }
 
 /**
- * Decrypts AES-GCM response payload using the session key
+ * Decrypts AES-GCM response payload using the session key (with fallback to secret key)
  */
 export async function decryptApiPayload(encryptedPayload, sessionKeyRaw) {
-  if (!isBrowser() || !sessionKeyRaw || !encryptedPayload?.data || !encryptedPayload?.iv || !encryptedPayload?.tag) {
+  if (!isBrowser() || !encryptedPayload?.data || !encryptedPayload?.iv || !encryptedPayload?.tag) {
     return encryptedPayload;
   }
 
-  try {
-    const ivBuffer = base64ToArrayBuffer(encryptedPayload.iv);
-    const ciphertextBuffer = base64ToArrayBuffer(encryptedPayload.data);
-    const tagBuffer = base64ToArrayBuffer(encryptedPayload.tag);
-
-    // Concatenate ciphertext + tag for WebCrypto decrypt
-    const combinedBuffer = new Uint8Array(
-      ciphertextBuffer.byteLength + tagBuffer.byteLength
-    );
-    combinedBuffer.set(new Uint8Array(ciphertextBuffer), 0);
-    combinedBuffer.set(new Uint8Array(tagBuffer), ciphertextBuffer.byteLength);
-
-    const cryptoKey = await window.crypto.subtle.importKey(
-      "raw",
-      sessionKeyRaw,
-      { name: "AES-GCM" },
-      false,
-      ["decrypt"]
-    );
-
-    const decryptedBuffer = await window.crypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv: ivBuffer,
-        tagLength: 128,
-      },
-      cryptoKey,
-      combinedBuffer
-    );
-
-    const decoder = new TextDecoder();
-    const decryptedString = decoder.decode(decryptedBuffer);
-
-    try {
-      return JSON.parse(decryptedString);
-    } catch {
-      return decryptedString;
-    }
-  } catch (err) {
-    console.error("[cryptoAsymmetric] Decryption failed:", err);
-    throw err;
+  const keysToTry = [];
+  if (sessionKeyRaw) {
+    keysToTry.push(sessionKeyRaw);
   }
+
+  // Fallback key derived from API_ENCRYPTION_SECRET / CRYPTO_SECRET_KEY
+  try {
+    const secret =
+      process.env.NEXT_PUBLIC_API_ENCRYPTION_SECRET ||
+      process.env.NEXT_PUBLIC_CRYPTO_SECRET_KEY ||
+      "default_api_encryption_secret";
+    const encoder = new TextEncoder();
+    const hashBuffer = await window.crypto.subtle.digest("SHA-256", encoder.encode(secret));
+    keysToTry.push(new Uint8Array(hashBuffer));
+  } catch {
+    // Ignore fallback key generation error
+  }
+
+  const ivBuffer = base64ToArrayBuffer(encryptedPayload.iv);
+  const ciphertextBuffer = base64ToArrayBuffer(encryptedPayload.data);
+  const tagBuffer = base64ToArrayBuffer(encryptedPayload.tag);
+
+  const combinedBuffer = new Uint8Array(
+    ciphertextBuffer.byteLength + tagBuffer.byteLength
+  );
+  combinedBuffer.set(new Uint8Array(ciphertextBuffer), 0);
+  combinedBuffer.set(new Uint8Array(tagBuffer), ciphertextBuffer.byteLength);
+
+  for (const rawKey of keysToTry) {
+    try {
+      const cryptoKey = await window.crypto.subtle.importKey(
+        "raw",
+        rawKey,
+        { name: "AES-GCM" },
+        false,
+        ["decrypt"]
+      );
+
+      const decryptedBuffer = await window.crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: ivBuffer,
+          tagLength: 128,
+        },
+        cryptoKey,
+        combinedBuffer
+      );
+
+      const decoder = new TextDecoder();
+      const decryptedString = decoder.decode(decryptedBuffer);
+
+      try {
+        return JSON.parse(decryptedString);
+      } catch {
+        return decryptedString;
+      }
+    } catch {
+      // Try next key
+    }
+  }
+
+  console.error("[cryptoAsymmetric] Decryption failed for all candidate session keys");
+  return encryptedPayload;
 }

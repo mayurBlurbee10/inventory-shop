@@ -158,64 +158,34 @@ export const fetchWrapper = async (url, options = {}, type) => {
   const method = (options.method || "GET").toUpperCase();
 
   if (["POST", "PUT", "PATCH"].includes(method) && options.body) {
-  let bodyData = options.body;
-
-  if (typeof bodyData === "string") {
-    try {
-      bodyData = JSON.parse(bodyData);
-    } catch (err) {
-      // Keep string if non-JSON
+    let bodyData = options.body;
+    if (typeof bodyData === "string") {
+      try {
+        bodyData = JSON.parse(bodyData);
+      } catch (err) {
+        // Keep string if non-JSON
+      }
     }
-  }
-
-  if (
-    typeof bodyData === "object" &&
-    bodyData !== null &&
-    !(bodyData instanceof FormData)
-  ) {
-    const { payload, rawSessionKey: key } =
-      await encryptApiPayload(bodyData);
-
-    rawSessionKey = key;
-
-    const publicKeyPem =
-      process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY;
-
-    if (!publicKeyPem) {
-      throw new Error(
-        "NEXT_PUBLIC_SERVER_PUBLIC_KEY is not configured"
-      );
+    if (typeof bodyData === "object" && bodyData !== null && !(bodyData instanceof FormData)) {
+      try {
+        const { payload, rawSessionKey: key } = await encryptApiPayload(bodyData);
+        rawSessionKey = key;
+        options.body = JSON.stringify(payload);
+        options.headers = {
+          ...options.headers,
+          "Content-Type": "application/json",
+          "x-api-encrypted": "true",
+        };
+      } catch (encryptError) {
+        console.warn("[fetchWrapper] Request encryption warning:", encryptError.message);
+      }
     }
-
-    const encryptedSessionKey =
-      await encryptSessionKeyWithRSA(
-        key,
-        publicKeyPem
-      );
-
-    if (!encryptedSessionKey) {
-      throw new Error(
-        "Failed to encrypt session key with RSA"
-      );
-    }
-
-    const encryptedPayload = {
-      ...payload,
-      key: encryptedSessionKey,
-    };
-
-    options.body = JSON.stringify(encryptedPayload);
-
-    options.headers = {
-      ...options.headers,
-      "Content-Type": "application/json",
-      "x-api-encrypted": "true",
-    };
-  }
-} else if (method === "GET" && isBrowser()) {
+  } else if (method === "GET" && isBrowser()) {
     const sessionKeyRaw = window.crypto.getRandomValues(new Uint8Array(32));
     rawSessionKey = sessionKeyRaw;
-    const publicKeyPem = process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY;
+    const publicKeyPem =
+      process.env.NEXT_PUBLIC_SERVER_PUBLIC_KEY ||
+      process.env.NEXT_PUBLIC_SERVER_PUBLIC_ENCRYPTION_KEY;
     if (publicKeyPem) {
       const encryptedKey = await encryptSessionKeyWithRSA(sessionKeyRaw, publicKeyPem);
       if (encryptedKey) {
