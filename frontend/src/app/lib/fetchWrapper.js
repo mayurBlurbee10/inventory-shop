@@ -4,6 +4,7 @@ import {
   encryptApiPayload,
   decryptApiPayload,
   encryptSessionKeyWithRSA,
+  serializeFormData,
 } from "./cryptoAsymmetric";
 
 let isRefreshing = false;
@@ -168,13 +169,30 @@ export const fetchWrapper = async (url, options = {}, type) => {
           // Keep string if non-JSON
         }
       }
-      if (typeof bodyData === "object" && bodyData !== null && !(bodyData instanceof FormData)) {
+      const isFormData =
+        typeof FormData !== "undefined" && bodyData instanceof FormData;
+      const isPlainObject =
+        typeof bodyData === "object" && bodyData !== null && !isFormData;
+
+      if (isFormData || isPlainObject) {
         try {
-          const { payload, rawSessionKey: key } = await encryptApiPayload(bodyData);
+          const dataToEncrypt = isFormData
+            ? await serializeFormData(bodyData)
+            : bodyData;
+          const { payload, rawSessionKey: key } =
+            await encryptApiPayload(dataToEncrypt);
           rawSessionKey = key;
           options.body = JSON.stringify(payload);
+
+          const nextHeaders = { ...(options.headers || {}) };
+          if (nextHeaders["Content-Type"]?.includes("multipart/form-data")) {
+            delete nextHeaders["Content-Type"];
+          }
+          if (nextHeaders["content-type"]?.includes("multipart/form-data")) {
+            delete nextHeaders["content-type"];
+          }
           options.headers = {
-            ...options.headers,
+            ...nextHeaders,
             "Content-Type": "application/json",
             "x-api-encrypted": "true",
           };

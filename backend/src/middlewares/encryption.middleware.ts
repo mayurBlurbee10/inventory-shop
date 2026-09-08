@@ -6,6 +6,61 @@ import {
   encryptAESPayload,
 } from "../utils/asymmetricCrypto.util.ts";
 
+type EncryptedFormFile = {
+  fieldname: string;
+  originalname: string;
+  mimetype: string;
+  size: number;
+  buffer: string;
+};
+
+const isEncryptedFormDataPayload = (
+  data: any
+): data is {
+  __encryptedFormData: true;
+  fields?: Record<string, any>;
+  files?: EncryptedFormFile[];
+} =>
+  Boolean(
+    data && typeof data === "object" && data.__encryptedFormData === true
+  );
+
+/**
+ * Rebuild multer-compatible req.body / req.file / req.files from an encrypted FormData payload.
+ */
+const applyDecryptedFormData = (req: Request, decryptedData: any): void => {
+  if (!isEncryptedFormDataPayload(decryptedData)) {
+    req.body = decryptedData;
+    return;
+  }
+
+  req.body = { ...(decryptedData.fields || {}) };
+
+  const reconstructedFiles = (decryptedData.files || []).map((file) => {
+    const buffer = Buffer.from(file.buffer || "", "base64");
+    return {
+      fieldname: file.fieldname,
+      originalname: file.originalname || "blob",
+      encoding: "7bit",
+      mimetype: file.mimetype || "application/octet-stream",
+      size: file.size ?? buffer.length,
+      buffer,
+      destination: "",
+      filename: file.originalname || "blob",
+      path: "",
+      stream: undefined as any,
+    } as Express.Multer.File;
+  });
+
+  if (reconstructedFiles.length === 1) {
+    (req as any).file = reconstructedFiles[0];
+  }
+
+  if (reconstructedFiles.length > 0) {
+    (req as any).files = reconstructedFiles;
+  }
+};
+
 /**
  * Middleware to intercept incoming requests and outgoing responses for API encryption.
  * Decrypts incoming request payloads and encrypts outgoing res.json responses using the session key.
@@ -27,7 +82,12 @@ export const encryptionMiddleware = (
     req.body.tag;
 
   // If encryption is disabled (local/development) and request is unencrypted, skip encryption flow
-  if (!isEncryptionEnabled && !bodyIsEncryptedFormat && !isEncryptedHeader && !xSessionKeyHeader) {
+  if (
+    !isEncryptionEnabled &&
+    !bodyIsEncryptedFormat &&
+    !isEncryptedHeader &&
+    !xSessionKeyHeader
+  ) {
     return next();
   }
 
@@ -54,7 +114,7 @@ export const encryptionMiddleware = (
     if (bodyIsEncryptedFormat) {
       const { sessionKeyBuffer, decryptedData } = decryptApiRequest(req.body);
       res.locals.sessionKey = sessionKeyBuffer;
-      req.body = decryptedData;
+      applyDecryptedFormData(req, decryptedData);
     } else if (xSessionKeyHeader) {
       try {
         res.locals.sessionKey = decryptSessionKey(xSessionKeyHeader);
@@ -69,8 +129,13 @@ export const encryptionMiddleware = (
       res.locals.sessionKey = getDefaultSessionKey();
     }
   } catch (err) {
-    console.error("[Encryption Middleware] Failed to process incoming request decryption:", err);
-    res.status(400).json({ error: "Invalid encrypted payload or session key." });
+    console.error(
+      "[Encryption Middleware] Failed to process incoming request decryption:",
+      err
+    );
+    res
+      .status(400)
+      .json({ error: "Invalid encrypted payload or session key." });
     return;
   }
 

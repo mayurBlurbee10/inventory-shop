@@ -40,6 +40,37 @@ export const normalizeCommentText = (text: string | null | undefined): string =>
 };
 
 /**
+ * Normalize Zendesk/ADO comment text for HTML rendering.
+ * Zendesk plain text often contains extra/trailing newlines that are collapsed in
+ * Zendesk UI but become large empty gaps in ADO when each `\n` is turned into `<br>`.
+ */
+const formatCommentHtml = (comment: string): string => {
+  if (!comment) return "";
+
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(comment);
+
+  if (looksLikeHtml) {
+    return comment
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .replace(/>\s+</g, "><")
+      .replace(/(?:<br\s*\/?>\s*){2,}/gi, "<br>")
+      .replace(/(?:<p>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>\s*)+/gi, "")
+      .replace(/(?:<div>(?:\s|&nbsp;|<br\s*\/?>)*<\/div>\s*)+/gi, "")
+      .replace(/(?:<br\s*\/?>\s*)+$/gi, "")
+      .replace(/^(?:<br\s*\/?>\s*)+/gi, "")
+      .trim();
+  }
+
+  return comment
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim()
+    .replace(/\n{2,}/g, "\n")
+    .replace(/\n/g, "<br>");
+};
+
+/**
  * Atomic claim for ADO comment sync to prevent concurrent execution duplicate comments
  */
 const tryClaimADOCommentSync = async (
@@ -216,28 +247,17 @@ export const syncZendeskToADO = async (payload: {
   await ticketSyncRepo.save(ticketSync);
 
   // Format comment
-  const rawCommentText = latestComment.body || latestComment.html_body || "";
-  let formattedComment = rawCommentText.replace(/\n/g, "<br>") + attachedHtml;
+  const rawCommentText =
+    latestComment.plain_body ||
+    latestComment.body ||
+    latestComment.html_body ||
+    "";
+  const formattedComment = formatCommentHtml(rawCommentText + attachedHtml);
 
   const user = assignee_email ? await getADOUserByEmail(assignee_email) : null;
-  let commentText = "";
-  if (user) {
-    commentText = `
-      <div>
-        <b>From:</b> ${user.providerDisplayName}
-        <br>
-        ${formattedComment}
-      </div>
-    `;
-  } else {
-    commentText = `
-      <div>
-        <b>From Client</b>
-        <br>
-        ${formattedComment}
-      </div>
-    `;
-  }
+  const commentText = user
+    ? `<div><b>From:</b> ${user.providerDisplayName}<br>${formattedComment}</div>`
+    : `<div><b>From Client</b><br>${formattedComment}</div>`;
 
   const newAdoCommentId = await addADOComment(workItemId, commentText);
 
@@ -369,13 +389,7 @@ export const syncADOToZendesk = async (
             `Syncing ADO comment ${latestADOComment.id} to Zendesk ticket ${zendeskTicketId}`
           );
 
-          const formattedComment = `
-            <div>
-              <b>From Developer</b>
-              <br>
-              ${adoText.replace(/\n/g, "<br>")}
-            </div>
-          `;
+          const formattedComment = `<div><b>From Developer</b><br>${formatCommentHtml(adoText)}</div>`;
 
           try {
             const result = await addZendeskComment(zendeskTicketId, formattedComment, false);

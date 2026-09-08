@@ -124,6 +124,42 @@ export async function encryptApiPayload(data) {
 }
 
 /**
+ * Converts FormData (including File/Blob values) into a JSON-serializable payload
+ * that can be AES-encrypted and reconstructed by the backend.
+ */
+export async function serializeFormData(formData) {
+  const fields = {};
+  const files = [];
+
+  for (const [key, value] of formData.entries()) {
+    if (value instanceof Blob) {
+      const buffer = await value.arrayBuffer();
+      files.push({
+        fieldname: key,
+        originalname: value instanceof File && value.name ? value.name : "blob",
+        mimetype: value.type || "application/octet-stream",
+        size: value.size,
+        buffer: arrayBufferToBase64(buffer),
+      });
+      continue;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(fields, key)) {
+      const existing = fields[key];
+      fields[key] = Array.isArray(existing) ? [...existing, value] : [existing, value];
+    } else {
+      fields[key] = value;
+    }
+  }
+
+  return {
+    __encryptedFormData: true,
+    fields,
+    files,
+  };
+}
+
+/**
  * Decrypts AES-GCM response payload using the session key (with fallback to secret key)
  */
 export async function decryptApiPayload(encryptedPayload, sessionKeyRaw) {
