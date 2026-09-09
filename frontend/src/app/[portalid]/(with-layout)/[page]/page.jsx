@@ -18,6 +18,7 @@ import CollaboratorSection from "@/components/Common/CollaboratorSection";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
 import { cn } from "@/app/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { Can } from "@/components/Access/AccessControlProvider";
 
 const LoadingSpinner = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
@@ -199,7 +200,9 @@ function Page() {
         </div>
 
         <div className="col-span-5 flex flex-col gap-4 md:col-span-2">
-          {filterVisibility("My Task Section") && <TasksSection />}
+          {filterVisibility("My Task Section") && <Can resource="task" action="view">
+            <TasksSection />
+          </Can>}
           {filterVisibility("Advisor Section") && <AdvisorSection />}
           {filterVisibility("Collaborator Section") && <CollaboratorSection />}
         </div>

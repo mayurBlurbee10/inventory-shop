@@ -13,6 +13,7 @@ import MessageSection from "@/components/Common/MessageSection";
 import TasksSection from "@/components/Common/TasksSection";
 import AdvisorSection from "@/components/Common/AdvisorSection";
 import LoaderSpinner from "@/components/Common/Elements/LoaderSpinner";
+import { Can } from "@/components/Access/AccessControlProvider";
 
 export default function AdvisorViewSharedDocsPage() {
   const [user, setUser] = useState(null);
@@ -311,10 +312,12 @@ export default function AdvisorViewSharedDocsPage() {
         <div className="col-span-5 lg:col-span-2">
           {filterVisibility("My Task Section") && (
             <div>
-              <TasksSection
-                client={user ? user : loggedInUser}
-                key={user ? user.id : loggedInUser.id}
-              />
+              <Can resource="task" action="view">
+                <TasksSection
+                  client={user ? user : loggedInUser}
+                    key={user ? user.id : loggedInUser.id}
+                  />
+              </Can>
             </div>
           )}
           {filterVisibility("Advisor Section") && (

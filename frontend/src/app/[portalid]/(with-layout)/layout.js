@@ -1,3 +1,4 @@
+import AccessControlProvider from "@/components/Access/AccessControlProvider";
 import Container from "@/components/Container";
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  return <Container>{children}</Container>;
+  return (
+    <AccessControlProvider>
+      <Container>{children}</Container>
+    </AccessControlProvider>
+  );
 }

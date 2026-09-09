@@ -75,6 +75,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Can } from "./Access/AccessControlProvider";
 
 const FileActionsMenu = ({
   file,
@@ -123,152 +124,169 @@ const FileActionsMenu = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="z-50 w-44 border-border bg-popover p-1">
         {!isList && file.type === "file" && (
-          <DropdownMenuItem
-            className={menuItemClass}
-            onClick={(e) => {
-              e.stopPropagation();
-              onPreview();
-            }}
-          >
-            <Eye className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>View</span>
-          </DropdownMenuItem>
+          <Can resource="shareddocs" action="viewfile">
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPreview();
+              }}
+            >
+              <Eye className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>View</span>
+            </DropdownMenuItem>
+          </Can>
         )}
 
         {!isList &&
           file.type === "file" &&
           (listType !== "shared" || file.currentUserRole !== "viewer") && (
-            <DropdownMenuItem
-              className={menuItemClass}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDownload();
-              }}
-            >
-              <Download className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span>Download</span>
-            </DropdownMenuItem>
-          )}
-
-        {!isList && listType !== "shared" && file.currentUserRole !== "viewer" && (
-          <DropdownMenuItem
-            className={menuItemClass}
-            onClick={(e) => {
-              e.stopPropagation();
-              onShare();
-            }}
-          >
-            <Share2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>Share</span>
-          </DropdownMenuItem>
-        )}
-
-        {listType !== "shared" && (
-          <>
-            <DropdownMenuItem
-              className={menuItemClass}
-              onClick={(e) => {
-                e.stopPropagation();
-                onMove();
-              }}
-            >
-              <FolderInput className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span>Move</span>
-            </DropdownMenuItem>
-
-            {file.type === "file" && esignAvailable && (
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger
-                  className={menuItemClass}
-                  disabled={isSignLoading}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Signature className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  {isSignLoading ? (
-                    <>
-                      <span>Signing</span>
-                      <LoaderSpinner
-                        size={16}
-                        className="ml-auto text-muted-foreground"
-                      />
-                    </>
-                  ) : (
-                    <span>Sign</span>
-                  )}
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-48 border-border bg-popover">
-                  <DropdownMenuItem
-                    className={menuItemClass}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRequestSignature();
-                    }}
-                  >
-                    <UsersRoundIcon className="h-4 w-4 shrink-0" />
-                    <span>Request Signature</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className={menuItemClass}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelfSign();
-                    }}
-                  >
-                    <UserRound className="h-4 w-4 shrink-0" />
-                    <span>Sign Myself</span>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            )}
-
-            {file.type === "file" && (
+            <Can resource="shareddocs" action="downloadfile">
               <DropdownMenuItem
                 className={menuItemClass}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit();
+                  onDownload();
                 }}
               >
-                <FilePenLine className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span>Edit</span>
+                <Download className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>Download</span>
               </DropdownMenuItem>
+            </Can>
+          )}
+        {!isList && listType !== "shared" && file.currentUserRole !== "viewer" && (
+          <Can resource="shareddocs" action="sharefile">
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare();
+              }}
+            >
+              <Share2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Share</span>
+            </DropdownMenuItem>
+          </Can>
+        )}
+
+        {listType !== "shared" && (
+          <>
+            <Can resource="shareddocs" action="movefile">
+              <DropdownMenuItem
+                className={menuItemClass}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMove();
+                }}
+              >
+                <FolderInput className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>Move</span>
+              </DropdownMenuItem>
+            </Can>
+
+            {file.type === "file" && esignAvailable && (
+              <Can resource="shareddocs" action="signfile">
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger
+                    className={menuItemClass}
+                    disabled={isSignLoading}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Signature className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    {isSignLoading ? (
+                      <>
+                        <span>Signing</span>
+                        <LoaderSpinner
+                          size={16}
+                          className="ml-auto text-muted-foreground"
+                        />
+                      </>
+                    ) : (
+                      <span>Sign</span>
+                    )}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-48 border-border bg-popover">
+                    <DropdownMenuItem
+                      className={menuItemClass}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRequestSignature();
+                      }}
+                    >
+                      <UsersRoundIcon className="h-4 w-4 shrink-0" />
+                      <span>Request Signature</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className={menuItemClass}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelfSign();
+                      }}
+                    >
+                      <UserRound className="h-4 w-4 shrink-0" />
+                      <span>Sign Myself</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              </Can>
             )}
 
-            <DropdownMenuItem
-              className={menuItemClass}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRename();
-              }}
-            >
-              <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span>Rename</span>
-            </DropdownMenuItem>
+            {file.type === "file" && (
+              <Can resource="shareddocs" action="editfile">
+                <DropdownMenuItem
+                  className={menuItemClass}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                >
+                  <FilePenLine className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span>Edit</span>
+                </DropdownMenuItem>
+              </Can>
+            )}
 
-            <DropdownMenuItem
-              className={menuItemClass}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span>Delete</span>
-            </DropdownMenuItem>
+            <Can resource="shareddocs" action="renamefile">
+              <DropdownMenuItem
+                className={menuItemClass}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRename();
+                }}
+              >
+                <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>Rename</span>
+              </DropdownMenuItem>
+            </Can>
+
+            <Can resource="shareddocs" action="deletefile">
+              <DropdownMenuItem
+                className={menuItemClass}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+              >
+                <Trash2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </Can>
           </>
         )}
 
         {!isList && listType === "shared" && file.type === "file" && (
-          <DropdownMenuItem
-            className={menuItemClass}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-          >
-            <FilePenLine className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>Edit</span>
-          </DropdownMenuItem>
+          <Can resource="shareddocs" action="editfile">
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+            >
+              <FilePenLine className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span>Edit</span>
+            </DropdownMenuItem>
+          </Can>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -1501,53 +1519,59 @@ function SharedFolderExplorer({
                                 <div className="flex items-center justify-start gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                                   {/* FOR ONLY FILES */}
                                   {file.type === "file" && !fromAdvisor && (
-                                    <AppTooltip label="View">
-                                      <Button
-                                        variant="icons"
-                                        size="icon-sm"
-                                        className="rounded-full text-muted-foreground hover:bg-accent"
-                                        aria-label="View"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handlePreview(file?.id);
-                                        }}
-                                      >
-                                        <Eye className="h-4 w-4 text-muted-foreground" />
-                                      </Button>
-                                    </AppTooltip>
+                                    <Can resource="shareddocs" action="viewfile">
+                                      <AppTooltip label="View">
+                                        <Button
+                                          variant="icons"
+                                          size="icon-sm"
+                                          className="rounded-full text-muted-foreground hover:bg-accent"
+                                          aria-label="View"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handlePreview(file?.id);
+                                          }}
+                                        >
+                                          <Eye className="h-4 w-4 text-muted-foreground" />
+                                        </Button>
+                                      </AppTooltip>
+                                    </Can>
                                   )}
 
                                   {file.type === "file" && !fromAdvisor && (
-                                    <AppTooltip label="Download">
-                                      <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" &&
-                                          file.currentUserRole === "viewer"
-                                            ? "hidden"
-                                            : ""
-                                        }`}
-                                        aria-label="Download"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDownload(file.id, file.name);
-                                        }}
-                                      >
-                                        <Download className="h-4 w-4 text-muted-foreground" />
-                                      </Button>
-                                    </AppTooltip>
+                                    <Can resource="shareddocs" action="downloadfile">
+                                      <AppTooltip label="Download">
+                                        <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" &&
+                                            file.currentUserRole === "viewer"
+                                              ? "hidden"
+                                              : ""
+                                          }`}
+                                          aria-label="Download"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDownload(file.id, file.name);
+                                          }}
+                                        >
+                                          <Download className="h-4 w-4 text-muted-foreground" />
+                                        </Button>
+                                      </AppTooltip>
+                                    </Can>
                                   )}
 
                                   {!fromAdvisor && (
-                                    <AppTooltip label="Share">
-                                      <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" ? "hidden" : ""
-                                        } `}
-                                        aria-label="Share"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleShare(file);
-                                        }}
-                                      >
-                                        <Share2 className="h-4 w-4 text-muted-foreground" />
-                                      </Button>
-                                    </AppTooltip>
+                                    <Can resource="shareddocs" action="sharefile">
+                                      <AppTooltip label="Share">
+                                        <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" ? "hidden" : ""
+                                          } `}
+                                          aria-label="Share"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleShare(file);
+                                          }}
+                                        >
+                                          <Share2 className="h-4 w-4 text-muted-foreground" />
+                                        </Button>
+                                      </AppTooltip>
+                                    </Can>
                                   )}
                                 </div>
                               </div>

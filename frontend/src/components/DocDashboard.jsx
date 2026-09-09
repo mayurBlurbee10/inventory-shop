@@ -17,6 +17,7 @@ import TickerTape from "./Common/charts/TickerTape";
 import TopStories from "./Common/charts/TopStories";
 import { StockMarketChart } from "./Common/charts/Chart";
 import LoaderSpinner from "./Common/Elements/LoaderSpinner";
+import { Can } from "./Access/AccessControlProvider";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -253,7 +254,9 @@ export default function DocDashboard() {
           </div>
           <div className="col-span-5 md:col-span-2 flex flex-col gap-4">
             {filterVisibility("My Task Section") && (
-              <TasksSection />
+              <Can resource="task" action="view">
+                <TasksSection />
+              </Can>
             )}
             {filterVisibility("Collaborator Section") && (
               <CollaboratorSection />

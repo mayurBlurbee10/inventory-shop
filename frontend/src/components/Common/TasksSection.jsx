@@ -33,6 +33,7 @@ import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmDialog from '../DeleteConfirmDialog';
 import LoaderSpinner from './Elements/LoaderSpinner';
+import { Can } from '../Access/AccessControlProvider';
 
 export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskStatus, isTaskUpdateLoading }) => {
     const router = useRouter();
@@ -484,16 +485,18 @@ const sortedTasks =
           <h3 className="text-lg font-semibold text-foreground font-lato">
             My Tasks
           </h3>
-          <Button
-            variant='default'
-            type="button"
-            size="lg"
-            className="px-3 py-3"
-            onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
-          >
-            <Plus className="w-4 h-3" />
-            Add
-          </Button>
+          <Can resource="task" action="create">
+            <Button
+              variant='default'
+              type="button"
+              size="lg"
+              className="px-3 py-3"
+              onClick={() => setIsOpenAddTaskModal((prev) => !prev)}
+            >
+              <Plus className="w-4 h-3" />
+              Add
+            </Button>
+          </Can>
         </div>
 
         {/* Tasks Container */}

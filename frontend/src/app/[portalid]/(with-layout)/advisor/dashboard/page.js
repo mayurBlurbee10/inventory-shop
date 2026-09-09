@@ -34,6 +34,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Can } from "@/components/Access/AccessControlProvider";
 
 export default function AdvisorViewDashboard() {
     const [usersList, setUsersList] = useState([]);
@@ -381,7 +382,9 @@ export default function AdvisorViewDashboard() {
                 </div>
                 <div className="flex w-full flex-col gap-4">
                     {filterVisibility("My Task Section") && (
-                        <TasksSection />
+                        <Can resource="task" action="view">
+                            <TasksSection />
+                        </Can>
                     )}
                 </div>
             </div>

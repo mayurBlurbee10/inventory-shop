@@ -79,6 +79,7 @@ import { Slider } from "./ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Progress } from "./ui/progress";
 import { LinearProgress } from "@mui/material";
+import { Can } from "./Access/AccessControlProvider";
 
 function Documents({
   fileType,
@@ -143,12 +144,23 @@ function Documents({
   const { data: filesList, loading: isFilesLoading } = useSelector(
     (state) => state.files
   );
+  const { resError } = useSelector((state) => state.message);
+  const isFolderAccessDenied =
+    typeof resError === "string" &&
+    (resError.includes("permission to view") ||
+      resError.includes("ACCESS_DENIED"));
   const [filteredFilesList, setFilteredFilesList] = useState(filesList);
   const [currentFilesList, setCurrentFilesList] = useState(filesList);
 
   const { data: user } = useSelector((state) => state.user);
   const { data: pages } = useSelector((state) => state.pages);
   const dispatch = useDispatch();
+
+  // useEffect(() => {
+  //   if (isFolderAccessDenied && resError) {
+  //     toast.error(resError);
+  //   }
+  // }, [isFolderAccessDenied, resError]);
 
   useEffect(() => {
     const page = pages?.find((page) => page.title === "shared-docs");
@@ -1013,7 +1025,7 @@ function Documents({
                         </ToggleGroupItem>
                       </AppTooltip>
                     </ToggleGroup>
-
+                    <Can resource="shareddocs" action="uploadfile">
                     <Button
                       variant="default"
                       className="h-10 shrink-0"
@@ -1025,17 +1037,20 @@ function Documents({
                       <UploadIcon className="w-5 h-5" />
                       Upload Files
                     </Button>
-                    <Button
-                      variant="default"
-                      className="h-10 shrink-0"
-                      onClick={() => {
-                        setIsOpenNewFolderDrawer(false);
-                        setIsNewFolderModalOpen(true);
-                      }}
-                    >
-                      <PlusIcon className="w-5 h-5" />
-                      New Folder
-                    </Button>
+                    </Can>
+                    <Can resource="shareddocs" action="createfolder">
+                      <Button
+                        variant="default"
+                        className="h-10 shrink-0"
+                        onClick={() => {
+                          setIsOpenNewFolderDrawer(false);
+                          setIsNewFolderModalOpen(true);
+                        }}
+                      >
+                        <PlusIcon className="w-5 h-5" />
+                        New Folder
+                      </Button>
+                    </Can>
                   </div>
                 </div>
 
@@ -1208,6 +1223,17 @@ function Documents({
 
               {/* Table in list view */}
 
+              {isFolderAccessDenied ? (
+                <div className="flex min-h-[220px] flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+                  <p className="text-base font-medium text-secondary-foreground">
+                    Access denied
+                  </p>
+                  <p className="max-w-md text-sm text-muted-foreground">
+                    {resError ||
+                      "You don't have permission to view these files and folders. Please contact your administrator if you need access."}
+                  </p>
+                </div>
+              ) : (
               <SharedFolderExplorer
                 fileList={filesList}
                 setPath={setPath}
@@ -1229,6 +1255,7 @@ function Documents({
                 setIsNewFolderModalOpen={setIsNewFolderModalOpen}
                 loading={isLoading}
               />
+              )}
 
               <DeleteConfirmDialog
                 isModalOpen={isDeleteModalOpen}
@@ -1290,7 +1317,9 @@ function Documents({
               <div className="flex flex-col gap-4">
                 {/* Tasks */}
                 {filterVisibility("My Task Section") && (
-                  <TasksSection />
+                  <Can resource="task" action="view">
+                   <TasksSection />
+                  </Can>
                 )}
 
                 {isMyTaskPopupOpen && (

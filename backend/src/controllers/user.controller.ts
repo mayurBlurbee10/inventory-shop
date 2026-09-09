@@ -28,6 +28,7 @@ import * as boxService from "../services/box.service.ts";
 import Bottleneck from "bottleneck";
 import { getBoxClient } from "../utils/boxClient.ts";
 import { ensureBoxAppUser } from "../utils/boxCreateAppUser.ts";
+import { registerUserInRbac, removeUserFromRbac } from "../utils/accesscontrol.ts";
 
 function getBoxEntries(result: any): any[] {
   return result?.entries || result?.rawData?.entries || [];
@@ -648,6 +649,13 @@ const createUser = asyncHandler(async (req: Request, res: Response) => {
 
     // await writeUsers(users);
     const user = await userService.createUser(newUser);
+    await registerUserInRbac({
+      name: `${userData.firstName} ${userData.lastName}`.trim(),
+      email: userData.email,
+      role: String(userData.role || "user").toLowerCase(),
+      externalId: (user as any).id,
+      department: userData.department,
+    });
     if (userData.role !== UserRole.MASTER) {
       // because super_admin will be created from admin so it should go to admin for set password
       const userPortal =
@@ -812,6 +820,13 @@ const bulkCreateUsers = asyncHandler(async (req: Request, res: Response) => {
           }
         } else {
           const created = await userService.createUser(preparedUser);
+          await registerUserInRbac({
+            name: `${userData.firstName} ${userData.lastName}`.trim(),
+            email: userData.email,
+            role: String(userData.role || "user").toLowerCase(),
+            externalId: (created as any).id,
+            department: userData.department,
+          });
           const portal =
             userData.role === UserRole.SUPER_ADMIN
               ? "admin"
@@ -944,8 +959,17 @@ const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     if (!id || !portalId) {
       throw new Error("Invalid !! portalId is required field");
     }
+
+    // Capture identity before portal delete so PAP can be cleaned up.
+    const existing = await userService.getUserById(id);
     await taskService.deleteUserTasks(id, portalId);
     const removedPermission = await permissionService.removePermission(id, portalId);
+
+    await removeUserFromRbac({
+      externalId: String(id),
+      email: existing?.email,
+    });
+
     return res.status(200).json(removedPermission);
   } catch (error) {
     console.error("Error in DELETE /api/users:", error);

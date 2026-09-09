@@ -43,6 +43,7 @@ import realMessageRoutes from "./routes/messages.route.ts";
 import themeRoutes from "./routes/theme.route.ts";
 import reportsRoutes from "./routes/reports.route.ts";
 import { encryptionMiddleware } from "./middlewares/encryption.middleware.ts";
+import accessRoutes from "./routes/access.route.ts";
 
 dotenv.config();
 
@@ -52,7 +53,13 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3025", process.env.NEXT_PUBLIC_APP_BASE_URL!],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3025",
+      "http://192.168.1.20:3001",
+      process.env.NEXT_PUBLIC_APP_BASE_URL!,
+    ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
@@ -116,5 +123,6 @@ app.use("/api/azure", azureToZendeskRoutes); // Matches client documentation
 app.use("/api/in-app-notification", inAppnotificationRoutes);
 app.use("/api/theme", themeRoutes);
 app.use("/api/reports", reportsRoutes);
+app.use("/api/access", accessRoutes);
 
 export { app };

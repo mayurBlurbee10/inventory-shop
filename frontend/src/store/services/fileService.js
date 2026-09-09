@@ -6,6 +6,21 @@ import {
 } from "../actions/messageAction";
 const { fetchWrapper } = require("@/app/lib/fetchWrapper");
 
+const getFolderFetchErrorMessage = async (response) => {
+  let payload = {};
+  try {
+    payload = await response.json();
+  } catch {
+    payload = {};
+  }
+
+  if (response.status === 403 || payload?.code === "ACCESS_DENIED") {
+    return "You don't have permission to view these files and folders. Please contact your administrator if you need access.";
+  }
+
+  return payload?.error || payload?.message || "Failed to fetch files";
+};
+
 const getAllFiles = async (boxFolderId, collaborationIds) => {
   const requestOptions = {
     method: "GET",
@@ -23,7 +38,9 @@ const getAllFiles = async (boxFolderId, collaborationIds) => {
     requestOptions,
     "fetch-file"
   );
-  if (!response.ok) throw new Error("Failed to fetch files");
+  if (!response.ok) {
+    throw new Error(await getFolderFetchErrorMessage(response));
+  }
   const data = await response.json();
   return data?.items || [];
 };
@@ -39,6 +56,7 @@ export const setFiles = (boxFolderId, collaborationIds) => async (dispatch) => {
     dispatch(setFileList(data));
     dispatch(setResponseSuccessMsg("Files fetched successfully!"));
   } catch (error) {
+    dispatch(setFileList(null));
     dispatch(
       setResponseErrorMsg(
         (error?.data && error.data.response.message) || error.message

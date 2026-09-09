@@ -14,7 +14,13 @@ const server = createServer(app);
 
 const io = new SocketServer(server, {
   cors: {
-    origin: ["http://localhost:3025", process.env.NEXT_PUBLIC_APP_BASE_URL || ""].filter(Boolean),
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3025",
+      "http://192.168.1.20:3001",
+      process.env.NEXT_PUBLIC_APP_BASE_URL || "",
+    ].filter(Boolean),
     methods: ["GET", "POST"],
     credentials: true,
   },
