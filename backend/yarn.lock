@@ -2,9 +2,6 @@
 # yarn lockfile v1
 
 
-"@accesscontrol/sdk@file:../../RBAC SYSTEM/sdk":
-  version "0.0.1"
-
 "@accesscontroll/sdk@0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@accesscontroll/sdk/-/sdk-0.0.1.tgz#32f0bf56deece3557e72dc818e8fa84e5134e87a"

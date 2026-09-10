@@ -1,4 +1,4 @@
-import { create } from "@accesscontrol/sdk";
+import { create } from "@accesscontroll/sdk";
 type AccessControlClient = ReturnType<typeof create>;
 let client: AccessControlClient | null = null;
 function envFlag(name: string) {

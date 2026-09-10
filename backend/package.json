@@ -12,7 +12,6 @@
     "migrate:duration": "tsc && node dist/migrations/convert-duration-to-string.js"
   },
   "dependencies": {
-    "@accesscontrol/sdk": "file:../../RBAC SYSTEM/sdk",
     "@accesscontroll/sdk": "0.0.1",
     "@azure/arm-sql": "^11.0.0",
     "@azure/communication-email": "^1.0.0",
