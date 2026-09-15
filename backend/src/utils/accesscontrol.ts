@@ -1,4 +1,5 @@
 import { create } from "@accesscontroll/sdk";
+
 type AccessControlClient = ReturnType<typeof create>;
 let client: AccessControlClient | null = null;
 function envFlag(name: string) {
@@ -36,7 +37,7 @@ function getClient() {
   if (!client) {
     client = create({
       pdpUrl,
-      papUrl, // not necessary to pass this parameter
+      papUrl,
       applicationId,
       applicationSecret,
       timeoutMs,
@@ -46,25 +47,69 @@ function getClient() {
   }
   return client;
 }
-export function collectRoles(user: any): string[] {
-  const roles = new Set<string>();
-  const push = (raw: unknown) => {
-    if (raw == null || raw === "") return;
-    roles.add(String(raw).trim().toLowerCase());
+
+/** PAP email → group → role keys. Empty if email not found / PAP unavailable. */
+export async function resolveRolesByEmail(
+  email?: string | null
+): Promise<string[]> {
+  const normalized = String(email || "").trim();
+  if (!normalized) return [];
+
+  const { applicationSecret } = getConfig();
+  const ac = getClient();
+  if (!ac || !applicationSecret) return [];
+
+  try {
+    const resolved = await ac.resolveRolesByEmail(normalized);
+    if (
+      !resolved.found ||
+      !Array.isArray(resolved.roles) ||
+      !resolved.roles.length
+    ) {
+      return [];
+    }
+    return resolved.roles
+      .map((r: { key?: string; name?: string }) =>
+        String(r.key || r.name || "")
+          .trim()
+          .toLowerCase()
+      )
+      .filter(Boolean);
+  } catch (err) {
+    console.warn(
+      "[accesscontrol] resolveRolesByEmail failed:",
+      (err as Error).message
+    );
+    return [];
+  }
+}
+
+export function collectAttributes(user: any): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const merge = (src: unknown) => {
+    if (!src || typeof src !== "object" || Array.isArray(src)) return;
+    for (const [k, v] of Object.entries(src as Record<string, unknown>)) {
+      if (v == null || v === "") continue;
+      out[k] = v;
+    }
   };
-  push(user?.role);
-  if (Array.isArray(user?.roles)) {
-    for (const r of user.roles) {
-      push(typeof r === "string" ? r : r?.key || r?.name || r?.id);
+  merge(user?.attributeValues);
+  merge(user?.attributes);
+  let extra = user?.extra;
+  if (typeof extra === "string") {
+    try {
+      extra = JSON.parse(extra);
+    } catch {
+      extra = null;
     }
   }
-  if (Array.isArray(user?.permissions)) {
-    for (const p of user.permissions) push(p?.role);
-  }
-  return [...roles];
+  merge(extra);
+  if (user?.family) out.family = user.family;
+  return out;
 }
+
 export async function checkAccess(args: {
-  roles: string[];
+  email?: string;
   attributes?: Record<string, unknown>;
   resource: string;
   action: string;
@@ -73,25 +118,20 @@ export async function checkAccess(args: {
   if (!enforce) {
     return { allowed: true, reason: "AC_ENFORCE=false" };
   }
-  const ac = getClient();
-  if (!ac) {
+  if (!getClient()) {
     return { allowed: !failClosed, reason: "SDK not configured" };
   }
   try {
-    const includeAbac = envFlag("AC_INCLUDE_ABAC");
-    const result = await ac.check({
-      user: {
-        roles: args.roles,
-        roleIds: args.roles,
-        attributes: args.attributes || {},
-      },
-      resource: args.resource,
-      action: args.action,
-      // Older linked SDKs only forward `context` to PDP — not top-level includeAbac.
-      context: { includeAbac },
-      includeAbac,
-    } as Parameters<NonNullable<typeof ac>["check"]>[0]);
-    return { allowed: result.allowed, reason: result.reason };
+    const result = await getSeparatedPermissions({
+      email: args.email,
+      attributes: args.attributes || {},
+    });
+    const key = `${args.resource}.${args.action}`;
+    const allowed = Boolean(result.permissions?.[key]);
+    return {
+      allowed,
+      reason: allowed ? `Allowed ${key}` : `No grant for ${key}`,
+    };
   } catch (err) {
     return {
       allowed: !failClosed,
@@ -99,8 +139,9 @@ export async function checkAccess(args: {
     };
   }
 }
+
 export async function checkManyAccess(args: {
-  roles: string[];
+  email?: string;
   attributes?: Record<string, unknown>;
   pairs: Array<{ resource: string; action: string; key?: string }>;
 }): Promise<Record<string, boolean>> {
@@ -115,10 +156,14 @@ export async function checkManyAccess(args: {
     return Object.fromEntries(args.pairs.map((p) => [keyOf(p), !failClosed]));
   }
   try {
+    const roles = await resolveRolesByEmail(args.email);
+    if (!roles.length) {
+      return Object.fromEntries(args.pairs.map((p) => [keyOf(p), false]));
+    }
     return await ac.checkMany(
       {
-        roles: args.roles,
-        roleIds: args.roles,
+        roles,
+        roleIds: roles,
         attributes: args.attributes || {},
       },
       args.pairs
@@ -129,11 +174,7 @@ export async function checkManyAccess(args: {
   }
 }
 
-/**
- * Full grant map for the user's roles from the published PDP bundle.
- * Prefer this for UI gating over checkManyAccess + fixed pair lists.
- */
-export async function getRolePermissions(args: {
+async function getRolePermissions(args: {
   roles: string[];
   attributes?: Record<string, unknown>;
 }): Promise<{
@@ -144,7 +185,18 @@ export async function getRolePermissions(args: {
   const { failClosed } = getConfig();
   const ac = getClient();
   if (!ac) {
-    return { permissions: {}, roles: args.roles || [], meta: { reason: "SDK not configured" } };
+    return {
+      permissions: {},
+      roles: args.roles || [],
+      meta: { reason: "SDK not configured" },
+    };
+  }
+  if (!args.roles.length) {
+    return {
+      permissions: {},
+      roles: [],
+      meta: { reason: "User email not found in PAP" },
+    };
   }
   try {
     const result = await ac.getPermissions({
@@ -171,6 +223,27 @@ export async function getRolePermissions(args: {
       },
     };
   }
+}
+
+/**
+ * Permissions by email + attributes.
+ * Email not in PAP → empty permissions.
+ */
+export async function getSeparatedPermissions(args: {
+  email?: string;
+  attributes?: Record<string, unknown>;
+}): Promise<{
+  permissions: Record<string, boolean>;
+  roles: string[];
+  meta?: Record<string, unknown>;
+}> {
+  const email = String(args.email || "").trim();
+  const attributes = {
+    ...(args.attributes || {}),
+    ...(email ? { email } : {}),
+  };
+  const roles = await resolveRolesByEmail(email);
+  return getRolePermissions({ roles, attributes });
 }
 
 export async function registerUserInRbac(args: {
@@ -207,6 +280,7 @@ export async function registerUserInRbac(args: {
     return null;
   }
 }
+
 export async function removeUserFromRbac(args: {
   email?: string;
   externalId?: string;
@@ -228,6 +302,7 @@ export async function removeUserFromRbac(args: {
     return null;
   }
 }
+
 export function isAccessControlEnforced() {
   return getConfig().enforce;
 }

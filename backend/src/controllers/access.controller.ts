@@ -1,14 +1,25 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../utils/helper.ts";
-import { collectRoles, getRolePermissions } from "../utils/accesscontrol.ts";
+import { getSeparatedPermissions } from "../utils/accesscontrol.ts";
+
+// TODO: replace with real profile attrs — temporary ABAC test values
+export const accessTestAttributes: Record<string, unknown> = {
+  // gender: "Male",
+  // experience: 10,
+  // department: "IT",
+  // family: "relative",
+};
 
 const getPermissions = asyncHandler(async (req: Request, res: Response) => {
   const user = (req as any).user;
-  const roles = collectRoles(user);
-  const attributes = user?.attributeValues || user?.attributes || {};
-  const result = await getRolePermissions({ roles, attributes });
+  const email = user?.email;
+  const attributes = {
+    ...accessTestAttributes,
+    ...(email ? { email } : {}),
+  };
+  const result = await getSeparatedPermissions({ email, attributes });
   return res.status(200).json({
-    roles: result.roles?.length ? result.roles : roles,
+    roles: result.roles || [],
     permissions: result.permissions || {},
     meta: result.meta,
   });

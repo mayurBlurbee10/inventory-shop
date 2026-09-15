@@ -77,6 +77,17 @@ import {
 } from "./ui/dropdown-menu";
 import { Can } from "./Access/AccessControlProvider";
 
+/** Tagged files use resource sets; untagged files use shareddocs. */
+function fileResource(file) {
+  const tags = file?.tags ?? file?.rawData?.tags ?? [];
+  const list = (Array.isArray(tags) ? tags : []).map((t) =>
+    String(t).trim().toLowerCase()
+  );
+  if (list.includes("internal")) return "internal_files";
+  if (list.includes("external")) return "external_files";
+  return "shareddocs";
+}
+
 const FileActionsMenu = ({
   file,
   variant = "list",
@@ -124,7 +135,7 @@ const FileActionsMenu = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="z-50 w-44 border-border bg-popover p-1">
         {!isList && file.type === "file" && (
-          <Can resource="shareddocs" action="viewfile">
+          <Can resource={fileResource(file)} action="viewfile">
             <DropdownMenuItem
               className={menuItemClass}
               onClick={(e) => {
@@ -141,7 +152,7 @@ const FileActionsMenu = ({
         {!isList &&
           file.type === "file" &&
           (listType !== "shared" || file.currentUserRole !== "viewer") && (
-            <Can resource="shareddocs" action="downloadfile">
+            <Can resource={fileResource(file)} action="downloadfile">
               <DropdownMenuItem
                 className={menuItemClass}
                 onClick={(e) => {
@@ -155,7 +166,7 @@ const FileActionsMenu = ({
             </Can>
           )}
         {!isList && listType !== "shared" && file.currentUserRole !== "viewer" && (
-          <Can resource="shareddocs" action="sharefile">
+          <Can resource={fileResource(file)} action="sharefile">
             <DropdownMenuItem
               className={menuItemClass}
               onClick={(e) => {
@@ -171,7 +182,7 @@ const FileActionsMenu = ({
 
         {listType !== "shared" && (
           <>
-            <Can resource="shareddocs" action="movefile">
+            <Can resource={fileResource(file)} action="movefile">
               <DropdownMenuItem
                 className={menuItemClass}
                 onClick={(e) => {
@@ -185,7 +196,7 @@ const FileActionsMenu = ({
             </Can>
 
             {file.type === "file" && esignAvailable && (
-              <Can resource="shareddocs" action="signfile">
+              <Can resource={fileResource(file)} action="signfile">
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger
                     className={menuItemClass}
@@ -232,7 +243,7 @@ const FileActionsMenu = ({
             )}
 
             {file.type === "file" && (
-              <Can resource="shareddocs" action="editfile">
+              <Can resource={fileResource(file)} action="editfile">
                 <DropdownMenuItem
                   className={menuItemClass}
                   onClick={(e) => {
@@ -246,7 +257,7 @@ const FileActionsMenu = ({
               </Can>
             )}
 
-            <Can resource="shareddocs" action="renamefile">
+            <Can resource={fileResource(file)} action="renamefile">
               <DropdownMenuItem
                 className={menuItemClass}
                 onClick={(e) => {
@@ -259,7 +270,7 @@ const FileActionsMenu = ({
               </DropdownMenuItem>
             </Can>
 
-            <Can resource="shareddocs" action="deletefile">
+            <Can resource={fileResource(file)} action="deletefile">
               <DropdownMenuItem
                 className={menuItemClass}
                 onClick={(e) => {
@@ -275,7 +286,7 @@ const FileActionsMenu = ({
         )}
 
         {!isList && listType === "shared" && file.type === "file" && (
-          <Can resource="shareddocs" action="editfile">
+          <Can resource={fileResource(file)} action="editfile">
             <DropdownMenuItem
               className={menuItemClass}
               onClick={(e) => {
@@ -1519,7 +1530,7 @@ function SharedFolderExplorer({
                                 <div className="flex items-center justify-start gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                                   {/* FOR ONLY FILES */}
                                   {file.type === "file" && !fromAdvisor && (
-                                    <Can resource="shareddocs" action="viewfile">
+                                    <Can resource={fileResource(file)} action="viewfile">
                                       <AppTooltip label="View">
                                         <Button
                                           variant="icons"
@@ -1538,7 +1549,7 @@ function SharedFolderExplorer({
                                   )}
 
                                   {file.type === "file" && !fromAdvisor && (
-                                    <Can resource="shareddocs" action="downloadfile">
+                                    <Can resource={fileResource(file)} action="downloadfile">
                                       <AppTooltip label="Download">
                                         <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" &&
                                             file.currentUserRole === "viewer"
@@ -1558,7 +1569,7 @@ function SharedFolderExplorer({
                                   )}
 
                                   {!fromAdvisor && (
-                                    <Can resource="shareddocs" action="sharefile">
+                                    <Can resource={fileResource(file)} action="sharefile">
                                       <AppTooltip label="Share">
                                         <Button variant="icons" size="icon-sm" className={`rounded-full text-muted-foreground hover:bg-accent ${listType === "shared" ? "hidden" : ""
                                           } `}

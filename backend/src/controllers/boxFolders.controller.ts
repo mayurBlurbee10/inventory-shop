@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { logApiCall } from "../utils/api-log-middleware.ts";
 import { asyncHandler } from "../utils/helper.ts";
 import { getBoxClient } from "../utils/boxClient.ts";
+import { getSeparatedPermissions } from "../utils/accesscontrol.ts";
+import { accessTestAttributes } from "./access.controller.ts";
 
 const client = getBoxClient();
 
@@ -27,6 +29,51 @@ function normalizeBoxId(value: unknown, fallback = ""): string {
   const normalized = String(value ?? "").trim();
   if (/^\d+$/.test(normalized)) return normalized;
   return fallback;
+}
+
+function fileTags(item: any): Set<string> {
+  const tags = item?.tags ?? item?.rawData?.tags ?? [];
+  return new Set(
+    (Array.isArray(tags) ? tags : []).map((t: unknown) =>
+      String(t).trim().toLowerCase()
+    )
+  );
+}
+
+/**
+ * Folders always stay. Files:
+ * - tag "internal" → internal_files.getfiles
+ * - tag "external" → external_files.getfiles
+ * - no classification tag → shareddocs.getfiles
+ */
+function filterItemsByTagAccess(
+  items: any[],
+  allowInternal: boolean,
+  allowExternal: boolean,
+  allowShareddocs: boolean
+): any[] {
+  return items
+    .map((item) => {
+      if (item?.type === "folder") {
+        return {
+          ...item,
+          children: filterItemsByTagAccess(
+            item.children || [],
+            allowInternal,
+            allowExternal,
+            allowShareddocs
+          ),
+        };
+      }
+      return item;
+    })
+    .filter((item) => {
+      if (item?.type !== "file") return true;
+      const tags = fileTags(item);
+      if (tags.has("internal")) return allowInternal;
+      if (tags.has("external")) return allowExternal;
+      return allowShareddocs;
+    });
 }
 
 async function fetchCollaborators(itemId: string, type: string) {
@@ -195,6 +242,17 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
     const boxUserId = (req.query.boxUserId as string) || "";
     const limit = parseInt((req.query.limit as string) || "100", 10);
     const items: any[] = [];
+    const user = (req as any).user;
+    const { permissions } = await getSeparatedPermissions({
+      email: user?.email,
+      attributes: {
+        ...accessTestAttributes,
+        ...(user?.email ? { email: user.email } : {}),
+      },
+    });
+    const allowInternal = Boolean(permissions["internal_files.getfiles"]);
+    const allowExternal = Boolean(permissions["external_files.getfiles"]);
+    const allowShareddocs = Boolean(permissions["shareddocs.getfiles"]);
 
     for (const element of collaborated) {
       try {
@@ -230,7 +288,20 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
             currentUserRole: currentUserRole,
           });
         } else {
-          const file = await client.files.getFileById(elementId);
+          const file = await client.files.getFileById(elementId, {
+            queryParams: {
+              fields: [
+                "id",
+                "name",
+                "type",
+                "shared_link",
+                "created_at",
+                "modified_at",
+                "size",
+                "tags",
+              ],
+            },
+          });
           items.push({
             ...file,
             collaborators,
@@ -253,7 +324,12 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
     const nestedItems = await fetchNestedItems(folderId, limit);
     return res.status(200).json({
       message: "Folder items fetched successfully",
-      items: [...items, ...nestedItems],
+      items: filterItemsByTagAccess(
+        [...items, ...nestedItems],
+        allowInternal,
+        allowExternal,
+        allowShareddocs
+      ),
     });
   } catch (error) {
     console.error("Error fetching folder items:", error);
