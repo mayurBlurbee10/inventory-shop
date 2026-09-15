@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@accesscontroll/sdk@0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@accesscontroll/sdk/-/sdk-0.0.1.tgz#32f0bf56deece3557e72dc818e8fa84e5134e87a"
-  integrity sha512-r29bCHD9uZFTKRzFNjxM9JiAJII9jTsgxKjxE3HbO043DS8/2jts409gYdntSWP1TGRIRYESdhTZN5DUmu6J+A==
+"@accesscontroll/sdk@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@accesscontroll/sdk/-/sdk-0.0.4.tgz#e5107c7f4ac3573e920b3062cf217bc94ab7d22d"
+  integrity sha512-zx916YBe6hnIxmDW4KjAy8EkX4t5LaRaQOMJtq78VbMvH7SHhcMy7k8b2fu7camoXRIzfUDnRpWX+rcUlX8DWA==
 
 "@azure-rest/core-client@^2.3.1":
   version "2.8.0"
