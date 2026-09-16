@@ -160,6 +160,7 @@ jobs:
             AC_FAIL_CLOSED=${{ env.AC_FAIL_CLOSED_UNIVERSALPORTAL_WEALTH }}
             AC_APPLICATION_ID=${{ env.AC_APPLICATION_ID_UNIVERSALPORTAL_WEALTH }}
             AC_APPLICATION_SECRET=${{ env.AC_APPLICATION_SECRET_UNIVERSALPORTAL_WEALTH }}
+            DEV_PORTALS_FOLDER_ID=${{ env.DEV_PORTALS_FOLDER_ID }}
 
       - name: Deploy to Azure Web App (Backend)
         id: deploy-backend
