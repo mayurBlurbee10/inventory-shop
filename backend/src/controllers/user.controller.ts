@@ -27,124 +27,16 @@ import taskService from "../services/task.service.ts";
 import * as boxService from "../services/box.service.ts";
 import Bottleneck from "bottleneck";
 import { getBoxClient } from "../utils/boxClient.ts";
-import { ensureBoxAppUser } from "../utils/boxCreateAppUser.ts";
+import { ensureBoxAppUser, ensureSubfolder } from "../utils/boxCreateAppUser.ts";
 import { registerUserInRbac, removeUserFromRbac } from "../utils/accesscontrol.ts";
 
-function getBoxEntries(result: any): any[] {
-  return result?.entries || result?.rawData?.entries || [];
-}
-
-async function listBoxFolders(parentFolderId: string) {
-  const client = getBoxClient();
-  const items = await client.folders.getFolderItems(parentFolderId, {
-    queryParams: {
-      fields: ["id", "name", "type", "parent"],
-      limit: 1000,
-    },
-  });
-  return getBoxEntries(items).filter((item: any) => item.type === "folder");
-}
-
-async function findBoxFolder(parentFolderId: string, name: string) {
-  const folders = await listBoxFolders(parentFolderId);
-  const expectedName = name.trim().toLowerCase();
-  const match = folders.find(
-    (item: any) => item.name?.trim().toLowerCase() === expectedName
-  );
-  if (!match) {
-    return null;
-  }
-
-  const listedParentId = match.parent?.id;
-  if (listedParentId && String(listedParentId) !== String(parentFolderId)) {
-    console.log(
-      `Ignoring "${name}" (${match.id}): parent ${listedParentId} is not ${parentFolderId}`
-    );
-    return null;
-  }
-
-  if (!listedParentId) {
-    const client = getBoxClient();
-    const details: any = await client.folders.getFolderById(String(match.id), {
-      queryParams: { fields: ["id", "name", "parent"] },
-    });
-    if (String(details?.parent?.id) !== String(parentFolderId)) {
-      console.log(
-        `Ignoring "${name}" (${match.id}): verified parent ${details?.parent?.id} is not ${parentFolderId}`
-      );
-      return null;
-    }
-  }
-
-  return match;
-}
-
-async function createBoxFolder(parentFolderId: string, name: string) {
-  const client = getBoxClient();
-  try {
-    return await client.folders.createFolder({
-      name,
-      parent: { id: String(parentFolderId) },
-    });
-  } catch (error: any) {
-    const status = error?.statusCode || error?.response?.statusCode;
-    if (status === 409 || error?.message?.includes("item_name_in_use")) {
-      const conflict = error?.response?.body?.context_info?.conflicts?.[0];
-      if (conflict?.id) {
-        const details: any = await client.folders.getFolderById(
-          String(conflict.id),
-          { queryParams: { fields: ["id", "name", "parent"] } }
-        );
-        if (String(details?.parent?.id) === String(parentFolderId)) {
-          return details;
-        }
-      }
-      const existing = await findBoxFolder(parentFolderId, name);
-      if (existing) {
-        return existing;
-      }
-    }
-    throw error;
-  }
-}
-
-async function findOrCreateBoxFolder(parentFolderId: string, name: string) {
-  const existing = await findBoxFolder(parentFolderId, name);
-  if (existing) {
-    console.log(
-      `Using existing Box folder "${name}" (${existing.id}) under parent ${parentFolderId}`
-    );
-    return existing;
-  }
-  console.log(
-    `Box folder "${name}" not found under parent ${parentFolderId}. Creating it.`
-  );
-  return await createBoxFolder(parentFolderId, name);
-}
-
-async function findExistingDevPortalsFolder() {
-  const configuredId = process.env.DEV_PORTALS_FOLDER_ID?.trim();
-  if (!configuredId) {
-    throw new Error(
-      "DEV_PORTALS_FOLDER_ID is required. Set it to the Box folder ID of the dev-portals folder you use in the Box UI."
-    );
-  }
-
-  const client = getBoxClient();
-  const folder: any = await client.folders.getFolderById(configuredId, {
-    queryParams: { fields: ["id", "name", "parent"] },
-  });
-  console.log("Using DEV_PORTALS_FOLDER_ID from env:", folder.id, folder.name);
-  return folder;
-}
-
 async function setupPortalFoldersForBulk(portalId: string) {
-  const devPortals = await findExistingDevPortalsFolder();
+  const devPortals = await ensureSubfolder("0", "dev-portals");
   if (!devPortals?.id) {
     throw new Error("dev-portals folder was not found");
   }
 
-  const universalPortal = await findOrCreateBoxFolder(
+  const universalPortal = await ensureSubfolder(
     devPortals.id,
     "Universal Portal"
   );
@@ -164,12 +56,12 @@ async function setupPortalFoldersForBulk(portalId: string) {
       `Universal Portal (${universalPortal.id}) is not inside dev-portals (${devPortals.id})`
     );
   }
-  const portalFolder = await findOrCreateBoxFolder(universalPortal.id, portalId);
-  const portalContentFolder = await findOrCreateBoxFolder(
+  const portalFolder = await ensureSubfolder(universalPortal.id, portalId);
+  const portalContentFolder = await ensureSubfolder(
     portalFolder.id,
     "Portal Content"
   );
-  const userUploadsFolder = await findOrCreateBoxFolder(
+  const userUploadsFolder = await ensureSubfolder(
     portalFolder.id,
     "User Uploads"
   );
@@ -196,21 +88,26 @@ async function addFolderEditor(folderId: string, userId: string) {
     await boxService.addCollaborator(folderId, userId, "editor", "folder");
   } catch (error: any) {
     const status = error?.statusCode || error?.response?.statusCode;
-    if (status !== 409) {
+    const message = String(error?.message || "");
+    if (
+      status !== 409 &&
+      !message.includes("user_already_collaborator") &&
+      !message.includes("already a collaborator")
+    ) {
       throw error;
     }
   }
 }
 
 async function ensureBoxUserAndFolder(userName: any, isPortalCreatedAdmin: boolean, folderIds: any) {
-  const appUser = await ensureBoxAppUser(userName, Date.now().toString());
+  const appUser = await ensureBoxAppUser(userName, userName);
 
   if (isPortalCreatedAdmin) {
     await addFolderEditor(folderIds.portalContentFolderId, appUser.userId);
     return { boxUserId: appUser.userId, folderId: folderIds.portalContentFolderId };
   }
 
-  const userFolder = await findOrCreateBoxFolder(folderIds.userUploadFolderId, userName);
+  const userFolder = await ensureSubfolder(folderIds.userUploadFolderId, userName);
   await addFolderEditor(userFolder.id, appUser.userId);
   return { boxUserId: appUser.userId, folderId: userFolder.id };
 }

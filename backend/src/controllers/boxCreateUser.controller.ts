@@ -47,7 +47,12 @@ const createBoxAppUser = asyncHandler(
         } catch (collabError: any) {
           const status =
             collabError?.statusCode || collabError?.response?.statusCode;
-          if (status !== 409) {
+          const message = String(collabError?.message || "");
+          if (
+            status !== 409 &&
+            !message.includes("user_already_collaborator") &&
+            !message.includes("already a collaborator")
+          ) {
             throw collabError;
           }
         }
