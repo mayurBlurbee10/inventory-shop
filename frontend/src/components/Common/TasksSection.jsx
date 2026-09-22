@@ -118,14 +118,14 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
                               setIsTaskUpdateModalOpen(true);
                             }}
                           >
-                            <Edit className="size-4 text-primary" />
+                            <Edit className="size-4 text-secondary-foreground" />
                             <span>Edit</span>
                           </DropdownMenuItem>
                         )}
                         {task?.status !== TaskStatus?.COMPLETED && (
                           isTaskUpdateLoading ? (
                             <div className='px-4 py-2'>
-                              <LoaderSpinner size={24} className='mx-auto text-primary' />
+                              <LoaderSpinner size={24} className='mx-auto text-secondary-foreground' />
                             </div>
                           ) : (
                             <DropdownMenuItem
@@ -231,7 +231,7 @@ export const TaskNoteModal = ({ isOpen, onClose, task, fetchTasks, updateTaskSta
 
                 {/* Due Date */}
                 <div className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5 text-primary" />
+                  <Calendar className="w-5 h-5 text-secondary-foreground" />
                   <span className="font-medium text-muted-foreground">Due Date:</span>
                   <span>{formatDate(task?.dueDate) || "N/A"}</span>
                 </div>

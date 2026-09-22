@@ -169,7 +169,7 @@ const NotificationConfiguration = ({
                         {notifType.category && (
                           <Badge
                             variant="secondary"
-                            className="mt-2 line-clamp-1 break-words bg-accent text-primary-solid"
+                            className="mt-2 line-clamp-1 break-words bg-accent text-secondary-foreground"
                           >
                             {notifType.category}
                           </Badge>

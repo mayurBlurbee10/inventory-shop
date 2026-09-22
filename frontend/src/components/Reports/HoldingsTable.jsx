@@ -130,7 +130,7 @@ function HoldingRow({ row, depth, expandedIds, onToggle }) {
           <span
             className={cn(
               "text-foreground",
-              isGroup || isSubtotal || isTotal ? "font-semibold" : "text-primary",
+              isGroup || isSubtotal || isTotal ? "font-semibold" : "text-secondary-foreground",
             )}
           >
             {node.type === "holding" ? node.symbol : label}

@@ -34,7 +34,7 @@ function DeleteConfirmDialog({
     >
       <DialogContent
         ref={modalRef}
-        className="sm:max-w-sm bg-background"
+        className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-sm bg-background"
         showCloseButton={!isLoading}
       >
         <DialogHeader className="text-center sm:text-left">

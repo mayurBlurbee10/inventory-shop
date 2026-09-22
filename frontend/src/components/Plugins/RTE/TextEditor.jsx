@@ -44,8 +44,8 @@ const ToolbarButton = ({ active, className, children, ...props }) => (
     variant="ghost"
     size="lg"
     className={cn(
-      "h-11 w-11 shrink-0 rounded-md text-foreground hover:bg-accent hover:text-primary",
-      active && "bg-accent text-primary",
+      "h-11 w-11 shrink-0 rounded-md text-foreground hover:bg-accent hover:text-secondary-foreground",
+      active && "bg-accent text-secondary-foreground",
       className,
     )}
     {...props}

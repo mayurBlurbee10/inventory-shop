@@ -119,7 +119,7 @@ const SearchBar = memo(({ searchQuery, setSearchQuery, isSearching }) => {
     <div className="relative">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         {isSearching ? (
-          <LoaderSpinner size={24} className="text-primary" />
+          <LoaderSpinner size={24} className="text-secondary-foreground" />
         ) : (
           <Search size={18} className="text-muted-foreground" />
         )}
@@ -357,7 +357,7 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {}, isInDial
             {isFolder ? (
               <FolderIcon
                 size={20}
-                className="text-primary mr-3 flex-shrink-0"
+                className="text-secondary-foreground mr-3 flex-shrink-0"
               />
             ) : (
               <FileText
@@ -384,7 +384,7 @@ const FileExplorer = ({ data, selectedItem, setSelectedItem = () => {}, isInDial
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <LoaderSpinner size={24} className="text-primary" />
+                    <LoaderSpinner size={24} className="text-secondary-foreground" />
                   ) : (
                     <Eye size={16} />
                   )}

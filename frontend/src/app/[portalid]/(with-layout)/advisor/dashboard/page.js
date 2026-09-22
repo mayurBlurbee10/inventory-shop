@@ -257,7 +257,7 @@ export default function AdvisorViewDashboard() {
                                                     <TableHead className="px-4">
                                                         <button
                                                             type="button"
-                                                            className="flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-primary-solid"
+                                                            className="flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-secondary-foreground"
                                                             onClick={() => toggleSort("name")}
                                                         >
                                                             <span>Name</span>
@@ -267,7 +267,7 @@ export default function AdvisorViewDashboard() {
                                                     <TableHead className="px-4">
                                                         <button
                                                             type="button"
-                                                            className="flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-primary-solid"
+                                                            className="flex items-center gap-2 font-semibold text-foreground transition-colors hover:text-secondary-foreground"
                                                             onClick={() => toggleSort("email")}
                                                         >
                                                             <span>Email</span>

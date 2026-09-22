@@ -267,7 +267,7 @@ function TNCModal({ onClose, user, email, password, page }) {
     <>
       <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
         <DialogContent
-          className="flex max-h-[90vh] w-full max-w-5xl flex-col gap-0 overflow-hidden rounded-xl border border-border bg-background p-0 shadow-lg sm:max-w-5xl"
+          className="flex max-h-[90vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden rounded-xl border border-border bg-background p-0 shadow-lg sm:w-full sm:max-w-5xl"
           overlayClassName="bg-black/30"
           showCloseButton={false}
         >

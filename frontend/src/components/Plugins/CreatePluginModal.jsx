@@ -200,7 +200,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleModalClose()}>
-        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-lg">
+        <DialogContent className="flex max-h-[85vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col sm:w-full sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-foreground">{pluginTitle}</DialogTitle>
           </DialogHeader>
@@ -237,7 +237,7 @@ export const UpdatePluginModal = ({ isOpen, onClose, plugin }) => {
             {(plugin?.type === PluginType.TNC &&
               plugin?.pages &&
               plugin.pages?.length < 1) ||
-            plugin?.type !== PluginType.TNC ? (
+              plugin?.type !== PluginType.TNC ? (
               <Button
                 type="button"
                 variant="outline"
@@ -451,7 +451,7 @@ export const CreatePluginModal = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && handleModalClose()}>
-        <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-lg">
+        <DialogContent className="flex max-h-[85vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col sm:w-full sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-foreground">Add Widget</DialogTitle>
           </DialogHeader>
@@ -491,7 +491,7 @@ export const CreatePluginModal = ({
             {(pluginData.type === PluginType.TNC &&
               pages &&
               pages?.length < 1) ||
-            pluginData.type !== PluginType.TNC ? (
+              pluginData.type !== PluginType.TNC ? (
               <div className="flex items-center gap-2">
                 {pluginData?.type && (
                   <Button

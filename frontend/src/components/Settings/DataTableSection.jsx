@@ -175,10 +175,10 @@ export const PaginatedTable = ({
     }
 
     if (sortConfig.direction === "asc") {
-      return <ChevronUp className="h-4 w-4 text-primary-solid" />;
+      return <ChevronUp className="h-4 w-4 text-secondary-foreground" />;
     }
 
-    return <ChevronDown className="h-4 w-4 text-primary-solid" />;
+    return <ChevronDown className="h-4 w-4 text-secondary-foreground" />;
   };
 
   const SortableHeader = ({ label, sortKey }) => (

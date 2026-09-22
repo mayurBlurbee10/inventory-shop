@@ -18,6 +18,11 @@ import {
 import Button from "../Common/Elements/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setPortal } from "@/store/services/portalService";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { coverPhotoRatio, fontSizeOptions, fontSizes, fontWeightOptions } from "@/app/lib/data/font_size";
 import { setContent } from "@/store/services/contentService";
 
@@ -38,7 +43,7 @@ const AddContentModal = ({
   setLinkFields,
   linkFields,
   setIsContentAdded,
-  from=""
+  from = ""
 }) => {
   const params = useParams();
   const fileInputRef = useRef(null);
@@ -87,19 +92,19 @@ const AddContentModal = ({
       // Construct payload with specific cases for fontSize and links
       const obj = imageUrl
         ? {
-            ...newContent,
-            value: imageUrl,
-            fontSize: newContent.fontSize || "medium", // Add fontSize here
-            portalId: params.portalid || "root",
-          }
+          ...newContent,
+          value: imageUrl,
+          fontSize: newContent.fontSize || "medium", // Add fontSize here
+          portalId: params.portalid || "root",
+        }
         : newContent.type === "Links"
-        ? {
+          ? {
             ...newContent,
             value: JSON.stringify(linkFields),
             fontSize: "14px", // Add fontSize here
             portalId: params.portalid || "root",
           }
-        : {
+          : {
             ...newContent,
             value: newContent.value || " ",
             fontSize: newContent.fontSize, // Add fontSize here
@@ -132,12 +137,12 @@ const AddContentModal = ({
         throw new Error(data.error || "Content length is too long");
       }
 
-      if(imageUrl && newContent?.title === "Logo"){
+      if (imageUrl && newContent?.title === "Logo") {
         const portalData = {
           ...config,
           logo: imageUrl,
         };
-  
+
         const response = await fetchWrapper(
           "/api/portal",
           {
@@ -149,7 +154,7 @@ const AddContentModal = ({
           },
           "update-portal"
         );
-  
+
         if (!response.ok) throw new Error("Failed to update portal theme");
         dispatch(setPortal(params.portalid));
       }
@@ -157,17 +162,17 @@ const AddContentModal = ({
       // Refresh data and close the modal
       await fetchData();
       dispatch(setContent(params?.portalid));
-      
+
       setIsContentAdded && setIsContentAdded(true)
-      
-        handleModalClose();
-        setIsSubmitting(false);
-        toast.success(
-          `${apiType === "edit-content"
-            ? "Content updated successfully"
-            : "Content added successfully"
-          }`
-        );
+
+      handleModalClose();
+      setIsSubmitting(false);
+      toast.success(
+        `${apiType === "edit-content"
+          ? "Content updated successfully"
+          : "Content added successfully"
+        }`
+      );
     } catch (error) {
       toast.error(error.message);
       console.error("Error adding content:", error);
@@ -233,7 +238,7 @@ const AddContentModal = ({
       linkFields[linkFields.length - 1].link != ""
     ) {
       setLinkFields([...linkFields, { label: "", link: "" }]);
-    }else if(linkFields.length === 0){
+    } else if (linkFields.length === 0) {
       setLinkFields([...linkFields, { label: "", link: "" }]);
     }
   };
@@ -265,10 +270,10 @@ const AddContentModal = ({
 
   useEffect(() => {
     const filteredValue = newContent.value;
-      if (isValidJSON(filteredValue)) {
-        const parsedLinks = filteredValue ? JSON.parse(filteredValue) : null;
-        setLinkFields(Array.isArray(parsedLinks) ? parsedLinks : filteredValue);
-      }
+    if (isValidJSON(filteredValue)) {
+      const parsedLinks = filteredValue ? JSON.parse(filteredValue) : null;
+      setLinkFields(Array.isArray(parsedLinks) ? parsedLinks : filteredValue);
+    }
   }, [])
 
   console.log("newContent", newContent)
@@ -288,12 +293,12 @@ const AddContentModal = ({
 
   const LogoImage = () => {
     const baseSize = 100; // Set a base height
-  
+
     const fontSizeKey = newContent?.fontSize || "medium"
 
     const sizeInfo = coverPhotoRatio[fontSizeKey];
     const { scale, width, height } = sizeInfo;
-  
+
     return (
       <div className="flex items-center gap-5">
         <div className="relative inline-block text-black">
@@ -335,18 +340,19 @@ const AddContentModal = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-      style={{ margin: 0 }}
-    >
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl text-gray-800 font-semibold">
+    <Dialog open={true} onOpenChange={(open) => !open && handleModalClose()}>
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-md bg-background p-0 overflow-hidden max-h-[90vh] flex flex-col"
+        overlayClassName="bg-gray-900/50"
+        showCloseButton={false}
+      >
+        <div className="flex justify-between items-center p-4 border-b border-border">
+          <DialogTitle className="text-xl text-foreground font-semibold">
             {`${isEditMode ? "Edit" : "Add"} Content`}{" "}
-          </h2>
+          </DialogTitle>
           <button
             onClick={handleModalClose}
-            className="text-gray-600 hover:bg-gray-100 p-1 rounded-full"
+            className="text-muted-foreground hover:bg-muted p-1 rounded-full transition"
           >
             <X className="h-6 w-6" />
           </button>
@@ -581,15 +587,15 @@ const AddContentModal = ({
               {/* Display selected icon */}
               {iconOptions.find((icon) => icon.name === newContent?.value)
                 ?.component && (
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-gray-600">Selected Icon:</span>
-                  {React.createElement(
-                    iconOptions.find((icon) => icon.name === newContent?.value)
-                      .component,
-                    { className: "w-6 h-6 text-gray-700" }
-                  )}
-                </div>
-              )}
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="text-gray-600">Selected Icon:</span>
+                    {React.createElement(
+                      iconOptions.find((icon) => icon.name === newContent?.value)
+                        .component,
+                      { className: "w-6 h-6 text-gray-700" }
+                    )}
+                  </div>
+                )}
             </div>
           )}
 
@@ -642,7 +648,7 @@ const AddContentModal = ({
                   </div>
                 </div>
               )}
-               <div className="mb-4">
+              <div className="mb-4">
                 <label
                   htmlFor="value"
                   className="block text-sm font-medium text-gray-700"
@@ -661,7 +667,7 @@ const AddContentModal = ({
               </div>
             </div>
           )}
-          {(previewUrl || (!previewUrl && newContent?.title === 'Logo'))  && <LogoImage />}
+          {(previewUrl || (!previewUrl && newContent?.title === 'Logo')) && <LogoImage />}
 
           {/* Links */}
           {newContent.type === "Links" && (
@@ -735,8 +741,8 @@ const AddContentModal = ({
             />
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -146,7 +146,7 @@ export default function SetPasswordUsingToken() {
               </h2>
               <p className="mb-4 text-center text-sm text-muted-foreground">
                 Please contact us at{" "}
-                <a href="mailto:info@mstrategygroup.com" className="text-primary hover:underline">
+                <a href="mailto:info@mstrategygroup.com" className="text-secondary-foreground hover:underline">
                   info@mstrategygroup.com
                 </a>{" "}
                 to request a new link.

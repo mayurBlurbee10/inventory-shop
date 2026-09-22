@@ -464,7 +464,7 @@ const NotificationModal = ({
               <Button
                 variant="link"
                 size="sm"
-                className="text-primary-solid"
+                className="text-secondary-foreground"
                 onClick={() => getNotifications()}
               >
                 Try again
@@ -544,7 +544,7 @@ const NotificationModal = ({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="rounded-full text-primary-solid"
+                            className="rounded-full text-secondary-foreground"
                             onClick={(e) =>
                               handleNavigateToUrl(
                                 e,

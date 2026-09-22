@@ -1,25 +1,29 @@
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
-import { Dialog } from "@headlessui/react";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 import Button from "../Common/Elements/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const InputField = ({
   label,
   type = "text",
   value,
   onChange,
-  onBlur = () => {},
+  onBlur = () => { },
   placeholder = "",
   required = true,
   isLoading = false,
 }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">
+    <label className="block text-sm font-medium text-foreground mb-1">
       {label}
-      {required && <span className="text-gray-400 ml-1">*</span>}
+      {required && <span className="text-muted-foreground ml-1">*</span>}
     </label>
-    <div className="w-full px-3 py-2 border border-gray-300 rounded-md flex justify-between items-center focus:ring-1 focus:ring-gray-400">
+    <div className="w-full px-3 py-2 border border-border rounded-md flex justify-between items-center focus:ring-1 focus:ring-primary bg-background">
       <input
         type={type}
         value={value}
@@ -27,7 +31,7 @@ const InputField = ({
         required={required}
         placeholder={placeholder}
         onBlur={onBlur}
-        className="w-full focus:outline-none"
+        className="w-full focus:outline-none bg-background text-foreground"
       />
       {isLoading && (
         <div className="flex items-center gap-2 ">
@@ -53,7 +57,7 @@ const PortalDuplicateModal = ({
 }) => {
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const handlePortalBlur = async () => {
     if (!formData?.legalName) return;
     setIsPortalLoading(true);
@@ -78,93 +82,95 @@ const PortalDuplicateModal = ({
       setIsPortalLoading(false);
     }
   };
+
   return (
-    <Dialog open={isOpen} onClose={() => {}} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto min-w-[35%] rounded-lg bg-white shadow-md">
-          <div className="flex justify-between items-center mb-4 pt-6 px-6">
-            <Dialog.Title className="text-xl text-gray-600 font-medium">
-              Duplicate Portal
-            </Dialog.Title>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <X className="w-5 h-5" />
-            </button>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-lg bg-background p-0 overflow-hidden"
+        overlayClassName="bg-black/30"
+        showCloseButton={false}
+      >
+        <div className="flex justify-between items-center pt-6 px-6 mb-4">
+          <DialogTitle className="text-xl text-foreground font-medium">
+            Duplicate Portal
+          </DialogTitle>
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="space-y-6 text-foreground">
+          <div className="border-b border-border px-6 pb-6">
+            <h3 className="text-lg font-medium text-foreground mb-1">
+              Company Information
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Please enter company information
+            </p>
           </div>
-          <div className="space-y-6  text-gray-700">
-            <div className="border-b border-gray-200 px-6 pb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-1">
-                Company Information
-              </h3>
-              <p className="text-sm text-gray-500">
-                Please enter company information
-              </p>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4 px-6">
-              <div className="col-span-2 text-gray-700">
-                <InputField
-                  label="Company Name"
-                  type="legalName"
-                  value={formData.legalName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, legalName: e.target.value })
-                  }
-                  onBlur={handlePortalBlur}
-                  placeholder="e.g., Acme Corporation Ltd."
-                  isLoading={isPortalLoading}
-                />
-                {error && <p className="text-red-600 text-sm">{error}</p>}
-              </div>
+          <div className="grid grid-cols-2 gap-4 px-6">
+            <div className="col-span-2 text-foreground">
+              <InputField
+                label="Company Name"
+                type="legalName"
+                value={formData.legalName}
+                onChange={(e) =>
+                  setFormData({ ...formData, legalName: e.target.value })
+                }
+                onBlur={handlePortalBlur}
+                placeholder="e.g., Acme Corporation Ltd."
+                isLoading={isPortalLoading}
+              />
+              {error && <p className="text-destructive text-sm mt-1">{error}</p>}
             </div>
+          </div>
 
-            <div className="space-y-4 px-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Domain Setup <span className="text-gray-400">*</span>
-                </label>
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex-1 min-w-[200px]">
-                    <div className="mt-1 flex rounded-md shadow-sm">
-                      <input
-                        type="text"
-                        value={formData.domain}
-                        onChange={(e) =>
-                          setFormData({ ...formData, domain: e.target.value })
-                        }
-                        className="flex-1 block w-full px-3 py-2 rounded-l-md border border-r-0 border-gray-300"
-                        placeholder="subdomain"
-                      />
-                      <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500">
-                        .company.com
-                      </span>
-                    </div>
+          <div className="space-y-4 px-6">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Domain Setup <span className="text-muted-foreground">*</span>
+              </label>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[200px]">
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      value={formData.domain}
+                      onChange={(e) =>
+                        setFormData({ ...formData, domain: e.target.value })
+                      }
+                      className="flex-1 block w-full px-3 py-2 rounded-l-md border border-r-0 border-border bg-background text-foreground"
+                      placeholder="subdomain"
+                    />
+                    <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-border bg-muted text-muted-foreground">
+                      .company.com
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
-              <Button 
-                onClick={onClose}
-                disabled={isLoading}
-                label="Cancel"
-                type="Secondary"
-              />
-              <Button
-                onClick={handleDuplicate}
-                disabled={isLoading}
-                isLoading={isLoading}
-                label="Create Portal"
-                type="Primary"
-              />
-            </div>
           </div>
-        </Dialog.Panel>
-      </div>
+
+          <div className="px-6 py-4 bg-muted/40 border-t border-border rounded-b-lg flex justify-between">
+            <Button
+              onClick={onClose}
+              disabled={isLoading}
+              label="Cancel"
+              type="Secondary"
+            />
+            <Button
+              onClick={handleDuplicate}
+              disabled={isLoading}
+              isLoading={isLoading}
+              label="Create Portal"
+              type="Primary"
+            />
+          </div>
+        </div>
+      </DialogContent>
     </Dialog>
   );
 };

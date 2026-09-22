@@ -624,7 +624,7 @@ export default function ThemeContent() {
                             className={cn(
                               "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border",
                               isSelected
-                                ? "border-primary/30 bg-primary/10 text-primary"
+                                ? "border-primary/30 bg-primary/10 text-secondary-foreground"
                                 : "border-border bg-muted text-muted-foreground group-hover:text-foreground",
                             )}
                           >

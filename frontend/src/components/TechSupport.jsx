@@ -160,7 +160,7 @@ function TechSupport({ isOpen, onClose }) {
     >
       <DialogContent
         showCloseButton={false}
-        className="flex w-full max-w-2xl flex-col gap-0 p-0 sm:max-w-2xl"
+        className="flex w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 p-0 sm:w-full sm:max-w-2xl"
       >
         {/* Header */}
         <div className="flex items-start justify-between border-b border-border p-4">

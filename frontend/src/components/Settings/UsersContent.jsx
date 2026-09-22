@@ -276,7 +276,7 @@ const UsersContent = () => {
                             className="object-contain"
                           />
                         ) : null}
-                        <AvatarFallback className="bg-accent text-sm font-medium text-primary-solid">
+                        <AvatarFallback className="bg-accent text-sm font-medium text-secondary-foreground">
                           {user.firstName?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>

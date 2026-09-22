@@ -66,7 +66,7 @@ const FileViewerModal = ({ isOpen, onClose, user }) => {
     >
       <DialogContent
         showCloseButton={false}
-        className="flex h-[80vh] w-full max-w-4xl flex-col gap-0 p-0 sm:max-w-4xl"
+        className="flex h-[80vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 p-0 sm:w-full sm:max-w-4xl"
       >
         <div className="flex items-center justify-between border-b border-border p-6">
           <DialogTitle className="text-xl font-semibold text-foreground">

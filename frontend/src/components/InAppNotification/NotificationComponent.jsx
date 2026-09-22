@@ -240,6 +240,89 @@ const NotificationComponent = () => {
     }
   };
 
+  const getProfileUrl = (notification) => {
+    if (!notification) return null;
+    const referenceData = notification.referenceData || {};
+    const type = notification.type?.toLowerCase();
+
+    switch (type) {
+      case "message":
+        return referenceData?.sender?.profileUrl || notification.user?.profileUrl;
+      case "comment":
+        return referenceData?.author?.profileUrl || notification.user?.profileUrl;
+      case "task":
+        return (
+          referenceData?.assignedBy?.profileUrl ||
+          referenceData?.creator?.profileUrl ||
+          notification.user?.profileUrl
+        );
+      case "like":
+        return (
+          referenceData?.user?.profileUrl ||
+          referenceData?.liker?.profileUrl ||
+          notification.user?.profileUrl
+        );
+      case "system":
+      default:
+        return (
+          notification.user?.profileUrl ||
+          referenceData?.user?.profileUrl ||
+          referenceData?.author?.profileUrl ||
+          referenceData?.sender?.profileUrl
+        );
+    }
+  };
+
+  const getUserName = (notification) => {
+    if (!notification) return "";
+    const referenceData = notification.referenceData || {};
+    const type = notification.type?.toLowerCase();
+    const fallbackUser = notification.user || {};
+
+    switch (type) {
+      case "message":
+        return (
+          referenceData?.sender?.firstName ||
+          referenceData?.sender?.FirstName ||
+          referenceData?.sender?.email ||
+          `${fallbackUser.firstName || ""} ${fallbackUser.lastName || ""}`.trim() ||
+          fallbackUser.email ||
+          ""
+        );
+      case "comment":
+        return (
+          referenceData?.author?.firstName ||
+          referenceData?.author?.email ||
+          `${fallbackUser.firstName || ""} ${fallbackUser.lastName || ""}`.trim() ||
+          fallbackUser.email ||
+          ""
+        );
+      case "task":
+        return (
+          referenceData?.assignedBy?.firstName ||
+          referenceData?.creator?.firstName ||
+          `${fallbackUser.firstName || ""} ${fallbackUser.lastName || ""}`.trim() ||
+          fallbackUser.email ||
+          ""
+        );
+      case "like":
+        return (
+          referenceData?.user?.firstName ||
+          referenceData?.liker?.firstName ||
+          `${fallbackUser.firstName || ""} ${fallbackUser.lastName || ""}`.trim() ||
+          fallbackUser.email ||
+          ""
+        );
+      case "system":
+      default:
+        return (
+          `${fallbackUser.firstName || ""} ${fallbackUser.lastName || ""}`.trim() ||
+          fallbackUser.email ||
+          ""
+        );
+    }
+  };
+
   const getInitials = (name) => {
     if (!name) return "U";
     const words = name.split(" ");
@@ -255,84 +338,95 @@ const NotificationComponent = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mt-5 px-10">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2 text-foreground"
-          onClick={() => router.back()}
-        >
-          <ChevronLeft className="h-5 w-5" />
-          <span>Back</span>
-        </Button>
-      </div>
-      <div className="mx-auto max-w-4xl p-6">
-        <Card className="mb-6 rounded-2xl p-6">
-          <header className="mb-4 flex flex-wrap items-center justify-between gap-4">
+    <div className="min-h-screen bg-background pb-8">
+      <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-foreground hover:bg-accent"
+            onClick={() => router.back()}
+          >
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span>Back</span>
+          </Button>
+        </div>
+
+        <Card className="mb-6 rounded-2xl p-4 sm:p-6">
+          <header className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center space-x-3">
-              <div className="relative">
-                <Bell className="h-8 w-8 text-foreground" />
+              <div className="relative shrink-0">
+                <Bell className="h-7 w-7 sm:h-8 sm:w-8 text-foreground" />
                 {unreadCount > 0 && (
-                  <span className="absolute -right-2 -top-3 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-medium text-destructive-foreground">
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-medium text-destructive-foreground">
                     {unreadCount}
                   </span>
                 )}
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                   Notifications
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  {unreadCount} unread notifications
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}
                 </p>
               </div>
             </div>
-            <div className="flex w-full max-w-sm flex-row items-stretch gap-2 sm:w-auto sm:items-center">
+
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
               <AppTooltip label="Refresh">
                 <Button
-                  variant="secondary"
-                  size="icon"
-                  className="group"
+                  variant="outline"
+                  size="sm"
+                  className="group h-9 px-3 gap-1.5"
                   onClick={() => getNotifications()}
                   aria-label="Refresh"
                 >
-                  <RotateCw className="h-5 w-5 transition-transform duration-300 ease-in-out group-hover:rotate-[360deg]" />
+                  <RotateCw
+                    className={cn(
+                      "h-4 w-4 transition-transform duration-300 ease-in-out group-hover:rotate-[360deg]",
+                      isNotificationLoading && "animate-spin"
+                    )}
+                  />
+                  <span className="text-xs sm:text-sm">Refresh</span>
                 </Button>
               </AppTooltip>
 
               {unreadCount > 0 && (
                 <Button
-                  className="w-full sm:w-auto"
+                  size="sm"
+                  className="h-9 px-3 gap-1.5"
                   disabled={isMarkingAllRead}
                   onClick={markAllAsRead}
                 >
                   {isMarkingAllRead ? (
-                    <LoaderSpinner size={16} className="text-current" />
+                    <LoaderSpinner size={14} className="text-current" />
                   ) : (
-                    <CheckCheck className="h-4 w-4" />
+                    <CheckCheck className="h-4 w-4 shrink-0" />
                   )}
-                  <span className="hidden sm:inline">Mark all read</span>
+                  <span className="text-xs sm:text-sm">Mark all read</span>
                 </Button>
               )}
               {notifications.length > 0 && (
                 <Button
                   variant="destructive"
-                  className="w-full sm:w-auto"
+                  size="sm"
+                  className="h-9 px-3 gap-1.5"
                   disabled={isClearing}
                   onClick={clearAllNotifications}
                 >
                   {isClearing ? (
-                    <LoaderSpinner size={16} className="text-current" />
+                    <LoaderSpinner size={14} className="text-current" />
                   ) : (
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 shrink-0" />
                   )}
-                  <span className="hidden sm:inline">Clear all</span>
+                  <span className="text-xs sm:text-sm">Clear all</span>
                 </Button>
               )}
             </div>
           </header>
-          <div className="flex items-center space-x-1 rounded-2xl bg-muted p-1">
+
+          <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1 sm:flex sm:w-auto sm:space-x-1">
             {["all", "unread", "read"].map((filterType) => {
               const isActive = filter === filterType;
 
@@ -341,26 +435,26 @@ const NotificationComponent = () => {
                   key={filterType}
                   onClick={() => setFilter(filterType)}
                   className={cn(
-                    "flex items-center space-x-2 rounded-xl px-4 py-1.5 text-sm font-semibold transition-all duration-300",
+                    "flex items-center justify-center space-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold sm:px-4 sm:text-sm transition-all duration-300",
                     isActive
-                      ? "bg-card text-muted-foreground shadow"
+                      ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground hover:bg-card/50 hover:text-foreground"
                   )}
                 >
                   <span className="capitalize">{filterType}</span>
 
                   {filterType === "all" && (
-                    <Badge variant="secondary" className="min-w-[20px] justify-center rounded-lg">
+                    <Badge variant="secondary" className="min-w-[18px] h-4 sm:h-5 px-1 justify-center rounded-full text-[10px] sm:text-xs">
                       {notifications.length}
                     </Badge>
                   )}
                   {filterType === "unread" && unreadCount > 0 && (
-                    <Badge className="min-w-[20px] justify-center bg-[var(--primary-solid)] text-primary-foreground">
+                    <Badge className="min-w-[18px] h-4 sm:h-5 px-1 justify-center rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs">
                       {unreadCount}
                     </Badge>
                   )}
                   {filterType === "read" && readCount > 0 && (
-                    <Badge className="min-w-[20px] justify-center bg-success text-success-foreground">
+                    <Badge className="min-w-[18px] h-4 sm:h-5 px-1 justify-center rounded-full bg-success text-success-foreground text-[10px] sm:text-xs">
                       {readCount}
                     </Badge>
                   )}
@@ -379,12 +473,12 @@ const NotificationComponent = () => {
         ) : (
           <div className="space-y-3">
             {filteredNotifications.length === 0 ? (
-              <Card className="rounded-2xl p-12 text-center">
-                <Bell className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
+              <Card className="rounded-2xl p-8 sm:p-12 text-center">
+                <Bell className="mx-auto mb-4 h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
+                <h3 className="mb-2 text-base sm:text-lg font-semibold text-foreground">
                   No notifications found
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {filter === "unread"
                     ? "All caught up! No unread notifications."
                     : filter === "read"
@@ -399,33 +493,23 @@ const NotificationComponent = () => {
                   className={cn(
                     "rounded-2xl transition-all duration-200 hover:shadow-md",
                     notification?.status === "unread"
-                      ? "border-primary-solid bg-accent"
+                      ? "border-primary/50 bg-accent/40"
                       : "border-border"
                   )}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex flex-1 items-start space-x-4">
-                        <div className="relative">
-                          <Avatar size="lg">
-                            {notification?.referenceData?.author?.profileUrl ||
-                            notification?.referenceData?.sender?.profileUrl ||
-                            notification?.user?.profileUrl ? (
+                  <CardContent className="p-3.5 sm:p-5">
+                    <div className="flex items-start justify-between gap-2 sm:gap-4">
+                      <div className="flex flex-1 items-start gap-2.5 sm:gap-4 min-w-0">
+                        <div className="relative shrink-0">
+                          <Avatar size="default" className="sm:size-10">
+                            {getProfileUrl(notification) ? (
                               <AvatarImage
-                                src={
-                                  notification?.referenceData?.author
-                                    ?.profileUrl ||
-                                  notification?.referenceData?.sender
-                                    ?.profileUrl ||
-                                  notification?.user?.profileUrl
-                                }
+                                src={getProfileUrl(notification)}
                                 alt="Profile Picture"
                               />
                             ) : null}
-                            <AvatarFallback className="bg-foreground font-semibold text-background">
-                              {getInitials(
-                                `${notification?.user?.firstName || ""} ${notification?.user?.lastName || ""}`.trim()
-                              )}
+                            <AvatarFallback className="bg-foreground font-semibold text-background text-xs sm:text-sm">
+                              {getInitials(getUserName(notification))}
                             </AvatarFallback>
                           </Avatar>
 
@@ -436,22 +520,22 @@ const NotificationComponent = () => {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <div className="mb-1 flex items-center space-x-2">
-                            <h3 className="line-clamp-2 font-semibold text-foreground">
-                              {notification?.title}
+                          <div className="mb-1 flex items-center gap-1.5 flex-wrap">
+                            <h3 className="line-clamp-2 text-sm sm:text-base font-semibold text-foreground break-words">
+                              {notification?.title || "Notification"}
                             </h3>
                             {notification?.status === "unread" && (
-                              <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--primary-solid)] p-1"></div>
+                              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-primary"></span>
                             )}
                           </div>
 
-                          <p className="mb-2 line-clamp-2 text-sm text-foreground">
+                          <p className="mb-2 line-clamp-2 text-xs sm:text-sm text-muted-foreground break-words">
                             {getNotificationMessagePreview(notification)}
                           </p>
 
-                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                            <span className="flex items-center space-x-1">
-                              <Clock className="h-3 w-3" />
+                          <div className="flex items-center gap-4 text-[11px] sm:text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3 shrink-0" />
                               <span>
                                 {formatTimeAgo(notification?.createdAt)}
                               </span>
@@ -460,20 +544,20 @@ const NotificationComponent = () => {
                         </div>
                       </div>
 
-                      <div className="ml-4 flex items-center space-x-2">
+                      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 self-start">
                         {notification?.status === "unread" && (
                           <AppTooltip label="Mark as read">
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="text-primary-solid"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                               aria-label="Mark as read"
                               onClick={() => markAsRead(notification)}
                             >
                               {isMarkRead === notification.id ? (
                                 <LoaderSpinner
                                   size={12}
-                                  className="text-secondary-foreground"
+                                  className="text-foreground"
                                   wrapperClassName="flex h-4 w-4 shrink-0 items-center justify-center"
                                   aria-hidden
                                 />
@@ -488,7 +572,7 @@ const NotificationComponent = () => {
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="text-primary-solid"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                               aria-label="Open link"
                               onClick={(e) =>
                                 handleNavigateToUrl(
@@ -504,8 +588,9 @@ const NotificationComponent = () => {
                         )}
                         <AppTooltip label="Remove notification">
                           <Button
-                            variant="destructive"
+                            variant="ghost"
                             size="icon-sm"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                             aria-label="Remove notification"
                             onClick={() => removeNotification(notification)}
                           >

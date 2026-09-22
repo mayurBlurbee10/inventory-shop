@@ -367,9 +367,8 @@ const ContentManagementContent = ({
           </div>
         ) : (
           <div
-            className={`grid grid-cols-1 gap-6 p-1 md:p-2 lg:p-3 ${
-              onBoarding ? "" : "sm:grid-cols-2 lg:grid-cols-3"
-            }`}
+            className={`grid grid-cols-1 gap-6 p-1 md:p-2 lg:p-3 ${onBoarding ? "" : "sm:grid-cols-2 lg:grid-cols-3"
+              }`}
           >
             {content.map((item, idx) => (
               <Card
@@ -530,7 +529,7 @@ const ContentManagementContent = ({
             if (!open) handleNewTitleModalClose();
           }}
         >
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-foreground">Add New Title</DialogTitle>
             </DialogHeader>

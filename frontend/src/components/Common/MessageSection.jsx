@@ -82,8 +82,8 @@ const reactSelectStyles = {
     backgroundColor: state.isSelected
       ? "hsl(var(--accent))"
       : state.isFocused
-      ? "hsl(var(--accent) / 0.7)"
-      : "transparent",
+        ? "hsl(var(--accent) / 0.7)"
+        : "transparent",
     color:
       state.isSelected || state.isFocused
         ? "hsl(var(--accent-foreground))"
@@ -249,7 +249,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent
-          className="max-w-2xl w-full max-h-[90vh] overflow-auto bg-background border-border p-0"
+          className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-2xl max-h-[90vh] overflow-auto bg-background border-border p-0"
           overlayClassName="bg-black/30"
           showCloseButton={false}
         >
@@ -274,7 +274,7 @@ const MessagePreview = ({ isOpen, onClose, message, onMessageUpdate }) => {
                       }}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <Edit className="size-4 text-primary" />
+                      <Edit className="size-4 text-secondary-foreground" />
                       <span>Edit</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -734,7 +734,7 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
           <div className="h-[calc(80vh-73px)] relative mt-5 text-sm px-5 sm:px-10">
             {isMessagesLoading ? (
               <div className="absolute inset-0 flex items-center justify-center bg-background">
-                <LoaderSpinner size={28} className="text-primary" />
+                <LoaderSpinner size={28} className="text-secondary-foreground" />
               </div>
             ) : (
               <div className="h-[97%] overflow-y-auto hidden-scrollbar">
@@ -747,22 +747,20 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                             <span>Date</span>
                             <button onClick={() => toggleSort("createdAt")}>
                               <ChevronUp
-                                className={`h-4 w-4 ${
-                                  sortConfig.key === "createdAt" &&
-                                  sortConfig.direction === "asc"
+                                className={`h-4 w-4 ${sortConfig.key === "createdAt" &&
+                                    sortConfig.direction === "asc"
                                     ? "text-foreground"
                                     : "text-muted-foreground"
-                                }`}
+                                  }`}
                               />
                             </button>
                             <button onClick={() => toggleSort("createdAt")}>
                               <ChevronDown
-                                className={`h-4 w-4 ${
-                                  sortConfig.key === "createdAt" &&
-                                  sortConfig.direction === "desc"
+                                className={`h-4 w-4 ${sortConfig.key === "createdAt" &&
+                                    sortConfig.direction === "desc"
                                     ? "text-foreground"
                                     : "text-muted-foreground"
-                                }`}
+                                  }`}
                               />
                             </button>
                           </div>
@@ -778,22 +776,20 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                             <span>Type</span>
                             <button onClick={() => toggleSort("type")}>
                               <ChevronUp
-                                className={`h-4 w-4 ${
-                                  sortConfig.key === "type" &&
-                                  sortConfig.direction === "asc"
+                                className={`h-4 w-4 ${sortConfig.key === "type" &&
+                                    sortConfig.direction === "asc"
                                     ? "text-foreground"
                                     : "text-muted-foreground"
-                                }`}
+                                  }`}
                               />
                             </button>
                             <button onClick={() => toggleSort("type")}>
                               <ChevronDown
-                                className={`h-4 w-4 ${
-                                  sortConfig.key === "type" &&
-                                  sortConfig.direction === "desc"
+                                className={`h-4 w-4 ${sortConfig.key === "type" &&
+                                    sortConfig.direction === "desc"
                                     ? "text-foreground"
                                     : "text-muted-foreground"
-                                }`}
+                                  }`}
                               />
                             </button>
                           </div>
@@ -813,11 +809,10 @@ const ViewAllMessage = ({ isOpen, onClose }) => {
                         [...sortedMessages].reverse().map((row, index) => (
                           <TableRow
                             key={index}
-                            className={`border-b border-border text-foreground hover:bg-accent/30 transition cursor-pointer ${
-                              row?.receiver?.id === user?.id && !row?.seen
+                            className={`border-b border-border text-foreground hover:bg-accent/30 transition cursor-pointer ${row?.receiver?.id === user?.id && !row?.seen
                                 ? "bg-muted font-bold"
                                 : "bg-background font-normal"
-                            }`}
+                              }`}
                             onClick={() => handleReadMessage(row)}
                           >
                             <TableCell className="p-4 whitespace-nowrap">
@@ -879,8 +874,7 @@ const MessageSection = ({ clientId }) => {
     try {
       setIsMessagesLoading(true);
       const res = await fetchWrapper(
-        `/api/messages?portalId=${params?.portalid || "root "}&senderId=${
-          clientId ? clientId : user?.id
+        `/api/messages?portalId=${params?.portalid || "root "}&senderId=${clientId ? clientId : user?.id
         }`,
         {},
         "fetch-messages"
@@ -980,29 +974,26 @@ const MessageSection = ({ clientId }) => {
                 .map((row, index) => (
                   <div
                     key={index}
-                    className={`py-3 hover:bg-accent/30 cursor-pointer transition ${
-                      row?.receiver?.id === user?.id && !row?.seen
+                    className={`py-3 hover:bg-accent/30 cursor-pointer transition ${row?.receiver?.id === user?.id && !row?.seen
                         ? "bg-primary/10 border-l-4 border-l-primary"
                         : "bg-card"
-                    }`}
+                      }`}
                     onClick={() => handleReadMessage(row)}
                   >
                     <div className="px-4">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-2 h-2 rounded-full ${
-                              row?.receiver?.id === user?.id && !row?.seen
+                            className={`w-2 h-2 rounded-full ${row?.receiver?.id === user?.id && !row?.seen
                                 ? "bg-primary"
                                 : "bg-muted-foreground"
-                            }`}
+                              }`}
                           />
                           <span
-                            className={`text-sm font-medium ${
-                              row?.receiver?.id === user?.id && !row?.seen
+                            className={`text-sm font-medium ${row?.receiver?.id === user?.id && !row?.seen
                                 ? "text-foreground font-semibold"
                                 : "text-foreground"
-                            }`}
+                              }`}
                           >
                             {row?.receiver
                               ? `${row.receiver.firstName} ${row.receiver.lastName}`
@@ -1023,11 +1014,10 @@ const MessageSection = ({ clientId }) => {
                       </div>
                       <div className="ml-5">
                         <p
-                          className={`text-sm ${
-                            row?.receiver?.id === user?.id && !row?.seen
+                          className={`text-sm ${row?.receiver?.id === user?.id && !row?.seen
                               ? "text-foreground font-medium"
                               : "text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           {getDisplayText(row?.text)}
                         </p>
@@ -1044,7 +1034,7 @@ const MessageSection = ({ clientId }) => {
       {messages && messages?.length > 5 && (
         <div className="p-3 border-t border-border">
           <div
-            className="flex items-center justify-center text-sm text-primary hover:text-primary/80 cursor-pointer font-medium"
+            className="flex items-center justify-center text-sm text-secondary-foreground hover:text-secondary-foreground/80 cursor-pointer font-medium"
             onClick={() => setIsOpenAllMessageSection((prev) => !prev)}
           >
             View More

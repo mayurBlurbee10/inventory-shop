@@ -403,7 +403,7 @@ function ReportsContent() {
               className="hidden"
             />
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Upload className="h-6 w-6 text-primary" />
+              <Upload className="h-6 w-6 text-secondary-foreground" />
             </div>
             <p className="text-sm font-medium text-foreground">
               {selectedFile ? selectedFile.name : "Upload Excel File"}

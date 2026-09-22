@@ -102,7 +102,7 @@ export default function CreateFolder({
         }}
       >
         <DialogContent
-          className="w-full max-w-[400px] bg-background sm:max-w-[400px]"
+          className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] bg-background sm:w-full sm:max-w-[400px]"
           overlayClassName="bg-black/30"
           showCloseButton={false}
         >

@@ -98,7 +98,7 @@ const PluginManagementPage = () => {
             <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
                 <Card>
                     <CardContent className="flex items-center p-6">
-                        <Puzzle className="mr-3 h-8 w-8 text-primary-solid" />
+                        <Puzzle className="mr-3 h-8 w-8 text-secondary-foreground" />
                         <div>
                             <p className="text-sm text-muted-foreground">Total Plugins</p>
                             <p className="text-2xl font-bold text-foreground">
@@ -161,7 +161,7 @@ const PluginManagementPage = () => {
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <div className="mb-3 flex items-center">
-                                                    <Puzzle className="mr-3 h-6 w-6 text-primary-solid" />
+                                                    <Puzzle className="mr-3 h-6 w-6 text-secondary-foreground" />
                                                     <h3 className="text-lg font-semibold text-foreground">
                                                         {plugin.pluginName}
                                                     </h3>

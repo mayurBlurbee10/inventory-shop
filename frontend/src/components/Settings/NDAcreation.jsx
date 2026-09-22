@@ -243,20 +243,20 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
         }}
       >
         <DialogContent
-          className="max-h-[90vh] w-[90%] max-w-[1000px] overflow-y-auto sm:max-w-[1000px] scrollbar-hide"
+          className="flex max-h-[90vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-x-auto overflow-y-auto sm:max-w-[1000px]"
           overlayClassName="bg-black/30"
         >
-          <DialogHeader>
-            <DialogTitle className="px-1 text-center text-xl text-foreground sm:text-left">
+          <DialogHeader className="min-w-0 space-y-1 pr-10 text-left">
+            <DialogTitle className="text-left text-xl text-foreground">
               {isEdit ? "Edit NDA" : "Create NDA"}
             </DialogTitle>
-            <DialogDescription className="px-1 text-center sm:text-left">
+            <DialogDescription className="text-left text-sm">
               Create an NDA with the built-in editor or upload a document for e-sign.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col space-y-5">
-            <div className="flex w-full flex-col">
+          <div className="flex min-w-0 flex-col space-y-5">
+            <div className="flex w-full min-w-0 flex-col">
               <span className="mb-2 px-1 text-xl font-semibold text-foreground">
                 NDA type
               </span>
@@ -312,7 +312,7 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
               </div>
             </div>
 
-            <div className="flex w-full flex-col">
+            <div className="flex w-full min-w-0 flex-col">
               <Label htmlFor="nda-title" className="mb-1 px-1 text-xl font-semibold text-foreground">
                 Title
               </Label>
@@ -337,24 +337,26 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
             </div>
 
             {ndaType === "editor" ? (
-              <div className="flex w-full max-h-[500px] flex-col space-y-2">
+              <div className="flex w-full min-w-0 flex-col space-y-2">
                 <Label className="mb-1 text-xl font-semibold text-foreground">
                   NDA content
                 </Label>
-                <div className="overflow-hidden rounded-xl border border-border bg-card p-3">
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field }) => (
-                      <TextEditor
-                        content={field.value || ""}
-                        onChange={(value) => setValue("description", value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") e.preventDefault();
-                        }}
-                      />
-                    )}
-                  />
+                <div className="min-w-0 overflow-x-auto overflow-y-auto rounded-xl border border-border bg-card p-3">
+                  <div className="min-w-[640px]">
+                    <Controller
+                      name="description"
+                      control={control}
+                      render={({ field }) => (
+                        <TextEditor
+                          content={field.value || ""}
+                          onChange={(value) => setValue("description", value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.preventDefault();
+                          }}
+                        />
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
             ) : (
@@ -436,10 +438,10 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
         open={isOpenCancelConfirm}
         onOpenChange={(open) => !open && setIsOpenCancelConfirm(false)}
       >
-        <DialogContent className="sm:max-w-sm" overlayClassName="bg-black/30">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-sm" overlayClassName="bg-black/30">
           <DialogHeader>
             <DialogTitle className="text-lg text-foreground">
-                Discard changes?
+              Discard changes?
             </DialogTitle>
             <DialogDescription className="py-2 text-sm text-muted-foreground">
               Your changes will not be saved.
@@ -455,19 +457,19 @@ function NDAcreation({ isOpen, onClose, editData, setEditData }) {
               Keep editing
             </Button>
             <Button
-                type="button"
-                className="px-3 py-3"
-                onClick={() => {
-                  setIsOpenCancelConfirm(false);
-                  setEditData?.(null);
-                  reset({ title: "", description: "" });
-                  setFileId(null);
-                  setOriginalFileName("");
-                  onClose();
-                }}
-              >
-                Discard
-              </Button>
+              type="button"
+              className="px-3 py-3"
+              onClick={() => {
+                setIsOpenCancelConfirm(false);
+                setEditData?.(null);
+                reset({ title: "", description: "" });
+                setFileId(null);
+                setOriginalFileName("");
+                onClose();
+              }}
+            >
+              Discard
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

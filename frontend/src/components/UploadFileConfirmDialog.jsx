@@ -153,7 +153,7 @@ const UploadFileConfirmDialog = ({
       }}
     >
       <DialogContent
-        className="sm:max-w-md bg-background"
+        className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-md bg-background"
         overlayClassName="bg-black/30"
         showCloseButton={false}
       >

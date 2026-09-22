@@ -103,7 +103,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent
-          className="flex h-[80vh] w-[1200px] max-w-[90vw] flex-col gap-0 overflow-hidden border-border bg-background p-0 text-foreground sm:max-w-[1200px]"
+          className="flex h-[80vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden border-border bg-background p-0 text-foreground sm:w-[1200px] sm:max-w-[1200px]"
           overlayClassName="bg-black/30"
           showCloseButton={false}
         >
@@ -126,7 +126,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
           <div className="relative min-h-0 flex-1 px-5 py-5 font-lato text-sm sm:px-10">
             {isTasksLoading ? (
               <div className="flex h-full min-h-[200px] items-center justify-center">
-                <LoaderSpinner size={28} className="text-primary" />
+                <LoaderSpinner size={28} className="text-secondary-foreground" />
               </div>
             ) : (
               <div className="h-full overflow-y-auto hidden-scrollbar">
@@ -177,7 +177,7 @@ const AllTaskModal = ({ isOpen, onClose }) => {
                                 <Button
                                   type="button"
                                   variant="ghost"
-                                  className="h-auto px-3 py-3 text-foreground hover:bg-transparent hover:text-primary"
+                                  className="h-auto px-3 py-3 text-foreground hover:bg-transparent hover:text-secondary-foreground"
                                   onClick={() => setSelectTaskToUpdate(task)}
                                 >
                                   <Edit className="size-5" />

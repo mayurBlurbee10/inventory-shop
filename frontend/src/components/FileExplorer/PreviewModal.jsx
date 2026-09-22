@@ -371,7 +371,7 @@ export default function PreviewModal({
       }}
     >
       <DialogContent
-        className="flex h-[80vh] w-[1200px] max-w-[90vw] flex-col gap-0 overflow-hidden bg-background p-0 sm:max-w-[90vw]"
+        className="flex h-[80vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden bg-background p-0 sm:w-[1200px] sm:max-w-[90vw]"
         overlayClassName="bg-black/30"
         showCloseButton={false}
       >

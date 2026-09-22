@@ -43,7 +43,7 @@ import {
 
 const getStatusBadgeClass = (status) => {
   if (status === "Fully Paid") return "border-success text-success";
-  if (status === "Active") return "border-primary-solid text-primary-solid";
+  if (status === "Active") return "border-primary-solid text-secondary-foreground";
   return "border-warning text-warning";
 };
 

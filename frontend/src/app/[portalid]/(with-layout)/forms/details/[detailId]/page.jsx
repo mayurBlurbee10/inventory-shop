@@ -23,7 +23,7 @@ const calculatePercentage = (value, totalValue) => {
 
 const getStatusBadgeClass = (status) => {
   if (status === "Fully Paid") return "border-success text-success";
-  if (status === "Active") return "border-primary-solid text-primary-solid";
+  if (status === "Active") return "border-primary-solid text-secondary-foreground";
   return "border-warning text-warning";
 };
 
@@ -255,7 +255,7 @@ function DetailsPage() {
             type="button"
             variant="ghost"
             onClick={() => router.back()}
-            className="h-auto gap-1 px-0 py-0 text-primary hover:bg-transparent hover:text-primary/80"
+            className="h-auto gap-1 px-0 py-0 text-secondary-foreground hover:bg-transparent hover:text-secondary-foreground/80"
           >
             <ChevronLeft className="h-6 w-6" />
             Back to Forms

@@ -54,7 +54,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
   const [fieldErrors, setFieldErrors] = useState({});
   const [ndaPages, setNdaPages] = useState(null);
   const [isNdaPagesLoading, setIsNdaPagesLoading] = useState(false);
-  const{data:user} = useSelector((state) => state.user);
+  const { data: user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const roleOptions = [
@@ -70,7 +70,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
     phoneNo: user.phoneNo || "",
     title: user.title || "",
     companyName: user.company?.name || "",
-    role:user.role || UserRole.USER,
+    role: user.role || UserRole.USER,
     logo: user.company?.logo || null,
   })
   const isFormChanged = () => {
@@ -130,7 +130,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
     });
   };
 
-   const fetchNdaPages = async () => {
+  const fetchNdaPages = async () => {
     try {
       setIsNdaPagesLoading(true);
       const url = `/api/nda-agreements?portalId=${params.portalid || "root"}`;
@@ -673,7 +673,7 @@ const UserDetails = ({ users, isOpen, onClose, onAdd, setActiveStep, formData, s
   );
 };
 
-const PermissionsModel = ({onClose, setActiveStep,finalStep ,formData , setFormData,onAdd,handleModalClose}) => {
+const PermissionsModel = ({ onClose, setActiveStep, finalStep, formData, setFormData, onAdd, handleModalClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const params = useParams();
@@ -1091,7 +1091,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
             isCompleted
               ? "border-transparent bg-[var(--primary-solid)] text-primary-foreground"
               : isActive
-                ? "border-primary-solid bg-background text-primary-solid"
+                ? "border-primary-solid bg-background text-secondary-foreground"
                 : "border-border bg-background text-muted-foreground"
           )}
         >
@@ -1131,7 +1131,7 @@ const AddUserModal = ({ users, isOpen, onClose, onAdd, from, user }) => {
     >
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[85vh] w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl bg-background"
+        className="flex max-h-[85vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden p-0 sm:w-full sm:max-w-2xl bg-background"
       >
         <div className="flex items-center justify-between border-b border-border px-4 pb-3 pt-4">
           <DialogTitle className="text-xl font-semibold text-foreground">

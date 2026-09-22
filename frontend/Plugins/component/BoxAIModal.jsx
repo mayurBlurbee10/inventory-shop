@@ -833,8 +833,8 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
         className={cn(
           "ml-1 inline-flex shrink-0 align-baseline !px-1 !py-1",
           isActive
-            ? "bg-primary/10 text-primary"
-            : "text-muted-foreground hover:bg-accent hover:text-primary"
+            ? "bg-primary/10 text-secondary-foreground"
+            : "text-muted-foreground hover:bg-accent hover:text-secondary-foreground"
         )}
         title={title}
         aria-label={title}
@@ -1018,7 +1018,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
               className={cn(
                 "h-4 w-4 shrink-0 text-foreground mx-auto my-auto",
                 isResizing
-                  ? "text-primary"
+                  ? "text-secondary-foreground"
                   : "text-foreground/80 group-hover/resizer:text-foreground"
               )}
             />
@@ -1187,7 +1187,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                                   {getDisplayCitations(msg).length}
                                 </Badge>
                                 {filteredCitations[msg.id]?.fileIds?.length > 0 && (
-                                  <span className="ml-1 text-xs text-primary">
+                                  <span className="ml-1 text-xs text-secondary-foreground">
                                     (filtered)
                                   </span>
                                 )}
@@ -1200,7 +1200,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                                     onClick={() =>
                                       clearMessageCitationFilter(msg.id)
                                     }
-                                    className="h-auto !px-3 !py-3 text-xs font-medium text-muted-foreground hover:text-primary"
+                                    className="h-auto !px-3 !py-3 text-xs font-medium text-muted-foreground hover:text-secondary-foreground"
                                     title="Show all sources"
                                   >
                                     Show All
@@ -1211,7 +1211,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                                     type="button"
                                     variant="ghost"
                                     onClick={() => toggleExpandCitations(msg.id)}
-                                    className="h-auto !px-3 !py-3 text-xs font-medium text-muted-foreground hover:text-primary"
+                                    className="h-auto !px-3 !py-3 text-xs font-medium text-muted-foreground hover:text-secondary-foreground"
                                   >
                                     {expandedCitations[msg.id] ? (
                                       <>
@@ -1282,7 +1282,7 @@ const BoxAIModal = ({ isOpen, onClose, hubTitle = "test" }) => {
                                   type="button"
                                   variant="ghost"
                                   onClick={() => toggleExpandCitations(msg.id)}
-                                  className="h-auto !px-3 !py-3 text-xs text-muted-foreground hover:text-primary"
+                                  className="h-auto !px-3 !py-3 text-xs text-muted-foreground hover:text-secondary-foreground"
                                 >
                                   {expandedCitations[msg.id]
                                     ? `Showing all ${getDisplayCitations(msg).length} sources`

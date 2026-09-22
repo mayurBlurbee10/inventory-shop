@@ -75,7 +75,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Can } from "./Access/AccessControlProvider";
+import { Can, useAccess } from "./Access/AccessControlProvider";
 
 /** Tagged files use resource sets; untagged files use shareddocs. */
 function fileResource(file) {
@@ -105,14 +105,50 @@ const FileActionsMenu = ({
   onRequestSignature,
   onSelfSign,
 }) => {
+  const { can } = useAccess();
   const isList = variant === "list";
   const TriggerIcon = isList ? EllipsisVertical : Ellipsis;
+  const resource = fileResource(file);
+  const isShared = listType === "shared";
+  const isFile = file?.type === "file";
+  const isViewer = file?.currentUserRole === "viewer";
 
-  if (isList && (fromAdvisor || listType === "shared")) {
+  if (isList && (fromAdvisor || isShared)) {
     return null;
   }
 
-  if (!isList && file.type === "folder" && listType === "shared") {
+  if (!isList && file.type === "folder" && isShared) {
+    return null;
+  }
+
+  const showView = !isList && isFile && can(resource, "viewfile");
+  const showDownload =
+    !isList &&
+    isFile &&
+    (!isShared || !isViewer) &&
+    can(resource, "downloadfile");
+  const showShare =
+    !isList && !isShared && !isViewer && can(resource, "sharefile");
+  const showMove = !isShared && can(resource, "movefile");
+  const showSign =
+    !isShared && isFile && esignAvailable && can(resource, "signfile");
+  const showEdit =
+    isFile &&
+    ((!isShared && can(resource, "editfile")) ||
+      (!isList && isShared && can(resource, "editfile")));
+  const showRename = !isShared && can(resource, "renamefile");
+  const showDelete = !isShared && can(resource, "deletefile");
+
+  if (
+    !showView &&
+    !showDownload &&
+    !showShare &&
+    !showMove &&
+    !showSign &&
+    !showEdit &&
+    !showRename &&
+    !showDelete
+  ) {
     return null;
   }
 
@@ -840,7 +876,7 @@ const ShareModal = ({
 
         {collabLoading && (
           <div className="absolute top-0 left-0 rounded-xl h-full w-full bg-foreground/20 flex items-center justify-center">
-            <LoaderSpinner size={24} className="text-primary" />
+            <LoaderSpinner size={24} className="text-secondary-foreground" />
           </div>
         )}
       </DialogContent>
@@ -1475,7 +1511,7 @@ function SharedFolderExplorer({
                           <TableCell className="py-3 pl-4">
                             <Input
                               type="checkbox"
-                              className="form-checkbox h-4 w-4 text-primary cursor-pointer w-4"
+                              className="form-checkbox h-4 w-4 text-secondary-foreground cursor-pointer w-4"
                               checked={selectedBulkItems.includes(file?.id)}
                               onChange={(e) =>
                                 handleCheckboxChange(file?.id, e.target.checked)
@@ -1487,7 +1523,7 @@ function SharedFolderExplorer({
                         <TableCell className="py-1">
                           <Button
                             variant="ghost"
-                            className={`h-auto px-3 py-3 text-sm text-foreground font-lato group-hover:text-primary max-w-64 w-full justify-start text-start mx-4 font-normal ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
+                            className={`h-auto px-3 py-3 text-sm text-foreground font-lato group-hover:text-secondary-foreground max-w-64 w-full justify-start text-start mx-4 font-normal ${file.type === "folder" ? "cursor-pointer" : "cursor-default"}`}
                             onClick={() =>
                               file?.type === "folder" && handleFolderClick(file)
                             }
@@ -1508,7 +1544,7 @@ function SharedFolderExplorer({
                         {listType !== "loan" && (
                           <>
                             <TableCell className="py-1">
-                              <p className="text-sm text-muted-foreground font-lato group-hover:text-primary mx-4">
+                              <p className="text-sm text-muted-foreground font-lato group-hover:text-secondary-foreground mx-4">
                                 {/* today by Wealthportal Service Account */}
                                 {listType === "shared"
                                   ? getUserName(file)
@@ -1516,7 +1552,7 @@ function SharedFolderExplorer({
                               </p>
                             </TableCell>
                             <TableCell>
-                              <p className="text-sm text-muted-foreground font-lato group-hover:text-primary">
+                              <p className="text-sm text-muted-foreground font-lato group-hover:text-secondary-foreground">
                                 {/* 100.7 KB */}
                                 {formatSize(file?.size)}
                               </p>
@@ -1667,9 +1703,9 @@ function SharedFolderExplorer({
                         <div className="max-h-24 max-w-[80px] h-full w-full">
                           {/* <Folder className="flex-auto h-full w-full text-blue-500" /> */}
                           {file.type === "folder" ? (
-                            <Folder className="flex-auto h-full w-full text-primary" />
+                            <Folder className="flex-auto h-full w-full text-secondary-foreground" />
                           ) : (
-                            <File className="flex-auto h-full w-full text-primary" />
+                            <File className="flex-auto h-full w-full text-secondary-foreground" />
                           )}
                         </div>
                       </div>

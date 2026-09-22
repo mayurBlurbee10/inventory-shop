@@ -615,7 +615,7 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
 
       <div className="grid grid-cols-1 gap-y-5 md:grid-cols-1 lg:grid-cols-2 sm:gap-x-5">
         <div className="flex flex-col gap-3">
-          <h1 className="text-center text-xl text-primary-solid">
+          <h1 className="text-center text-xl text-secondary-foreground">
             Select from Shared Documents
           </h1>
           <div className="rounded-xl border border-border">
@@ -653,7 +653,7 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
         </div>
 
         <div className="flex flex-col gap-3">
-          <h1 className="text-center text-xl text-primary-solid">Upload</h1>
+          <h1 className="text-center text-xl text-secondary-foreground">Upload</h1>
           {/* File Upload Section */}
           <div className="flex h-full flex-col rounded-xl border border-border">
             {uploadSuccess ? (
@@ -663,7 +663,7 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
                   Success! Your files have been uploaded.
                 </p>
                 <p
-                  className="cursor-pointer text-primary-solid underline"
+                  className="cursor-pointer text-secondary-foreground underline"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   Select More Files
@@ -681,10 +681,10 @@ const DocumentStep = ({ setActiveStep, loanFolderId, filesList }) => {
                 onDragOver={(e) => handleDragEvent(e, true)}
                 onDrop={handleDrop}
               >
-                <UploadCloud className="mb-2 h-12 w-12 text-primary-solid" />
+                <UploadCloud className="mb-2 h-12 w-12 text-secondary-foreground" />
                 <p className="text-muted-foreground">Drag and drop files</p>
                 <p
-                  className="cursor-pointer text-primary-solid underline"
+                  className="cursor-pointer text-secondary-foreground underline"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   Browse your device
@@ -890,7 +890,7 @@ const LoanEstimateStep = ({ finalStep, params, loanFolderId, setActiveStep }) =>
             "Review and Sign"
           )}
         </Button>
-        <Signature className="size-10 text-primary-solid" />
+        <Signature className="size-10 text-secondary-foreground" />
       </div>
       <SignRequestModal
         isOpen={isSignModalOpen}

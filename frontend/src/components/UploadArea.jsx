@@ -79,9 +79,9 @@ export default function UploadArea({ isForImport, onBrowse, onClose }) {
         <CardContent className="flex flex-col items-center justify-center space-y-4 p-8 text-center">
           {isForImport ?
           (
-            <Import className={`h-12 w-12 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+            <Import className={`h-12 w-12 ${isDragging ? 'text-secondary-foreground' : 'text-muted-foreground'}`} />
           ):(
-            <Upload className={`h-12 w-12 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+            <Upload className={`h-12 w-12 ${isDragging ? 'text-secondary-foreground' : 'text-muted-foreground'}`} />
           ) }
           <div>
             <p className="text-sm text-muted-foreground sm:text-base">
@@ -92,7 +92,7 @@ export default function UploadArea({ isForImport, onBrowse, onClose }) {
                 type="button"
                 variant="link"
                 onClick={onBrowse}
-                className="h-auto px-3 py-3 font-medium text-primary"
+                className="h-auto px-3 py-3 font-medium text-secondary-foreground"
               >
                 browse computer
               </Button>

@@ -59,7 +59,7 @@ const AddLinkModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-foreground">
             {initialLink ? "Edit Link" : "Add Link"}

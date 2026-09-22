@@ -57,7 +57,7 @@ function MoveDialog({
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-      <DialogContent className="w-full max-w-md gap-0 overflow-hidden bg-background p-0 text-foreground sm:max-w-md">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] gap-0 overflow-hidden bg-background p-0 text-foreground sm:w-full sm:max-w-md">
         {/* Header */}
         <DialogHeader className="space-y-2 overflow-hidden border-b border-border px-4 py-3 pr-12 text-left">
           <DialogTitle className="text-lg font-semibold text-secondary-foreground">
@@ -135,7 +135,7 @@ function MoveDialog({
               isLoading ||
               !selectedFolder ||
               selectedFolder?.id ==
-                currentLocation[currentLocation.length - 1]?.id ||
+              currentLocation[currentLocation.length - 1]?.id ||
               selectedFolder?.id == item?.id
             }
           >

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -494,7 +494,7 @@ const TermsAndConditionCreation = () => {
         }}
       >
         <DialogContent
-          className="max-h-[80vh] w-[90%] max-w-[800px] overflow-y-auto sm:max-w-[800px]"
+          className="max-h-[80vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto sm:w-full sm:max-w-[800px]"
         >
           {viewData && (
             <>

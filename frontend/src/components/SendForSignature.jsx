@@ -191,7 +191,7 @@ function SendforSignatureDialog({
       }}
     >
       <DialogContent
-        className="w-full max-w-md overflow-hidden bg-background sm:max-w-md"
+        className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] overflow-hidden bg-background sm:w-full sm:max-w-md"
         overlayClassName="bg-black/30"
         showCloseButton={false}
       >

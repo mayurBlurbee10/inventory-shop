@@ -211,7 +211,7 @@ const PreviewLoginPage = () => {
                                             label="Log In"
                                             className="w-full bg-primary-solid text-primary-foreground hover:bg-primary-solid/80"
                                         />
-                                        <div className="mt-2 flex w-full cursor-pointer items-center justify-center text-sm text-muted-foreground hover:text-primary">
+                                        <div className="mt-2 flex w-full cursor-pointer items-center justify-center text-sm text-muted-foreground hover:text-secondary-foreground">
                                             <p>
                                                 Forgot Password?
                                             </p>

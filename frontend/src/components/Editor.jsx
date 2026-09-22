@@ -499,7 +499,7 @@ function Editor({ isModalOpen, setIsModalOpen, item, selectedItem }) {
 
               {comments && comments.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
-                  <MessageSquareDiff className="h-10 w-10 text-primary" />
+                  <MessageSquareDiff className="h-10 w-10 text-secondary-foreground" />
                   <p className="mt-2 text-lg font-semibold text-foreground">
                     No comments to show
                   </p>

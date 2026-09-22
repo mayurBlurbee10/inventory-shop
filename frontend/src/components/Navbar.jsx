@@ -226,8 +226,8 @@ function Navbar({ content, config, filterValue }) {
     cn(
       "flex w-full items-center gap-3 h-10 px-3 text-sm font-semibold rounded-md border border-border transition-colors",
       isActive
-        ? "bg-accent text-primary border-primary/20"
-        : "bg-muted/50 text-foreground hover:bg-accent hover:text-primary",
+        ? "bg-accent text-secondary-foreground border-primary/20"
+        : "bg-muted/50 text-foreground hover:bg-accent hover:text-secondary-foreground",
     );
 
   const NavBarItem = ({ title, href, activeRoutes = [], icon: Icon }) => {
@@ -534,9 +534,9 @@ function Navbar({ content, config, filterValue }) {
   const LogoImage = () => {
     const logoSizeKey = filterTheme("Logo")?.fontSize || "medium";
     const logoHeightClass = {
-      small: "h-10 sm:h-12 xl:h-[45px]",
-      medium: "h-12 sm:h-14 xl:h-[68px]",
-      large: "h-14 sm:h-16 xl:h-[90px]",
+      small: "h-10 sm:h-12 lg:h-[45px]",
+      medium: "h-12 sm:h-14 lg:h-[68px]",
+      large: "h-14 sm:h-16 lg:h-[90px]",
     }[logoSizeKey in logoSizeRatio ? logoSizeKey : "medium"];
 
     return (
@@ -544,7 +544,7 @@ function Navbar({ content, config, filterValue }) {
         <img
           src={logo.replace("/api/upload", "/uploads")}
           alt={params.portalid}
-          className={cn("mr-2 w-auto max-w-[88px] object-contain sm:max-w-[96px] xl:max-w-none", logoHeightClass)}
+          className={cn("mr-2 w-auto max-w-[88px] object-contain sm:max-w-[96px] lg:max-w-none", logoHeightClass)}
         />
       </div>
     );
@@ -670,7 +670,7 @@ function Navbar({ content, config, filterValue }) {
                   router.push(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/${portalId}/shared-docs`);
                 }
               }}
-              className="relative z-10 flex min-w-0 flex-1 items-center gap-1 px-2 py-1 sm:gap-2 sm:px-[18px] xl:w-auto xl:flex-none xl:flex-shrink-0"
+              className="relative z-10 flex min-w-0 flex-1 items-center gap-1 px-2 py-1 sm:gap-2 sm:px-[18px] lg:w-auto lg:flex-none lg:flex-shrink-0"
             >
               {logo ? (
                 <div
@@ -700,7 +700,7 @@ function Navbar({ content, config, filterValue }) {
               )}
 
               <span
-                className="font-lato text-sm leading-tight text-primary-foreground whitespace-normal sm:text-base md:text-lg xl:text-xl 2xl:text-2xl"
+                className="font-lato text-sm leading-tight text-primary-foreground whitespace-normal sm:text-base md:text-lg lg:text-xl 2xl:text-2xl"
                 style={{
                   fontWeight: filterTheme("Header Text").fontWeight,
                   lineHeight: "1.2",
@@ -717,7 +717,7 @@ function Navbar({ content, config, filterValue }) {
               </span>
             </div>
 
-            <div className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 xl:flex">
+            <div className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 lg:flex">
               <div className="pointer-events-auto flex items-center">
               {primaryLinks.map((link) => (
                 <NavBarItem
@@ -763,7 +763,7 @@ function Navbar({ content, config, filterValue }) {
                             render={<Link href={link.href} />}
                             className={cn(
                               "gap-2 py-2 px-3 hover:bg-accent",
-                              isActive && "bg-accent text-primary font-semibold",
+                              isActive && "bg-accent text-secondary-foreground font-semibold",
                             )}
                             onClick={() => setIsOpenMoreLinksDropdown(false)}
                           >
@@ -779,7 +779,7 @@ function Navbar({ content, config, filterValue }) {
               </div>
             </div>
 
-            <div className="ml-auto hidden shrink-0 items-center gap-0.5 xl:flex">
+            <div className="ml-auto hidden shrink-0 items-center gap-0.5 lg:flex">
               <div className="hidden md:block">
                 <PluginRenderer config={config} pluginKeys={['box_ai']} />
               </div>
@@ -880,7 +880,7 @@ function Navbar({ content, config, filterValue }) {
             </div>
 
             {/* Mobile header actions */}
-            <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 xl:hidden">
+            <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 lg:hidden">
               <AppTooltip
                 label={
                   themeMode === "dark"
@@ -917,7 +917,7 @@ function Navbar({ content, config, filterValue }) {
             {isOpenNavbar && (
               <>
                 <div
-                  className="fixed inset-0 z-[55] bg-foreground/30 xl:hidden"
+                  className="fixed inset-0 z-[55] bg-foreground/30 lg:hidden"
                   aria-hidden
                   onClick={closeMobileSidebar}
                 />
@@ -976,8 +976,8 @@ function Navbar({ content, config, filterValue }) {
                                   className={cn(
                                     "w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out",
                                     isActive
-                                      ? "bg-accent text-primary"
-                                      : "bg-transparent text-foreground hover:bg-accent hover:text-primary",
+                                      ? "bg-accent text-secondary-foreground"
+                                      : "bg-transparent text-foreground hover:bg-accent hover:text-secondary-foreground",
                                   )}
                                 >
                                   <div className="flex items-center space-x-3">
@@ -1008,8 +1008,8 @@ function Navbar({ content, config, filterValue }) {
                                           className={cn(
                                             "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out",
                                             isOptionActive
-                                              ? "bg-accent text-primary"
-                                              : "text-foreground hover:bg-accent hover:text-primary",
+                                              ? "bg-accent text-secondary-foreground"
+                                              : "text-foreground hover:bg-accent hover:text-secondary-foreground",
                                           )}
                                         >
                                           <span className="flex items-center gap-3">
@@ -1126,7 +1126,7 @@ function Navbar({ content, config, filterValue }) {
                               }
                             />
                           ))}
-                        <div className="w-full [&_button]:h-10 [&_button]:w-full [&_button]:justify-start [&_button]:rounded-md [&_button]:border [&_button]:border-border [&_button]:bg-muted/50 [&_button]:px-3 [&_button]:text-foreground [&_button]:hover:bg-accent [&_button]:hover:text-primary">
+                        <div className="w-full [&_button]:h-10 [&_button]:w-full [&_button]:justify-start [&_button]:rounded-md [&_button]:border [&_button]:border-border [&_button]:bg-muted/50 [&_button]:px-3 [&_button]:text-foreground [&_button]:hover:bg-accent [&_button]:hover:text-secondary-foreground">
                           <PluginRenderer config={config} pluginKeys={['box_ai']} />
                         </div>
                         <div className="relative w-full">

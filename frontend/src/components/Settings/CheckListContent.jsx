@@ -102,7 +102,7 @@ const AddCheckListModal = ({
         if (!open && !isLoading) handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-md bg-background">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-md bg-background">
         <DialogHeader>
           <DialogTitle className="text-foreground">
             {checklist ? "Edit" : "Add"} Check List

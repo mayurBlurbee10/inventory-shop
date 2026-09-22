@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { Settings as SettingsIcon, Users, Layout, Box, FileText, ShoppingBag, FileSpreadsheet, ChevronRight, X, Plug } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import AppearanceContent from './AppearanceContent';
 import UsersContent from './Settings/UsersContent';
 import BoxSettingsContent from './Settings/BoxSettingsContent';
@@ -48,11 +52,15 @@ const SettingsModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-7xl h-[90vh] flex relative">
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-7xl h-[90vh] flex p-0 overflow-hidden bg-background border border-border"
+        overlayClassName="bg-black/50"
+        showCloseButton={false}
+      >
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-500"
+          className="absolute top-2 right-2 z-10 text-gray-400 hover:text-gray-500"
         >
           <X className="h-6 w-6" />
         </button>
@@ -63,21 +71,18 @@ const SettingsModal = ({ isOpen, onClose }) => {
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${
-                  activeTab === id
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ease-in-out ${activeTab === id
                     ? 'bg-white/95 text-gray-900'
                     : 'text-white/90 hover:bg-white/10'
-                }`}
+                  }`}
               >
                 <div className="flex items-center space-x-3">
-                  <Icon className={`w-5 h-5 ${
-                    activeTab === id ? 'text-gray-700' : 'text-white/90'
-                  }`} />
+                  <Icon className={`w-5 h-5 ${activeTab === id ? 'text-gray-700' : 'text-white/90'
+                    }`} />
                   <span>{label}</span>
                 </div>
-                <ChevronRight className={`w-4 h-4 ${
-                  activeTab === id ? 'text-gray-700' : 'text-white/80'
-                }`} />
+                <ChevronRight className={`w-4 h-4 ${activeTab === id ? 'text-gray-700' : 'text-white/90'
+                  }`} />
               </button>
             ))}
           </nav>
@@ -85,8 +90,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
         <div className="w-3/5 md:flex-1 p-6 overflow-y-auto bg-gray-50">
           {getActiveContent()}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

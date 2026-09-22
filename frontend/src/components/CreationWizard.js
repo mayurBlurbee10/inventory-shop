@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import { fetchWrapper } from "@/app/lib/fetchWrapper";
 import Button from "./Common/Elements/Button";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 const WizardStep = ({ step, currentStep }) => {
   const isCompleted = currentStep > step;
@@ -487,7 +491,7 @@ const AdministratorStep = ({ formData, setFormData }) => {
           phoneNumber: userData.phoneNo || ""
           // permissions: userData?.permissions || {}, // Pre-populate permissions if available
         });
-      } 
+      }
     } catch (err) {
       console.error("Error fetching user data:", err);
       setError(err.message);
@@ -509,7 +513,7 @@ const AdministratorStep = ({ formData, setFormData }) => {
         label="Work Email"
         type="email"
         value={formData.adminEmail}
-        onChange={(e) =>{
+        onChange={(e) => {
           setFormData({ ...formData, adminEmail: e.target.value, firstName: "", lastName: "", jobTitle: "", phoneNumber: "" })
         }}
         onBlur={handleEmailBlur}
@@ -882,27 +886,31 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="fixed inset-0 z-[70] bg-black/30 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col relative">
+    <Dialog open={true} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent
+        className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-3xl h-[calc(100vh-120px)] flex flex-col p-0 overflow-hidden bg-background border border-border"
+        overlayClassName="bg-black/30"
+        showCloseButton={false}
+      >
         {(isSubmitting || isLoading) && (
-          <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10 rounded-lg">
+          <div className="absolute inset-0 bg-background/90 flex items-center justify-center z-10 rounded-lg">
             <div className="text-center space-y-3">
               <div className="mx-auto h-8 w-8 animate-spin">
-                <div className="h-full w-full rounded-full border-4 border-gray-200 border-t-gray-800"></div>
+                <div className="h-full w-full rounded-full border-4 border-muted border-t-foreground"></div>
               </div>
-              <p className="text-sm text-gray-500">Creating your portal...</p>
+              <p className="text-sm text-muted-foreground">Creating your portal...</p>
             </div>
           </div>
         )}
 
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 overflow-auto">
+        <div className="px-6 py-4 border-b border-border overflow-auto bg-card">
           <div className="flex justify-between items-center space-x-8">
             {[0, 1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
                 <WizardStep step={step} currentStep={currentStep} />
                 {step < 3 && (
-                  <ChevronRight size={16} className="mx-2 text-gray-300" />
+                  <ChevronRight size={16} className="mx-2 text-muted-foreground/40" />
                 )}
               </div>
             ))}
@@ -910,12 +918,12 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-background">
           <CurrentStepComponent formData={formData} setFormData={setFormData} />
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg flex justify-between">
+        <div className="px-6 py-4 bg-muted/40 border-t border-border rounded-b-lg flex justify-between">
           <Button
             onClick={currentStep === 0 ? handleClose : handleBack}
             disabled={isSubmitting || isLoading}
@@ -930,8 +938,8 @@ const CreationWizard = ({ isLoading, isOpen, onClose, onCreateSubsidiary }) => {
             isLoading={isSubmitting || isLoading}
           />
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

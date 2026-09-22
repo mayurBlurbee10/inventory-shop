@@ -1010,7 +1010,7 @@ function Documents({
                         <ToggleGroupItem
                           value="list"
                           aria-label="List view"
-                          className={view === "list" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0 bg-transparent text-muted-foreground hover:text-foreground"}
+                          className={view === "list" ? "h-8 rounded-md border border-border bg-background text-secondary-foreground shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0 bg-transparent text-muted-foreground hover:text-foreground"}
                         >
                           <AlignJustify className="w-4 h-4" />
                         </ToggleGroupItem>
@@ -1019,7 +1019,7 @@ function Documents({
                         <ToggleGroupItem
                           value="grid"
                           aria-label="Grid view"
-                          className={view === "grid" ? "h-8 rounded-md border border-border bg-background text-primary shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0  text-muted-foreground hover:text-foreground"}
+                          className={view === "grid" ? "h-8 rounded-md border border-border bg-background text-secondary-foreground shadow-sm data-[state=on]:bg-secondary" : "h-8 rounded-md border-0  text-muted-foreground hover:text-foreground"}
                         >
                           <LayoutGrid className="w-4 h-4" />
                         </ToggleGroupItem>

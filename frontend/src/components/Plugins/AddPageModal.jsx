@@ -176,10 +176,10 @@ function AddPageModal({
           const itemExists = prev.some((page) => page.id === savedData.data.id);
           return itemExists
             ? prev.map((page) =>
-                page.id === savedData.data.id
-                  ? { ...page, ...savedData.data }
-                  : page,
-              )
+              page.id === savedData.data.id
+                ? { ...page, ...savedData.data }
+                : page,
+            )
             : [...prev, { ...savedData.data, type: pageType }];
         });
       }
@@ -242,7 +242,7 @@ function AddPageModal({
         onOpenChange={(open) => !open && handleCancelClick()}
       >
         <DialogContent
-          className="max-h-[85vh] w-[90%] max-w-[1000px] overflow-y-auto sm:max-w-[1000px]"
+          className="max-h-[85vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto sm:w-full sm:max-w-[1000px]"
           overlayClassName="bg-black/30"
           showCloseButton
         >
@@ -332,7 +332,7 @@ function AddPageModal({
         open={isOpenCancelConfirm}
         onOpenChange={(open) => !open && setIsOpenCancelConfirm(false)}
       >
-        <DialogContent className="sm:max-w-sm" overlayClassName="bg-black/30">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] sm:w-full sm:max-w-sm" overlayClassName="bg-black/30">
           <DialogHeader>
             <DialogTitle className="text-foreground">
               {editData ? "Discard Page Changes?" : "Cancel Add"}

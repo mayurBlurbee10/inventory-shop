@@ -455,7 +455,7 @@ function ViewProfileModal({
       >
         <DialogContent
           showCloseButton={false}
-          className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl"
+          className="flex max-h-[90vh] w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden p-0 sm:w-full sm:max-w-2xl"
         >
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-popover p-4">
             <DialogTitle className="text-xl font-medium text-foreground">
@@ -477,214 +477,214 @@ function ViewProfileModal({
 
           <div className="hidden-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
             <div className="space-y-4 p-4 lg:p-6">
-            <div className="flex w-full gap-4">
-              <div className="w-1/2 space-y-2">
-                <Label className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  First Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="text"
-                  required
-                  className={cn(
-                    enabledFieldClassName,
-                    fieldErrors.firstName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
-                  )}
-                  value={formData.firstName}
-                  onChange={(e) => handleFormChange("firstName", e.target.value)}
-                  onBlur={(e) => handleRequiredBlur("firstName", e.target.value)}
-                />
-              </div>
-              <div className="w-1/2 space-y-2">
-                <Label className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Last Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="text"
-                  required
-                  className={cn(
-                    enabledFieldClassName,
-                    fieldErrors.lastName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
-                  )}
-                  value={formData.lastName}
-                  onChange={(e) => handleFormChange("lastName", e.target.value)}
-                  onBlur={(e) => handleRequiredBlur("lastName", e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-foreground">
-                <Mail className="h-4 w-4" />
-                Email <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                type="email"
-                required
-                disabled
-                className={cn(readOnlyFieldClassName)}
-                value={user?.email}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Phone No
-              </Label>
-              <Input
-                type="text"
-                className={cn(enabledFieldClassName, phoneError && "border-destructive")}
-                value={formData.phoneNo ?? ""}
-                onChange={handlePhoneChange}
-              />
-            </div>
-            {phoneError && (
-              <p className="text-sm text-destructive">{phoneError}</p>
-            )}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                Title <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                type="text"
-                className={cn(
-                  enabledFieldClassName,
-                  fieldErrors.title && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
-                )}
-                value={formData.title}
-                onChange={(e) => handleFormChange("title", e.target.value)}
-                onBlur={(e) => handleRequiredBlur("title", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                Company Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                type="text"
-                className={cn(
-                  enabledFieldClassName,
-                  fieldErrors.companyName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
-                )}
-                value={formData.companyName}
-                onChange={(e) => handleFormChange("companyName", e.target.value)}
-                onBlur={(e) => handleRequiredBlur("companyName", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-foreground">
-                <UserPlus className="h-4 w-4" />
-                Role <span className="text-destructive">*</span>
-              </Label>
-              <div className={cn("w-full", isRoleDisabled && "cursor-not-allowed")}>
-                <ReactSelect
-                  className="w-full"
-                  classNamePrefix="user-role-select"
-                  styles={getReactSelectStyles({
-                    isInvalid: !!fieldErrors.role,
-                    isDisabled: isRoleDisabled,
-                  })}
-                  isSearchable
-                  isDisabled={isRoleDisabled}
-                  value={selectedRole}
-                  onChange={(option) => {
-                    handleFormChange("role", option?.value || "");
-                    if (option?.value) {
-                      setFieldErrors((prev) => {
-                        const next = { ...prev };
-                        delete next.role;
-                        return next;
-                      });
-                    }
-                  }}
-                  onBlur={() => {
-                    if (!isRoleDisabled) {
-                      handleRequiredBlur("role", formData.role);
-                    }
-                  }}
-                  options={roleOptions}
-                  placeholder="Select role..."
-                  menuPortalTarget={
-                    typeof document !== "undefined" ? document.body : null
-                  }
-                  menuPosition="fixed"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-foreground">
-                <Briefcase className="h-4 w-4" />
-                NDA Pages
-              </Label>
-              <div className={cn("w-full", isNdaDisabled && "cursor-not-allowed")}>
-                <ReactSelect
-                  className="w-full"
-                  classNamePrefix="user-nda-select"
-                  styles={getReactSelectStyles({ isDisabled: isNdaDisabled })}
-                  isSearchable
-                  isClearable
-                  isDisabled={isNdaDisabled}
-                  isLoading={isNdaPagesLoading}
-                  value={selectedNda}
-                  onChange={(option) =>
-                    handleFormChange(
-                      "ndaPages",
-                      !option || option.value === "none" ? null : option.value
-                    )
-                  }
-                  options={ndaOptions}
-                  placeholder={
-                    isNdaPagesLoading
-                      ? "Fetching NDA pages..."
-                      : "Select NDA pages..."
-                  }
-                  loadingMessage={() => "Fetching NDA pages..."}
-                  menuPortalTarget={
-                    typeof document !== "undefined" ? document.body : null
-                  }
-                  menuPosition="fixed"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Image className="h-4 w-4" /> 
-                Company Logo
-              </Label>
-              {previewUrl ? (
-                <div className="relative mt-2 w-fit overflow-hidden bg-muted/20">
-                  <div className="flex h-32 items-center justify-center overflow-hidden p-2">
-                    <img
-                      src={previewUrl}
-                      alt="Logo preview"
-                      className="max-h-full max-w-full object-contain rounded-lg"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemoveLogo}
-                    title="Remove logo"
-                    aria-label="Remove logo"
-                    className="absolute right-1 top-1 z-10 flex size-7 items-center justify-center rounded-full border-2 border-background bg-card text-secondary-foreground shadow-md transition-colors hover:bg-secondary-foreground/90 hover:text-secondary"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-1 flex items-center space-x-4">
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-solid hover:file:bg-accent/70"
+              <div className="flex w-full gap-4">
+                <div className="w-1/2 space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    First Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    type="text"
+                    required
+                    className={cn(
+                      enabledFieldClassName,
+                      fieldErrors.firstName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                    )}
+                    value={formData.firstName}
+                    onChange={(e) => handleFormChange("firstName", e.target.value)}
+                    onBlur={(e) => handleRequiredBlur("firstName", e.target.value)}
                   />
                 </div>
+                <div className="w-1/2 space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Last Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    type="text"
+                    required
+                    className={cn(
+                      enabledFieldClassName,
+                      fieldErrors.lastName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                    )}
+                    value={formData.lastName}
+                    onChange={(e) => handleFormChange("lastName", e.target.value)}
+                    onBlur={(e) => handleRequiredBlur("lastName", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-foreground">
+                  <Mail className="h-4 w-4" />
+                  Email <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="email"
+                  required
+                  disabled
+                  className={cn(readOnlyFieldClassName)}
+                  value={user?.email}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  Phone No
+                </Label>
+                <Input
+                  type="text"
+                  className={cn(enabledFieldClassName, phoneError && "border-destructive")}
+                  value={formData.phoneNo ?? ""}
+                  onChange={handlePhoneChange}
+                />
+              </div>
+              {phoneError && (
+                <p className="text-sm text-destructive">{phoneError}</p>
               )}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  className={cn(
+                    enabledFieldClassName,
+                    fieldErrors.title && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                  )}
+                  value={formData.title}
+                  onChange={(e) => handleFormChange("title", e.target.value)}
+                  onBlur={(e) => handleRequiredBlur("title", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Building className="h-4 w-4" />
+                  Company Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  className={cn(
+                    enabledFieldClassName,
+                    fieldErrors.companyName && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                  )}
+                  value={formData.companyName}
+                  onChange={(e) => handleFormChange("companyName", e.target.value)}
+                  onBlur={(e) => handleRequiredBlur("companyName", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-foreground">
+                  <UserPlus className="h-4 w-4" />
+                  Role <span className="text-destructive">*</span>
+                </Label>
+                <div className={cn("w-full", isRoleDisabled && "cursor-not-allowed")}>
+                  <ReactSelect
+                    className="w-full"
+                    classNamePrefix="user-role-select"
+                    styles={getReactSelectStyles({
+                      isInvalid: !!fieldErrors.role,
+                      isDisabled: isRoleDisabled,
+                    })}
+                    isSearchable
+                    isDisabled={isRoleDisabled}
+                    value={selectedRole}
+                    onChange={(option) => {
+                      handleFormChange("role", option?.value || "");
+                      if (option?.value) {
+                        setFieldErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.role;
+                          return next;
+                        });
+                      }
+                    }}
+                    onBlur={() => {
+                      if (!isRoleDisabled) {
+                        handleRequiredBlur("role", formData.role);
+                      }
+                    }}
+                    options={roleOptions}
+                    placeholder="Select role..."
+                    menuPortalTarget={
+                      typeof document !== "undefined" ? document.body : null
+                    }
+                    menuPosition="fixed"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-foreground">
+                  <Briefcase className="h-4 w-4" />
+                  NDA Pages
+                </Label>
+                <div className={cn("w-full", isNdaDisabled && "cursor-not-allowed")}>
+                  <ReactSelect
+                    className="w-full"
+                    classNamePrefix="user-nda-select"
+                    styles={getReactSelectStyles({ isDisabled: isNdaDisabled })}
+                    isSearchable
+                    isClearable
+                    isDisabled={isNdaDisabled}
+                    isLoading={isNdaPagesLoading}
+                    value={selectedNda}
+                    onChange={(option) =>
+                      handleFormChange(
+                        "ndaPages",
+                        !option || option.value === "none" ? null : option.value
+                      )
+                    }
+                    options={ndaOptions}
+                    placeholder={
+                      isNdaPagesLoading
+                        ? "Fetching NDA pages..."
+                        : "Select NDA pages..."
+                    }
+                    loadingMessage={() => "Fetching NDA pages..."}
+                    menuPortalTarget={
+                      typeof document !== "undefined" ? document.body : null
+                    }
+                    menuPosition="fixed"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Image className="h-4 w-4" />
+                  Company Logo
+                </Label>
+                {previewUrl ? (
+                  <div className="relative mt-2 w-fit overflow-hidden bg-muted/20">
+                    <div className="flex h-32 items-center justify-center overflow-hidden p-2">
+                      <img
+                        src={previewUrl}
+                        alt="Logo preview"
+                        className="max-h-full max-w-full object-contain rounded-lg"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      title="Remove logo"
+                      aria-label="Remove logo"
+                      className="absolute right-1 top-1 z-10 flex size-7 items-center justify-center rounded-full border-2 border-background bg-card text-secondary-foreground shadow-md transition-colors hover:bg-secondary-foreground/90 hover:text-secondary"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-1 flex items-center space-x-4">
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-semibold file:text-secondary-foreground hover:file:bg-accent/70"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
           </div>
           <div className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-border bg-popover p-4">
             <Button
@@ -719,7 +719,7 @@ function ViewProfileModal({
             if (!open) setIsDeleteModalOpen(null);
           }}
         >
-          <DialogContent showCloseButton={false} className="max-w-sm p-6">
+          <DialogContent showCloseButton={false} className="w-[calc(100%-2rem)] max-w-[calc(100vw-2rem)] p-6 sm:w-full sm:max-w-sm">
             <div className="mb-4 flex items-center justify-between">
               <DialogTitle className="text-xl font-medium text-foreground">
                 Delete User Account
