@@ -382,7 +382,7 @@ function Login() {
   // ── JSX ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-between">
+    <div className="min-h-screen bg-background flex flex-col justify-between px-2 sm:px-0">
       <div>
         {/* Navbar — unchanged */}
         <nav className="flex justify-between items-center bg-primary py-2 px-2 border-b border-border">
@@ -494,7 +494,7 @@ function Login() {
                             size={18}
                             className="text-primary-foreground"
                           />
-                        ) : null}
+                        ) : null} 
                         Log In
                       </Button>
                     </div>
@@ -535,7 +535,7 @@ function Login() {
           </div>
 
           {/* ✅ Feature Cards with shadcn Card */}
-          <div className="grid grid-cols-2 md:grid-cols-3 py-5">
+          <div className="grid grid-cols-1 gap-4 py-5 sm:grid-cols-2 md:grid-cols-3">
             {[1, 2, 3].map((num) => (
               <Card
                 key={num}

@@ -226,104 +226,245 @@ const createFolder = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
+const mapWithConcurrency = async <T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T) => Promise<R>
+): Promise<R[]> => {
+  const results: R[] = new Array(items.length);
+  let currentIndex = 0;
+
+  const worker = async () => {
+    while (true) {
+      const index = currentIndex++;
+
+      if (index >= items.length) {
+        return;
+      }
+
+      results[index] = await mapper(items[index]);
+    }
+  };
+
+  const workers = Array.from(
+    { length: Math.min(concurrency, items.length) },
+    () => worker()
+  );
+
+  await Promise.all(workers);
+
+  return results;
+};
+
 // GET /api/box/folders
 const getFolders = asyncHandler(async (req: Request, res: Response) => {
   try {
     await logApiCall(req);
+
     const folderId = normalizeBoxId(req.query.folderId, "0");
-    const collaboratedParam = (req.query.collaborated as string) ?? "[]";
+
+    const collaboratedParam =
+      (req.query.collaborated as string) ?? "[]";
+
     let collaborated: any[] = [];
+
     try {
       collaborated = JSON.parse(collaboratedParam);
     } catch {
       collaborated = [];
     }
-    if (!Array.isArray(collaborated)) collaborated = [];
+
+    if (!Array.isArray(collaborated)) {
+      collaborated = [];
+    }
+
     const boxUserId = (req.query.boxUserId as string) || "";
-    const limit = parseInt((req.query.limit as string) || "100", 10);
-    const items: any[] = [];
+
+    const limit = parseInt(
+      (req.query.limit as string) || "100",
+      10
+    );
+
     const user = (req as any).user;
-    const { permissions } = await getSeparatedPermissions({
+
+    /*
+     * Start permissions immediately.
+     * This does not depend on Box folder requests.
+     */
+    const permissionsPromise = getSeparatedPermissions({
       email: user?.email,
       attributes: {
         ...accessTestAttributes,
         ...(user?.email ? { email: user.email } : {}),
       },
     });
-    const allowInternal = Boolean(permissions["internal_files.getfiles"]);
-    const allowExternal = Boolean(permissions["external_files.getfiles"]);
-    const allowShareddocs = Boolean(permissions["shareddocs.getfiles"]);
 
-    for (const element of collaborated) {
-      try {
-        const elementId = normalizeBoxId(element?.folderId);
-        if (!elementId) {
-          console.warn("Skipping collaborated item with invalid folderId", {
-            folderId: element?.folderId,
-            type: element?.type,
-          });
-          continue;
-        }
+    /*
+     * Start root folder fetching immediately.
+     *
+     * Previously this happened AFTER the entire collaborated
+     * loop was completed.
+     */
+    const nestedItemsPromise = fetchNestedItems(
+      folderId,
+      limit
+    );
 
-        const collaborators = await fetchCollaborators(
-          elementId,
-          element.type
-        );
+    /*
+     * Process collaborated items with controlled concurrency.
+     *
+     * Start with 5.
+     */
+    const collaboratedResults = await mapWithConcurrency(
+      collaborated,
+      5,
+      async (element) => {
+        try {
+          const elementId = normalizeBoxId(
+            element?.folderId
+          );
 
-        const currentUserCollab = collaborators.find(
-          (collab: any) =>
-            collab?.item?.id === elementId &&
-            collab?.user?.id === boxUserId
-        );
+          if (!elementId) {
+            console.warn(
+              "Skipping collaborated item with invalid folderId",
+              {
+                folderId: element?.folderId,
+                type: element?.type,
+              }
+            );
 
-        const currentUserRole = currentUserCollab?.role || element.role;
+            return null;
+          }
 
-        if (element.type === "folder") {
-          const folder = await fetchNestedItems(elementId, limit);
-          const folderDetails = await client.folders.getFolderById(elementId);
-          items.push({
-            ...folderDetails,
-            children: folder,
-            collaborators,
-            currentUserRole: currentUserRole,
-          });
-        } else {
-          const file = await client.files.getFileById(elementId, {
-            queryParams: {
-              fields: [
-                "id",
-                "name",
-                "type",
-                "shared_link",
-                "created_at",
-                "modified_at",
-                "size",
-                "tags",
-              ],
-            },
-          });
-          items.push({
+          /*
+           * Collaborators are independent from folder/file details.
+           */
+          const collaboratorsPromise = fetchCollaborators(
+            elementId,
+            element.type
+          );
+
+          if (element.type === "folder") {
+            /*
+             * These 3 requests are independent.
+             *
+             * Before:
+             *
+             * collaborators
+             *      ↓
+             * nested
+             *      ↓
+             * folder details
+             *
+             * Now they can run concurrently.
+             */
+            const [
+              collaborators,
+              folder,
+              folderDetails,
+            ] = await Promise.all([
+              collaboratorsPromise,
+              fetchNestedItems(elementId, limit),
+              client.folders.getFolderById(elementId),
+            ]);
+
+            const currentUserCollab = collaborators.find(
+              (collab: any) =>
+                collab?.item?.id === elementId &&
+                collab?.user?.id === boxUserId
+            );
+
+            const currentUserRole =
+              currentUserCollab?.role || element.role;
+
+            return {
+              ...folderDetails,
+              children: folder,
+              collaborators,
+              currentUserRole,
+            };
+          }
+
+          /*
+           * File and collaborators are independent.
+           */
+          const [collaborators, file] = await Promise.all([
+            collaboratorsPromise,
+
+            client.files.getFileById(elementId, {
+              queryParams: {
+                fields: [
+                  "id",
+                  "name",
+                  "type",
+                  "shared_link",
+                  "created_at",
+                  "modified_at",
+                  "size",
+                  "tags",
+                ],
+              },
+            }),
+          ]);
+
+          const currentUserCollab = collaborators.find(
+            (collab: any) =>
+              collab?.item?.id === elementId &&
+              collab?.user?.id === boxUserId
+          );
+
+          const currentUserRole =
+            currentUserCollab?.role || element.role;
+
+          return {
             ...file,
             collaborators,
-            currentUserRole: currentUserRole,
-          });
-        }
-      } catch (error) {
-        if (isTrashedOrNotFoundError(error)) {
-          console.warn(`Skipping trashed/not-found item: ${element?.folderId}`);
-          continue;
-        }
-        console.error(
-          `Error processing element ${element.folderId}:`,
-          (error as Error).message
-        );
-        throw error;
-      }
-    }
+            currentUserRole,
+          };
+        } catch (error) {
+          if (isTrashedOrNotFoundError(error)) {
+            console.warn(
+              `Skipping trashed/not-found item: ${element?.folderId}`
+            );
 
-    const nestedItems = await fetchNestedItems(folderId, limit);
+            return null;
+          }
+
+          console.error(
+            `Error processing element ${element?.folderId}:`,
+            (error as Error).message
+          );
+
+          throw error;
+        }
+      }
+    );
+
+    /*
+     * Wait for the work that was already started.
+     */
+    const [{ permissions }, nestedItems] = await Promise.all([
+      permissionsPromise,
+      nestedItemsPromise,
+    ]);
+
+    const allowInternal = Boolean(
+      permissions["internal_files.getfiles"]
+    );
+
+    const allowExternal = Boolean(
+      permissions["external_files.getfiles"]
+    );
+
+    const allowShareddocs = Boolean(
+      permissions["shareddocs.getfiles"]
+    );
+
+    const items = collaboratedResults.filter(Boolean);
+
     return res.status(200).json({
       message: "Folder items fetched successfully",
+
       items: filterItemsByTagAccess(
         [...items, ...nestedItems],
         allowInternal,
@@ -333,11 +474,126 @@ const getFolders = asyncHandler(async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching folder items:", error);
-    return res.status((error as any)?.response?.statusCode || 500).json({
-      error: (error as Error).message,
-    });
+
+    return res
+      .status((error as any)?.response?.statusCode || 500)
+      .json({
+        error: (error as Error).message,
+      });
   }
 });
+
+// const getFolders = asyncHandler(async (req: Request, res: Response) => {
+//   try {
+//     await logApiCall(req);
+//     const folderId = normalizeBoxId(req.query.folderId, "0");
+//     const collaboratedParam = (req.query.collaborated as string) ?? "[]";
+//     let collaborated: any[] = [];
+//     try {
+//       collaborated = JSON.parse(collaboratedParam);
+//     } catch {
+//       collaborated = [];
+//     }
+//     if (!Array.isArray(collaborated)) collaborated = [];
+//     const boxUserId = (req.query.boxUserId as string) || "";
+//     const limit = parseInt((req.query.limit as string) || "100", 10);
+//     const items: any[] = [];
+//     const user = (req as any).user;
+//     const { permissions } = await getSeparatedPermissions({
+//       email: user?.email,
+//       attributes: {
+//         ...accessTestAttributes,
+//         ...(user?.email ? { email: user.email } : {}),
+//       },
+//     });
+//     const allowInternal = Boolean(permissions["internal_files.getfiles"]);
+//     const allowExternal = Boolean(permissions["external_files.getfiles"]);
+//     const allowShareddocs = Boolean(permissions["shareddocs.getfiles"]);
+
+//     for (const element of collaborated) {
+//       try {
+//         const elementId = normalizeBoxId(element?.folderId);
+//         if (!elementId) {
+//           console.warn("Skipping collaborated item with invalid folderId", {
+//             folderId: element?.folderId,
+//             type: element?.type,
+//           });
+//           continue;
+//         }
+
+//         const collaborators = await fetchCollaborators(
+//           elementId,
+//           element.type
+//         );
+
+//         const currentUserCollab = collaborators.find(
+//           (collab: any) =>
+//             collab?.item?.id === elementId &&
+//             collab?.user?.id === boxUserId
+//         );
+
+//         const currentUserRole = currentUserCollab?.role || element.role;
+
+//         if (element.type === "folder") {
+//           const folder = await fetchNestedItems(elementId, limit);
+//           const folderDetails = await client.folders.getFolderById(elementId);
+//           items.push({
+//             ...folderDetails,
+//             children: folder,
+//             collaborators,
+//             currentUserRole: currentUserRole,
+//           });
+//         } else {
+//           const file = await client.files.getFileById(elementId, {
+//             queryParams: {
+//               fields: [
+//                 "id",
+//                 "name",
+//                 "type",
+//                 "shared_link",
+//                 "created_at",
+//                 "modified_at",
+//                 "size",
+//                 "tags",
+//               ],
+//             },
+//           });
+//           items.push({
+//             ...file,
+//             collaborators,
+//             currentUserRole: currentUserRole,
+//           });
+//         }
+//       } catch (error) {
+//         if (isTrashedOrNotFoundError(error)) {
+//           console.warn(`Skipping trashed/not-found item: ${element?.folderId}`);
+//           continue;
+//         }
+//         console.error(
+//           `Error processing element ${element.folderId}:`,
+//           (error as Error).message
+//         );
+//         throw error;
+//       }
+//     }
+
+//     const nestedItems = await fetchNestedItems(folderId, limit);
+//     return res.status(200).json({
+//       message: "Folder items fetched successfully",
+//       items: filterItemsByTagAccess(
+//         [...items, ...nestedItems],
+//         allowInternal,
+//         allowExternal,
+//         allowShareddocs
+//       ),
+//     });
+//   } catch (error) {
+//     console.error("Error fetching folder items:", error);
+//     return res.status((error as any)?.response?.statusCode || 500).json({
+//       error: (error as Error).message,
+//     });
+//   }
+// });
 
 const deleteFolderContents = async (folderId: string) => {
   const items = await client.folders.getFolderItems(folderId, { queryParams: { fields: ["id", "type"] } });

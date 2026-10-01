@@ -158,7 +158,7 @@ const PluginManagementPage = () => {
                                         key={plugin.id}
                                         className="rounded-lg border border-border p-6 transition-shadow hover:shadow-md"
                                     >
-                                        <div className="flex items-start justify-between">
+                                        <div className="flex flex-col sm:flex-row items-start justify-between">
                                             <div className="flex-1">
                                                 <div className="mb-3 flex items-center">
                                                     <Puzzle className="mr-3 h-6 w-6 text-secondary-foreground" />
@@ -193,7 +193,7 @@ const PluginManagementPage = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="ml-6">
+                                            <div className="mt-6 sm:mt-0 sm:ml-6">
                                                 <Button
                                                     onClick={() =>
                                                         !isConfigured

@@ -70,7 +70,7 @@ const DatePickerField = ({ id, value, onChange, min, placeholder = "Pick a date"
           <Button
             id={id}
             variant="outline"
-            className="h-10 w-[190px] justify-start !bg-background font-normal !text-secondary-foreground"
+            className="h-10 w-full justify-start !bg-background font-normal !text-secondary-foreground sm:w-[190px]"
           />
         }
       >
@@ -195,19 +195,19 @@ export const PaginatedTable = ({
   );
 
   return (
-    <div className="hidden-scrollbar mx-auto flex min-h-[30vh] flex-col overflow-y-auto rounded-lg text-foreground">
-      <div>
+    <div className="mx-auto flex min-h-[30vh] w-full min-w-0 max-w-full flex-col rounded-lg text-foreground">
+      <div className="min-w-0">
         <div className="py-1">
-          <div className="mb-4 flex items-center justify-between gap-4 px-2">
+          <div className="mb-4 flex flex-col gap-3 px-2 sm:flex-row sm:items-center sm:justify-between">
             <Input
               type="text"
-              className="h-10 w-full !bg-background"
+              className="h-10 w-full min-w-0 !bg-background"
               placeholder="Search records..."
               value={searchRecord || ""}
               onChange={handleSearch}
             />
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" className="h-10 flex-shrink-0" />}>
+              <DropdownMenuTrigger render={<Button variant="outline" className="h-10 w-full shrink-0 sm:w-auto" />}>
                 {filter === "all" ? "All Records" : "My Records"}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </DropdownMenuTrigger>
@@ -230,11 +230,11 @@ export const PaginatedTable = ({
         </div>
         <div
           className={cn(
-            "hidden-scrollbar max-h-[50vh] overflow-auto border border-border md:max-h-[60vh]",
+            "w-full min-w-0 max-w-full max-h-[50vh] overflow-x-auto overflow-y-auto border border-border md:max-h-[60vh]",
             totalPages > 0 ? "rounded-t-lg border-b-0" : "rounded-lg"
           )}
         >
-          <Table className="text-sm">
+          <Table className="min-w-[720px] text-sm">
             <TableHeader className="sticky top-0 z-10 bg-muted">
               <TableRow>
                 <SortableHeader label="Date & Time" sortKey="createdAt" />
@@ -277,9 +277,9 @@ export const PaginatedTable = ({
           </Table>
         </div>
         {/* Pagination Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-5 rounded-b-lg border-x border-b border-border bg-muted/50 p-4 lg:justify-end">
-          <div className="flex items-center space-x-4 text-sm">
-            <div className="flex items-center space-x-2">
+        <div className="flex flex-col items-center justify-center gap-3 rounded-b-lg border-x border-b border-border bg-muted/50 p-3 sm:flex-row sm:flex-wrap sm:p-4 lg:justify-end">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm sm:gap-4">
+            <div className="flex items-center gap-2">
               <span className="text-foreground">Rows per page:</span>
               <Select
                 value={String(itemsPerPage)}
@@ -487,9 +487,9 @@ const DataTableSection = () => {
   };
 
   return (
-    <div className='w-full max-w-8xl'>
-      <div className="mb-5 flex flex-wrap items-end gap-x-5 gap-y-3">
-        <div className="flex gap-6">
+    <div className="w-full min-w-0 max-w-full">
+      <div className="mb-5 flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-5">
+        <div className="grid w-full grid-cols-1 gap-3 sm:w-auto sm:grid-cols-2 sm:gap-6">
           <div className="z-10 space-y-1">
             <Label htmlFor="startDate" className="!text-secondary-foreground">Start Date</Label>
             <DatePickerField
@@ -511,7 +511,7 @@ const DataTableSection = () => {
             />
           </div>
         </div>
-        <div className='flex flex-wrap gap-4'>
+        <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:gap-4">
           <Button
             onClick={() =>
               getReportData(
@@ -537,7 +537,7 @@ const DataTableSection = () => {
           </Button>
           <Button
             onClick={handleExport}
-            className="ml-auto h-10"
+            className="h-10"
             disabled={isLoading || isExportLoading}
           >
             {isExportLoading ? (

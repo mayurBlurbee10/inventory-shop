@@ -99,6 +99,7 @@ function Navbar({ content, config, filterValue }) {
   const activeTab = searchParams.get("tab");
   const [notifications, setNotifications] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [messageBadgeDismissed, setMessageBadgeDismissed] = useState(false);
   const [isNotificationLoading, setIsNotificationLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
@@ -166,6 +167,7 @@ function Navbar({ content, config, filterValue }) {
       return;
     }
 
+    setMessageBadgeDismissed(true);
     setIsMessageDrawerOpen(true);
   };
 
@@ -630,6 +632,7 @@ function Navbar({ content, config, filterValue }) {
     if (!socket) return;
 
     const handleNewNotification = () => {
+      setMessageBadgeDismissed(false);
       getNotifications();
     };
 
@@ -638,6 +641,13 @@ function Navbar({ content, config, filterValue }) {
       socket.off("new_notification", handleNewNotification);
     };
   }, [socket, user?.id, params?.portalid]);
+
+  const hasUnreadMessage = notifications.some(
+    (item) =>
+      item.type === "message" &&
+      String(item.status || "").toLowerCase() === "unread",
+  );
+  const showMessageBadge = hasUnreadMessage && !messageBadgeDismissed;
 
   return (
     <>
@@ -816,6 +826,9 @@ function Navbar({ content, config, filterValue }) {
                   aria-label="Messages"
                 >
                   <MessageSquare className="size-5" />
+                  {showMessageBadge && (
+                    <span className="absolute right-1 top-1 flex size-2.5 items-center justify-center rounded-full bg-orange-500" />
+                  )}
                 </Button>
               </AppTooltip>
               <DropdownMenu
@@ -1068,9 +1081,17 @@ function Navbar({ content, config, filterValue }) {
                             setIsOpenNavbar(false);
                             openMessageDrawer();
                           }}
-                          className={mobileSidebarItemClass(isMessageDrawerOpen)}
+                          className={cn(
+                            mobileSidebarItemClass(isMessageDrawerOpen),
+                            "relative",
+                          )}
                         >
-                          <MessageSquare className="h-4 w-4 shrink-0" />
+                          <span className="relative inline-flex">
+                            <MessageSquare className="h-4 w-4 shrink-0" />
+                            {showMessageBadge && (
+                              <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-orange-500" />
+                            )}
+                          </span>
                           <span className="truncate">Messages</span>
                         </button>
                         {(userIsAdmin || userIsModerator) &&

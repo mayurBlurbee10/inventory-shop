@@ -91,10 +91,9 @@ const AccountReportsContent = () => {
   }
 
   return (
-    <div className="flex">
-      {/* Main Content */}
-      <div className="flex-1">
-        <div className="flex justify-center items-center">
+    <div className="flex w-full min-w-0">
+      <div className="min-w-0 flex-1">
+        <div className="flex w-full min-w-0 justify-center">
           <DataTableSection />
         </div>
       </div>

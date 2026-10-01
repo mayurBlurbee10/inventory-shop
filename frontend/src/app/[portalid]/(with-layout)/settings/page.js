@@ -115,7 +115,7 @@ function SettingsPage() {
   };
 
   return (
-    <div className="relative flex h-[87vh] w-full justify-center rounded-lg bg-background scrollbar-hide">
+    <div className="relative flex h-[87vh] w-full min-w-0 max-w-full justify-center overflow-x-hidden rounded-lg bg-background scrollbar-hide">
       <div className="hidden w-2/5 max-w-xs border-r border-border bg-background p-3 text-muted-foreground md:w-72 lg:block scrollbar-hide">
         <h2 className="text-md mb-6 font-semibold text-foreground">Tools</h2>
         <nav className="space-y-1">
@@ -169,7 +169,7 @@ function SettingsPage() {
           })}
         </nav>
       </div>
-      <div className="mt-6 w-full overflow-y-auto p-6 hidden-scrollbar lg:mt-0">
+      <div className="mt-6 w-full min-w-0 overflow-x-hidden overflow-y-auto p-4 hidden-scrollbar sm:p-6 lg:mt-0">
         {getActiveContent()}
       </div>
     </div>

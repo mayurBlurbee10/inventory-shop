@@ -342,11 +342,11 @@ const CheckListContent = () => {
                     >
                       <CardContent className="space-y-4 p-4">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-semibold text-foreground">
+                          <h3 className="min-w-0 flex-1 truncate font-semibold text-foreground">
                             {checklist?.name}
                           </h3>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex shrink-0 items-center gap-2">
                             <AppTooltip label="Edit checklist">
                               <Button
                                 type="button"
@@ -394,17 +394,18 @@ const CheckListContent = () => {
                           </div>
                         </div>
 
-                        <div className="custom-scrollbar min-h-[360px] max-h-[360px] overflow-y-auto rounded-lg border border-border bg-muted/40 p-4">
+                        <div className="custom-scrollbar min-h-[220px] max-h-[320px] overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-muted/40 p-3 sm:min-h-[360px] sm:max-h-[360px] sm:p-4">
                           {checklist?.tasks?.length > 0 ? (
                             <ul className="space-y-3">
                               {checklist?.tasks.map((task) => (
                                 <li
                                   key={task?.id}
-                                  className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3 shadow-sm"
+                                  className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between"
                                 >
-                                  <span className="flex-1 truncate text-sm font-medium text-foreground">
+                                  <span className="min-w-0 text-sm font-medium text-foreground break-words sm:flex-1 sm:truncate">
                                     {task?.title}
                                   </span>
+                                  <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
                                   <div className="flex items-center gap-1">
                                     <AppTooltip label="Edit task">
                                       <Button
@@ -445,13 +446,14 @@ const CheckListContent = () => {
                                   <Badge
                                     className={
                                       task?.status === TaskStatus.COMPLETED
-                                        ? "min-w-[80px] justify-center bg-success/15 text-success rounded-full"
-                                        : "min-w-[80px] justify-center bg-warning/15 text-warning rounded-full"
+                                        ? "max-w-full shrink justify-center rounded-full bg-success/15 text-success sm:min-w-[80px] sm:shrink-0"
+                                        : "max-w-full shrink justify-center rounded-full bg-warning/15 text-warning sm:min-w-[80px] sm:shrink-0"
                                     }
                                   >
                                     {task?.status?.charAt(0).toUpperCase() +
                                       task?.status?.slice(1)}
                                   </Badge>
+                                  </div>
                                 </li>
                               ))}
                             </ul>

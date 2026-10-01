@@ -470,8 +470,10 @@ export default function ThemeContent() {
                   <Button
                     key={type}
                     type={themeType !== type ? "Primary" : "Secondary"}
-                    onClick={() => setThemeType(type)}
-                    variant={themeType !== type ? "default" : "secondary"}
+                    onClick={() => {
+                      setThemeType(type)
+                    }}
+                    variant={themeType === type ? "default" : "secondary"}
                     className={`h-12 rounded-xl capitalize`}
                   >
                     {type} Color

@@ -391,11 +391,11 @@ const AddContentModal = ({
             </select>
           </div>
           {newContent?.type !== "Links" && newContent?.type !== "Icons" && (
-            <div className="flex items-center gap-5">
+            <div className="flex flex-wrap items-end gap-x-5 gap-y-3">
               {newContent.title !== "Title" &&
                 !newContent?.title.includes("Card") &&
                 fontSizeOptions[newContent?.type] && (
-                  <div className="mb-4">
+                  <div className="mb-4 shrink-0">
                     <label
                       htmlFor="fontSize"
                       className="block text-sm font-medium text-gray-700"
@@ -429,7 +429,7 @@ const AddContentModal = ({
                 )}
               {newContent?.title.includes("Card") &&
                 fontSizeOptions["Card"] !== null && (
-                  <div className="mb-4">
+                  <div className="mb-4 shrink-0">
                     <label
                       htmlFor="fontSize"
                       className="block text-sm font-medium text-gray-700"
@@ -462,7 +462,7 @@ const AddContentModal = ({
                   </div>
                 )}
               {newContent.title === "Title" && (
-                <div className="mb-4">
+                <div className="mb-4 shrink-0">
                   <label
                     htmlFor="fontSize"
                     className="block text-sm font-medium text-gray-700"
@@ -496,7 +496,7 @@ const AddContentModal = ({
               )}
               {newContent?.type === "Text" && (
                 <>
-                  <div className="mb-4">
+                  <div className="mb-4 shrink-0">
                     <label
                       htmlFor="fontWeight"
                       className="block text-sm font-medium text-gray-700"
@@ -526,7 +526,7 @@ const AddContentModal = ({
                       ))}
                     </select>
                   </div>
-                  <div className="mb-4">
+                  <div className="mb-4 w-full min-w-0 sm:flex-1">
                     <label
                       htmlFor="fontColor"
                       className="block text-sm font-medium text-gray-700"
@@ -537,8 +537,7 @@ const AddContentModal = ({
                       type="color"
                       id="fontColor"
                       name="fontColor"
-                      className="mt-1 block w-[150px] h-[40px] border border-gray-300 bg-transparent rounded-md shadow-sm px-1"
-                      value={newContent?.theme?.color || '#000000'} // Default to black if undefined
+                      className="mt-1 block h-10 w-full max-w-[150px] border border-gray-300 bg-transparent rounded-md shadow-sm px-1"                      value={newContent?.theme?.color || '#000000'} // Default to black if undefined
                       onChange={(e) =>
                         setNewContent((prev) => ({
                           ...prev,

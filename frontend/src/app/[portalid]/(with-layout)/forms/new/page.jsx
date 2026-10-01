@@ -46,7 +46,7 @@ const isRecoverableFolderError = (msg) =>
 // Currency input with a "$" prefix. Defined at module scope so it isn't
 // recreated on every parent render (which would drop focus while typing).
 const MoneyInput = ({ id, value, onChange }) => (
-  <div className="flex h-10 w-3/5 items-center overflow-hidden rounded-lg border border-input bg-background lg:w-1/2">
+  <div className="flex h-10 w-3/5 items-center overflow-hidden rounded-lg border border-input !border-foreground bg-background lg:w-1/2">
     <span className="flex h-full items-center bg-muted px-3 text-sm text-muted-foreground">
       $
     </span>
@@ -55,7 +55,7 @@ const MoneyInput = ({ id, value, onChange }) => (
       type="text"
       value={value}
       onChange={onChange}
-      className="h-full flex-1 rounded-none border-0 border-l border-input !bg-background focus-visible:ring-0"
+      className="h-full flex-1 rounded-none border-0 border-l border-input !border-foreground !bg-background focus-visible:ring-0"
     />
   </div>
 );
@@ -305,11 +305,11 @@ const ApplicationStep = ({
           <Input
             id="firstName"
             type="text"
-            value={userData.firstName}
+            value={userData?.firstName}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, firstName: e.target.value }))
             }
-            className="h-10 w-3/5 lg:w-1/2 !bg-background"
+            className="h-10 w-3/5 lg:w-1/2 !border-foreground !bg-background"
           />
         </div>
         <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
@@ -319,11 +319,11 @@ const ApplicationStep = ({
           <Input
             id="lastName"
             type="text"
-            value={userData.lastName}
+            value={userData?.lastName}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, lastName: e.target.value }))
             }
-            className="h-10 w-3/5 lg:w-1/2 !bg-background"
+            className="h-10 w-3/5 lg:w-1/2 !border-foreground !bg-background"
           />
         </div>
         <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
@@ -333,11 +333,11 @@ const ApplicationStep = ({
           <Input
             id="phoneNumber"
             type="text"
-            value={userData.phoneNumber}
+            value={userData?.phoneNumber}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, phoneNumber: e.target.value }))
             }
-            className="h-10 w-3/5 lg:w-1/2 !bg-background"
+            className="h-10 w-3/5 lg:w-1/2 !border-foreground !bg-background"
           />
         </div>
         <Separator className="mx-10 w-auto" />
@@ -347,27 +347,27 @@ const ApplicationStep = ({
             <Input
               id="SSN_1"
               type="password"
-              value={userData.SSN_1}
+              value={userData?.SSN_1}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, SSN_1: e.target.value }))
               }
-              className="h-10 w-3/5 lg:w-1/2 !bg-background"
+              className="h-10 w-3/5 lg:w-1/2 !border-foreground !bg-background"
             />
             <Input
               type="password"
-              value={userData.SSN_2}
+              value={userData?.SSN_2}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, SSN_2: e.target.value }))
               }
-              className="h-10 w-3/5 lg:w-1/2 !bg-background"
+              className="h-10 w-3/5 lg:w-1/2 !border-foreground !bg-background"
             />
             <Input
               type="password"
-              value={userData.SSN_3}
+              value={userData?.SSN_3}
               onChange={(e) =>
                 setUserData((prev) => ({ ...prev, SSN_3: e.target.value }))
               }
-              className="h-10 w-3/5 lg:w-1/2 !bg-background"
+              className="h-10 w-3/5 lg:w-1/2 !border-foreground !bg-background"
             />
           </div>
         </div>
@@ -378,11 +378,11 @@ const ApplicationStep = ({
           <Input
             id="employer"
             type="text"
-            value={userData.employer}
+            value={userData?.employer}
             onChange={(e) =>
               setUserData((prev) => ({ ...prev, employer: e.target.value }))
             }
-            className="h-10 w-3/5 lg:w-1/2 !bg-background"
+            className="h-10 w-3/5 lg:w-1/2 !border-foreground !bg-background"
           />
         </div>
         <div className="flex items-center justify-between pl-10 pr-20 text-sm text-foreground lg:pr-40">
@@ -391,7 +391,7 @@ const ApplicationStep = ({
           </Label>
           <MoneyInput
             id="annualIncome"
-            value={userData.annualIncome}
+            value={userData?.annualIncome}
             onChange={(e) =>
               setUserData((prev) => ({
                 ...prev,
@@ -407,7 +407,7 @@ const ApplicationStep = ({
           </Label>
           <MoneyInput
             id="purchasePrice"
-            value={userData.purchasePrice}
+            value={userData?.purchasePrice}
             onChange={(e) =>
               setUserData((prev) => ({
                 ...prev,
@@ -422,7 +422,7 @@ const ApplicationStep = ({
           </Label>
           <MoneyInput
             id="mortgageAmount"
-            value={userData.mortgageAmount}
+            value={userData?.mortgageAmount}
             onChange={(e) =>
               setUserData((prev) => ({
                 ...prev,
@@ -436,12 +436,12 @@ const ApplicationStep = ({
             Property Location
           </Label>
           <Select
-            value={userData.propertyLocation}
+            value={userData?.propertyLocation}
             onValueChange={(value) =>
               setUserData((prev) => ({ ...prev, propertyLocation: value }))
             }
           >
-            <SelectTrigger id="propertyLocation" className="h-10 w-3/5 !bg-background lg:w-1/2">
+            <SelectTrigger id="propertyLocation" className="h-10 w-3/5 !border-foreground !bg-background lg:w-1/2">
               <SelectValue placeholder="Select state" />
             </SelectTrigger>
             <SelectContent>
