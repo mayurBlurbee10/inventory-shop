@@ -1086,37 +1086,37 @@ function SharedFolderExplorer({
   const handleDeleteFile = async (file) => {
     setIsLoading(true);
     try {
-      const filterBoxUser = (collabIds) => {
-        return collabIds?.filter((item) => item?.user.id !== user?.boxUserId);
-      };
-      const parentCollaboratorIds = path
-        .map((item) => filterBoxUser(item.collaborators))
-        .flat()
-        .map((collab) => collab.id);
+      // const filterBoxUser = (collabIds) => {
+      //   return collabIds?.filter((item) => item?.user.id !== user?.boxUserId);
+      // };
+      // const parentCollaboratorIds = path
+      //   .map((item) => filterBoxUser(item.collaborators))
+      //   .flat()
+      //   .map((collab) => collab.id);
 
-      console.log("parentCollaboratorIds", parentCollaboratorIds);
-      console.log("file?.collaborators", file?.collaborators);
+      // console.log("parentCollaboratorIds", parentCollaboratorIds);
+      // console.log("file?.collaborators", file?.collaborators);
 
-      const hasParentCollaborator =
-        file?.collaborators &&
-        filterBoxUser(file?.collaborators).some((collab) =>
-          parentCollaboratorIds.includes(collab.id)
-        );
+      // const hasParentCollaborator =
+      //   file?.collaborators &&
+      //   filterBoxUser(file?.collaborators).some((collab) =>
+      //     parentCollaboratorIds.includes(collab.id)
+      //   );
 
-      console.log("hasParentCollaborator", hasParentCollaborator);
+      // console.log("hasParentCollaborator", hasParentCollaborator);
 
-      if (hasParentCollaborator) {
-        console.log(
-          "A parent or sub-parent folder already has this collaborator. Skipping removal."
-        );
-      } else {
-        if (file?.collaborators?.length > 0) {
-          await Promise.all(
-            file.collaborators.map((collab) => handelRemoveCollaborator(collab))
-          );
-          console.log("Collaborators removed from the current file.");
-        }
-      }
+      // if (hasParentCollaborator) {
+      //   console.log(
+      //     "A parent or sub-parent folder already has this collaborator. Skipping removal."
+      //   );
+      // } else {
+      //   if (file?.collaborators?.length > 0) {
+      //     await Promise.all(
+      //       file.collaborators.map((collab) => handelRemoveCollaborator(collab))
+      //     );
+      //     console.log("Collaborators removed from the current file.");
+      //   }
+      // }
 
       const response = await fetchWrapper(
         `/api/box/files?fileId=${file?.id}`,
