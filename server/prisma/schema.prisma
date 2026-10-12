@@ -1,0 +1,193 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+//   output   = "../src/generated/prisma" // While deply was causing issue, so we are using internal generated from nodemodules/prisma
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+// Azure SQL / SQL Server notes:
+// - Key / indexed string columns get an explicit NVARCHAR length (SQL Server caps index keys at 900 / 1700 bytes).
+// - Every other string column is NVARCHAR(MAX) so it is as unbounded as PostgreSQL `text` was.
+// - Case-insensitive search relies on the database collation (Azure SQL default: SQL_Latin1_General_CP1_CI_AS).
+// - SQL Server rejects multiple cascade paths (User -> Shop -> Product/Sale and User -> Product/Sale),
+//   so the direct User relation on Product / Sale uses NoAction. Deleting a user still removes its
+//   products & sales through the Shop cascade.
+
+// Better Auth compatible models for SQL Server:
+
+model User {
+  id            String    @id @default(cuid()) @db.NVarChar(255)
+  name          String    @db.NVarChar(Max)
+  email         String    @unique @db.NVarChar(320)
+  emailVerified Boolean   @default(false)
+  image         String?   @db.NVarChar(Max)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  shops         Shop[]
+  products      Product[]
+  sales         Sale[]
+  memberships   ShopMember[]     @relation("MemberUser")
+  invitedStaff  ShopMember[]     @relation("MemberInvitedBy")
+  invitations   ShopInvitation[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid()) @db.NVarChar(255)
+  expiresAt DateTime
+  token     String   @unique @db.NVarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?  @db.NVarChar(Max)
+  userAgent String?  @db.NVarChar(Max)
+  userId    String   @db.NVarChar(255)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid()) @db.NVarChar(255)
+  accountId             String    @db.NVarChar(Max)
+  providerId            String    @db.NVarChar(Max)
+  userId                String    @db.NVarChar(255)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.NVarChar(Max)
+  refreshToken          String?   @db.NVarChar(Max)
+  idToken               String?   @db.NVarChar(Max)
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?   @db.NVarChar(Max)
+  password              String?   @db.NVarChar(Max)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid()) @db.NVarChar(255)
+  identifier String   @db.NVarChar(450)
+  value      String   @db.NVarChar(Max)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// Shop Models:
+
+model Shop {
+  id        String    @id @default(cuid()) @db.NVarChar(255)
+  name      String    @db.NVarChar(Max)
+  slug      String?   @db.NVarChar(Max)
+  address   String?   @db.NVarChar(Max)
+  phone     String?   @db.NVarChar(Max)
+  currency  String    @default("USD") @db.NVarChar(Max)
+  userId    String    @db.NVarChar(255)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products    Product[]
+  sales       Sale[]
+  members     ShopMember[]
+  invitations ShopInvitation[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("shop")
+}
+
+// Staff module: who works in which shop. Roles and permissions themselves live in
+// MStrategy Access Control (PAP); `role` here is a display copy refreshed from the PAP.
+// One shop per person (unique userId). User links use NoAction because SQL Server rejects
+// a second cascade path (User -> Shop -> ShopMember); memberships are removed in auth.ts.
+model ShopMember {
+  id              String   @id @default(cuid()) @db.NVarChar(255)
+  shopId          String   @db.NVarChar(255)
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  userId          String   @unique @db.NVarChar(255)
+  user            User     @relation("MemberUser", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role            String   @db.NVarChar(50)
+  // ABAC user attributes sent to the PDP
+  experienceYears Int?
+  employmentType  String?  @db.NVarChar(50)
+  invitedById     String?  @db.NVarChar(255)
+  invitedBy       User?    @relation("MemberInvitedBy", fields: [invitedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([shopId])
+  @@map("shop_members")
+}
+
+model ShopInvitation {
+  id          String    @id @default(cuid()) @db.NVarChar(255)
+  shopId      String    @db.NVarChar(255)
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  email       String    @db.NVarChar(320)
+  name        String    @db.NVarChar(Max)
+  role        String    @db.NVarChar(50)
+  // SHA-256 of the token; the raw token is only in the email link
+  tokenHash   String    @unique @db.NVarChar(64)
+  status      String    @default("pending") @db.NVarChar(20)
+  expiresAt   DateTime
+  invitedById String    @db.NVarChar(255)
+  invitedBy   User      @relation(fields: [invitedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([shopId, status])
+  @@index([email])
+  @@map("shop_invitations")
+}
+
+model Product {
+  id          String   @id @default(cuid()) @db.NVarChar(255)
+  shopId      String   @db.NVarChar(255)
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  userId      String?  @db.NVarChar(255)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  p_name      String   @db.NVarChar(Max)
+  p_price     Float
+  p_stock     Int
+  p_thumbnail String?  @db.NVarChar(Max)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([userId])
+  @@map("products")
+}
+
+model Sale {
+  id           String   @id @default(cuid()) @db.NVarChar(255)
+  shopId       String   @db.NVarChar(255)
+  shop         Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  userId       String?  @db.NVarChar(255)
+  user         User?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  cust_name    String   @db.NVarChar(Max)
+  cust_email   String   @db.NVarChar(Max)
+  cust_contact String?  @db.NVarChar(Max)
+  // SQL Server has no JSON column type in Prisma: the cart is stored as a JSON string
+  // and (de)serialized in sales.service.ts so the API still returns an array.
+  cartItems    String   @default("[]") @db.NVarChar(Max)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([userId])
+  @@map("sales")
+}
