@@ -1778,6 +1778,7 @@ function SharedFolderExplorer({
           }
           isLoading={isLoading}
           modalRef={deleteModalRef}
+          content="Are you sure you want to delete this item? Deleting it will also permanently delete all nested files and folders, if any exist. This action cannot be undone."
         />
       <PreviewModal
         isOpen={isPreviewModalOpen}

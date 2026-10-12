@@ -4,8 +4,20 @@ import { asyncHandler } from "../utils/helper.ts";
 import { getBoxClient } from "../utils/boxClient.ts";
 import { getSeparatedPermissions } from "../utils/accesscontrol.ts";
 import { accessTestAttributes } from "./access.controller.ts";
+import Bottleneck from "bottleneck";
 
 const client = getBoxClient();
+
+const limiter = new Bottleneck({
+  minTime: 80, // 1000ms / 8 = 125ms
+});
+
+limiter.on("failed", async (error, jobInfo) => {
+  if (error.statusCode === 429 && jobInfo.retryCount < 5) {
+    const retryAfter = Number(error?.headers?.["retry-after"] || 1) * 1000;
+    return retryAfter;
+  }
+});
 
 function isTrashedOrNotFoundError(error: unknown) {
   const err = error as any;
@@ -623,7 +635,11 @@ const deleteFolder = asyncHandler(async (req: Request, res: Response) => {
       return res.status(400).json({ error: "No folderId provided" });
     }
 
-    await deleteFolderById(folderId, false);
+    await limiter.schedule(() => client.folders.deleteFolderById(folderId as string, {
+      queryParams: { recursive: true },
+    })) as any;
+
+    // await deleteFolderById(folderId, false);
 
     return res.status(200).json({
       message: "Folder deleted successfully",
